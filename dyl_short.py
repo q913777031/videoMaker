@@ -633,7 +633,7 @@ def s_tool1(x):
     down = ease_out(prog(t, w(x, 4, "电量") - 0.2, 1.0))
     flick = 1.0 if down < 0.95 else 0.6 + 0.4 * (math.sin(t * 29) > 0)
     dim = 1 - 0.5 * prog(t, x.cue(5), 0.4)
-    _energy_row(c, 1000, "Page facing up", "写周报 · 开没完的会", 0.9 - 0.84 * down, "Melting face",
+    _energy_row(c, 1000, "Page facing up", "写报告 · 开会", 0.9 - 0.84 * down, "Melting face",
                 a2 * flick, s2, dim)
     if t >= x.cue(5) - 0.1:
         q = ease_out(prog(t, x.cue(5), 0.7))
@@ -919,7 +919,7 @@ SCENES = [
     ], s_turn0, [("riser", -1, None, 0.0, 0.9, -1)], lead=0.6),
     scene("turn", "dawn", [
         L("斯坦福有一门爆火的课，", pause=0.15),
-        L("叫《【设计你的人生】》。", pause=0.7),
+        L("叫做《【设计你的人生】》。", pause=0.7),
     ], s_turn, [("impact", -1, None, 0.0), ("pop", 0, "爆火", 0.0), ("whoosh", 1, None, -0.35),
                 ("boom", 1, "设计", -0.1, 0.8), ("shimmer", 1, "人生", 0.2), ("pop2", 1, "人生", 0.9),
                 ("pop2", 1, "人生", 1.2)], transition="flash", lead=0.2, bg=bg_turn),
@@ -938,12 +938,12 @@ SCENES = [
         L("每天睡前花两分钟，记下今天做的事。", pause=0.2),
         L("哪件事让你满电？哪件事让你【掏空】？", pause=0.3),
         L("比如给新人分享经验时，你两眼放光；", pause=0.2),
-        L("可一写周报、一开没完没了的会，电量直接【见底】。", pause=0.3),
+        L("可是一写报告，一开会，电量马上【清零】。", pause=0.3),
         L("这些满电时刻，就是你热爱的【线索】。", pause=0.55),
     ], s_tool1, [("boom", -1, None, 0.0, 0.6), ("pop", 0, "好时光", 0.0), ("whoosh", 1, None, -0.35),
                  ("pop", 1, "两分钟", 0.0), ("whoosh", 2, None, -0.35), ("pop", 2, "满电", 0.0), ("down", 2, "掏空", 0.0),
                  ("whoosh", 3, None, -0.35), ("shimmer", 3, "两眼", 0.3), ("pop", 4, None, 0.0),
-                 ("down", 4, "电量", 0.0), ("glitch", 4, "见底", 0.0), ("whoosh", 5, None, -0.3),
+                 ("down", 4, "电量", 0.0), ("glitch", 4, "清零", 0.0), ("whoosh", 5, None, -0.3),
                  ("ding", 5, "线索", -0.1), ("shimmer", 5, "线索", 0.1)], transition="zoom"),
     scene("tool2", "violet", [
         L("第二招，【奥德赛计划】。", pause=0.3),
@@ -1014,7 +1014,7 @@ def render_cover(path: str):
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "out/designing_your_life_short.mp4"
     Path(out).parent.mkdir(parents=True, exist_ok=True)
-    video = Video(SCENES, PALETTES, MUSIC, voice="zm_yunxi", base_speed=1.08)
+    video = Video(SCENES, PALETTES, MUSIC, voice="zf_001", base_speed=1.1)
     video.build()
     for s in SCENES:
         print(f"{s.name:8s} {s.t0:6.1f}s +{s.duration:5.1f}s")

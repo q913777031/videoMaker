@@ -14,11 +14,17 @@ from scipy.ndimage import maximum_filter1d
 
 SR = 44100
 ROOT = Path(__file__).resolve().parent.parent
-MODEL_DIR = ROOT / "models" / "kokoro-multi-lang-v1_0"
+MODEL_ROOT = ROOT / "models"
 CACHE_DIR = ROOT / ".cache" / "tts"
-# Kokoro v1.0 中文音色的 speaker id（来自模型元数据 speaker2id）
-VOICES = {"zf_xiaobei": 45, "zf_xiaoni": 46, "zf_xiaoxiao": 47, "zf_xiaoyi": 48,
-          "zm_yunjian": 49, "zm_yunxi": 50, "zm_yunxia": 51, "zm_yunyang": 52}
+V10 = ("kokoro-multi-lang-v1_0", "model.onnx")
+V11 = ("kokoro-int8-multi-lang-v1_1", "model.int8.onnx")
+# 音色 → (模型目录, 模型文件, speaker id)；id 来自模型元数据 speaker2id。
+# v1.1 为中文专项训练版本，发音标准度明显优于 v1.0。
+VOICES = {
+    "zf_001": (*V11, 3), "zm_009": (*V11, 58),
+    "zf_xiaobei": (*V10, 45), "zf_xiaoni": (*V10, 46), "zf_xiaoxiao": (*V10, 47), "zf_xiaoyi": (*V10, 48),
+    "zm_yunjian": (*V10, 49), "zm_yunxi": (*V10, 50), "zm_yunxia": (*V10, 51), "zm_yunyang": (*V10, 52),
+}
 
 
 # ---------------------------------------------------------------- 基础工具
@@ -109,25 +115,26 @@ def place(track: np.ndarray, clip: np.ndarray, start: float, gain: float = 1.0):
 class Narrator:
     """Kokoro 离线中文旁白；generate 返回 44.1kHz 单声道、首尾静音已裁剪的音频。"""
 
-    def __init__(self, voice: str = "zm_yunxi", model_dir: Path = MODEL_DIR):
+    def __init__(self, voice: str = "zf_001"):
         import sherpa_onnx
 
-        d = str(model_dir).rstrip("/") + "/"
-        if not Path(d + "model.onnx").is_file():
-            raise FileNotFoundError(f"TTS model not found: {d}model.onnx")
+        sub, model, self._sid = VOICES[voice]
+        d = str(MODEL_ROOT / sub) + "/"
+        if not Path(d + model).is_file():
+            raise FileNotFoundError(f"TTS model not found: {d}{model}")
         kokoro = sherpa_onnx.OfflineTtsKokoroModelConfig(
-            model=d + "model.onnx", voices=d + "voices.bin", tokens=d + "tokens.txt",
+            model=d + model, voices=d + "voices.bin", tokens=d + "tokens.txt",
             lexicon=f"{d}lexicon-us-en.txt,{d}lexicon-zh.txt", data_dir=d + "espeak-ng-data",
             dict_dir=d + "dict")
         cfg = sherpa_onnx.OfflineTtsConfig(
             model=sherpa_onnx.OfflineTtsModelConfig(kokoro=kokoro, num_threads=4),
             rule_fsts=f"{d}date-zh.fst,{d}phone-zh.fst,{d}number-zh.fst", max_num_sentences=1)
         self._tts = sherpa_onnx.OfflineTts(cfg)
-        self._sid = VOICES[voice]
+        self._key = f"{sub}|{self._sid}"
 
     def generate(self, text: str, speed: float = 1.0) -> np.ndarray:
         """合成一句旁白；结果按 (音色, 语速, 文本) 缓存到 .cache/tts，改画面重渲染时无需重新合成。"""
-        key = hashlib.sha1(f"{self._sid}|{speed:.4f}|{text}".encode()).hexdigest()
+        key = hashlib.sha1(f"{self._key}|{speed:.4f}|{text}".encode()).hexdigest()
         path = CACHE_DIR / f"{key}.npy"
         if path.exists():
             return np.load(path)

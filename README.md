@@ -6,11 +6,11 @@
 
 ```bash
 pip install -r requirements.txt
-python3 fetch_assets.py                       # 下载字体、3D Emoji、Kokoro TTS 模型（约 400MB，均不入库）
+python3 fetch_assets.py                       # 下载字体、3D Emoji、Kokoro TTS 模型（约 600MB，均不入库）
 python3 dyl_short.py out/designing_your_life_short.mp4
 ```
 
-输出 1080×1920、30fps、约 137 秒的 9:16 竖屏视频，以及同目录下的封面图 `cover.png`。
+输出 1080×1920、30fps、约 157 秒的 9:16 竖屏视频，以及同目录下的封面图 `cover.png`。
 4 核机器上首次渲染约 6 分钟（含 TTS 合成），之后只改画面时约 5 分钟（旁白有缓存）。
 
 系统依赖：FFmpeg（带 libx264）、`libegl1`（skia-python 需要）。
@@ -30,13 +30,13 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 
 - **音画同步**：每句旁白单独合成，动画与音效都锚定到"某句读到某个词"的时刻（`w(x, 句序号, "关键词")`）。
 - **性能**：平滑背景层以 1/4 分辨率绘制后用 OpenCV 放大，直接写入帧缓冲。
-- **配音**：默认音色 `zm_yunxi`。用语音识别评估候选音色后选定：音高变化约为 MeloTTS 的 2 倍，识别错误率最低。
+- **配音**：默认音色为 Kokoro v1.1 中文版的 `zf_001`。用语音识别对比 6 个候选音色后选定：普通话发音最标准，剩余识别差异基本是同音字。
 
 ### 修改内容
 
 - 改旁白或节奏：编辑 `dyl_short.py` 的 `SCENES`，每句是 `Line(文本, 语速倍率, 句后停顿)`，`【】` 标记字幕高亮词
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
-- 换音色：`Video(..., voice="zf_xiaoxiao")`，可选值见 `engine/audio.py` 的 `VOICES`
+- 换音色：`Video(..., voice="zm_009")`（男声），可选值见 `engine/audio.py` 的 `VOICES`
 
 ## 横屏无声版
 

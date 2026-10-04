@@ -120,7 +120,7 @@ class Video:
     """一条短视频：场景列表 + 调色板 + 配乐段落表。build 负责旁白排时与音频，render 输出 MP4。"""
 
     def __init__(self, scenes: list[Scene], palettes: dict, music: list[tuple[str, int, str]],
-                 voice: str = "zm_yunxi", base_speed: float = 1.05):
+                 voice: str = "zf_001", base_speed: float = 1.05):
         self.scenes, self.palettes, self.music_plan = scenes, palettes, music
         self.voice, self.base_speed = voice, base_speed
         self.total = 0.0

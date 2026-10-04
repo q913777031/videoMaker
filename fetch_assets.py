@@ -20,7 +20,8 @@ MODEL_DIR = ROOT / "models"
 FLUENT = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/"
 NOTO = "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/"
 SMILEY = "https://github.com/atelier-anchor/smiley-sans/releases/download/v2.0.1/smiley-sans-v2.0.1.zip"
-KOKORO = "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2"
+TTS_BASE = "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/"
+KOKORO = {"kokoro-int8-multi-lang-v1_1": "model.int8.onnx", "kokoro-multi-lang-v1_0": "model.onnx"}
 
 # Fluent Emoji 目录名；带肤色的 emoji 使用 Default（黄色）版本
 EMOJI = [
@@ -98,15 +99,16 @@ def fetch_fonts(failed: list[str]):
 
 
 def fetch_model(failed: list[str]):
-    if (MODEL_DIR / "kokoro-multi-lang-v1_0" / "model.onnx").exists():
-        return
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    try:
-        with urllib.request.urlopen(KOKORO, timeout=1800) as r:
-            with tarfile.open(fileobj=r, mode="r|bz2") as tar:
-                tar.extractall(MODEL_DIR)
-    except Exception as ex:
-        failed.append(f"model: kokoro ({ex})")
+    for name, model in KOKORO.items():
+        if (MODEL_DIR / name / model).exists():
+            continue
+        try:
+            with urllib.request.urlopen(f"{TTS_BASE}{name}.tar.bz2", timeout=1800) as r:
+                with tarfile.open(fileobj=r, mode="r|bz2") as tar:
+                    tar.extractall(MODEL_DIR)
+        except Exception as ex:
+            failed.append(f"model: {name} ({ex})")
 
 
 def main():
