@@ -1,4 +1,8 @@
-pillow
 numpy
+scipy
 soundfile
+pillow
 sherpa-onnx
+skia-python>=144.0
+opencv-python-headless
+pyloudnorm
