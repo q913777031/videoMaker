@@ -20,3 +20,20 @@ python3 dyl_video.py out/designing_your_life.mp4
 
 每个场景是 `SCENES` 中的一个 `Scene(时长, 绘制函数)`，绘制函数接收 `(draw, t)`，`t` 为场景内秒数。
 增删场景或改文案只需修改对应函数与 `SCENES` 列表。
+
+## 竖屏短视频版（配音 + 背景音乐 + 字幕）
+
+```bash
+# 下载离线中文 TTS 模型（约 170MB，已在 .gitignore 中忽略）
+mkdir -p models && curl -L https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-melo-tts-zh_en.tar.bz2 | tar xj -C models
+python3 dyl_short.py out/designing_your_life_short.mp4
+```
+
+输出 1080×1920、30fps 的 9:16 竖屏视频：
+
+- **配音**：sherpa-onnx + MeloTTS 离线逐句合成，模型路径可用环境变量 `DYL_TTS_MODEL` 覆盖，语速见 `TTS_SPEED`
+- **同步**：场景时长由旁白长度决定，动画入场与句子开始时间对齐，字幕按句精确显示
+- **背景音乐**：代码合成（C-Am-F-G 和弦 + 琶音），无版权问题；有人声时自动压低
+- **安全区**：右侧和底部为短视频平台的按钮与标题留白
+
+改旁白：修改 `SCENES` 中每个场景的 `lines`；动画通过 `cue(i)` 取第 i 句的开始时间。
