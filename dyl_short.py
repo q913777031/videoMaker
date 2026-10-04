@@ -26,7 +26,7 @@ LEFT = 90
 RIGHT = W - 160  # 右侧留出短视频平台的点赞/评论按钮区域
 SUB_Y = 1500     # 字幕中心线，避开底部标题与进度条区域
 MODEL_DIR = os.environ.get("DYL_TTS_MODEL", "models/vits-melo-tts-zh_en")
-TTS_SPEED = 1.1
+TTS_SPEED = 1.15
 
 LEAD_IN = 0.5
 GAP = 0.25
@@ -60,6 +60,39 @@ def header(d, t, kicker: str, title: str, en: str = ""):
         d.rectangle([LEFT, y + 30, LEFT + w, y + 38], fill=ACCENT)
 
 
+def chip(d, xy, s: str, size: int, color, a: float, anchor: str = "l"):
+    """绘制圆角标签；anchor 为 "r" 时以 xy 为右端对齐。返回标签宽度。"""
+    if a <= 0:
+        return 0
+    x, y = xy
+    w = font(size).getlength(s) + size * 1.2
+    if anchor == "r":
+        x -= w
+    h = size * 1.7
+    d.rounded_rectangle([x, y, x + w, y + h], radius=h / 2, fill=mix(BG, color, a))
+    d.text((x + w / 2, y + h / 2), s, font=font(size), fill=mix(BG, (255, 255, 255), a), anchor="mm")
+    return w
+
+
+def scene_persona(d, t, cue):
+    text(d, (LEFT, 260), "你是不是也这样？", 44, ACCENT, appear(t, 0.0))
+    a = appear(t, 0.3, 0.8)
+    if a > 0:
+        d.rounded_rectangle([LEFT, 360, RIGHT, 820], radius=32, fill=mix(BG, (255, 255, 255), a),
+                            outline=mix(BG, (225, 220, 210), a), width=3)
+        d.ellipse([LEFT + 40, 400, LEFT + 160, 520], fill=mix(BG, COLORS[1], a))
+        d.text((LEFT + 100, 460), "周", font=font(60), fill=mix(BG, (255, 255, 255), a), anchor="mm")
+    text(d, (LEFT + 190, 405), "老周 · 35岁", 60, INK, a, rise=0)
+    text(d, (LEFT + 190, 482), "工作十年的技术骨干", 36, MUTED, a, rise=0)
+    tags = [("房贷还有20年", cue(1)), ("孩子刚上小学", cue(1) + 0.9),
+            ("晋升卡了3年", cue(2)), ("怕被年轻人取代", cue(2) + 1.2)]
+    for i, (tag, start) in enumerate(tags):
+        chip(d, (LEFT + 40 + (i % 2) * 360, 590 + (i // 2) * 100), tag, 38, COLORS[[0, 3, 4, 0][i]],
+             appear(t, start))
+    text(d, (W // 2, 1000), "我的人生", 84, INK, appear(t, cue(3) + 0.8), "mm")
+    text(d, (W // 2, 1120), "是不是就这样了？", 84, ACCENT, appear(t, cue(3) + 1.3), "mm")
+
+
 def scene_title(d, t, cue):
     text(d, (W // 2, 620), "设计你的", 150, INK, appear(t, 0.2, 0.9), "mm")
     text(d, (W // 2, 800), "人生", 150, INK, appear(t, 0.4, 0.9), "mm")
@@ -71,138 +104,167 @@ def scene_title(d, t, cue):
     text(d, (W // 2, 1170), "Bill Burnett & Dave Evans", 38, MUTED, appear(t, cue(1) + 0.2), "mm")
 
 
-def scene_idea(d, t, cue):
-    header(d, t, "核心观点", "人生不是一道\n等待解开的题")
-    text(d, (LEFT, 700), "而是一件可以被", 64, INK, appear(t, cue(0) + 2.2))
-    text(d, (LEFT, 790), "设计的作品。", 64, ACCENT, appear(t, cue(0) + 2.5))
-    steps = ["理解自己", "大胆构想", "做原型", "去测试", "不断迭代"]
-    for i, s in enumerate(steps):
-        a = appear(t, cue(1) + i * 0.55)
-        if a <= 0:
-            continue
-        y = 950 + i * 92
-        d.rounded_rectangle([LEFT, y, LEFT + 360, y + 64], radius=32, fill=mix(BG, COLORS[i], a))
-        d.text((LEFT + 180, y + 32), s, font=font(36), fill=mix(BG, (255, 255, 255), a), anchor="mm")
-        if i < len(steps) - 1:
-            d.text((LEFT + 400, y + 32), "↓", font=font(36), fill=mix(BG, MUTED, a), anchor="lm")
+def scene_reframe(d, t, cue):
+    header(d, t, "焦虑的根源", "问错了问题")
+    a = appear(t, cue(1))
+    if a > 0:
+        d.rounded_rectangle([LEFT, 620, RIGHT, 800], radius=28, fill=mix(BG, (235, 230, 222), a))
+    text(d, (LEFT + 40, 650), "我该怎么找到", 52, MUTED, a, rise=0)
+    text(d, (LEFT + 40, 720), "那个正确的人生？", 52, MUTED, a, rise=0)
+    strike = appear(t, cue(2), 0.5)
+    if strike > 0:
+        for ly, s_ in ((680, "我该怎么找到"), (750, "那个正确的人生？")):
+            lw = font(52).getlength(s_) + 20
+            d.line([LEFT + 30, ly, LEFT + 30 + lw * strike, ly], fill=ACCENT, width=5)
+    b = appear(t, cue(3))
+    text(d, (W // 2, 860), "↓", 60, ACCENT, b, "ma")
+    if b > 0:
+        d.rounded_rectangle([LEFT, 960, RIGHT, 1140], radius=28, fill=mix(BG, ACCENT, b))
+    text(d, (LEFT + 40, 990), "我可以先试试", 52, (255, 255, 255), b, rise=0)
+    text(d, (LEFT + 40, 1060), "哪几种可能？", 52, (255, 255, 255), b, rise=0)
+    text(d, (LEFT, 1230), "人生不是解题，是设计。", 56, INK, appear(t, cue(4)))
 
 
 def scene_mindsets(d, t, cue):
-    header(d, t, "五种设计思维", "Designer Mindsets")
-    items = [("好奇心", "Curiosity", "对一切保持好奇"),
-             ("行动导向", "Bias to Action", "先动手，别只空想"),
-             ("重新定义问题", "Reframing", "换个问法，答案就变了"),
-             ("觉察过程", "Awareness", "接受过程中的混乱"),
-             ("深度合作", "Radical Collaboration", "寻求他人的帮助")]
-    for i, (zh, en, desc) in enumerate(items):
+    header(d, t, "五种设计思维", "放到老周身上")
+    items = [("好奇心", "别问「我还有什么用」，问「我对什么感兴趣」"),
+             ("行动导向", "别纠结转不转行，周末先去听场行业分享"),
+             ("重新定义问题", "「35岁太晚了」→「十年经验能带去哪？」"),
+             ("觉察过程", "迷茫不是失败，是你正在探索的信号"),
+             ("深度合作", "找 3 个信任的人，聊聊你的困惑")]
+    for i, (zh, desc) in enumerate(items):
         a = appear(t, cue(i + 1))
         if a <= 0:
             continue
-        y = 560 + i * 170
-        r = 34 * a
-        d.ellipse([LEFT + 34 - r, y + 40 - r, LEFT + 34 + r, y + 40 + r], fill=COLORS[i])
-        d.text((LEFT + 34, y + 40), str(i + 1), font=font(36), fill=BG, anchor="mm")
-        text(d, (LEFT + 100, y), zh, 56, INK, a, rise=0)
-        text(d, (LEFT + 100 + font(56).getlength(zh) + 24, y + 18), en, 32, COLORS[i], a, rise=0)
-        text(d, (LEFT + 100, y + 80), desc, 38, MUTED, a, rise=0)
+        y = 560 + i * 165
+        r = 32 * a
+        d.ellipse([LEFT + 32 - r, y + 32 - r, LEFT + 32 + r, y + 32 + r], fill=COLORS[i])
+        d.text((LEFT + 32, y + 32), str(i + 1), font=font(34), fill=BG, anchor="mm")
+        text(d, (LEFT + 90, y), zh, 52, INK, a, rise=0)
+        text(d, (LEFT + 90, y + 72), desc, 34, MUTED, a, rise=0)
 
 
 def scene_journal(d, t, cue):
     header(d, t, "工具一", "好时光日志", "Good Time Journal")
-    text(d, (LEFT, 650), "做了什么？有多投入？", 44, MUTED, appear(t, cue(1)))
-    text(d, (LEFT, 710), "精力是充电还是消耗？", 44, MUTED, appear(t, cue(1) + 0.3))
-    rows = [("带新人做项目", 0.9, 0.8), ("写周报", 0.3, -0.6), ("调试视觉算法", 0.85, 0.5),
-            ("开跨部门会议", 0.35, -0.4), ("周末徒步", 0.8, 0.9)]
-    la = appear(t, cue(1) + 0.6)
-    text(d, (LEFT, 790), "投入度", 32, COLORS[1], la, rise=0)
-    text(d, (690, 790), "精力", 32, COLORS[2], la, rise=0)
+    text(d, (LEFT, 650), "老周记录了两周：", 44, MUTED, appear(t, cue(1)))
+    rows = [("给新人讲技术方案", 0.95, 0.9), ("写汇报 PPT", 0.3, -0.7), ("半夜处理线上故障", 0.7, -0.5),
+            ("开拉通协调会", 0.35, -0.5), ("周末陪孩子做手工", 0.85, 0.8)]
+    la = appear(t, cue(2))
+    text(d, (LEFT, 730), "投入度", 32, COLORS[1], la, rise=0)
+    text(d, (690, 730), "精力", 32, COLORS[2], la, rise=0)
     for i, (name, engage, energy) in enumerate(rows):
-        start = cue(1) + 0.8 + i * 0.45
+        start = cue(2) + 0.2 + i * 0.45
         a = appear(t, start)
         if a <= 0:
             continue
-        y = 850 + i * 105
+        y = 780 + i * 100
         text(d, (LEFT, y), name, 40, INK, a, rise=0)
         grow = appear(t, start + 0.2, 1.0)
-        by = y + 60
-        d.rectangle([LEFT, by, LEFT + 480, by + 30], fill=mix(BG, (225, 220, 210), a))
-        d.rectangle([LEFT, by, LEFT + 480 * engage * grow, by + 30], fill=COLORS[1])
+        by = y + 56
+        d.rectangle([LEFT, by, LEFT + 480, by + 28], fill=mix(BG, (225, 220, 210), a))
+        d.rectangle([LEFT, by, LEFT + 480 * engage * grow, by + 28], fill=COLORS[1])
         cx = 770
-        d.line([cx, by - 8, cx, by + 38], fill=mix(BG, MUTED, a), width=3)
+        d.line([cx, by - 8, cx, by + 36], fill=mix(BG, MUTED, a), width=3)
         end = cx + 140 * energy * grow
-        d.rectangle([min(cx, end), by, max(cx, end), by + 30],
+        d.rectangle([min(cx, end), by, max(cx, end), by + 28],
                     fill=COLORS[2] if energy > 0 else ACCENT)
+    text(d, (LEFT, 1300), "线索：讲方案、带人让他充电", 44, ACCENT, appear(t, cue(4)))
 
 
 def scene_odyssey(d, t, cue):
     header(d, t, "工具二", "奥德赛计划", "Odyssey Plans")
-    text(d, (LEFT, 650), "未来五年，三种完全不同的人生", 44, MUTED, appear(t, cue(1)))
-    plans = [("A", "当前路径", "沿着现在的方向继续走下去"),
-             ("B", "备选人生", "如果现在这条路突然消失了"),
-             ("C", "疯狂想法", "如果钱和面子都不是问题")]
+    text(d, (LEFT, 650), "老周的三个五年版本", 44, MUTED, appear(t, cue(1)))
+    plans = [("A", "当前路径", "争取技术经理，三年内带起团队"),
+             ("B", "如果被裁", "去做企业内训讲师"),
+             ("C", "钱和面子都不是问题", "开一间少儿编程工作室")]
     for i, (tag, name, desc) in enumerate(plans):
         a = appear(t, cue(i + 2), 0.8)
         if a <= 0:
             continue
-        y = 740 + i * 230 + (1 - a) * 60
-        d.rounded_rectangle([LEFT, y, RIGHT, y + 200], radius=28,
+        y = 740 + i * 220 + (1 - a) * 60
+        d.rounded_rectangle([LEFT, y, RIGHT, y + 190], radius=28,
                             fill=mix(BG, (255, 255, 255), a), outline=mix(BG, COLORS[i], a), width=4)
-        d.rectangle([LEFT, y + 20, LEFT + 14, y + 180], fill=mix(BG, COLORS[i], a))
-        d.text((LEFT + 50, y + 36), f"版本 {tag}", font=font(34), fill=mix(BG, COLORS[i], a))
-        d.text((LEFT + 50, y + 82), name, font=font(56), fill=mix(BG, INK, a))
-        d.text((LEFT + 50, y + 152), desc, font=font(34), fill=mix(BG, MUTED, a))
+        d.rectangle([LEFT, y + 20, LEFT + 14, y + 170], fill=mix(BG, COLORS[i], a))
+        d.text((LEFT + 50, y + 30), f"版本 {tag} · {name}", font=font(36), fill=mix(BG, COLORS[i], a))
+        d.text((LEFT + 50, y + 96), desc, font=font(48), fill=mix(BG, INK, a))
 
 
 def scene_prototype(d, t, cue):
-    header(d, t, "工具三", "做原型", "Prototyping")
-    pairs = [("原型对话", "找正在过那种生活的人", "聊一聊，听真实的故事"),
-             ("原型体验", "花一天、一周", "亲身去试一试，代价很小")]
-    for i, (name, l1, l2) in enumerate(pairs):
-        a = appear(t, cue(i + 1))
-        y = 680 + i * 260
-        if a > 0:
-            d.rectangle([LEFT, y, LEFT + 12, y + 190], fill=mix(BG, COLORS[i + 1], a))
-        text(d, (LEFT + 50, y), name, 60, INK, a)
-        text(d, (LEFT + 50, y + 90), l1, 40, MUTED, a)
-        text(d, (LEFT + 50, y + 145), l2, 40, MUTED, a)
-    text(d, (LEFT, 1250), "低成本试错，", 56, ACCENT, appear(t, cue(3)))
-    text(d, (LEFT, 1330), "用真实代替空想。", 56, ACCENT, appear(t, cue(3) + 0.3))
+    header(d, t, "工具三", "做最小原型", "Prototyping")
+    sections = [("原型对话", COLORS[1], 620, [("请老板吃顿饭", "问清技术经理要什么，自己差在哪", "一顿饭"),
+                                           ("约内训讲师朋友喝咖啡", "了解真实收入和日常", "一杯咖啡")]),
+                ("原型体验", COLORS[2], 950, [("主动做一次内部技术分享", "试试站在台上的感觉", "一个下午"),
+                                           ("周末去少儿编程机构当助教", "看看自己是否真的喜欢", "一个周末")])]
+    k = 0
+    for title, color, y0, items in sections:
+        text(d, (LEFT, y0), title, 40, color, appear(t, cue(k + 1)))
+        for j, (name, sub, cost) in enumerate(items):
+            a = appear(t, cue(k + 1))
+            k += 1
+            if a <= 0:
+                continue
+            y = y0 + 64 + j * 135
+            d.rectangle([LEFT, y + 4, LEFT + 8, y + 104], fill=mix(BG, color, a))
+            text(d, (LEFT + 30, y), name, 44, INK, a, rise=0)
+            text(d, (LEFT + 30, y + 62), sub, 34, MUTED, a, rise=0)
+            chip(d, (RIGHT, y + 4), cost, 28, ACCENT, a, anchor="r")
+    text(d, (LEFT, 1290), "比辞职试错，便宜太多。", 52, ACCENT, appear(t, cue(5)))
 
 
 def scene_end(d, t, cue):
-    text(d, (W // 2, 700), "人生没有", 96, INK, appear(t, cue(0), 0.9), "mm")
-    text(d, (W // 2, 820), "唯一正确答案", 96, INK, appear(t, cue(0) + 0.3, 0.9), "mm")
-    text(d, (W // 2, 980), "只有不断迭代的版本", 72, ACCENT, appear(t, cue(1), 0.9), "mm")
-    text(d, (W // 2, 1200), "参考：《Designing Your Life》", 34, MUTED, appear(t, cue(2)), "mm")
-    text(d, (W // 2, 1250), "Bill Burnett & Dave Evans", 34, MUTED, appear(t, cue(2) + 0.2), "mm")
+    text(d, (W // 2, 640), "焦虑不是因为", 88, INK, appear(t, cue(0), 0.9), "mm")
+    text(d, (W // 2, 760), "你不够努力", 88, INK, appear(t, cue(0) + 0.3, 0.9), "mm")
+    text(d, (W // 2, 900), "而是只盯着一条路", 68, ACCENT, appear(t, cue(1), 0.9), "mm")
+    a = appear(t, cue(3))
+    if a > 0:
+        w = font(44).getlength("这周，做你的第一个最小原型") + 80
+        d.rounded_rectangle([W // 2 - w / 2, 1030, W // 2 + w / 2, 1120], radius=45, fill=mix(BG, ACCENT, a))
+        d.text((W // 2, 1075), "这周，做你的第一个最小原型", font=font(44),
+               fill=mix(BG, (255, 255, 255), a), anchor="mm")
+    text(d, (W // 2, 1260), "参考：《Designing Your Life》", 32, MUTED, appear(t, cue(4)), "mm")
+    text(d, (W // 2, 1305), "Bill Burnett & Dave Evans", 32, MUTED, appear(t, cue(4) + 0.2), "mm")
 
 
 SCENES = [
-    Scene(["斯坦福大学有一门超火的课，叫做设计你的人生。",
-           "它教你用设计师的思维，规划自己的人生。"], scene_title),
-    Scene(["它的核心观点是，人生不是一道等待解开的题，而是一件可以被设计的作品。",
-           "先理解自己，再大胆构想，然后做原型、去测试、不断迭代。"], scene_idea),
-    Scene(["设计师有五种思维。",
-           "保持好奇。",
-           "先动手，别空想。",
-           "换个问法，重新定义问题。",
-           "觉察过程，接受混乱。",
-           "寻求他人，深度合作。"], scene_mindsets),
-    Scene(["第一个工具，叫好时光日志。",
-           "每天记录你做了什么，有多投入，精力是充电还是消耗。",
-           "坚持几周，你就能看清什么让你真正投入。"], scene_journal),
+    Scene(["认识一下老周，三十五岁，工作十年的技术骨干。",
+           "房贷还有二十年，孩子刚上小学。",
+           "晋升卡了三年，看着年轻人冲上来，越来越焦虑。",
+           "半夜睡不着，总在想，我的人生，是不是就这样了？"], scene_persona),
+    Scene(["如果你也是老周，斯坦福有一门课，叫做设计你的人生。",
+           "它专门解决这种卡住了的感觉。"], scene_title),
+    Scene(["老周的焦虑，来自一个错误的问题，",
+           "我该怎么找到那个正确的人生？",
+           "可人生根本没有标准答案。",
+           "换个问法，我可以先试试哪几种可能？",
+           "人生不是一道题，而是一件可以设计的作品。"], scene_reframe),
+    Scene(["设计师有五种思维，放到老周身上是这样的。",
+           "好奇心，别问我还有什么用，问我还对什么感兴趣。",
+           "行动导向，别纠结转不转行，这周末先去听一场行业分享。",
+           "重新定义问题，把三十五岁太晚了，换成十年经验能带去哪里。",
+           "觉察过程，迷茫不是失败，是你正在探索的信号。",
+           "深度合作，找三个信任的人，聊聊你的困惑。"], scene_mindsets),
+    Scene(["第一个工具，好时光日志。",
+           "每天记录做了什么，有多投入，精力是充电还是消耗。",
+           "老周记了两周，发现给新人讲方案时，他最投入、最有劲。",
+           "写汇报、开协调会，最消耗他。",
+           "线索出来了，他也许更适合带人和做培训。"], scene_journal),
     Scene(["第二个工具，奥德赛计划。",
-           "为未来五年，写下三种完全不同的人生。",
-           "一，沿着当前的路走下去。",
-           "二，如果这条路突然消失了。",
-           "三，如果钱和面子都不是问题。"], scene_odyssey),
-    Scene(["第三个工具，做原型。",
-           "找正在过那种生活的人聊一聊，",
-           "或者花一天，亲身去试一试。",
-           "用低成本的尝试，代替空想。"], scene_prototype),
-    Scene(["人生没有唯一正确答案，",
-           "只有不断迭代的版本。",
-           "从今天起，开始设计你的人生吧。"], scene_end),
+           "老周为未来五年，写下了三个完全不同的版本。",
+           "第一种，留在现在的路上，争取技术经理，三年内带起团队。",
+           "第二种，如果明天被裁，就去做企业内训讲师。",
+           "第三种，如果钱和面子都不是问题，开一间少儿编程工作室。",
+           "三条路画出来，焦虑就从无路可走，变成了有得选。"], scene_odyssey),
+    Scene(["第三个工具，做最小原型，用最低的成本验证想法。",
+           "比如，请老板吃顿饭，问问公司对技术经理的期待，自己还差在哪。",
+           "约做内训的朋友喝杯咖啡，了解真实的收入和日常。",
+           "主动在公司做一次技术分享，试试站在台上的感觉。",
+           "周末去少儿编程机构，当一天助教。",
+           "一顿饭，一个周末，比辞职试错便宜太多。"], scene_prototype),
+    Scene(["焦虑，不是因为你不够努力，",
+           "而是你只盯着一条路。",
+           "多画几条路，从最小的一步开始。",
+           "这周，就去做你的第一个原型吧。",
+           "评论区告诉我，你打算先试什么？"], scene_end),
 ]
 
 
