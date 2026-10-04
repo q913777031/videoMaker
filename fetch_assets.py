@@ -21,6 +21,8 @@ FLUENT = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets
 NOTO = "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/"
 SMILEY = "https://github.com/atelier-anchor/smiley-sans/releases/download/v2.0.1/smiley-sans-v2.0.1.zip"
 TTS_BASE = "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/"
+ZIPVOICE = "sherpa-onnx-zipvoice-distill-int8-zh-en-emilia"
+VOCOS = "https://github.com/k2-fsa/sherpa-onnx/releases/download/vocoder-models/vocos_24khz.onnx"
 KOKORO = {"kokoro-int8-multi-lang-v1_1": "model.int8.onnx", "kokoro-multi-lang-v1_0": "model.onnx"}
 
 # Fluent Emoji 目录名；带肤色的 emoji 使用 Default（黄色）版本
@@ -109,6 +111,18 @@ def fetch_model(failed: list[str]):
                     tar.extractall(MODEL_DIR)
         except Exception as ex:
             failed.append(f"model: {name} ({ex})")
+    if not (MODEL_DIR / ZIPVOICE / "decoder.int8.onnx").exists():
+        try:
+            with urllib.request.urlopen(f"{TTS_BASE}{ZIPVOICE}.tar.bz2", timeout=1800) as r:
+                with tarfile.open(fileobj=r, mode="r|bz2") as tar:
+                    tar.extractall(MODEL_DIR)
+        except Exception as ex:
+            failed.append(f"model: {ZIPVOICE} ({ex})")
+    if not (MODEL_DIR / "vocos_24khz.onnx").exists():
+        try:
+            (MODEL_DIR / "vocos_24khz.onnx").write_bytes(get(VOCOS))
+        except Exception as ex:
+            failed.append(f"model: vocos_24khz ({ex})")
 
 
 def main():

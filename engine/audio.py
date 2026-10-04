@@ -25,6 +25,10 @@ VOICES = {
     "zf_xiaobei": (*V10, 45), "zf_xiaoni": (*V10, 46), "zf_xiaoxiao": (*V10, 47), "zf_xiaoyi": (*V10, 48),
     "zm_yunjian": (*V10, 49), "zm_yunxi": (*V10, 50), "zm_yunxia": (*V10, 51), "zm_yunyang": (*V10, 52),
 }
+# ZipVoice 音色 → 用作音色提示的 Kokoro 音色
+ZV_DIR = "sherpa-onnx-zipvoice-distill-int8-zh-en-emilia"
+ZIPVOICE = {"zv_yunxi": "zm_yunxi", "zv_009": "zm_009", "zv_001": "zf_001"}
+PROMPT_TEXT = "其实每个人都可以重新开始，换一种方式，去过自己真正想要的生活。"
 
 
 # ---------------------------------------------------------------- 基础工具
@@ -113,11 +117,29 @@ def place(track: np.ndarray, clip: np.ndarray, start: float, gain: float = 1.0):
 # ---------------------------------------------------------------- TTS
 
 class Narrator:
-    """Kokoro 离线中文旁白；generate 返回 44.1kHz 单声道、首尾静音已裁剪的音频。"""
+    """离线中文旁白；generate 返回 44.1kHz 单声道、首尾静音已裁剪的音频。
 
-    def __init__(self, voice: str = "zf_001"):
+    音色名以 zv_ 开头时使用 ZipVoice（零样本、韵律接近真人）：先用对应的 Kokoro 音色合成一句提示音，
+    ZipVoice 只借用其音色，发音与语调由 ZipVoice 自己生成，因此不涉及任何真人声音。
+    """
+
+    def __init__(self, voice: str = "zv_yunxi"):
         import sherpa_onnx
 
+        self._prompt = None
+        if voice in ZIPVOICE:
+            d = str(MODEL_ROOT / ZV_DIR) + "/"
+            if not Path(d + "decoder.int8.onnx").is_file():
+                raise FileNotFoundError(f"TTS model not found: {d}decoder.int8.onnx")
+            zv = sherpa_onnx.OfflineTtsZipvoiceModelConfig(
+                tokens=d + "tokens.txt", encoder=d + "encoder.int8.onnx", decoder=d + "decoder.int8.onnx",
+                vocoder=str(MODEL_ROOT / "vocos_24khz.onnx"), data_dir=d + "espeak-ng-data", lexicon=d + "lexicon.txt")
+            self._tts = sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(
+                model=sherpa_onnx.OfflineTtsModelConfig(zipvoice=zv, num_threads=4)))
+            prompt = Narrator(ZIPVOICE[voice]).generate(PROMPT_TEXT, 1.0)
+            self._prompt = signal.resample_poly(prompt, 24000, SR).astype(np.float32).tolist()
+            self._key = f"{ZV_DIR}|{voice}"
+            return
         sub, model, self._sid = VOICES[voice]
         d = str(MODEL_ROOT / sub) + "/"
         if not Path(d + model).is_file():
@@ -138,7 +160,10 @@ class Narrator:
         path = CACHE_DIR / f"{key}.npy"
         if path.exists():
             return np.load(path)
-        a = self._tts.generate(text, sid=self._sid, speed=speed)
+        if self._prompt is not None:
+            a = self._tts.generate(text, PROMPT_TEXT, self._prompt, 24000, speed, 4)
+        else:
+            a = self._tts.generate(text, sid=self._sid, speed=speed)
         x = np.asarray(a.samples, np.float64)
         if a.sample_rate != SR:
             g = math.gcd(SR, a.sample_rate)

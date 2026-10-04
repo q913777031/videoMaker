@@ -1,7 +1,7 @@
-"""《设计你的人生》竖屏短视频：第二人称代入的情绪叙事 + 3D Emoji 人物 + 动效 + 配乐音效。
+"""《设计你的人生》竖屏短视频：3D Emoji 人物 + 动效 + 真人感配音 + 配乐音效。
 
-叙事线：标准答案人生的痛点 → 面具与深夜自问 → 转折遇见斯坦福课程 → 重新定义问题
-→ 三个方法（好时光日志 / 奥德赛计划 / 最小原型）各配真实场景 → 情绪高潮 → 互动引导。
+叙事线：斯坦福课程开场 → 重新定义问题 → 三个方法（好时光日志 / 奥德赛计划 / 最小原型）
+各配真实场景 → 情绪高潮 → 互动引导。
 
 用法：python3 dyl_short.py [输出路径]       生成视频与封面
 依赖资源：python3 fetch_assets.py
@@ -11,13 +11,12 @@ import math
 import sys
 from pathlib import Path
 
-import numpy as np
 import skia
 
 from engine.gfx import (W, H, aurora, battery, bubble, check, chip, circle, clamp01, confetti, draw_emoji,
                         draw_kinetic, draw_text, dust, ease_in, ease_in_out, ease_out, ease_out_back,
-                        gradient_bg, lerp, light_rays, mix, plain, prog, rrect, shockwave, sparkles,
-                        stroke_path, text_width, vignette, warp)
+                        gradient_bg, lerp, light_rays, mix, plain, prog, rrect, sparkles,
+                        stroke_path, vignette)
 from engine.timeline import Event, Line, Scene, Video
 
 ST = dict(stroke=("#0A0A18", 12), shadow=(0, 8, 12, "#000000"))
@@ -103,59 +102,6 @@ def emo(x, name: str, px: float, py: float, size: float, start: float, end: floa
     draw_emoji(x.c, name, px + dx, py + dy + idle, size * s, a * alpha, r, gray=gray, glow=glow, shadow=shadow)
 
 
-def stamp(c, text: str, px: float, py: float, size: float, p: float, color="#FF3B4E", rot: float = -10,
-          alpha: float = 1.0):
-    """砸下的印章字样。"""
-    if p <= 0 or alpha <= 0:
-        return
-    s = 1 + 1.4 * (1 - ease_out(p))
-    a = clamp01(p * 3) * alpha
-    bw = text_width(text, size, "black") + size
-    bh = size * 1.6
-    c.save()
-    c.translate(px, py)
-    c.rotate(rot)
-    c.scale(s, s)
-    rrect(c, 0, 0, bw, bh, 14, None, a, stroke=(color, 8))
-    rrect(c, 0, 0, bw - 22, bh - 22, 8, None, a * 0.8, stroke=(color, 3))
-    draw_text(c, text, 0, 0, size, "black", color, a)
-    c.restore()
-
-
-def _zigzag(cx: float, cy: float, extent: float, side: int) -> skia.Path:
-    """以竖向锯齿线为界的半平面，用于撕裂效果。"""
-    path = skia.Path()
-    path.moveTo(cx + side * 2000, cy - extent)
-    k = 0
-    y = cy - extent
-    while y <= cy + extent:
-        path.lineTo(cx + (18 if k % 2 else -18), y)
-        y += 46
-        k += 1
-    path.lineTo(cx + side * 2000, cy + extent)
-    path.close()
-    return path
-
-
-def torn(c, draw, cx: float, cy: float, f: float, extent: float = 700, spread: float = 300,
-         fall: float = 1500, spin: float = 24):
-    """把 draw() 画出的内容沿锯齿线撕成两半向两侧飞落；f 为撕开后经过的秒数。"""
-    k = ease_out(min(max(f, 0) / 0.8, 1))
-    a = 1 - prog(f, 0.6, 0.5)
-    if a <= 0:
-        return
-    for side in (-1, 1):
-        c.save()
-        c.translate(cx + side * (24 + spread * k), cy + fall * max(f, 0) ** 2)
-        c.rotate(side * spin * k)
-        c.translate(-cx, -cy)
-        c.clipPath(_zigzag(cx, cy, extent, side), skia.ClipOp.kIntersect, True)
-        c.saveLayerAlpha(None, int(255 * a))
-        draw()
-        c.restore()
-        c.restore()
-
-
 def tool_title(x, num: str, title: str, en: str, emoji: str, end: float):
     """方法标题卡：大号序号砸入 + 标题逐字弹出 + 英文副标题 + 图标。"""
     c, t = x.c, x.t
@@ -195,235 +141,7 @@ def steam(c, t: float, bx: float, by: float, alpha: float = 1.0):
         stroke_path(c, path, "#FFFFFF", 7, alpha * 0.45 * (1 - ph), glow=("#FFFFFF", 6))
 
 
-# ---------------------------------------------------------------- 场景 1：钩子
-
-def s_hook(x):
-    c, t = x.c, x.t
-    lift = ease_in_out(x.p(1, -0.15, 0.5))
-    sz = lerp(205, 118, lift)
-    y1, y2 = lerp(640, 300, lift), lerp(860, 430, lift)
-    hook = dict(stroke=("#0A0A18", 14), glow=("#FF3D6E", 30), shadow=(0, 10, 12, "#000000"))
-    t2 = w(x, 0, "也")
-    draw_kinetic(c, "你是不是", 540, y1, sz, t, x.cue(0), "title", "slam", 0.06, 0.28, **hook)
-    draw_kinetic(c, "也这样？", 540, y2, sz, t, t2, "title", "slam", 0.06, 0.28, **hook)
-    shockwave(c, 540, 640, prog(t, x.cue(0) + 0.1, 0.7), "#FF7A9C", 650)
-    shockwave(c, 540, 860, prog(t, t2 + 0.1, 0.7), "#FF7A9C", 650)
-    ta = w(x, 1, "标准答案")
-    emo(x, "Hundred points", 540, 860, 400, ta - 0.2, x.cue(2) - 0.05, wiggle=6)
-    stamp(c, "标准答案", 540, 1100, 70, prog(t, ta + 0.25, 0.3), alpha=1 - prog(t, x.cue(2) - 0.05, 0.25))
-    emo(x, "Smiling face with tear", 540, 900, 460, x.cue(2), enter="rise", bob=5, glow=("#7FD8FF", 30))
-
-
-# ---------------------------------------------------------------- 场景 2：标准答案的人生流水线
-
-MILESTONES = [("Books", 0.2), ("Graduation cap", 0.4), ("Briefcase", 0.6), ("House", 0.8)]
-
-
-def s_track(x):
-    c, t = x.c, x.t
-    keys = [(x.cue(0), 0.2), (x.cue(1), 0.4), (x.cue(2), 0.6), (w(x, 3, "买房"), 0.8),
-            (w(x, 3, "成家"), 0.88), (w(x, 3, "升职"), 0.95), (w(x, 4, "挺好"), 1.0)]
-    v = 0.04
-    for tk, val in keys:
-        v = lerp(v, val, ease_out(prog(t, tk, 0.5)))
-    ab = prog(t, 0, 0.4)
-    draw_text(c, "人生进度", 120, 285, 42, "black", "#FFFFFF", ab, "left", stroke=("#0A0A18", 6))
-    draw_text(c, f"{int(round(v * 100))}%", 960, 280, 64, "title", x.pal["hi"], ab, "right", stroke=("#0A0A18", 8))
-    rrect(c, 540, 360, 840, 36, 18, "#FFFFFF", ab * 0.18)
-    rrect(c, 120 + 420 * v, 360, 840 * v, 36, 18, alpha=ab, gradient=["#FFE14D", "#FF8A3D"])
-    circle(c, 120 + 840 * v, 360, 26, "#FFE14D", ab * 0.7, blur=16, blend=skia.BlendMode.kPlus)
-    for (name, pos), tk in zip(MILESTONES, (keys[0][0], keys[1][0], keys[2][0], keys[3][0])):
-        mx = 120 + 840 * pos
-        hit = t >= tk + 0.45
-        draw_emoji(c, name, mx, 445, 78, ab * (1 if hit else 0.45), gray=0 if hit else 0.85, shadow=0)
-        if hit:
-            circle(c, mx + 32, 412, 17, "#3BE07A", ab)
-            check(c, mx + 32, 412, 20, prog(t, tk + 0.45, 0.3), "#FFFFFF", 5, ab)
-
-    e0, e1, e2, e3 = (x.cue(k) - 0.1 for k in (1, 2, 3, 4))
-    emo(x, "Student", 540, 930, 380, x.cue(0) - 0.1, e0, bob=10)
-    for k in range(3):
-        emo(x, "Books", 805, 1090 - k * 72, 170, x.cue(0) + 0.05 + k * 0.22, e0, enter="drop", bob=0)
-    emo(x, "Alarm clock", 280, 760, 170, x.cue(0), e0, bob=0, rot=12 * math.sin(t * 38))
-
-    if x.cue(1) - 0.1 <= t < e1 + 0.3:
-        jump = math.sin(math.pi * prog(t, x.cue(1) + 0.1, 0.6)) * 90
-        emo(x, "Student", 540, 990 - jump, 360, x.cue(1) - 0.1, e1, enter="fade", bob=0)
-        pc = ease_out(prog(t, x.cue(1) + 0.15, 0.7))
-        emo(x, "Graduation cap", 540, lerp(880, 560, pc), 220, x.cue(1) + 0.1, e1, enter="fade", bob=0, rot=720 * pc)
-        confetti(c, 540, 600, t - (x.cue(1) + 0.6), 80, seed=4)
-
-    rise = ease_out(prog(t, x.cue(2), 0.6))
-    if x.cue(2) - 0.1 <= t < e2 + 0.3:
-        draw_emoji(c, "Office building", 770, 900 + (1 - rise) * 600, 380, 1 - prog(t, e2, 0.25))
-    emo(x, "Office worker", 360, 960, 360, x.cue(2) - 0.1, e2, enter="left", bob=6)
-    a, s = life(t, w(x, 2, "体面"), e2)
-    chip(c, 540, 1200, "体面 · 稳定", 46, alpha=a, scale=s, emoji="Sparkles")
-
-    for k, (name, word) in enumerate((("House", "买房"), ("Ring", "成家"), ("Chart increasing", "升职"))):
-        tk = w(x, 3, word)
-        emo(x, name, 270 + k * 270, 900, 230, tk - 0.05, e3, bob=6)
-        a, s = life(t, tk + 0.25, e3)
-        draw_emoji(c, "Check mark button", 270 + k * 270 + 88, 800, 92 * s, a, shadow=0)
-
-    emo(x, "Smiling face with smiling eyes", 540, 930, 400, x.cue(4) - 0.1, bob=6)
-    emo(x, "Thumbs up", 210, 1100, 190, x.cue(4) + 0.2, enter="left", wiggle=10)
-    emo(x, "Clapping hands", 820, 1100, 180, x.cue(4) + 0.35, enter="right", wiggle=10)
-    for k, (txt, bx, by, tail) in enumerate((("人生赢家！", 290, 620, "right"), ("真羡慕你", 790, 660, "left"),
-                                             ("别人家的孩子", 540, 470, "down"))):
-        a, s = life(t, x.cue(4) + 0.3 + k * 0.35)
-        bubble(c, bx, by, txt, 42, a, s, tail=tail)
-
-
-# ---------------------------------------------------------------- 场景 3：笑容面具碎裂
-
-def _cracks(cx: float, cy: float, r: float) -> list[skia.Path]:
-    rng = np.random.default_rng(21)
-    out = []
-    for k in range(7):
-        ang = k * 2 * math.pi / 7 + rng.uniform(-0.3, 0.3)
-        path = skia.Path()
-        path.moveTo(cx + rng.uniform(-0.05, 0.05) * r, cy + rng.uniform(-0.05, 0.05) * r)
-        for j in range(1, 6):
-            d = r * j / 5 * 0.95
-            a2 = ang + rng.uniform(-0.25, 0.25)
-            path.lineTo(cx + d * math.cos(a2), cy + d * math.sin(a2))
-        out.append(path)
-    return out
-
-
-def _smile_face(c, cx, cy, size, crack_p, gray):
-    draw_emoji(c, "Smiling face with smiling eyes", cx, cy, size, 1.0, gray=gray)
-    if crack_p > 0:
-        for path in _cracks(cx, cy, size * 0.46):
-            stroke_path(c, path, "#FFFFFF", 5, 0.95, crack_p, glow=("#BFE6FF", 6))
-
-
-def s_mask(x):
-    c, t = x.c, x.t
-    cx, cy = 540, 860
-    size = 520 * (1 + 0.06 * prog(t, 0, x.dur))
-    t1, tf = w(x, 1, "笑容"), w(x, 1, "装")
-    crack = 0.45 * ease_out(prog(t, t1, 0.5)) + 0.55 * ease_out(prog(t, tf - 0.35, 0.3))
-    if t >= tf - 0.05:
-        draw_emoji(c, "Pensive face", cx, cy, size, prog(t, tf, 0.6), gray=0.25)
-    if t < tf:
-        dx = 6 * math.sin(t * 60) * prog(t, tf - 0.35, 0.3)
-        _smile_face(c, cx + dx, cy, size, crack, 0.35)
-    else:
-        torn(c, lambda: _smile_face(c, cx, cy, size, 1.0, 0.35), cx, cy, t - tf, extent=420, spread=260)
-
-
-# ---------------------------------------------------------------- 场景 4：原地兜圈子 + 深夜自问
-
-LOOP = [("Briefcase", "上班"), ("Metro", "下班"), ("Mobile phone", "刷手机"), ("Crescent moon", None)]
-
-
-def s_night(x):
-    c, t = x.c, x.t
-    tb = x.cue(2) - 0.15
-    if t < tb + 0.35:
-        aw = 1 - prog(t, tb, 0.35)
-        cx, cy, R = 540, 820, 280
-        t1 = x.cue(1)
-        th = 25 * t + (120 * (t - t1) ** 2 if t > t1 else 0)
-        om = 25 + (240 * (t - t1) if t > t1 else 0)
-        ring = skia.Path()
-        ring.addCircle(cx, cy, R)
-        stroke_path(c, ring, "#FFFFFF", 6, 0.25 * aw, dash=(26, 18, -th * 4))
-        for k in range(4):
-            ang = math.radians(th + k * 90 + 45)
-            c.save()
-            c.translate(cx + R * math.cos(ang), cy + R * math.sin(ang))
-            c.rotate(math.degrees(ang) + 90)
-            tri = skia.Path()
-            tri.moveTo(14, 0)
-            tri.lineTo(-10, -12)
-            tri.lineTo(-10, 12)
-            tri.close()
-            c.drawPath(tri, skia.Paint(AntiAlias=True, Color=skia.Color(255, 255, 255, int(150 * aw))))
-            c.restore()
-        for k, (name, word) in enumerate(LOOP):
-            st = w(x, 0, word) if word else x.end(0) - 0.1
-            ang = math.radians(-90 + k * 90 + th)
-            emo(x, name, cx + R * math.cos(ang), cy + R * math.sin(ang), 170, st, bob=0, alpha=aw)
-            if t > t1 and t >= st:
-                for j in range(1, 4):
-                    aj = ang - math.radians(om * 0.025 * j)
-                    draw_emoji(c, name, cx + R * math.cos(aj), cy + R * math.sin(aj), 170, aw * 0.22 / j, shadow=0)
-        emo(x, "Face with spiral eyes", cx, cy, 230, x.cue(1) + 0.1, alpha=aw, wiggle=14)
-    if t >= tb:
-        ab = prog(t, tb, 0.4)
-        sparkles(c, t, 540, 520, 1000, 640, 14, seed=8, alpha=ab * 0.8, size=18)
-        draw_emoji(c, "Crescent moon", 850, 370, 190, ab, glow=("#FFF2B0", 30), shadow=0)
-        clock = "02:17" if int(t * 2) % 2 == 0 else "02 17"
-        draw_text(c, clock, 440, 380, 112, "title", "#9FE8FF", ab, glow=("#3FC8FF", 22), stroke=("#0A0A18", 8))
-        emo(x, "Person in bed", 540, 1060, 470, tb, enter="fade", bob=2)
-        emo(x, "Thought balloon", 560, 690, 470, x.cue(3), bob=6)
-        draw_kinetic(c, "就这样了吗？", 560, 668, 54, t, x.cue(4) + 0.1, "black", "pop", 0.06, 0.3, fill="#1E2230")
-
-
-def bg_night(x):
-    tb = x.cue(2) - 0.15
-    if x.t >= tb:
-        flick = 0.22 + 0.08 * math.sin(x.t * 7) + 0.05 * math.sin(x.t * 23)
-        circle(x.c, 600, 990, 330, "#4FA8FF", prog(x.t, tb, 0.4) * flick, blur=120, blend=skia.BlendMode.kPlus)
-
-
-# ---------------------------------------------------------------- 场景 5：撕碎标准答案
-
-def _paper(c, t, t0):
-    rrect(c, 0, 0, 620, 780, 26, "#FBFBF7", 1.0, shadow=0.45)
-    draw_text(c, "标准答案", 0, -300, 56, "black", "#1E2230")
-    for r in range(5):
-        y = -180 + r * 100
-        rrect(c, -50, y, 380, 18, 9, "#D9DCE3")
-        check(c, 210, y, 44, prog(t, t0 + 0.4 + r * 0.12, 0.25), "#FF3B4E", 9)
-    c.save()
-    c.translate(150, 290)
-    c.rotate(-12)
-    draw_text(c, "100", 0, 0, 150, "title", "#FF3B4E")
-    c.restore()
-
-
-def s_answer(x):
-    c, t = x.c, x.t
-    cx, cy = 540, 840
-    tt = w(x, 1, "从来")
-    if t >= tt + 0.2:
-        draw_emoji(c, "Dotted line face", cx, cy, 420, 0.85 * prog(t, tt + 0.3, 0.8), gray=0.3)
-    yin = (1 - ease_out(prog(t, 0, 0.6))) * 1200
-
-    def paper():
-        c.save()
-        c.translate(cx, cy + yin)
-        c.rotate(-4)
-        _paper(c, t, 0)
-        c.restore()
-
-    if t < tt:
-        paper()
-        stamp(c, "标准答案", cx + 10, cy - 300 + yin, 50, prog(t, w(x, 0, "标准答案") + 0.1, 0.3), rot=-14)
-    else:
-        torn(c, paper, cx, cy, t - tt, extent=800)
-
-
 # ---------------------------------------------------------------- 场景 6：转折
-
-def s_turn0(x):
-    c, t = x.c, x.t
-    p = prog(t, 0, x.dur)
-    warp(c, t, 540, 860, 0.2 + 0.8 * p * p)
-    r = 30 + 520 * p ** 3
-    circle(c, 540, 860, r, "#FFFFFF", 0.25 + 0.6 * p, blur=r * 0.6, blend=skia.BlendMode.kPlus)
-    circle(c, 540, 860, 16 + 30 * p, "#FFFFFF", 0.95, blur=10, blend=skia.BlendMode.kPlus)
-    c.save()
-    c.translate(540, 1100)
-    c.scale(1 + 0.12 * p, 1 + 0.12 * p)
-    draw_kinetic(c, "直到我发现……", 0, 0, 96, t, x.cue(0), "title", "rise", 0.05, 0.4,
-                 glow=("#FFFFFF", 16), stroke=("#000000", 8))
-    c.restore()
-
 
 def s_turn(x):
     c, t = x.c, x.t
@@ -877,69 +595,29 @@ def scene(name, palette, lines, draw, events=(), **kw) -> Scene:
 
 L = Line
 SCENES = [
-    scene("hook", "night", [
-        L("你是不是也这样？", caption=False, pause=0.35),
-        L("按【标准答案】活了三十年，", pause=0.12),
-        L("却一点都【不快乐】。", speed=0.92, pause=0.55),
-    ], s_hook, [("boom", 0, None, 0.0), ("boom", 0, "也", 0.0, 0.8), ("pop", 1, "标准答案", -0.2),
-                ("boom", 1, "标准答案", 0.25, 0.5), ("swoosh", 2, None, -0.05), ("heart", 2, "快乐", 0.1)],
-        lead=0.05),
-    scene("track", "dusk", [
-        L("从小拼命读书，", pause=0.12),
-        L("考上一所好大学，", pause=0.12),
-        L("找了一份体面的工作，", pause=0.12),
-        L("然后买房、成家、升职加薪。", pause=0.2),
-        L("在别人眼里，你的人生【挺好的】。", pause=0.35),
-    ], s_track, [("whoosh", -1, None, 0.0), ("pop", 0, None, 0.05), ("pop", 0, None, 0.27), ("pop", 0, None, 0.49),
-                 ("whoosh", 1, None, -0.35), ("shimmer", 1, "大学", 0.1), ("whoosh", 2, None, -0.35),
-                 ("pop", 2, "体面", 0.0), ("ding", 3, "买房", 0.2, 0.6), ("ding", 3, "成家", 0.2, 0.6), ("ding", 3, "升职", 0.2, 0.6),
-                 ("whoosh", 4, None, -0.35), ("pop", 4, None, 0.3), ("pop2", 4, None, 0.65), ("pop", 4, None, 1.0),
-                 ("shimmer", 4, "挺好", 0.0)], transition="whip"),
-    scene("mask", "cold", [
-        L("可只有你自己知道，", speed=0.92, pause=0.45),
-        L("那个笑容，是【装】出来的。", speed=0.9, pause=0.9),
-    ], s_mask, [("heart", 0, None, 0.2), ("crack", 1, "笑容", 0.0), ("crack", 1, "装", -0.35),
-                ("boom", 1, "装", 0.0, 0.6), ("heart", 1, "出来", 0.4)], lead=0.4),
-    scene("night", "night", [
-        L("每天上班、下班、刷手机，", pause=0.12),
-        L("日子像在【原地兜圈子】。", pause=0.35),
-        L("深夜躺在床上，", pause=0.15),
-        L("你总忍不住问自己，", speed=0.94, pause=0.2),
-        L("难道我的人生，【就这样了吗】？", speed=0.88, pause=0.9),
-    ], s_night, [("pop", 0, "上班", 0.0), ("pop", 0, "下班", 0.0), ("pop", 0, "刷手机", 0.0), ("pop2", 1, None, 0.15),
-                 ("whoosh", 1, "兜圈子", 0.6, 0.7), ("swoosh", 2, None, -0.15), ("pop", 3, None, 0.0),
-                 ("glitch", 4, "就这样", 0.0), ("heart", 4, "了吗", 0.4)], transition="black", bg=bg_night),
-    scene("answer", "cold", [
-        L("我们拼命追求的【标准答案】，", pause=0.2),
-        L("好像从来都不是【自己想要的】。", speed=0.9, pause=1.0),
-    ], s_answer, [("whoosh", 0, None, -0.2), ("boom", 0, "标准答案", 0.1, 0.5), ("crack", 1, "从来", 0.0),
-                  ("swoosh", 1, "从来", 0.05)], exit="black"),
-    scene("turn0", "black", [
-        L("直到我发现，", speed=0.98, pause=0.5, caption=False),
-    ], s_turn0, [("riser", -1, None, 0.0, 0.9, -1)], lead=0.6),
     scene("turn", "dawn", [
         L("斯坦福有一门爆火的课，", pause=0.15),
         L("叫做《【设计你的人生】》。", pause=0.7),
-    ], s_turn, [("impact", -1, None, 0.0), ("pop", 0, "爆火", 0.0), ("whoosh", 1, None, -0.35),
+    ], s_turn, [("boom", -1, None, 0.05, 0.8), ("pop", 0, "爆火", 0.0), ("whoosh", 1, None, -0.35),
                 ("boom", 1, "设计", -0.1, 0.8), ("shimmer", 1, "人生", 0.2), ("pop2", 1, "人生", 0.9),
-                ("pop2", 1, "人生", 1.2)], transition="flash", lead=0.2, bg=bg_turn),
+                ("pop2", 1, "人生", 1.2)], lead=0.3, bg=bg_turn),
     scene("reframe", "sky", [
-        L("它告诉我，人生不是一道考题，", pause=0.15),
-        L("而是一件可以不断修改的【设计作品】。", pause=0.35),
-        L("你焦虑，是因为问错了问题。", pause=0.25),
-        L("别再问，我该怎么找到【正确的人生】？", pause=0.2),
-        L("试着问，我可以先试试【哪几种可能】？", pause=0.5),
+        L("它告诉我，人生不是考题，", pause=0.12),
+        L("而是可以不断修改的【设计作品】。", pause=0.3),
+        L("焦虑，是因为问错了问题。", pause=0.2),
+        L("别再问，怎样找到【正确的人生】？", pause=0.15),
+        L("试着问，我能先试试【哪几种可能】？", pause=0.4),
     ], s_reframe, [("whoosh", -1, None, 0.0), ("swoosh", 1, "设计", -0.25), ("shimmer", 1, "作品", 0.0),
                    ("whoosh", 2, None, -0.35), ("pop2", 2, "问错", 0.0), ("pop", 3, None, 0.05),
                    ("buzz", 3, "人生", 0.4), ("pop", 4, None, 0.05), ("ding", 4, "可能", 0.0)], transition="whip",
         bg=bg_reframe),
     scene("tool1", "teal", [
         L("第一招，【好时光日志】。", pause=0.3),
-        L("每天睡前花两分钟，记下今天做的事。", pause=0.2),
+        L("每天睡前两分钟，记下做过的事。", pause=0.15),
         L("哪件事让你满电？哪件事让你【掏空】？", pause=0.3),
-        L("比如给新人分享经验时，你两眼放光；", pause=0.2),
-        L("可是一写报告，一开会，电量马上【清零】。", pause=0.3),
-        L("这些满电时刻，就是你热爱的【线索】。", pause=0.55),
+        L("比如给新人分享经验，你两眼放光；", pause=0.15),
+        L("一写报告、一开会，电量马上【清零】。", pause=0.25),
+        L("这些满电时刻，就是热爱的【线索】。", pause=0.45),
     ], s_tool1, [("boom", -1, None, 0.0, 0.6), ("pop", 0, "好时光", 0.0), ("whoosh", 1, None, -0.35),
                  ("pop", 1, "两分钟", 0.0), ("whoosh", 2, None, -0.35), ("pop", 2, "满电", 0.0), ("down", 2, "掏空", 0.0),
                  ("whoosh", 3, None, -0.35), ("shimmer", 3, "两眼", 0.3), ("pop", 4, None, 0.0),
@@ -947,11 +625,11 @@ SCENES = [
                  ("ding", 5, "线索", -0.1), ("shimmer", 5, "线索", 0.1)], transition="zoom"),
     scene("tool2", "violet", [
         L("第二招，【奥德赛计划】。", pause=0.3),
-        L("给未来五年，写三个完全不同的剧本。", pause=0.25),
-        L("剧本一，把现在的路走到极致；", pause=0.2),
-        L("剧本二，如果这条路突然消失，你会做什么？", pause=0.2),
-        L("剧本三，如果钱和面子都不重要，你最想过怎样的人生？", pause=0.3),
-        L("手里有三个剧本，你就不再无路可走，而是有了【选择】。", pause=0.55),
+        L("给未来五年，写三个不同的剧本。", pause=0.15),
+        L("剧本一，把现在的路走到极致；", pause=0.12),
+        L("剧本二，这条路突然没了，你做什么？", pause=0.12),
+        L("剧本三，不考虑钱和面子，你想过什么人生？", pause=0.2),
+        L("有了三个剧本，就不再无路可走，而是有了【选择】。", pause=0.45),
     ], s_tool2, [("boom", -1, None, 0.0, 0.6), ("pop", 0, "奥德赛", 0.0), ("whoosh", 1, None, -0.3),
                  ("ding", 2, "剧本", 0.0), ("pop", 2, "极致", 0.0), ("ding", 3, "剧本", 0.0), ("pop", 3, "做什么", 0.0),
                  ("ding", 4, "剧本", 0.0), ("pop", 4, "人生", 0.0), ("buzz", 5, "无路可走", 0.5),
@@ -959,11 +637,11 @@ SCENES = [
     scene("tool3", "amber", [
         L("最后一招，叫做【最小原型】。", pause=0.3),
         L("想换条路？先别【一冲动就辞职】。", pause=0.3),
-        L("请老板吃顿饭，问问他，管理岗到底需要什么能力？", pause=0.25),
-        L("约个做培训的朋友喝杯咖啡，听听真实的辛苦。", pause=0.25),
-        L("周末去咖啡馆打一天工，看看你爱的是咖啡，还是【诗和远方】。", pause=0.35),
+        L("请老板吃顿饭，问问管理岗需要什么能力？", pause=0.15),
+        L("约做培训的朋友喝杯咖啡，听听真实的辛苦。", pause=0.15),
+        L("周末去咖啡馆打一天工，看你爱的是咖啡，还是【诗和远方】。", pause=0.25),
         L("一顿饭、一杯咖啡、一个周末，", pause=0.15),
-        L("就能帮你避开一次【代价巨大】的错误。", pause=0.55),
+        L("就能避开一次【代价巨大】的错误。", pause=0.45),
     ], s_tool3, [("boom", -1, None, 0.0, 0.6), ("pop", 0, "最小", 0.0), ("whoosh", 1, None, -0.35),
                  ("boom", 1, "辞职", -0.05, 0.8), ("whoosh", 2, None, -0.35), ("pop", 2, "问问", -0.1),
                  ("pop2", 2, "能力", 0.2), ("whoosh", 3, None, -0.35), ("pop", 3, "咖啡", -0.1),
@@ -987,7 +665,7 @@ SCENES = [
                ("shimmer", 1, "告诉", 0.6)], transition="whip"),
 ]
 
-MUSIC = [("hook", -1, "sad"), ("turn0", -1, "none"), ("turn", -1, "up"), ("climax", -1, "break"),
+MUSIC = [("turn", -1, "up"), ("climax", -1, "break"),
          ("climax", 3, "up"), ("cta", -1, "outro")]
 
 
@@ -996,17 +674,17 @@ def render_cover(path: str):
     info = skia.ImageInfo.Make(W, H, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType)
     surface = skia.Surface.MakeRaster(info)
     c = surface.getCanvas()
-    pal = PALETTES["night"]
+    pal = PALETTES["dawn"]
     gradient_bg(c, pal["bg"])
     aurora(c, 3.0, pal["blobs"], 0.32)
     dust(c, 2.0, pal["dust"], 50, seed=3)
     hook = dict(stroke=("#0A0A18", 14), glow=("#FF3D6E", 30), shadow=(0, 10, 14, "#000000"))
-    draw_text(c, "按标准答案", 540, 470, 150, "title", "#FFFFFF", **hook)
-    draw_text(c, "活了30年", 540, 650, 150, "title", "#FFFFFF", **hook)
-    draw_text(c, "为什么还是不快乐？", 540, 850, 104, "title", "#FFE14D", stroke=("#0A0A18", 12),
+    draw_text(c, "斯坦福爆火的课", 540, 470, 140, "title", "#FFFFFF", **hook)
+    draw_text(c, "教你设计人生", 540, 650, 150, "title", "#FFE14D", **hook)
+    draw_text(c, "3 招走出成长焦虑", 540, 850, 100, "title", "#FFFFFF", stroke=("#0A0A18", 12),
               glow=("#FFB800", 24), shadow=(0, 10, 14, "#000000"))
-    draw_emoji(c, "Smiling face with tear", 540, 1160, 400, glow=("#7FD8FF", 30))
-    chip(c, 540, 1450, "斯坦福《设计你的人生》", 48, emoji="Graduation cap")
+    draw_emoji(c, "Classical building", 540, 1160, 380, glow=("#FFF3C4", 30))
+    chip(c, 540, 1450, "《Designing Your Life》", 48, emoji="Graduation cap")
     vignette(c, 0.5)
     surface.makeImageSnapshot().save(path, skia.kPNG)
 
@@ -1014,7 +692,7 @@ def render_cover(path: str):
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "out/designing_your_life_short.mp4"
     Path(out).parent.mkdir(parents=True, exist_ok=True)
-    video = Video(SCENES, PALETTES, MUSIC, voice="zf_001", base_speed=1.1)
+    video = Video(SCENES, PALETTES, MUSIC, voice="zv_yunxi", base_speed=1.0)
     video.build()
     for s in SCENES:
         print(f"{s.name:8s} {s.t0:6.1f}s +{s.duration:5.1f}s")
