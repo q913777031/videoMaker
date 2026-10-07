@@ -38,6 +38,23 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
 - 换音色：`Video(..., voice="zv_001")`（ZipVoice 女声），或 `zv_009`、`zf_001` 等，可选值见 `engine/audio.py` 的 `VOICES`
 
+## 竖屏短视频：《走出洞穴的人，为什么先想回头？》（梵高笔触风格）
+
+```bash
+python3 cave_short.py out/cave_allegory.mp4                 # 成片 + cover.png / cover_clean.png
+python3 cave_short.py out/cave_allegory.mp4 --still 31 57   # 只渲染指定秒数的单帧，检查画面
+```
+
+柏拉图《理想国》洞穴寓言，1080×1920、30fps、约 75 秒。方案（口播、分镜、出处核对）见 `plans/cave_allegory_75s.md`。
+4 核机器上渲染约 15 分钟。
+
+- **画面**：`cave_draw.py` 用 Skia 绘制每个镜头的底稿（构图、光色、人物），`engine/paint.py` 把底稿转成梵高式厚涂短笔触。
+  笔触方向由两部分混合：沿轮廓的切向（结构张量），以及场景给定的流场（漩涡、光源同心环、火焰上升、水面横向）。
+  三层笔触（大 / 中 / 细节）用 `drawAtlas` 一次绘制，每 2 帧重画一次（15fps 手绘节奏），并带轻微"沸腾"抖动。
+- **字幕**：思源宋体，单行不超过 13 字，按 30fps 叠加。第 10、11 镜分别标注「书中原意 · 转述」「创作者联想」，片尾注明出处。
+- **声音**：ZipVoice 旁白（语速 0.75）。环境音全部程序化合成：火、风、滴水、铁链、溪流、鸟鸣等，洞内声音加混响。
+  配乐分三段：大提琴长音 → 出洞时抽空 0.5 秒 → 钢琴单音加弦乐，结尾停在一个长音上。
+
 ## 横屏无声版
 
 ```bash
@@ -49,5 +66,5 @@ Pillow 绘制的 1920×1080、约 43 秒讲解动画（使用系统文泉驿字�
 ## 第三方资源许可
 
 - [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)：MIT License，© Microsoft
-- [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans CJK](https://github.com/notofonts/noto-cjk)：SIL Open Font License 1.1
+- [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans / Serif CJK](https://github.com/notofonts/noto-cjk)：SIL Open Font License 1.1
 - [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)：Apache 2.0，通过 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 运行

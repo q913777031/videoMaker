@@ -19,6 +19,7 @@ MODEL_DIR = ROOT / "models"
 
 FLUENT = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/"
 NOTO = "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/"
+NOTO_SERIF = "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Serif/OTF/SimplifiedChinese/"
 SMILEY = "https://github.com/atelier-anchor/smiley-sans/releases/download/v2.0.1/smiley-sans-v2.0.1.zip"
 TTS_BASE = "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/"
 ZIPVOICE = "sherpa-onnx-zipvoice-distill-int8-zh-en-emilia"
@@ -84,11 +85,12 @@ def fetch_emoji(failed: list[str]):
 
 def fetch_fonts(failed: list[str]):
     FONT_DIR.mkdir(parents=True, exist_ok=True)
-    for f in ("NotoSansCJKsc-Black.otf", "NotoSansCJKsc-Bold.otf"):
+    for f, base in (("NotoSansCJKsc-Black.otf", NOTO), ("NotoSansCJKsc-Bold.otf", NOTO),
+                    ("NotoSerifCJKsc-SemiBold.otf", NOTO_SERIF)):
         dst = FONT_DIR / f
         if not dst.exists():
             try:
-                dst.write_bytes(get(NOTO + f))
+                dst.write_bytes(get(base + f))
             except Exception as ex:
                 failed.append(f"font: {f} ({ex})")
     dst = FONT_DIR / "SmileySans-Oblique.ttf"
