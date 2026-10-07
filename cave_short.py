@@ -532,7 +532,8 @@ def main():
         wav = str(Path(tmp) / "mix.wav")
         sf.write(wav, mix, SR)
         cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",
-               "-r", str(FPS), "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "medium", "-crf", "19",
+               "-r", str(FPS), "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "slow", "-crf", "26",
+               "-maxrate", "12M", "-bufsize", "24M",
                "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart",
                str(out)]
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
