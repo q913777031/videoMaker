@@ -38,6 +38,20 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
 - 换音色：`Video(..., voice="zv_001")`（ZipVoice 女声），或 `zv_009`、`zf_001` 等，可选值见 `engine/audio.py` 的 `VOICES`
 
+## 竖屏无声版：《轮盘连开十次黑，下一把押红吗？》（赌徒谬误）
+
+```bash
+python3 fetch_assets.py                       # 只需其中的字体
+python3 gf_short.py out/gamblers_fallacy_silent.mp4
+```
+
+按 `scripts/gamblers_fallacy.md` 的 14 镜分镜固定排时，输出 1080×1920、30fps、108 秒的无音轨视频，
+同目录生成 `gamblers_fallacy_silent.srt`（口播字幕，按每秒约 4.6 字估算时间，供后期配音对位）和封面 `cover.png`。
+
+- 只烧录分镜表"屏幕文字"一栏的标题、数字与标注，不烧录口播字幕；配音、配乐、音效均留给后期
+- 画面全部矢量绘制（轮盘、记分灯、筹码、硬币、天平、抽奖机），不依赖 Emoji 与 TTS 模型
+- 排时用 `Video.layout_fixed(场景时长)`，渲染用 `Video.render(..., silent=True)`
+
 ## 横屏无声版
 
 ```bash

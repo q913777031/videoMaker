@@ -159,6 +159,7 @@ class Video:
             for ev in s.events:
                 fx = EVENT_FX[ev.kind]
                 gt = s.t0 + _event_local(s, ev)
+                self._add_visual_fx(fx, gt)
                 if "sfx" in fx:
                     name, gain = fx["sfx"]
                     if name == "riser":
@@ -172,14 +173,6 @@ class Video:
                     else:
                         clip = audio.sfx(name)
                     audio.place(sfx_track, audio.pan(clip, 0), gt, gain * ev.gain)
-                if "shake" in fx:
-                    self.shakes.append((gt, *fx["shake"]))
-                if "punch" in fx:
-                    self.punches.append((gt, fx["punch"]))
-                if "flash" in fx:
-                    self.flashes.append((gt, fx["flash"]))
-                if "glitch" in fx:
-                    self.glitches.append((gt, fx["glitch"]))
         if not with_audio:
             return
         by_name = {s.name: s for s in self.scenes}
@@ -189,6 +182,35 @@ class Video:
                     for k, (t, style) in enumerate(marks)]
         music = audio.compose(sections, self.total + 1)
         self.audio = audio.master(audio.process_voice(voice), music, sfx_track)[: int(self.total * audio.SR)]
+
+    def layout_fixed(self, durations: list[float], chars_per_sec: float = 4.6):
+        """不合成旁白、按给定场景时长排时（无声版用）：场景内各句起止按可读字数（不计标点）与语速估算，事件只保留画面效果。"""
+        t0 = 0.0
+        for s, d in zip(self.scenes, durations, strict=True):
+            s.starts, s.ends = [], []
+            pos = s.lead
+            for ln in s.lines:
+                s.starts.append(pos)
+                spoken = sum(ch.isalnum() for ch in gfx.plain(ln.text))
+                pos += spoken / (chars_per_sec * ln.speed)
+                s.ends.append(pos)
+                pos += ln.pause
+            s.t0, s.duration = t0, d
+            t0 += d
+        self.total = t0
+        for s in self.scenes:
+            for ev in s.events:
+                self._add_visual_fx(EVENT_FX[ev.kind], s.t0 + _event_local(s, ev))
+
+    def _add_visual_fx(self, fx: dict, gt: float):
+        if "shake" in fx:
+            self.shakes.append((gt, *fx["shake"]))
+        if "punch" in fx:
+            self.punches.append((gt, fx["punch"]))
+        if "flash" in fx:
+            self.flashes.append((gt, fx["flash"]))
+        if "glitch" in fx:
+            self.glitches.append((gt, fx["glitch"]))
 
     # ------------------------------------------------------------ 画面
 
@@ -324,20 +346,24 @@ class Video:
 
     # ------------------------------------------------------------ 输出
 
-    def render(self, out_path: str, workers: int = 4):
-        """多进程逐帧渲染并与混音后的音频合成为 MP4。"""
-        if self.audio is None:
+    def render(self, out_path: str, workers: int = 4, silent: bool = False):
+        """多进程逐帧渲染并与混音后的音频合成为 MP4；silent 时输出不带音轨的视频。"""
+        if self.audio is None and not silent:
             raise RuntimeError("build() must run with audio before render()")
         n_frames = int(round(self.total * FPS))
         global _VIDEO
         _VIDEO = self
         with tempfile.TemporaryDirectory() as tmp:
-            wav = str(Path(tmp) / "mix.wav")
-            sf.write(wav, self.audio, audio.SR)
             cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgba",
-                   "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-i", wav,
-                   "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
-                   "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out_path]
+                   "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-"]
+            if silent:
+                cmd += ["-an"]
+            else:
+                wav = str(Path(tmp) / "mix.wav")
+                sf.write(wav, self.audio, audio.SR)
+                cmd += ["-i", wav, "-c:a", "aac", "-b:a", "192k", "-shortest"]
+            cmd += ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+                    "-movflags", "+faststart", out_path]
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
             assert proc.stdin is not None
             try:
