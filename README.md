@@ -2,6 +2,10 @@
 
 用代码生成短视频：Skia 逐帧绘制动效 + 离线 TTS 配音 + 程序化配乐与音效 + FFmpeg 合成。
 
+## 竖屏科普短视频：幸存者偏差（Remotion）
+
+《他连续赢了10次，然后开始教你成功》，约 66 秒，见 [`survivor/`](survivor/README.md)；成片与字幕在 `survivor/deliverables/`。
+
 ## 竖屏短视频：《设计你的人生》
 
 ```bash
