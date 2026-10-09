@@ -38,6 +38,18 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
 - 换音色：`Video(..., voice="zv_001")`（ZipVoice 女声），或 `zv_009`、`zf_001` 等，可选值见 `engine/audio.py` 的 `VOICES`
 
+## 竖屏无声版：《机会成本》
+
+```bash
+python3 fetch_assets.py                # 只需其中的字体（含思源宋体）
+python3 oc_short.py out/opportunity_cost_silent.mp4
+python3 oc_short.py --stills out/stills 1 30.5 60   # 导出指定秒数的关键帧
+```
+
+按 [`scripts/opportunity_cost.md`](scripts/opportunity_cost.md) 的 14 镜分镜绘制，1080×1920、30fps、103 秒，无音轨，口播以字幕呈现。
+角色与道具全部用 Skia 程序化手绘（米白纸张肌理 + 抖动墨线 + 胶片颗粒），4 核约 3 分钟。
+改字幕或节奏：编辑 `NARRATION`（每镜口播与起止时间）和 `SHOTS`（镜头时间与转场）；画面动作用 `cue(镜号, "关键词")` 锚定到字幕念到该词的时刻。
+
 ## 横屏无声版
 
 ```bash
