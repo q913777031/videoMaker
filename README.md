@@ -51,3 +51,14 @@ Pillow 绘制的 1920×1080、约 43 秒讲解动画（使用系统文泉驿字�
 - [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)：MIT License，© Microsoft
 - [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans CJK](https://github.com/notofonts/noto-cjk)：SIL Open Font License 1.1
 - [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)：Apache 2.0，通过 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 运行
+
+## 静音竖屏短视频：逻辑训练（三人·三城·三种运动）
+
+```bash
+python3 fetch_assets.py                         # 只需其中的思源黑体字体
+python3 logic/verify_logic.py                   # 制作前核验：36 种组合仅 1 个解 + 反证
+python3 logic/logic_short.py out/logic_short.mp4
+```
+
+输出 1080×1920、30fps、90 秒、**无音频轨**的解题动画，以及封面 `out/logic_cover.png`。4 核机器约 1 分钟。
+完整制作方案（开头、字幕脚本、分镜、动效清单、核验说明）见 `logic/production_plan.md`。
