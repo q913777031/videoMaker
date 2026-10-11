@@ -665,8 +665,7 @@ SCENES = [
                ("shimmer", 1, "告诉", 0.6)], transition="whip"),
 ]
 
-MUSIC = [("turn", -1, "up"), ("climax", -1, "break"),
-         ("climax", 3, "up"), ("cta", -1, "outro")]
+MUSIC = [("climax", -1, "low"), ("climax", 3, "full", "重新设计")]
 
 
 def render_cover(path: str):
@@ -692,7 +691,7 @@ def render_cover(path: str):
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "out/designing_your_life_short.mp4"
     Path(out).parent.mkdir(parents=True, exist_ok=True)
-    video = Video(SCENES, PALETTES, MUSIC, voice="zv_yunxi", base_speed=1.0)
+    video = Video(SCENES, PALETTES, MUSIC, voice="zv_yunxi", base_speed=1.0, drop_at="tool1")
     video.build()
     for s in SCENES:
         print(f"{s.name:8s} {s.t0:6.1f}s +{s.duration:5.1f}s")
