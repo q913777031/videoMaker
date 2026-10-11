@@ -84,7 +84,8 @@ def fetch_emoji(failed: list[str]):
 
 def fetch_fonts(failed: list[str]):
     FONT_DIR.mkdir(parents=True, exist_ok=True)
-    for f in ("NotoSansCJKsc-Black.otf", "NotoSansCJKsc-Bold.otf"):
+    for f in ("NotoSansCJKsc-Black.otf", "NotoSansCJKsc-Bold.otf", "NotoSansCJKsc-Medium.otf",
+              "NotoSansCJKsc-Regular.otf"):
         dst = FONT_DIR / f
         if not dst.exists():
             try:
