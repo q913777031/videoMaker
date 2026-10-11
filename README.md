@@ -38,6 +38,17 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
 - 换音色：`Video(..., voice="zv_001")`（ZipVoice 女声），或 `zv_009`、`zf_001` 等，可选值见 `engine/audio.py` 的 `VOICES`
 
+## 无声竖屏科普：《生活没变，怎么一刷手机就落后了？》（社会比较）
+
+`social_comparison/index.html` 是一个单文件 Canvas 动画，可以直接用浏览器打开，不依赖外部资源。播放控件放在画幅外，支持播放/暂停（空格）、重播、拖动进度和逐帧查看（← →）。按 R 进入录制模式隐藏控件，按 Esc 退出。也可以用 `?t=秒数` 打开到指定时刻，用 `?record=1&autoplay` 直接进入录制模式并开始播放。
+
+```bash
+node social_comparison/render.cjs out/social_comparison.mp4   # 逐帧导出无声 MP4（H.264 / yuv420p / 30fps / 无音频轨）
+node social_comparison/render.cjs --audit                      # 检查每张文字卡的稳定显示时长、字速和安全区
+```
+
+依赖 Playwright（使用本机已有的 Chromium）和带 libx264 的 FFmpeg。分镜表与资料来源见 `social_comparison/STORYBOARD.md`。
+
 ## 横屏无声版
 
 ```bash

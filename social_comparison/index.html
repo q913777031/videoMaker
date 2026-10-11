@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>换了哪把尺子</title>
+<style>
+  :root { --stage: #18201B; --fg: #F4EFE4; --accent: #2E7D5B; }
+  html, body { margin: 0; height: 100%; background: var(--stage); color: var(--fg);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Zen Hei", sans-serif; }
+  #wrap { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 10px 16px; box-sizing: border-box; }
+  #cv { display: block; width: min(100%, calc((100vh - 96px) * 9 / 16)); height: auto; background: #F4EFE4;
+    box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+  #ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: min(100%, 640px); font-size: 14px; }
+  #ctrl button { background: #2A352E; color: var(--fg); border: 1px solid #3E4C43; border-radius: 6px; padding: 6px 10px;
+    font: inherit; cursor: pointer; min-width: 44px; }
+  #ctrl button:hover { background: #34433A; }
+  #seek { flex: 1 1 200px; accent-color: var(--accent); }
+  #time { font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; }
+  body.rec #wrap { padding: 0; gap: 0; }
+  body.rec #ctrl { display: none; }
+  body.rec #cv { width: min(100vw, calc(100vh * 9 / 16)); box-shadow: none; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv" width="1080" height="1920" aria-label="无声竖屏科普动画：社会比较"></canvas>
+  <div id="ctrl">
+    <button id="play" title="播放 / 暂停（空格）">播放</button>
+    <button id="restart" title="从头重播（Home）">重播</button>
+    <input id="seek" type="range" min="0" max="90" step="0.0333" value="0" aria-label="进度">
+    <span id="time">00.00 / 90.00</span>
+    <button id="rec" title="录制模式：隐藏控件（Esc 退出）">录制模式</button>
+  </div>
+</div>
+<script>
+'use strict';
+/* =====================================================================
+ * 《你的焦虑，换了哪把尺子？》—— 社会比较 · 90 秒无声竖屏动画
+ * 画布 1080×1920，30fps。render(t) 是纯函数：同一个 t 永远画出同一帧，
+ * 预览、拖动与逐帧导出共用同一条时间轴。
+ * ===================================================================== */
+const W = 1080, H = 1920, FPS = 30, DUR = 90;
+const FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC","WenQuanYi Zen Hei","WenQuanYi Micro Hei",sans-serif';
+const SERIF = 'Georgia,"Times New Roman","DejaVu Serif","Liberation Serif",serif';
+const C = {
+  bg: '#F4EFE4', bg2: '#EAE2D1', sepia: '#EFE3C8', ink: '#1B2A22', soft: '#5E6A61',
+  green: '#1F5A40', green2: '#2E7D5B', greenL: '#D3E6D9', mag: '#C2185B', magL: '#F6D5E2',
+  paper: '#FFFDF7', track: '#E2D8C2', skin: '#F2D0B1', hair: '#2A211C',
+  blue: '#3B6EA8', ochre: '#C99428', terra: '#D9694C', grey: '#A7ADA4',
+};
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+/* ---------------------------------------------------------- 基础工具 */
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, p) => a + (b - a) * p;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eo = p => 1 - Math.pow(1 - p, 3);
+const eio = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const bo = p => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+const font = (px, w = 700) => `${w} ${px}px ${FONT}`;
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+function circ(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); }
+function ell(x, y, rx, ry) { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); }
+function line(x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+function txt(s, x, y, px, col, align = 'center', w = 700) {
+  ctx.font = font(px, w); ctx.fillStyle = col; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y);
+  return ctx.measureText(s).width;
+}
+/* 弹入缩放：0→1 的出现进度，带轻微回弹 */
+function popIn(t, t0, d = .4) { return bo(seg(t, t0, t0 + d)); }
+function withAlpha(a, fn) { if (a <= 0.001) return; ctx.save(); ctx.globalAlpha *= a; fn(); ctx.restore(); }
+function scaled(x, y, s, fn) { ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.translate(-x, -y); fn(); ctx.restore(); }
+
+/* ---------------------------------------------------------- 背景 */
+function bgBase(t, col = C.bg, dots = C.greenL) {
+  ctx.fillStyle = col; ctx.fillRect(0, 0, W, H);
+  // 缓慢漂移的大圆，只做氛围，不承载信息
+  const blobs = [[160, 520, 220, .9], [940, 900, 260, 1.3], [260, 1500, 240, .7], [880, 1700, 200, 1.1]];
+  ctx.fillStyle = dots;
+  blobs.forEach(([x, y, r, k], i) => {
+    withAlpha(.35, () => { circ(x + Math.sin(t * .25 * k + i) * 30, y + Math.cos(t * .2 * k + i) * 24, r); ctx.fill(); });
+  });
+  // 网点纸纹
+  ctx.fillStyle = 'rgba(27,42,34,.05)';
+  for (let y = 40; y < H; y += 64) for (let x = (y / 64 % 2) * 32 + 20; x < W; x += 64) { circ(x, y, 2.2); ctx.fill(); }
+}
+
+/* ---------------------------------------------------------- 人物（全片统一造型） */
+const XY = { hs: 'bob', hair: C.hair, top: C.green, bottom: '#59605A', clip: true };   // 小叶
+const PEOPLE = {
+  classmate: { hs: 'pony', hair: '#5A3B2A', top: '#3B6EA8', bottom: '#384255' },
+  colleague: { hs: 'short', hair: '#22262A', top: '#7A5C99', bottom: '#3F3A46' },
+  friend: { hs: 'curly', hair: '#3A2A20', top: '#D9694C', bottom: '#4E4038' },
+  jia: { hs: 'short', hair: '#22262A', top: C.blue, bottom: '#384255', letter: '甲' },
+  yi: { hs: 'bun', hair: '#4A3426', top: C.ochre, bottom: '#5B4A2E', letter: '乙' },
+  bing: { hs: 'curly', hair: '#3A2A20', top: C.terra, bottom: '#4E4038', letter: '丙' },
+  mentor: { hs: 'short', hair: '#3B3B3B', top: '#3B6EA8', bottom: '#454B55', glasses: true },
+  peerA: { hs: 'short', hair: '#555', top: '#8B9389', bottom: '#666C66' },
+  peerB: { hs: 'bun', hair: '#555', top: '#8B9389', bottom: '#666C66' },
+};
+function blinkAt(t, seed = 0) { const ph = (t + seed * 1.37) % 3.7; return ph < .12 ? 1 : 0; }
+
+function drawPerson(x, y, s, o) {
+  const P = Object.assign({ skin: C.skin, hair: C.hair, hs: 'short', top: C.green, bottom: '#59605A', mood: 'neutral',
+    armL: [.12, .05], armR: [.12, .05], look: 0, alpha: 1, blink: 0, clip: false, glasses: false, letter: null,
+    hold: null, glow: 0, bob: 0, lean: 0 }, o);
+  ctx.save(); ctx.globalAlpha *= P.alpha; ctx.translate(x, y); ctx.scale(s, s);
+  ctx.fillStyle = 'rgba(30,50,40,.16)'; ell(0, 0, 100, 16); ctx.fill();
+  ctx.translate(0, -P.bob); ctx.rotate(P.lean);
+  // 腿与鞋
+  ctx.fillStyle = P.bottom; rr(-44, -138, 38, 134, 16); ctx.fill(); rr(6, -138, 38, 134, 16); ctx.fill();
+  ctx.fillStyle = '#2B2B2B'; ell(-27, -6, 30, 12); ctx.fill(); ell(27, -6, 30, 12); ctx.fill();
+  // 后发
+  if (P.hs === 'bob') { ctx.fillStyle = P.hair; rr(-84, -448, 168, 140, [70, 70, 30, 30]); ctx.fill(); }
+  if (P.hs === 'pony') { ctx.fillStyle = P.hair; ell(78, -360, 26, 64); ctx.fill(); }
+  // 躯干
+  ctx.fillStyle = P.top; ctx.beginPath(); ctx.moveTo(-72, -288); ctx.quadraticCurveTo(0, -306, 72, -288);
+  ctx.lineTo(64, -128); ctx.quadraticCurveTo(0, -114, -64, -128); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.beginPath(); ctx.moveTo(-22, -296); ctx.lineTo(0, -268); ctx.lineTo(22, -296); ctx.closePath(); ctx.fill();
+  if (P.letter) { ctx.font = font(54); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(P.letter, 0, -205); }
+  // 手臂（两段：上臂 + 前臂）
+  const hands = [];
+  [[-1, P.armL], [1, P.armR]].forEach(([side, a]) => {
+    const sx = side * 64, sy = -272;
+    const mx = sx + side * Math.sin(a[0]) * 72, my = sy + Math.cos(a[0]) * 72;
+    const ex = mx + side * Math.sin(a[1]) * 70, ey = my + Math.cos(a[1]) * 70;
+    ctx.strokeStyle = P.top; ctx.lineWidth = 30; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(mx, my); ctx.lineTo(ex, ey); ctx.stroke();
+    ctx.fillStyle = P.skin; circ(ex, ey, 17); ctx.fill();
+    hands.push([ex, ey]);
+  });
+  // 脖子与头
+  ctx.fillStyle = P.skin; rr(-16, -318, 32, 34, 8); ctx.fill();
+  circ(0, -378, 70); ctx.fill();
+  hairFront(P);
+  face(P);
+  if (P.glasses) { ctx.strokeStyle = '#2B2B2B'; ctx.lineWidth = 4; circ(-26 + P.look * 8, -376, 17); ctx.stroke(); circ(26 + P.look * 8, -376, 17); ctx.stroke(); line(-9 + P.look * 8, -378, 9 + P.look * 8, -378); }
+  // 手持物
+  if (P.hold === 'phone') { const [hx, hy] = hands[1]; drawPhoneSmall(hx - 6, hy - 30, P.glow); }
+  if (P.hold === 'note') { const [hx, hy] = hands[0]; drawNotebook(hx + 34, hy - 18, P.noteP || 0); }
+  ctx.restore();
+}
+function hairFront(P) {
+  ctx.fillStyle = P.hair;
+  if (P.hs === 'bob') {
+    ctx.beginPath(); ctx.arc(0, -380, 75, Math.PI, 0); ctx.lineTo(75, -360);
+    ctx.quadraticCurveTo(44, -414, 4, -400); ctx.quadraticCurveTo(-40, -416, -75, -360); ctx.closePath(); ctx.fill();
+    if (P.clip) { ctx.fillStyle = '#E6B54A'; rr(38, -432, 34, 14, 7); ctx.fill(); }
+  } else if (P.hs === 'curly') {
+    for (let i = 0; i < 9; i++) { const a = Math.PI + i * Math.PI / 8; circ(Math.cos(a) * 66, -386 + Math.sin(a) * 62, 28); ctx.fill(); }
+  } else {
+    ctx.beginPath(); ctx.arc(0, -382, 74, Math.PI * 1.02, -0.02); ctx.quadraticCurveTo(30, -400, -10, -404);
+    ctx.quadraticCurveTo(-50, -400, -73, -372); ctx.closePath(); ctx.fill();
+    if (P.hs === 'bun') { circ(0, -462, 30); ctx.fill(); }
+  }
+}
+function face(P) {
+  const lx = P.look * 8, ey = -376, closed = P.blink > 0;
+  ctx.strokeStyle = ctx.fillStyle = '#22201E'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+  const dotEyes = (r = 7, dy = 0) => {
+    [-26, 26].forEach(dx => {
+      if (closed) line(dx + lx - 8, ey + dy, dx + lx + 8, ey + dy);
+      else { ctx.fillStyle = '#22201E'; circ(dx + lx, ey + dy, r); ctx.fill(); }
+    });
+  };
+  const blush = () => { ctx.fillStyle = 'rgba(232,120,130,.35)'; ell(-44, -350, 14, 8); ctx.fill(); ell(44, -350, 14, 8); ctx.fill(); };
+  switch (P.mood) {
+    case 'happy':
+      [-26, 26].forEach(dx => { ctx.beginPath(); ctx.arc(dx + lx, ey + 6, 11, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); });
+      ctx.beginPath(); ctx.arc(lx, -352, 20, .15 * Math.PI, .85 * Math.PI); ctx.stroke(); blush(); break;
+    case 'smile':
+      dotEyes(); ctx.beginPath(); ctx.arc(lx, -354, 16, .2 * Math.PI, .8 * Math.PI); ctx.stroke(); blush(); break;
+    case 'worried':
+      dotEyes(6, 2);
+      line(-38 + lx, -404, -16 + lx, -412); line(38 + lx, -404, 16 + lx, -412);
+      ctx.beginPath(); ctx.moveTo(-14 + lx, -340); ctx.quadraticCurveTo(-5 + lx, -348, lx, -341); ctx.quadraticCurveTo(5 + lx, -334, 14 + lx, -342); ctx.stroke();
+      ctx.fillStyle = '#9CC4DD'; ctx.beginPath(); ctx.moveTo(70, -420); ctx.quadraticCurveTo(84, -396, 70, -392); ctx.quadraticCurveTo(56, -396, 70, -420); ctx.fill(); break;
+    case 'surprised':
+      [-26, 26].forEach(dx => { ctx.fillStyle = '#22201E'; circ(dx + lx, ey, 10); ctx.fill(); ctx.fillStyle = '#fff'; circ(dx + lx + 3, ey - 3, 3); ctx.fill(); });
+      line(-36 + lx, -414, -16 + lx, -418); line(36 + lx, -414, 16 + lx, -418);
+      ctx.fillStyle = '#22201E'; ell(lx, -342, 9, 12); ctx.fill(); break;
+    case 'think':
+      [-26, 26].forEach(dx => { ctx.fillStyle = '#22201E'; circ(dx + lx - 4, ey - 5, 7); ctx.fill(); });
+      line(lx - 6, -344, lx + 12, -348); break;
+    default:
+      dotEyes(); line(lx - 12, -346, lx + 12, -346);
+  }
+}
+/* 头像：把同一套人物裁进圆框，保证造型一致 */
+function avatar(x, y, R, P, mood = 'smile', bg = '#fff') {
+  ctx.save(); circ(x, y, R); ctx.fillStyle = bg; ctx.fill(); ctx.clip();
+  const s = R / 100; drawPerson(x, y + 378 * s + 30 * s, s, Object.assign({}, P, { mood }));
+  ctx.restore();
+}
+
+/* ---------------------------------------------------------- 道具 */
+function drawPhoneSmall(x, y, glow) {
+  if (glow > 0) {
+    const g = ctx.createRadialGradient(x, y, 10, x, y, 150);
+    g.addColorStop(0, `rgba(255,236,246,${.9 * glow})`); g.addColorStop(1, 'rgba(255,236,246,0)');
+    ctx.fillStyle = g; circ(x, y, 150); ctx.fill();
+  }
+  ctx.fillStyle = '#26302A'; rr(x - 28, y - 48, 56, 96, 10); ctx.fill();
+  ctx.fillStyle = glow > 0 ? `rgb(${lerp(70, 255, glow)},${lerp(90, 240, glow)},${lerp(80, 248, glow)})` : '#46564C';
+  rr(x - 22, y - 40, 44, 78, 6); ctx.fill();
+  if (glow > .5) { ctx.fillStyle = C.mag; circ(x + 24, y - 46, 12 * glow); ctx.fill(); }
+}
+function drawNotebook(x, y, p) {
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = C.green; ctx.lineWidth = 4; rr(x - 40, y - 52, 80, 100, 8); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = C.green2; ctx.lineWidth = 5;
+  for (let i = 0; i < 4; i++) { const q = clamp(p * 4 - i); if (q > 0) line(x - 26, y - 30 + i * 20, x - 26 + 52 * q, y - 30 + i * 20); }
+}
+function check(x, y, s, col = C.green2, p = 1) {
+  ctx.strokeStyle = col; ctx.lineWidth = 8 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); const pts = [[-14, 0], [-4, 11], [16, -12]];
+  ctx.moveTo(x + pts[0][0] * s, y + pts[0][1] * s);
+  if (p < .4) { const q = p / .4; ctx.lineTo(x + lerp(pts[0][0], pts[1][0], q) * s, y + lerp(pts[0][1], pts[1][1], q) * s); }
+  else { const q = (p - .4) / .6; ctx.lineTo(x + pts[1][0] * s, y + pts[1][1] * s); ctx.lineTo(x + lerp(pts[1][0], pts[2][0], q) * s, y + lerp(pts[1][1], pts[2][1], q) * s); }
+  ctx.stroke();
+}
+function cross(x, y, s, col = C.mag) { ctx.strokeStyle = col; ctx.lineWidth = 8 * s; ctx.lineCap = 'round'; line(x - 12 * s, y - 12 * s, x + 12 * s, y + 12 * s); line(x + 12 * s, y - 12 * s, x - 12 * s, y + 12 * s); }
+function arrowUp(x, y, s, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x, y - 22 * s); ctx.lineTo(x + 18 * s, y); ctx.lineTo(x + 7 * s, y); ctx.lineTo(x + 7 * s, y + 20 * s); ctx.lineTo(x - 7 * s, y + 20 * s); ctx.lineTo(x - 7 * s, y); ctx.lineTo(x - 18 * s, y); ctx.closePath(); ctx.fill(); }
+function star(x, y, r, col) { ctx.fillStyle = col; ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr2 = i % 2 ? r * .45 : r; ctx.lineTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2); } ctx.closePath(); ctx.fill(); }
+function icon(kind, x, y, s, col) {
+  ctx.save(); ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 5 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (kind === 'mail') { rr(x - 24 * s, y - 17 * s, 48 * s, 34 * s, 5 * s); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x - 22 * s, y - 14 * s); ctx.lineTo(x, y + 3 * s); ctx.lineTo(x + 22 * s, y - 14 * s); ctx.stroke(); }
+  if (kind === 'up') arrowUp(x, y, s * 1.1, col);
+  if (kind === 'frame') { rr(x - 24 * s, y - 20 * s, 48 * s, 40 * s, 4 * s); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x - 18 * s, y + 14 * s); ctx.lineTo(x - 4 * s, y - 4 * s); ctx.lineTo(x + 6 * s, y + 6 * s); ctx.lineTo(x + 12 * s, y); ctx.lineTo(x + 18 * s, y + 14 * s); ctx.stroke(); }
+  if (kind === 'book') { ctx.beginPath(); ctx.moveTo(x, y - 14 * s); ctx.quadraticCurveTo(x - 14 * s, y - 22 * s, x - 26 * s, y - 16 * s); ctx.lineTo(x - 26 * s, y + 18 * s); ctx.quadraticCurveTo(x - 14 * s, y + 12 * s, x, y + 20 * s); ctx.quadraticCurveTo(x + 14 * s, y + 12 * s, x + 26 * s, y + 18 * s); ctx.lineTo(x + 26 * s, y - 16 * s); ctx.quadraticCurveTo(x + 14 * s, y - 22 * s, x, y - 14 * s); ctx.lineTo(x, y + 20 * s); ctx.stroke(); }
+  if (kind === 'coin') { circ(x - 8 * s, y + 4 * s, 16 * s); ctx.stroke(); circ(x + 10 * s, y - 6 * s, 16 * s); ctx.stroke(); }
+  if (kind === 'sun') { circ(x - 10 * s, y - 8 * s, 9 * s); ctx.fill(); ctx.beginPath(); ctx.moveTo(x - 26 * s, y + 18 * s); ctx.lineTo(x - 2 * s, y - 2 * s); ctx.lineTo(x + 10 * s, y + 8 * s); ctx.lineTo(x + 18 * s, y); ctx.lineTo(x + 28 * s, y + 18 * s); ctx.closePath(); ctx.fill(); }
+  if (kind === 'clock') { circ(x, y, 22 * s); ctx.stroke(); line(x, y, x, y - 12 * s); line(x, y, x + 10 * s, y); }
+  if (kind === 'tool') { ctx.beginPath(); ctx.moveTo(x - 16 * s, y + 16 * s); ctx.lineTo(x + 8 * s, y - 8 * s); ctx.stroke(); circ(x + 12 * s, y - 12 * s, 9 * s); ctx.stroke(); }
+  if (kind === 'chat') { rr(x - 24 * s, y - 18 * s, 48 * s, 30 * s, 10 * s); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x - 8 * s, y + 12 * s); ctx.lineTo(x - 14 * s, y + 22 * s); ctx.lineTo(x + 2 * s, y + 12 * s); ctx.stroke(); }
+  if (kind === 'pin') { circ(x, y - 8 * s, 11 * s); ctx.fill(); line(x, y, x, y + 18 * s); }
+  if (kind === 'heart') { ctx.beginPath(); ctx.moveTo(x, y + 16 * s); ctx.bezierCurveTo(x - 30 * s, y - 4 * s, x - 14 * s, y - 26 * s, x, y - 10 * s); ctx.bezierCurveTo(x + 14 * s, y - 26 * s, x + 30 * s, y - 4 * s, x, y + 16 * s); ctx.fill(); }
+  ctx.restore();
+}
+function pill(s, x, y, px, fg, bg, align = 'center', border = null) {
+  ctx.font = font(px); const w = ctx.measureText(s).width + px * 1.1, h = px * 1.55;
+  const x0 = align === 'left' ? x : x - w / 2;
+  ctx.fillStyle = bg; rr(x0, y - h / 2, w, h, h / 2); ctx.fill();
+  if (border) { ctx.strokeStyle = border; ctx.lineWidth = 3; ctx.stroke(); }
+  txt(s, x0 + w / 2, y + 1, px, fg);
+  return { x0, x1: x0 + w };
+}
+/* 竖直比较尺：高度即“参照标准” */
+function drawRuler(x, baseY, h, col = C.mag, w = 64) {
+  ctx.fillStyle = col; rr(x - w / 2, baseY - h, w, h, 12); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 4;
+  for (let k = 30, i = 1; k < h - 8; k += 30, i++) line(x - w / 2, baseY - k, x - w / 2 + (i % 5 === 0 ? 34 : 18), baseY - k);
+}
+/* 透视赛道：topY 越高越远，stress 让跑道染上压力色 */
+function drawTrack(cx, by, ty, stress, t, flag = true, flagCol = C.green) {
+  const bw = 940, tw = lerp(280, 110, stress);
+  const quad = () => { ctx.beginPath(); ctx.moveTo(cx - bw / 2, by); ctx.lineTo(cx + bw / 2, by); ctx.lineTo(cx + tw / 2, ty); ctx.lineTo(cx - tw / 2, ty); ctx.closePath(); };
+  ctx.fillStyle = C.track; quad(); ctx.fill();
+  if (stress > 0) { ctx.fillStyle = `rgba(194,24,91,${.16 * stress})`; quad(); ctx.fill(); }
+  ctx.strokeStyle = C.green; ctx.lineWidth = 6; line(cx - bw / 2, by, cx - tw / 2, ty); line(cx + bw / 2, by, cx + tw / 2, ty);
+  ctx.fillStyle = 'rgba(255,255,255,.95)';
+  for (let k = 0; k < 10; k++) {
+    const u = ((k + (t * .9) % 1) / 10), q = u * u, yy = lerp(ty, by, q), ww = lerp(tw, bw, q) / bw;
+    rr(cx - 7 * ww * 2, yy - 26 * ww * 2, 14 * ww * 2, 26 * ww * 2, 4); ctx.fill();
+  }
+  // 终点格子线
+  const cw = tw / 8;
+  for (let i = 0; i < 8; i++) { ctx.fillStyle = i % 2 ? '#fff' : C.ink; ctx.fillRect(cx - tw / 2 + i * cw, ty - 10, cw, 10); }
+  if (flag) {
+    const fs = lerp(1, .45, stress), fx = cx + tw / 2 + 8;
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 6 * fs; line(fx, ty, fx, ty - 120 * fs);
+    ctx.fillStyle = flagCol; ctx.beginPath(); ctx.moveTo(fx, ty - 120 * fs); ctx.quadraticCurveTo(fx + 40 * fs, ty - 112 * fs + Math.sin(t * 4) * 6 * fs, fx + 76 * fs, ty - 100 * fs); ctx.lineTo(fx, ty - 76 * fs); ctx.closePath(); ctx.fill();
+  }
+}
+function bubble(s, x, y, px, tailX, tailY, a = 1, sc = 1, bg = '#fff', fg = C.ink) {
+  withAlpha(a, () => scaled(tailX, tailY, sc, () => {
+    ctx.font = font(px); const w = ctx.measureText(s).width + px * 1.4, h = px * 1.9;
+    ctx.fillStyle = bg; ctx.strokeStyle = C.ink; ctx.lineWidth = 4;
+    rr(x - w / 2, y - h / 2, w, h, 26); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 18, y + h / 2 - 2); ctx.lineTo(tailX, tailY); ctx.lineTo(x + 18, y + h / 2 - 2); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x - 18, y + h / 2); ctx.lineTo(tailX, tailY); ctx.lineTo(x + 18, y + h / 2); ctx.stroke();
+    txt(s, x, y + 2, px, fg);
+  }));
+}
+
+/* ======================================================================
+ * 场景（每个函数接收全局时间 t，自己负责背景）
+ * ==================================================================== */
+
+/* S1 00–04：完成任务的笑容 → 手机亮起 → 赛道被拉长 */
+function s1(t) {
+  bgBase(t);
+  const st = eio(seg(t, 2.0, 3.1));
+  drawTrack(540, 1700, lerp(880, 650, st), st, t);
+  const raise = eio(seg(t, 1.2, 1.7));
+  const mood = t < 2.2 ? 'happy' : t < 2.7 ? 'surprised' : 'worried';
+  drawPerson(540, 1470, 1, Object.assign({}, XY, {
+    mood, blink: blinkAt(t), armL: [lerp(.12, .4, 1 - raise) * (t < 1.2 ? 1 : 1), .05],
+    armR: [lerp(.15, .32, raise), lerp(.05, -2.5, raise)], hold: 'phone', glow: seg(t, 1.6, 2.0),
+    bob: t < 1.2 ? Math.abs(Math.sin(t * 5)) * 8 : 0, look: raise * .6,
+  }));
+  // 今日任务完成卡
+  const cy = 1010;
+  withAlpha(1 - seg(t, 2.6, 3.4) * .45, () => {
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = C.green2; ctx.lineWidth = 4; rr(110, cy - 46, 290, 92, 20); ctx.fill(); ctx.stroke();
+    txt('今日任务', 230, cy + 2, 44, C.ink); check(355, cy + 2, 1.2, C.green2, 1);
+  });
+  bubble('今天搞定了！', 790, 1000, 44, 640, 1070, 1 - seg(t, 2.1, 2.4), 1);
+  // 拉长时的两侧速度线
+  if (st > 0 && st < 1) {
+    ctx.strokeStyle = `rgba(194,24,91,${.5 * Math.sin(st * Math.PI)})`; ctx.lineWidth = 6;
+    for (let i = 0; i < 4; i++) { const yy = lerp(1500, 700, i / 4) - st * 80; line(150 - i * 4, yy, 150 - i * 4, yy - 90); line(930 + i * 4, yy, 930 + i * 4, yy - 90); }
+  }
+}
+
+/* S2 04–11.5：几条动态，不同的人、不同的日子 */
+const FEED = [
+  { t: 5.1, p: PEOPLE.classmate, s: '同学拿到录取', when: '3天前', ic: 'mail' },
+  { t: 6.7, p: PEOPLE.colleague, s: '同事获得晋升', when: '上周', ic: 'up' },
+  { t: 8.3, p: PEOPLE.friend, s: '朋友完成作品', when: '昨天', ic: 'frame' },
+];
+function s2(t) {
+  bgBase(t);
+  // 手机大屏（无任何真实平台标识）
+  const enter = eo(seg(t, 4.0, 4.6));
+  const px0 = 220, pw = 640, py0 = lerp(700, 520, enter), ph = 860;
+  ctx.fillStyle = '#26302A'; rr(px0 - 20, py0 - 20, pw + 40, ph + 40, 56); ctx.fill();
+  ctx.fillStyle = '#FBF8F1'; rr(px0, py0, pw, ph, 40); ctx.fill();
+  ctx.save(); rr(px0, py0, pw, ph, 40); ctx.clip();
+  ctx.fillStyle = '#E9E2D2'; ctx.fillRect(px0, py0, pw, 70);
+  ctx.fillStyle = '#C9C1AF'; rr(px0 + 30, py0 + 24, 140, 22, 11); ctx.fill();
+  const scroll = seg(t, 4.6, 11.5) * 40;
+  FEED.forEach((f, i) => {
+    const a = seg(t, f.t, f.t + .45), x = lerp(px0 + pw + 40, px0 + 24, eo(a));
+    const y = py0 + 100 + i * 245 - scroll;
+    if (a <= 0) return;
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#DCD4C3'; ctx.lineWidth = 3; rr(x, y, pw - 48, 215, 26); ctx.fill(); ctx.stroke();
+    avatar(x + 72, y + 80, 46, f.p, 'happy', '#F1ECE0');
+    txt(f.s, x + 136, y + 70, 44, C.ink, 'left');
+    txt(f.when, x + 136, y + 132, 36, C.soft, 'left', 500);
+    ctx.fillStyle = C.magL; circ(x + pw - 112, y + 108, 40); ctx.fill(); icon(f.ic, x + pw - 112, y + 108, 1.2, C.mag);
+    // 被点亮的一瞬：边框描红
+    const hi = Math.sin(clamp((t - f.t - .3) / .9) * Math.PI);
+    if (hi > 0) { ctx.strokeStyle = `rgba(194,24,91,${hi})`; ctx.lineWidth = 6; rr(x, y, pw - 48, 215, 26); ctx.stroke(); }
+  });
+  ctx.restore();
+  // 小叶在手机下方，“自我感觉”条逐条下降（示意，不含数值）
+  const n = FEED.filter(f => t > f.t + .3).length;
+  const target = [1, .72, .48, .26][n];
+  const prevT = n ? FEED[n - 1].t + .3 : 0;
+  const lv = n ? lerp([1, .72, .48, .26][n - 1], target, eo(seg(t, prevT, prevT + .6))) : 1;
+  const mood = n === 0 ? 'smile' : n < 3 ? 'neutral' : 'worried';
+  drawPerson(140, 1500, .5, Object.assign({}, XY, { mood, blink: blinkAt(t), armR: [.32, -2.5], hold: 'phone', glow: 1, look: .8, bob: -lerp(0, 8, 1 - lv) }));
+  txt('自我感觉', 320, 1430, 38, C.ink, 'left');
+  ctx.fillStyle = '#E2DACA'; rr(320, 1458, 560, 30, 15); ctx.fill();
+  const col = lv > .6 ? C.green2 : lv > .35 ? '#B0567A' : C.mag;
+  ctx.fillStyle = col; rr(320, 1458, 560 * lv, 30, 15); ctx.fill();
+}
+
+/* S3 11.5–18.5：人没变，尺子在涨 —— 视觉悖论 + 先猜 */
+function s3(t) {
+  bgBase(t);
+  ctx.fillStyle = '#E6DDCB'; ctx.fillRect(0, 1470, W, 450);
+  const steps = [12.2, 12.9, 13.6, 14.3], hs = [420, 520, 620, 720, 800];
+  let k = steps.filter(s => t >= s).length;
+  let h = hs[k];
+  if (k > 0) h = lerp(hs[k - 1], hs[k], bo(seg(t, steps[k - 1], steps[k - 1] + .35)));
+  const rx = 760;
+  drawRuler(rx, 1470, h);
+  // 落在尺顶上的小头像：每一个都是一条新动态
+  const icons = [PEOPLE.classmate, PEOPLE.colleague, PEOPLE.friend, PEOPLE.jia];
+  for (let i = 0; i < k; i++) {
+    const d = eo(seg(t, steps[i], steps[i] + .35));
+    const yy = 1470 - hs[i + 1] - 34;
+    withAlpha(d, () => avatar(rx + (i % 2 ? 70 : -70), lerp(yy - 120, yy, d), 30, icons[i], 'happy', '#fff'));
+  }
+  txt('比较尺', rx, 1520, 40, C.mag);
+  // 小叶与固定的“高度框”
+  const guess = t > 15.1;
+  drawPerson(400, 1470, 1, Object.assign({}, XY, { mood: guess ? 'think' : 'worried', blink: blinkAt(t, 1), look: .7, armR: [.32, -2.5], hold: 'phone', glow: .6 }));
+  ctx.setLineDash([16, 12]); ctx.strokeStyle = C.green2; ctx.lineWidth = 5;
+  rr(270, 1000, 260, 480, 30); ctx.stroke(); ctx.setLineDash([]);
+  pill('没变', 400, 960, 40, '#fff', C.green2);
+  check(470, 1510, 1, C.green2, 1); txt('任务完成', 370, 1520, 36, C.green, 'center', 600);
+  // 先猜：A / B（交替轻微跳动，倒计时环）
+  if (t > 15.1) {
+    const a = eo(seg(t, 15.15, 15.55));
+    withAlpha(a, () => {
+      const pa = 1 + .05 * Math.max(0, Math.sin(t * 5)), pb = 1 + .05 * Math.max(0, Math.sin(t * 5 + Math.PI));
+      scaled(300, 560, pa, () => pill('A 她变了', 300, 560, 44, C.ink, '#fff', 'center', C.ink));
+      scaled(690, 560, pb, () => pill('B 尺子变了', 690, 560, 44, C.ink, '#fff', 'center', C.ink));
+      const p = seg(t, 15.4, 18.3);
+      ctx.strokeStyle = '#DCD3C1'; ctx.lineWidth = 10; circ(540, 690, 34); ctx.stroke();
+      ctx.strokeStyle = C.green2; ctx.beginPath(); ctx.arc(540, 690, 34, -Math.PI / 2, -Math.PI / 2 + p * Math.PI * 2); ctx.stroke();
+      txt(String(3 - Math.min(2, Math.floor(p * 3))), 540, 692, 38, C.green);
+    });
+  }
+}
+
+/* S4 18.5–27：回到 1954 年 —— 理论历史示意（不描绘具体人物与房间） */
+function s4(t) {
+  bgBase(t, C.sepia, '#E6D6B4');
+  // 年份倒拨
+  const cnt = eio(seg(t, 18.6, 20.0));
+  const year = Math.round(lerp(2026, 1954, cnt));
+  const fly = eio(seg(t, 20.0, 20.7));
+  withAlpha(1 - fly, () => {
+    // 翻页日历：纸片向上翻走
+    for (let i = 0; i < 5; i++) {
+      const q = clamp(cnt * 5 - i);
+      if (q <= 0 || q >= 1) continue;
+      withAlpha(1 - q, () => { ctx.fillStyle = C.paper; rr(300, 830 - q * 260, 480, 300, 24); ctx.fill(); });
+    }
+    ctx.fillStyle = C.paper; ctx.strokeStyle = C.green; ctx.lineWidth = 6; rr(300, 830, 480, 300, 24); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.green; rr(300, 830, 480, 60, [24, 24, 0, 0]); ctx.fill();
+    txt(String(year), 540, 1010, 150, C.green, 'center', 800);
+    // 时钟指针逆向扫过（只转指针，不转画面）
+    const cx = 540, cy = 1300;
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 8; circ(cx, cy, 80); ctx.stroke();
+    const a = -cnt * Math.PI * 6;
+    line(cx, cy, cx + Math.sin(a) * 60, cy - Math.cos(a) * 60);
+    line(cx, cy, cx + Math.sin(a / 12) * 40, cy - Math.cos(a / 12) * 40);
+  });
+  // 书桌与论文纸
+  const deskIn = eo(seg(t, 20.0, 20.8));
+  const dy = lerp(700, 0, deskIn);
+  ctx.save(); ctx.translate(0, dy);
+  ctx.fillStyle = '#B79668'; rr(-20, 700, W + 40, 1300, 0); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.06)'; for (let i = 0; i < 9; i++) { ctx.fillRect(0, 760 + i * 120, W, 6); }
+  // 台灯光锥
+  const lamp = .32 + .04 * Math.sin(t * 1.3);
+  ctx.fillStyle = `rgba(255,236,180,${lamp})`; ctx.beginPath(); ctx.moveTo(150, 640); ctx.lineTo(60, 1500); ctx.lineTo(980, 1500); ctx.lineTo(260, 640); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = C.green; ctx.beginPath(); ctx.moveTo(120, 600); ctx.lineTo(290, 600); ctx.lineTo(250, 650); ctx.lineTo(160, 650); ctx.closePath(); ctx.fill();
+  // 书堆
+  [[820, 1430, '#6B4E3A'], [830, 1380, C.green], [815, 1335, '#8A3B3B']].forEach(([x, y, c]) => { ctx.fillStyle = c; rr(x, y, 170, 44, 6); ctx.fill(); });
+  // 论文纸（内容只写真实书目信息）
+  const push = 1 + .05 * eio(seg(t, 24.0, 27));
+  scaled(540, 1080, push, () => {
+    ctx.save(); ctx.translate(540, 1080); ctx.rotate(-.025);
+    ctx.fillStyle = 'rgba(0,0,0,.12)'; rr(-322, -322, 660, 660, 10); ctx.fill();
+    ctx.fillStyle = C.paper; rr(-330, -330, 660, 660, 10); ctx.fill();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `600 36px ${SERIF}`; ctx.fillStyle = '#6E6A60'; ctx.fillText('Human Relations · 1954', 0, -270);
+    ctx.font = `700 48px ${SERIF}`; ctx.fillStyle = C.ink; ctx.fillText('A Theory of Social', 0, -180); ctx.fillText('Comparison Processes', 0, -118);
+    ctx.font = `italic 40px ${SERIF}`; ctx.fillStyle = '#3E4A42'; ctx.fillText('Leon Festinger', 0, -40);
+    // 钢笔下划线
+    const ul = eo(seg(t, 22.2, 23.2));
+    ctx.strokeStyle = C.green2; ctx.lineWidth = 6; ctx.lineCap = 'round'; line(-250, -82, -250 + 500 * ul, -82);
+    // 正文以灰线示意，非逐字打字
+    ctx.strokeStyle = '#CFC8B8'; ctx.lineWidth = 10;
+    for (let i = 0; i < 7; i++) { const q = eo(seg(t, 20.8 + i * .18, 21.3 + i * .18)); const len = [540, 500, 560, 470, 540, 520, 300][i]; line(-270, 30 + i * 40, -270 + len * q, 30 + i * 40); }
+    ctx.restore();
+    // 钢笔
+    const px = 540 - 250 + 500 * ul + 10, py = 1080 - 82 - 10;
+    if (t > 21.6) {
+      const pa = seg(t, 21.6, 22.1);
+      withAlpha(pa, () => { ctx.save(); ctx.translate(px, py); ctx.rotate(-.7); ctx.fillStyle = '#2B2B2B'; rr(-8, -120, 16, 120, 6); ctx.fill(); ctx.fillStyle = '#E6B54A'; rr(-8, -120, 16, 18, 4); ctx.fill(); ctx.restore(); });
+    }
+  });
+  ctx.restore();
+}
+
+/* S5 27–36：缺少明确标准 → 借别人判断自己 */
+function s5(t) {
+  bgBase(t, '#F2EADA');
+  // 没有刻度的尺 + 问号
+  const r1 = 1 - seg(t, 31.4, 32.0);
+  withAlpha(eo(seg(t, 27.1, 27.6)) * r1, () => {
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = C.ink; ctx.lineWidth = 5; rr(170, 650, 740, 90, 16); ctx.fill(); ctx.stroke();
+    for (let i = 0; i < 3; i++) { const yy = 610 - Math.abs(Math.sin(t * 3 + i)) * 26; txt('?', 340 + i * 200, yy, 64, C.mag, 'center', 800); }
+    txt('没有刻度', 540, 698, 40, C.soft);
+  });
+  // 两张问题卡
+  const qs = [['我的观点合理吗？', 29.0, 880], ['我的能力怎么样？', 30.0, 1040]];
+  const fly = eio(seg(t, 31.6, 32.6));
+  qs.forEach(([s, t0, y], i) => {
+    const a = popIn(t, t0, .45);
+    if (a <= 0) return;
+    const tx = i ? 790 : 290, ty = 1060;
+    const x = lerp(540, tx, fly), yy = lerp(y, ty, fly), sc = lerp(1, .25, fly);
+    withAlpha((1 - fly) * clamp(a), () => scaled(x, yy, sc * a, () => {
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = C.green; ctx.lineWidth = 5; rr(x - 300, yy - 62, 600, 124, 30); ctx.fill(); ctx.stroke();
+      txt(s, x, yy + 2, 50, C.ink);
+    }));
+  });
+  // 两个人互相参照
+  const ap = eo(seg(t, 32.2, 32.9));
+  if (ap > 0) {
+    withAlpha(ap, () => {
+      drawPerson(290, 1460, .78, Object.assign({}, PEOPLE.peerA, { top: C.green2, mood: 'think', look: .9, blink: blinkAt(t, 2) }));
+      drawPerson(790, 1460, .78, Object.assign({}, PEOPLE.peerB, { top: '#8A7F6C', mood: 'think', look: -.9, blink: blinkAt(t, 3) }));
+      txt('我', 290, 1520, 40, C.green);
+      txt('他人', 790, 1520, 40, '#6E6553');
+      // 视线虚线来回流动
+      ctx.setLineDash([18, 14]); ctx.lineDashOffset = -t * 60; ctx.strokeStyle = C.green2; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(350, 1110); ctx.quadraticCurveTo(540, 980, 730, 1110); ctx.stroke();
+      ctx.lineDashOffset = t * 60; ctx.strokeStyle = '#8A7F6C';
+      ctx.beginPath(); ctx.moveTo(730, 1170); ctx.quadraticCurveTo(540, 1260, 350, 1170); ctx.stroke();
+      ctx.setLineDash([]);
+      // 头顶的小对照条：我 / 他人
+      const bp = eo(seg(t, 33.3, 34.2));
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = C.ink; ctx.lineWidth = 4; rr(400, 720, 280, 190, 24); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = C.green2; rr(470, 870 - 120 * bp, 50, 120 * bp, 8); ctx.fill();
+      ctx.fillStyle = '#B5AA95'; rr(560, 870 - 140 * bp, 50, 140 * bp, 8); ctx.fill();
+      ctx.strokeStyle = C.ink; ctx.lineWidth = 3; line(440, 872, 640, 872);
+    });
+  }
+}
+
+/* S6 36–44：作品没变，参照换了；不同维度没法加成总分 */
+const REFS = [
+  { t: 36.4, label: '参照：同组同学', hs: [300, 340, 280, 320], ruler: 400 },
+  { t: 37.9, label: '参照：年级第一', hs: [520, 560], ruler: 600 },
+  { t: 39.3, label: '参照：行业前辈', hs: [700], ruler: 760 },
+];
+function s6(t) {
+  bgBase(t);
+  const out = eio(seg(t, 40.3, 41.0));
+  // 参照背景板（内容横向切换）
+  let ri = REFS.filter(r => t >= r.t).length - 1; ri = Math.max(0, ri);
+  const sw = eo(seg(t, REFS[ri].t, REFS[ri].t + .5));
+  ctx.save(); ctx.globalAlpha = 1 - out;
+  ctx.fillStyle = C.bg2; rr(90, 610, 900, 900, 40); ctx.fill();
+  ctx.save(); rr(90, 610, 900, 900, 40); ctx.clip();
+  const drawRef = (r, dx) => {
+    pill(r.label, 540 + dx, 680, 40, '#fff', C.mag);
+    r.hs.forEach((hh, i) => {
+      const n = r.hs.length, x = 540 + dx + (i - (n - 1) / 2) * 180;
+      ctx.fillStyle = 'rgba(160,150,130,.55)'; rr(x - 50, 1500 - hh, 100, hh, [50, 50, 10, 10]); ctx.fill();
+      circ(x, 1500 - hh - 40, 44); ctx.fill();
+    });
+  };
+  if (ri > 0 && sw < 1) drawRef(REFS[ri - 1], -900 * sw);
+  drawRef(REFS[ri], 900 * (1 - sw) * (ri > 0 ? 1 : 0));
+  ctx.restore();
+  // 比较尺随参照变化
+  const rh = ri > 0 ? lerp(REFS[ri - 1].ruler, REFS[ri].ruler, bo(sw)) : REFS[0].ruler * eo(seg(t, 36.2, 36.8));
+  drawRuler(930, 1500, rh, C.mag, 50);
+  ctx.restore();
+  // 小叶与两件“没变”的成果
+  const py = lerp(1490, 1530, out), ps = lerp(.9, .62, out), pxx = lerp(540, 540, out);
+  drawPerson(pxx, py, ps, Object.assign({}, XY, { mood: t < 37.9 ? 'neutral' : t < 40.3 ? 'think' : 'surprised', blink: blinkAt(t, 4), look: .3 }));
+  withAlpha(1 - out, () => {
+    const card = (x, title, sub) => {
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = C.green2; ctx.lineWidth = 4; rr(x - 120, 1000, 240, 150, 22); ctx.fill(); ctx.stroke();
+      txt(title, x, 1048, 40, C.ink); txt(sub, x, 1106, 36, C.green, 'center', 600);
+      icon('pin', x, 990, 1, C.green);
+    };
+    card(230, '作业', '比上次进步');
+    card(850, '今日任务', '3 / 3 完成');
+    // 揭晓 B
+    const rv = popIn(t, 36.6, .45);
+    withAlpha(clamp(rv), () => scaled(540, 520, rv, () => pill('揭晓：B 尺子变了', 540, 520, 42, '#fff', C.green2)));
+  });
+  // 不同维度：成绩 + 收入 + 生活 ≠ 总分
+  const tin = seg(t, 40.6, 44.6);
+  if (tin > 0) {
+    const tiles = [['成绩', '分', 'book', C.blue], ['收入', '元', 'coin', C.ochre], ['生活', '感受', 'sun', C.terra]];
+    tiles.forEach(([a, u, ic, col], i) => {
+      const p = popIn(t, 40.8 + i * .4, .4); if (p <= 0) return;
+      const x = 230 + i * 310, y = 820;
+      scaled(x, y, p, () => {
+        ctx.fillStyle = col; rr(x - 120, y - 120, 240, 240, 30); ctx.fill();
+        icon(ic, x, y - 50, 1.3, '#fff'); txt(a, x, y + 22, 50, '#fff'); txt(u, x, y + 82, 36, 'rgba(255,255,255,.9)', 'center', 600);
+      });
+      if (i < 2) withAlpha(clamp(p), () => txt('+', x + 155, y, 64, C.ink, 'center', 800));
+    });
+    const eq = popIn(t, 42.2, .4);
+    if (eq > 0) scaled(540, 1060, eq, () => {
+      txt('= 总分？', 540, 1060, 72, C.ink, 'center', 800);
+      const sp = eo(seg(t, 42.6, 43.0));
+      if (sp > 0) { ctx.strokeStyle = C.mag; ctx.lineWidth = 10; ctx.lineCap = 'round'; line(390, 1066, 390 + 300 * sp, 1066); }
+    });
+  }
+}
+
+/* S7+S8 44–63：甲乙丙的高光 → 想象拼接的“完美对手” → 看清接缝 */
+const TRIO = [
+  { p: PEOPLE.jia, x: 250, word: '成绩', ic: 'book', col: C.blue, t: 45.4, part: 'torso', tag: '甲的成绩' },
+  { p: PEOPLE.yi, x: 540, word: '收入', ic: 'coin', col: C.ochre, t: 46.6, part: 'legs', tag: '乙的收入' },
+  { p: PEOPLE.bing, x: 830, word: '生活', ic: 'sun', col: C.terra, t: 47.8, part: 'head', tag: '丙的生活' },
+];
+/* 剪纸拼人：头=丙的生活，身=甲的成绩，腿=乙的收入。h 为总高，sep 为拆开程度 */
+function patchwork(cx, by, h, sep, alpha, seam) {
+  const s = h / 1000;
+  const parts = {
+    head: { col: C.terra, ic: 'sun', off: [-230, 60], path: () => { circ(cx, by - 860 * s, 125 * s); } },
+    torso: { col: C.blue, ic: 'book', off: [0, 30], path: () => { ctx.beginPath(); ctx.moveTo(cx - 190 * s, by - 720 * s); ctx.quadraticCurveTo(cx, by - 760 * s, cx + 190 * s, by - 720 * s); ctx.lineTo(cx + 160 * s, by - 380 * s); ctx.lineTo(cx - 160 * s, by - 380 * s); ctx.closePath(); } },
+    legs: { col: C.ochre, ic: 'coin', off: [230, 0], path: () => { ctx.beginPath(); ctx.roundRect(cx - 150 * s, by - 380 * s, 130 * s, 380 * s, 30 * s); ctx.roundRect(cx + 20 * s, by - 380 * s, 130 * s, 380 * s, 30 * s); } },
+  };
+  withAlpha(alpha, () => {
+    Object.values(parts).forEach(pt => {
+      ctx.save(); ctx.translate(pt.off[0] * sep, pt.off[1] * sep);
+      pt.path(); ctx.fillStyle = '#fff'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 26 * s + 6; ctx.stroke(); ctx.fill();
+      pt.path(); ctx.fillStyle = pt.col; ctx.fill();
+      ctx.save(); pt.path(); ctx.clip();
+      // 剪纸纹理：斜线
+      ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 10 * s + 2;
+      for (let k = -1200; k < 1200; k += 60 * s + 20) line(cx + k, by - 1000 * s, cx + k + 600 * s, by);
+      ctx.restore();
+      ctx.setLineDash([14, 10]); ctx.strokeStyle = seam > 0 ? `rgba(194,24,91,${.4 + .6 * seam})` : 'rgba(194,24,91,.4)'; ctx.lineWidth = 4 + 6 * seam;
+      pt.path(); ctx.stroke(); ctx.setLineDash([]);
+      ctx.restore();
+    });
+    // 图标贴在各部件中心
+    const c = { head: [0, -860], torso: [0, -560], legs: [0, -190] };
+    Object.entries(parts).forEach(([k, pt]) => icon(pt.ic, cx + c[k][0] * s + pt.off[0] * sep, by + c[k][1] * s + pt.off[1] * sep, 3 * s + .4, '#fff'));
+  });
+  return parts;
+}
+function s7(t) {
+  bgBase(t);
+  const gather = eio(seg(t, 48.8, 50.3));
+  const grow = eio(seg(t, 53.2, 55.0));
+  // 三个人
+  const pplA = lerp(1, .35, gather) * (1 - eio(seg(t, 53.0, 54.0)));
+  TRIO.forEach((r, i) => {
+    const spot = seg(t, r.t, r.t + .4);
+    withAlpha(pplA, () => {
+      if (spot > 0 && gather < 1) {
+        ctx.fillStyle = `rgba(255,240,200,${.55 * spot * (1 - gather)})`;
+        ctx.beginPath(); ctx.moveTo(r.x - 40, 560); ctx.lineTo(r.x + 40, 560); ctx.lineTo(r.x + 150, 1480); ctx.lineTo(r.x - 150, 1480); ctx.closePath(); ctx.fill();
+      }
+      drawPerson(r.x, 1470, .66, Object.assign({}, r.p, { mood: spot > 0 ? 'happy' : 'smile', blink: blinkAt(t, i + 5), armL: [2.6, .2], armR: [2.6, .2] }));
+    });
+    // 高光卡（举在头顶，之后飞向中央）
+    const a = popIn(t, r.t, .45);
+    if (a <= 0 || gather >= 1) return;
+    const x = lerp(r.x, 540, gather), y = lerp(880, 900, gather);
+    withAlpha(1 - gather, () => scaled(x, y, a * lerp(1, .6, gather), () => {
+      ctx.fillStyle = r.col; rr(x - 100, y - 100, 200, 200, 28); ctx.fill();
+      icon(r.ic, x, y - 34, 1.4, '#fff'); txt(r.word, x, y + 48, 48, '#fff');
+    }));
+  });
+  // 拼接出的“完美对手”
+  if (gather > 0) {
+    const sep = eio(seg(t, 58.6, 60.0));
+    const h = lerp(lerp(lerp(300, 620, gather), 960, grow), 760, sep);
+    const cx = lerp(540, 610, grow), by = lerp(1150, 1440, grow);
+    const seam = Math.max(0, Math.sin(clamp((t - 56.6) / 1.6) * Math.PI * .5)) * (t < 63 ? 1 : 0);
+    // 压迫阴影
+    if (grow > 0) { ctx.fillStyle = `rgba(194,24,91,${.12 * grow * (1 - sep)})`; ell(cx - 240, 1490, 360 * grow, 50); ctx.fill(); }
+    patchwork(cx, by, h, sep, gather * lerp(1, .55, sep), seam);
+    // 印章：想象拼接
+    const st = popIn(t, 50.3, .35);
+    if (st > 0) withAlpha(clamp(st) * (1 - grow), () => {
+      ctx.save(); ctx.translate(830, 690); ctx.rotate(-.12); ctx.scale(lerp(1.6, 1, clamp(st)), lerp(1.6, 1, clamp(st)));
+      ctx.strokeStyle = C.mag; ctx.lineWidth = 6; rr(-120, -42, 240, 84, 12); ctx.stroke();
+      txt('想象拼接', 0, 2, 46, C.mag); ctx.restore();
+    });
+    // 小叶仰望
+    if (grow > 0) {
+      const wx = lerp(-200, 220, eo(seg(t, 53.4, 55.0)));
+      const ws = lerp(.6, .72, sep);
+      const mood = t < 56.8 ? 'worried' : t < 58.6 ? 'surprised' : 'smile';
+      drawPerson(wx, 1490, ws, Object.assign({}, XY, { mood, blink: blinkAt(t, 9), look: .9, bob: t < 55 ? Math.abs(Math.sin(t * 9)) * 10 : 0 }));
+    }
+    // 接缝标签
+    const tagA = eo(seg(t, 56.9, 57.4)) * (1 - seg(t, 62.6, 63));
+    if (tagA > 0) withAlpha(tagA, () => {
+      const s = h / 1000;
+      const pos = { head: [cx - 230 * sep, by - 860 * s + 60 * sep - 150 * s], torso: [cx, by - 640 * s + 30 * sep], legs: [cx + 230 * sep, by - 120 * s] };
+      TRIO.forEach(r => {
+        const [px, py] = pos[r.part];
+        pill(r.tag, clamp(px, 200, 800), py, 40, '#fff', r.col);
+      });
+    });
+  }
+}
+
+/* S9 63–74：收起赛道，只留一条；看处境相近、有经验的人怎么做 */
+const LANES = ['成绩', '收入', '人气', '作品', '旅行'];
+function s9(t) {
+  bgBase(t);
+  const fold = eio(seg(t, 64.2, 66.0));
+  const ox = 540, oy = 1560;
+  // 五条赛道从脚下放射，收拢后只剩“我的目标”
+  LANES.forEach((lb, i) => {
+    const keep = i === 3;
+    const ang = lerp((i - 2) * .42, 0, fold);
+    const a = keep ? 1 : 1 - fold;
+    if (a <= 0.01) return;
+    withAlpha(a, () => {
+      ctx.save(); ctx.translate(ox, oy); ctx.rotate(ang);
+      const len = 900, w0 = keep ? lerp(170, 300, fold) : 170, w1 = keep ? lerp(80, 130, fold) : 80;
+      ctx.fillStyle = keep && fold > .5 ? '#DCE9DF' : C.track;
+      ctx.beginPath(); ctx.moveTo(-w0 / 2, 0); ctx.lineTo(w0 / 2, 0); ctx.lineTo(w1 / 2, -len); ctx.lineTo(-w1 / 2, -len); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = keep && fold > .5 ? C.green2 : '#B9AE97'; ctx.lineWidth = 5; ctx.stroke();
+      ctx.restore();
+    });
+  });
+  LANES.forEach((lb, i) => {
+    const keep = i === 3, ang = lerp((i - 2) * .42, 0, fold), a = keep ? 1 : 1 - fold;
+    if (a <= 0.01 || (keep && fold >= .6)) return;
+    const ex = ox + Math.sin(ang) * 960, ey = oy - Math.cos(ang) * 960;
+    withAlpha(a, () => pill(lb, clamp(ex, 160, 840), clamp(ey, 640, 1400), 38, keep ? '#fff' : C.ink, keep ? C.green2 : '#fff', 'center', keep ? null : '#B9AE97'));
+  });
+  if (fold > .6) withAlpha(seg(fold, .6, 1), () => pill('我的目标', 540, 620, 42, '#fff', C.green2));
+  // 处境相近的前辈出现在前方
+  const mIn = eo(seg(t, 66.3, 67.0));
+  if (mIn > 0) withAlpha(mIn, () => {
+    drawPerson(600, lerp(1060, 1130, mIn), .5, Object.assign({}, PEOPLE.mentor, { mood: 'smile', blink: blinkAt(t, 11), look: -.5, armR: t > 68.6 ? [2.2 + Math.sin(t * 3) * .2, .3] : [.12, .05] }));
+    pill('有经验的人', 820, 760, 36, C.ink, '#fff', 'center', C.ink);
+    const chk = [['起点相近', 66.8], ['目标相同', 67.4]];
+    chk.forEach(([s, t0], i) => {
+      const p = popIn(t, t0, .4); if (p <= 0) return;
+      scaled(250, 820 + i * 80, p, () => { pill(s, 250, 820 + i * 80, 38, C.green, '#fff', 'center', C.green2); });
+      check(370, 820 + i * 80, .9, C.green2, seg(t, t0 + .2, t0 + .6));
+    });
+  });
+  // 方法步骤：拆解 → 练习 → 复盘
+  const steps = [['拆解', 69.0, 1230], ['练习', 69.9, 1110], ['复盘', 70.8, 990]];
+  steps.forEach(([s, t0, y], i) => {
+    const p = popIn(t, t0, .4); if (p <= 0) return;
+    const x = i % 2 ? 360 : 720;
+    scaled(x, y, p, () => { ctx.fillStyle = '#fff'; ctx.strokeStyle = C.green; ctx.lineWidth = 4; rr(x - 90, y - 40, 180, 80, 20); ctx.fill(); ctx.stroke(); txt(s, x, y + 2, 42, C.green); });
+  });
+  // 小叶：收赛道的手势 → 记笔记
+  const noteP = seg(t, 69.0, 73.0);
+  drawPerson(540, 1500, .74, Object.assign({}, XY, {
+    mood: t < 64.2 ? 'neutral' : t < 68.6 ? 'think' : 'smile', blink: blinkAt(t, 12), look: -.2,
+    armL: t < 66.2 ? [lerp(.12, 1.6, Math.sin(fold * Math.PI)), .2] : [.5, -1.6], armR: t < 66.2 ? [lerp(.12, 1.6, Math.sin(fold * Math.PI)), .2] : [.4, -1.9],
+    hold: t > 68.6 ? 'note' : null, noteP,
+  }));
+}
+
+/* S10 74–85：只比一个相关维度 → 记录自己的进步 + 真实需要的支持 */
+function s10(t) {
+  bgBase(t);
+  const B = eio(seg(t, 79.3, 80.0));
+  // A：维度瓷砖 + 放大镜锁定“作品”
+  withAlpha(1 - B, () => {
+    const dims = ['成绩', '收入', '作品', '人气'];
+    const lock = eo(seg(t, 75.4, 76.4));
+    dims.forEach((d, i) => {
+      const x = 210 + i * 220, y = 700;
+      const on = i === 2;
+      const p = popIn(t, 74.5 + i * .12, .35);
+      withAlpha(on ? 1 : lerp(1, .3, lock), () => scaled(x, y, p, () => {
+        ctx.fillStyle = on && lock > .5 ? C.green2 : '#fff'; ctx.strokeStyle = on ? C.green2 : '#B9AE97'; ctx.lineWidth = 4;
+        rr(x - 90, y - 60, 180, 120, 24); ctx.fill(); ctx.stroke();
+        txt(d, x, y + 2, 46, on && lock > .5 ? '#fff' : C.ink);
+      }));
+    });
+    // 放大镜从左滑到“作品”
+    const mx = lerp(150, 650, lock), my = 700;
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 10; circ(mx, my, 92); ctx.stroke(); line(mx + 66, my + 66, mx + 130, my + 130);
+    bubble('这一步你怎么做的？', 460, 940, 42, 380, 1040, popIn(t, 76.6, .4) > 0 ? 1 : 0, clamp(popIn(t, 76.6, .4)));
+    if (t > 77.8) { icon('chat', 740, 960, 1.6, C.green2); }
+  });
+  // B：自己的进步曲线 + 支持
+  if (B > 0) withAlpha(B, () => {
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = C.green; ctx.lineWidth = 4; rr(150, 620, 780, 380, 30); ctx.fill(); ctx.stroke();
+    txt('我的作品集', 540, 670, 40, C.green);
+    const bars = [['第1周', .35], ['第2周', .55], ['第3周', .8]];
+    bars.forEach(([w, v], i) => {
+      const g = eo(seg(t, 80.1 + i * .5, 80.7 + i * .5));
+      const x = 300 + i * 240;
+      ctx.fillStyle = i === 2 ? C.green2 : '#9CC4AD'; rr(x - 50, 940 - 220 * v * g, 100, 220 * v * g, 12); ctx.fill();
+      txt(w, x, 970, 36, C.ink, 'center', 600);
+    });
+    if (t > 81.7) arrowUp(840, 760, 1.6 * clamp(popIn(t, 81.7, .4)), C.green2);
+    // 真实需要的支持
+    const sup = [['时间', 'clock'], ['工具', 'tool'], ['请教', 'chat']];
+    sup.forEach(([s, ic], i) => {
+      const p = popIn(t, 82.0 + i * .35, .4); if (p <= 0) return;
+      const x = 250 + i * 290, y = 1090;
+      scaled(x, y, p, () => { ctx.fillStyle = C.greenL; rr(x - 120, y - 46, 240, 92, 46); ctx.fill(); icon(ic, x - 60, y, 1, C.green); txt(s, x + 28, y + 2, 40, C.green); });
+    });
+  });
+  // 两个人：A 段请教，B 段并肩
+  const near = eio(seg(t, 79.3, 80.2));
+  drawPerson(lerp(330, 380, near), 1490, lerp(.85, .7, near), Object.assign({}, XY, {
+    mood: t < 76.5 ? 'think' : 'smile', blink: blinkAt(t, 13), look: .6, hold: 'note', noteP: seg(t, 77.5, 79) + seg(t, 81, 84),
+    armR: t < 79.3 ? [1.4, .9] : [.3, .1],
+  }));
+  drawPerson(lerp(760, 700, near), 1490, lerp(.85, .7, near), Object.assign({}, PEOPLE.mentor, {
+    mood: 'smile', blink: blinkAt(t, 14), look: -.6, armL: t > 77.6 && t < 79.3 ? [1.8 + Math.sin(t * 4) * .2, .4] : [.12, .05],
+  }));
+}
+
+/* S11 85–90：尺子放倒成一条清楚的目标线，回应开头 */
+function s11(t) {
+  bgBase(t);
+  drawTrack(540, 1700, 880, 0, t, true, C.green2);
+  const fall = eio(seg(t, 85.6, 86.8));
+  const toGreen = seg(t, 86.4, 87.0);
+  // 竖尺先缩短再绕底端倒下，化为横向目标线
+  const h = lerp(860, 600, eio(seg(t, 85.2, 85.8)));
+  ctx.save(); ctx.translate(840, lerp(1180, 870, fall)); ctx.rotate(-fall * Math.PI / 2);
+  const col = toGreen > 0 ? `rgb(${lerp(194, 46, toGreen)},${lerp(24, 125, toGreen)},${lerp(91, 91, toGreen)})` : C.mag;
+  ctx.fillStyle = col; rr(-30, -h, 60, h, 12); ctx.fill();
+  ctx.restore();
+  if (fall >= 1) withAlpha(seg(t, 86.8, 87.2), () => pill('我的目标', 540, 790, 40, '#fff', C.green2));
+  drawPerson(540, 1420, .82, Object.assign({}, XY, { mood: 'happy', blink: blinkAt(t, 15), bob: t > 87 ? Math.abs(Math.sin((t - 87) * 4)) * 12 * (1 - seg(t, 88.4, 89)) : 0, armL: [.4, .1], armR: [.4, .1] }));
+}
+
+/* ======================================================================
+ * 时间轴：场景、转场、文字卡（文字卡集中在此，便于审读与校验）
+ * ==================================================================== */
+const SCENES = [
+  { t0: 0, t1: 4.0, f: s1 },
+  { t0: 4.0, t1: 11.5, f: s2, tr: { type: 'iris', x: 600, y: 1200 } },
+  { t0: 11.5, t1: 18.5, f: s3, tr: { type: 'up' } },
+  { t0: 18.5, t1: 27.0, f: s4, tr: { type: 'paper' } },
+  { t0: 27.0, t1: 36.0, f: s5, tr: { type: 'up' } },
+  { t0: 36.0, t1: 44.6, f: s6, tr: { type: 'iris', x: 540, y: 1100 } },
+  { t0: 44.6, t1: 63.0, f: s7, tr: { type: 'up' } },
+  { t0: 63.0, t1: 74.0, f: s9, tr: { type: 'up' } },
+  { t0: 74.0, t1: 85.0, f: s10, tr: { type: 'iris', x: 540, y: 1200 } },
+  { t0: 85.0, t1: 90.01, f: s11, tr: { type: 'iris', x: 540, y: 1100 } },
+];
+const TR = .5;
+const FADE_IN = .35, FADE_OUT = .3;
+/* 主文案：【】内为本卡唯一高亮词 */
+const TEXTS = [
+  { id: 'title', t0: 0, t1: 4.0, lines: ['生活没变，', '怎么一刷手机', '就【落后】了？'], px: 100, y: 300, lh: 116, instant: true },
+  { id: 'S2', t0: 4.45, t1: 11.4, lines: ['刚还觉得今天不错，', '刷几条动态就【不够好】了。'] },
+  { id: 'S3a', t0: 11.75, t1: 15.0, lines: ['这几秒，', '你真的【变差】了吗？'] },
+  { id: 'S3b', t0: 15.1, t1: 18.45, lines: ['【先猜】：', '变的是她，还是尺子？'] },
+  { id: 'S4', t0: 20.25, t1: 26.85, lines: ['1954年，费斯廷格', '提出【社会比较理论】。'], hl: C.green2 },
+  { id: 'S5', t0: 27.45, t1: 35.85, lines: ['当缺少明确标准，', '我们常【借别人】判断自己。'], hl: C.green2 },
+  { id: 'S6a', t0: 36.4, t1: 40.3, lines: ['分数和任务没有变，', '【参照对象】却换了。'] },
+  { id: 'S6b', t0: 40.4, t1: 44.5, lines: ['不同维度，', '没法加成一个【总分】。'] },
+  { id: 'S7', t0: 45.05, t1: 52.85, lines: ['拿甲的成绩、乙的收入，', '再加上丙的生活。'] },
+  { id: 'S8a', t0: 53.45, t1: 58.3, lines: ['你正在和一个', '拼出来的【完美人物】比赛。'] },
+  { id: 'S8b', t0: 58.45, t1: 62.85, lines: ['这个对手，', '现实里【未必存在】。'], hl: C.green2 },
+  { id: 'S9a', t0: 63.45, t1: 68.5, lines: ['比较也能给【方向】。', '先看：处境相近吗？'], hl: C.green2 },
+  { id: 'S9b', t0: 68.65, t1: 73.85, lines: ['看对方的【方法】，', '不只看结果。'], hl: C.green2 },
+  { id: 'S10a', t0: 74.45, t1: 79.35, lines: ['只比较一个【相关维度】，', '问自己能学到什么。'], hl: C.green2 },
+  { id: 'S10b', t0: 79.5, t1: 84.85, lines: ['也看看自己的【进步】，', '以及真实需要的支持。'], hl: C.green2 },
+  { id: 'end', t0: 85.35, t1: 90.0, lines: ['你最近，', '在拿【谁的尺子】量自己？'], noOut: true },
+];
+/* 边界提示与来源（≥36px），以及情境标签 */
+const NOTES = [
+  { id: 'n7', t0: 48.9, t1: 52.85, s: '每张高光都可能是真的，只是不完整', y: 520 },
+  { id: 'n9', t0: 69.5, t1: 73.85, s: '向上比较：可能受挫，也可能成为榜样', y: 520 },
+  { id: 'n10', t0: 80.4, t1: 84.85, s: '现实差距真实存在，不只是心态问题', y: 520 },
+  { id: 'src', t0: 85.6, t1: 90.0, s: 'Festinger，1954｜社交媒体场景为当代演绎', y: 1470, noOut: true, box: true },
+];
+const LABELS = [
+  { t0: 0, t1: 18.5, s: '情境演绎' },
+  { t0: 18.5, t1: 27.0, s: '理论历史示意' },
+  { t0: 27.0, t1: 36.0, s: '理论要点示意' },
+  { t0: 36.0, t1: 44.6, s: '情境演绎' },
+  { t0: 44.6, t1: 53.0, s: '想象拼接｜不是统计结果' },
+  { t0: 53.0, t1: 63.0, s: '当代比喻｜非论文实验' },
+  { t0: 63.0, t1: 85.0, s: '生活启发｜非理论结论' },
+  { t0: 85.0, t1: 90.01, s: '情境演绎' },
+];
+
+function textAlpha(T, t) {
+  if (t < T.t0 || t > T.t1) return 0;
+  const a = T.instant ? 1 : eo(seg(t, T.t0, T.t0 + FADE_IN));
+  const b = T.noOut ? 1 : 1 - seg(t, T.t1 - FADE_OUT, T.t1);
+  return Math.min(a, b);
+}
+function parseMark(s) {
+  const out = []; let hl = false, buf = '';
+  for (const ch of s) {
+    if (ch === '【' || ch === '】') { if (buf) out.push({ s: buf, hl }); buf = ''; hl = ch === '【'; }
+    else buf += ch;
+  }
+  if (buf) out.push({ s: buf, hl });
+  return out;
+}
+const AUDIT = { boxes: {} };
+function noteBox(id, x0, y0, x1, y1) {
+  const b = AUDIT.boxes[id] || (AUDIT.boxes[id] = { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 });
+  b.x0 = Math.min(b.x0, x0); b.y0 = Math.min(b.y0, y0); b.x1 = Math.max(b.x1, x1); b.y1 = Math.max(b.y1, y1);
+}
+function drawTexts(t) {
+  TEXTS.forEach(T => {
+    const a = textAlpha(T, t); if (a <= 0) return;
+    const px = T.px || 58, lh = T.lh || 82, y0 = (T.y || 310) + (1 - a) * 22 * (T.instant ? 0 : 1);
+    const hl = T.hl || C.mag;
+    const hlBg = hl === C.mag ? 'rgba(194,24,91,.16)' : 'rgba(46,125,91,.18)';
+    ctx.save(); ctx.globalAlpha = a;
+    // 文字底衬：保证在任何画面上都高对比
+    ctx.font = font(px, 800);
+    const widths = T.lines.map(l => ctx.measureText(l.replace(/[【】]/g, '')).width);
+    const mw = Math.max(...widths);
+    ctx.fillStyle = 'rgba(244,239,228,.92)';
+    rr(540 - mw / 2 - 34, y0 - px * .5 - 26, mw + 68, (T.lines.length - 1) * lh + px + 52, 28); ctx.fill();
+    T.lines.forEach((l, i) => {
+      const cy = y0 + i * lh;
+      ctx.font = font(px, 800);
+      const segs = parseMark(l); let w = 0; segs.forEach(s => { s.w = ctx.measureText(s.s).width; w += s.w; });
+      let x = 540 - w / 2;
+      noteBox(T.id, x, cy - px / 2, x + w, cy + px / 2);
+      segs.forEach(s => {
+        if (s.hl) {
+          const hp = T.instant ? eo(seg(t, .4, 1.0)) : eo(seg(t, T.t0 + .3, T.t0 + .8));
+          ctx.fillStyle = hlBg; rr(x - 6, cy + px * .1, (s.w + 12) * hp, px * .42, 8); ctx.fill();
+        }
+        ctx.fillStyle = s.hl ? hl : C.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.fillText(s.s, x, cy + 2); x += s.w;
+      });
+    });
+    ctx.restore();
+  });
+  NOTES.forEach(N => {
+    const a = textAlpha(N, t); if (a <= 0) return;
+    withAlpha(a, () => {
+      ctx.font = font(36, 700); const w = ctx.measureText(N.s).width;
+      ctx.fillStyle = N.box ? 'rgba(255,253,247,.96)' : 'rgba(244,239,228,.92)';
+      rr(540 - w / 2 - 24, N.y - 34, w + 48, 68, 34); ctx.fill();
+      if (N.box) { ctx.strokeStyle = C.green2; ctx.lineWidth = 3; ctx.stroke(); }
+      txt(N.s, 540, N.y + 1, 36, N.box ? C.green : C.soft);
+      noteBox(N.id, 540 - w / 2, N.y - 18, 540 + w / 2, N.y + 18);
+    });
+  });
+  LABELS.forEach((L, i) => {
+    if (t < L.t0 || t >= L.t1) return;
+    const a = seg(t, L.t0, L.t0 + .3) || (L.t0 === 0 ? 1 : 0);
+    withAlpha(L.t0 === 0 ? 1 : a, () => {
+      const b = pill(L.s, 100, 212, 36, '#fff', C.green, 'left');
+      noteBox('label' + i, b.x0, 212 - 28, b.x1, 212 + 28);
+    });
+  });
+}
+
+function clipFor(tr, p) {
+  ctx.beginPath();
+  if (tr.type === 'iris') ctx.arc(tr.x, tr.y, p * 2300, 0, Math.PI * 2);
+  else if (tr.type === 'up') ctx.rect(0, H - p * H, W, p * H);
+  else if (tr.type === 'paper') { const k = p * (W + H) * 1.05; ctx.moveTo(W + 10, H + 10); ctx.lineTo(W + 10 - k, H + 10); ctx.lineTo(W + 10, H + 10 - k); ctx.closePath(); }
+  ctx.clip();
+}
+function edgeFor(tr, p) {
+  ctx.save();
+  if (tr.type === 'iris') { ctx.strokeStyle = C.green2; ctx.lineWidth = 14; circ(tr.x, tr.y, p * 2300); ctx.stroke(); }
+  else if (tr.type === 'up') { ctx.fillStyle = C.green; ctx.fillRect(0, H - p * H - 10, W, 14); ctx.fillStyle = C.mag; ctx.fillRect(0, H - p * H + 4, W, 6); }
+  else if (tr.type === 'paper') { const k = p * (W + H) * 1.05; ctx.strokeStyle = '#B79668'; ctx.lineWidth = 16; line(W + 10 - k, H + 10, W + 10, H + 10 - k); }
+  ctx.restore();
+}
+
+function render(t) {
+  t = clamp(t, 0, DUR - 1e-6);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.setLineDash([]);
+  let i = SCENES.findIndex(s => t >= s.t0 && t < s.t1); if (i < 0) i = SCENES.length - 1;
+  const sc = SCENES[i];
+  if (i > 0 && sc.tr && t < sc.t0 + TR) {
+    const p = eio((t - sc.t0) / TR);
+    SCENES[i - 1].f(t);
+    ctx.save(); clipFor(sc.tr, p); sc.f(t); ctx.restore();
+    edgeFor(sc.tr, p);
+  } else sc.f(t);
+  drawTexts(t);
+}
+
+/* ---------------------------------------------------------- 校验：阅读时长、字数、安全区 */
+function audit() {
+  for (let f = 0; f < DUR * FPS; f += 3) render(f / FPS);
+  const rows = []; let chars = 0;
+  TEXTS.forEach(T => {
+    const n = T.lines.join('').replace(/[【】]/g, '').length; chars += n;
+    const stable = (T.noOut ? T.t1 : T.t1 - FADE_OUT) - (T.instant ? T.t0 : T.t0 + FADE_IN);
+    rows.push({ id: T.id, chars: n, stable: +stable.toFixed(2), cps: +(n / stable).toFixed(2), box: AUDIT.boxes[T.id] });
+  });
+  NOTES.forEach(N => { const stable = (N.noOut ? N.t1 : N.t1 - FADE_OUT) - (N.t0 + FADE_IN); rows.push({ id: N.id, chars: N.s.length, stable: +stable.toFixed(2), cps: +(N.s.length / stable).toFixed(2), box: AUDIT.boxes[N.id] }); });
+  const safe = Object.entries(AUDIT.boxes).filter(([, b]) => b.x0 < 100 || b.x1 > 900 || b.y0 < 180 || b.y1 > 1500).map(([k, b]) => ({ k, b }));
+  return { mainChars: chars, rows, outOfSafe: safe };
+}
+
+/* ---------------------------------------------------------- 播放控制 */
+const qs = new URLSearchParams(location.search);
+const RENDER_MODE = qs.has('render');
+let cur = 0, playing = false, last = 0;
+const $ = id => document.getElementById(id);
+function setT(t) { cur = clamp(t, 0, DUR); render(cur); $('seek').value = cur; $('time').textContent = `${cur.toFixed(2).padStart(5, '0')} / 90.00`; }
+function loop(now) {
+  if (!playing) return;
+  cur += (now - last) / 1000; last = now;
+  if (cur >= DUR) { cur = DUR; playing = false; $('play').textContent = '播放'; }
+  setT(cur); if (playing) requestAnimationFrame(loop);
+}
+function play() { if (cur >= DUR) cur = 0; playing = true; last = performance.now(); $('play').textContent = '暂停'; requestAnimationFrame(loop); }
+function pause() { playing = false; $('play').textContent = '播放'; }
+$('play').onclick = () => playing ? pause() : play();
+$('restart').onclick = () => { setT(0); play(); };
+$('seek').oninput = e => { pause(); setT(+e.target.value); };
+$('rec').onclick = () => { document.body.classList.add('rec'); };
+addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); playing ? pause() : play(); }
+  if (e.key === 'Escape') document.body.classList.remove('rec');
+  if (e.key === 'r' || e.key === 'R') document.body.classList.toggle('rec');
+  if (e.key === 'Home') setT(0);
+  if (e.key === 'ArrowRight') { pause(); setT(cur + 1 / FPS); }
+  if (e.key === 'ArrowLeft') { pause(); setT(cur - 1 / FPS); }
+});
+window.SCV = { render, audit, DUR, FPS, frame: f => { render(f / FPS); return cv.toDataURL('image/png'); } };
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+  const t0 = parseFloat(qs.get('t') || '0');
+  if (qs.has('record')) document.body.classList.add('rec');
+  setT(isNaN(t0) ? 0 : t0);
+  if (!RENDER_MODE && qs.has('autoplay')) play();
+});
+</script>
+</body>
+</html>
