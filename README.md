@@ -38,7 +38,7 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
 - 换音色：`Video(..., voice="zv_001")`（ZipVoice 女声），或 `zv_009`、`zf_001` 等，可选值见 `engine/audio.py` 的 `VOICES`
 
-## 无声科普竖屏：《为什么总想再刷一条？》
+## 无声科普竖屏：《为什么你刷短视频停不下来？》
 
 ```bash
 python3 fetch_assets.py                      # 只需其中的思源黑体
@@ -46,9 +46,10 @@ python3 scroll_short.py out/scroll_short.mp4 # 成片 + 竖版/横版封面
 python3 scroll_short.py --still 30 61.5      # 只渲染指定时刻的单帧，用于检查
 ```
 
-黑金信息设计风格，1080×1920、30fps、96 秒（含 7 秒参考资料），**不含音频流**。
-全部画面由 Skia 逐帧绘制，4 核约 2 分钟。屏幕文案、分镜表、事实清单与参考资料见
-`docs/scroll_short/`，成片与封面在 `docs/scroll_short/media/`。
+黑金风格、动画主导：手机第一视角开场 → 历史 → 理论 → 推荐 → 方法。
+画面带辉光、扫光、光条、光球、扩散光环、微尘和镜头推拉，每 3 秒内至少一次动画事件。
+1080×1920、30fps、97 秒（含 6 秒参考资料），**不含音频流**，4 核渲染约 3 分钟。
+屏幕文案、分镜表、事实清单与参考资料见 `docs/scroll_short/`，成片与封面在 `docs/scroll_short/media/`。
 
 ## 横屏无声版
 
