@@ -45,13 +45,13 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
 - 换音色：`Video(..., voice="zv_001")`（ZipVoice 女声），或 `zv_009`、`zf_001` 等，可选值见 `engine/audio.py` 的 `VOICES`
 
-## 横屏无声版
+## 横屏版
 
 ```bash
 python3 dyl_video.py out/designing_your_life.mp4
 ```
 
-Pillow 绘制的 1920×1080、约 43 秒讲解动画（使用系统文泉驿字体）。
+Pillow 绘制的 1920×1080、约 44 秒讲解动画（使用系统文泉驿字体），配同一首 BGM：场景时长吸附到半小节，「好时光日志」对上音乐 drop。
 
 ## 第三方资源许可
 
