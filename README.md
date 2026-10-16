@@ -45,6 +45,22 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
 - 换音色：`Video(..., voice="zv_001")`（ZipVoice 女声），或 `zv_009`、`zf_001` 等，可选值见 `engine/audio.py` 的 `VOICES`
 
+## 科普动画：《为什么人会信星座？》
+
+```bash
+python3 zodiac.py out/zodiac            # 竖屏 + 横屏成片、封面、分轨、卡点表、文案
+python3 zodiac.py out/zodiac --no-video # 只出音频分轨、封面与文档
+```
+
+无旁白、黑金风格，约 92.6 秒（原曲 90 秒处硬截断，最后一击后接约 3 秒混响尾音自然淡出）。
+
+- 卡点：`bgm.detect()` 用 librosa 动态规划节拍跟踪检测逐拍时间、起音强度（全频 / 低频 / 中高频）、小节位置与段落边界；
+  `CUES` 中每个动作写一个参考时间，由 `beat()` 吸附到最近的实测拍点（偏差 >0.12 秒直接报错，不伪造）
+- 音效：`engine/perc.py` 合成低音鼓、军鼓边击、木块、沙锤、框鼓、低音通鼓、邦戈鼓、拍手、轻柔吊镲；按起音时间提前放置，峰值落在拍点上；
+  音乐在该拍已有重底鼓时低音鼓自动换高通版；配乐对重击做 ≤3 dB 的平滑闪避
+- 输出（`out/zodiac/`）：`zodiac_portrait_1080x1920.mp4`、`zodiac_landscape_1920x1080.mp4`、`cover_*.png`、
+  `bgm_track.wav` / `sfx_track.wav`（两轨相加即限幅前混音）、`cue_sheet.md` / `.csv`、`copy_and_references.md`
+
 ## 横屏版
 
 ```bash

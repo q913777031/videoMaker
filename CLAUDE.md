@@ -6,4 +6,6 @@
 - 必须卡点：
   - 基于 `engine/timeline.py` 的视频：直接用 `Video(...)`，节拍网格由引擎自动应用；用 `drop_at="场景名"` 指定哪个场景对上音乐 drop。
   - 不走 `Video` 的脚本：用 `engine/bgm.py` 的 `analyze()` / `Sync`，把场景切换吸附到半小节线上，并用 `Sync.track(总时长)` 截取配乐（参考 `dyl_video.py` 的 `beat_sync`）。
+  - 无旁白、需要精细卡点的视频：用 `bgm.detect()` 的实测拍点（逐拍时间、重音、段落），关键动作吸附到邻近实测拍点，不假设恒定 BPM、不伪造拍点（参考 `zodiac.py` 的 `beat()` / `CUES`）。
+- 打击乐音效用 `engine/perc.py` 合成，音效峰值与画面撞击帧对齐（同帧或相邻帧）。
 - 只有用户明确要求换歌时才替换 `music/bgm.m4a`；节拍会重新分析，代码不用改。

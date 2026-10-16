@@ -143,3 +143,68 @@ class Sync:
         f = min(n, int(fade_out * SR))
         out[n - f:] *= np.linspace(1, 0, f)[:, None] ** 2
         return out
+
+
+# ---------------------------------------------------------------- 逐拍检测（不假设恒定速度）
+
+ANALYSIS_SR = 22050
+ANALYSIS_HOP = 256
+
+
+def _norm(v: np.ndarray) -> np.ndarray:
+    lo, hi = np.percentile(v, 5), np.percentile(v, 99.7)
+    return np.clip((v - lo) / (hi - lo + 1e-9), 0, 1)
+
+
+@functools.lru_cache(maxsize=4)
+def detect(path: str | Path = DEFAULT_BGM) -> dict:
+    """用 librosa 动态规划节拍跟踪检测实际拍点（拍长可变），并给出每拍的重音特征、强起音与段落边界。
+
+    返回 dict：
+    - beats：[{t, strength, low, high, db, bar_pos}]，strength 为全频起音强度，low/high 为低频（底鼓）与中高频（军鼓/拍手）起音，均归一到 0–1；
+      bar_pos 为小节内位置（0 为强拍，按低频起音最强的相位估计）
+    - onsets：[{t, strength}] 全部检测到的起音（含反拍）
+    - sections：段落边界时刻（按节拍同步的音色/和声特征做层次聚类）
+    - energy：[(t, dB)] 每 0.5 秒的响度曲线
+    """
+    import librosa
+
+    sr, hop = ANALYSIS_SR, ANALYSIS_HOP
+    y = librosa.resample(load(path).mean(axis=1).astype(np.float32), orig_sr=SR, target_sr=sr)
+    env = librosa.onset.onset_strength(y=y, sr=sr, hop_length=hop, aggregate=np.median)
+    _, beat_f = librosa.beat.beat_track(onset_envelope=env, sr=sr, hop_length=hop, tightness=60)
+    times = librosa.frames_to_time(np.arange(len(env)), sr=sr, hop_length=hop)
+    mel = librosa.feature.melspectrogram(y=y, sr=sr, hop_length=hop, n_mels=64, fmax=11000)
+    mf = librosa.mel_frequencies(n_mels=64, fmax=11000)
+    lm = librosa.power_to_db(mel)
+    flux = np.maximum(0, np.diff(lm, axis=1, prepend=lm[:, :1]))
+    low, high = flux[mf < 160].mean(axis=0), flux[mf > 1500].mean(axis=0)
+    rms_db = 20 * np.log10(librosa.feature.rms(y=y, hop_length=hop)[0] + 1e-6)
+
+    win = int(0.04 * sr / hop)
+
+    def peak(v, f):
+        return float(v[max(0, f - win): f + win + 1].max())
+
+    s_env, s_low, s_high = _norm(env), _norm(low), _norm(high)
+    feats = [(peak(s_env, f), peak(s_low, f), peak(s_high, f)) for f in beat_f]
+    phase = max(range(4), key=lambda k: np.mean([x[1] for x in feats[k::4]]))
+    beats = []
+    for i, (f, (st, lo, hi)) in enumerate(zip(beat_f, feats)):
+        seg = rms_db[f: beat_f[i + 1] if i + 1 < len(beat_f) else len(rms_db)]
+        beats.append(dict(t=round(float(times[f]), 4), strength=round(st, 3), low=round(lo, 3), high=round(hi, 3),
+                          db=round(float(seg.mean()) if len(seg) else float(rms_db[f]), 1), bar_pos=(i - phase) % 4))
+    on_f = librosa.onset.onset_detect(onset_envelope=env, sr=sr, hop_length=hop)
+    onsets = [dict(t=round(float(times[f]), 4), strength=round(float(s_env[f]), 3)) for f in on_f]
+
+    chroma = librosa.feature.chroma_cqt(y=y, sr=sr, hop_length=512)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=512, n_mfcc=13)
+    feat = np.vstack([librosa.util.normalize(chroma, axis=0), mfcc / (np.abs(mfcc).max() + 1e-9)])
+    bf512 = librosa.time_to_frames(times[beat_f], sr=sr, hop_length=512)
+    sync_f = librosa.util.sync(feat, bf512, aggregate=np.median)
+    bounds = librosa.segment.agglomerative(sync_f, 10)
+    bt = [float(times[beat_f[min(max(b - 1, 0), len(beat_f) - 1)]]) for b in bounds[1:]]
+    energy = [(round(a, 1), round(float(rms_db[(times >= a) & (times < a + 0.5)].mean()), 1))
+              for a in np.arange(0, times[-1], 0.5)]
+    return dict(beats=beats, onsets=onsets, sections=[0.0] + [round(b, 4) for b in bt], energy=energy,
+                duration=round(len(y) / sr, 3))
