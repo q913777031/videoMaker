@@ -38,6 +38,26 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 - 加音效：在场景的 `events` 里加 `(类型, 句序号, 关键词, 偏移秒)`，类型见 `engine/timeline.py` 的 `EVENT_FX`
 - 换音色：`Video(..., voice="zv_001")`（ZipVoice 女声），或 `zv_009`、`zf_001` 等，可选值见 `engine/audio.py` 的 `VOICES`
 
+## 无旁白科普动画：《你不是在休息，你是在为休息感到内疚》
+
+```bash
+python3 fetch_assets.py                                  # 只需字体
+python3 -m rest_guilt.build --bgm path/to/bgm.m4a        # 完整成片（也会自动查找 ./bgm.m4a、assets/bgm.m4a）
+python3 -m rest_guilt.build                              # 未提供原曲：只出无音频流的画面预览与素材，状态"待配乐"
+```
+
+输出到 `out/rest_guilt/`：1080×1920 与 1920×1080 两套独立排版（30 fps，H.264 / yuv420p，AAC），
+两种比例封面，`bgm.wav` / `sfx.wav` / `mix.wav`（48 kHz / 24 bit，同起点同长度），`卡点表.csv`、`逐屏文案.txt`、
+`参考资料.txt`、`timeline.json`、七类音效素材 `sfx_samples/`、抽帧 `checks/` 与 `交付说明.md`。4 核机器约 10 分钟。
+
+- **只用原曲**：原曲缺失、无法解码或短于 87 秒时不出带配乐的成片，不循环、不变速、不换曲（退出码 2）。
+- **卡点**：谱通量粗检 + 短窗谱通量精修（2 ms 步长）、局部速度、动态规划节拍候选、段落新颖度选段；
+  镜头边界在 ±0.4 秒内贴起音，关键撞击需要强度 ≥ 0.6 的起音，找不到就改为柔和动作并取消音效。
+  画面动作与音效都从同一个事件帧开始，所以音画起音天然同帧；`av_offsets.json` 在独立音效轨上复测。
+- **混音**：音效按局部音乐电平放置，原曲低频已强时减弱或取消低鼓；10/80/300 ms 余弦避让 2 dB；
+  以 -16 LUFS-I / ≤ -1 dBTP 为起始目标，真峰值超标时降整体增益，不用限幅与削波。
+- **数据源**：分镜、主卡、角标、候选音效都在 `rest_guilt/story.py`；改文字后构建会重新核算阅读窗口与安全区。
+
 ## 横屏无声版
 
 ```bash
