@@ -6,3 +6,4 @@ assets/
 
 # 交付目录里的 WAV 不入库：音轨可由 python3 -m kepu.build --topic <slug> 确定性重新生成
 deliverables/**/*.wav
+dl/
