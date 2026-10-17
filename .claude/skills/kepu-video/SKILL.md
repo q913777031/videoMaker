@@ -57,6 +57,13 @@ cp -r topics/_template topics/<slug>
   - 不要让 `ease_io` 或 `ease_out` 的主体运动跨在撞击点之前；不要在撞击前做大面积的透明度渐变。
   - 暗色物体落定时，配一个光晕脉冲，否则帧差不明显。
 - 每 4–8 秒至少有一个有解释作用的物体变化；字幕阅读期间文字不漂浮、不缩放。
+- **动效拉满 / 画面 3 秒内不重复**：在 `Topic(...)` 里设 `motion="max"`。引擎会自动加四类效果：
+  - 持续运镜：按镜头号轮换推、横移、拉、斜移；
+  - 卡拍二次构图：在镜头内补上推近或拉开的构图变化，使切镜、撞击、构图变化之间的间隔都不超过 2.6 秒，并贴在附近的节拍上；
+  - 撞击强化：撞击帧加冲击缩放，低鼓、军鼓、通鼓与框鼓的撞击再加震屏，配合闪光与晕边；
+  - 字幕错峰入场：0.4 秒内落定，阅读期间静止。
+
+  场景里的关键物体要离舞台边缘留 150 单位以上，因为推镜加二次构图最多放大约 1.25 倍。
 - 通用镜头可直接调用：研究段用 `review_merge`（论文汇成综述），求助提示用 `pendant_talk`（吊灯下两人对坐）。
 
 ## 5. 抽帧检查（快，约 0.03 秒/帧）
@@ -73,7 +80,7 @@ python3 -m kepu.build --topic <slug> --stills 0.1,9,33,57,87    # 输出 out/<sl
 ## 6. 构建成片
 
 ```bash
-python3 -m kepu.build --topic <slug>      # 4 核约 4 分钟；--only vertical 只出一版；--covers-only 只出封面
+python3 -m kepu.build --topic <slug>      # 4 核约 4 分钟；--only vertical 只出竖屏（用户只要竖屏时）；--covers-only 只出封面
 ```
 
 卡点规则（引擎自动执行，交付时如实转述）：
@@ -96,6 +103,8 @@ python3 -m kepu.build --topic <slug>      # 4 核约 4 分钟；--only vertical 
 | `reading` | 全部 `ok: true` |
 | `mix_measured` | 约 -16 LUFS-I，真峰值 ≤ -1 dBTP |
 | `check/*.png` | 用 Read 查看解码帧：无错字、遮挡、溢出 |
+| `max_event_gap`（motion=max） | `max_gap_s` ≤ 3 秒，即切镜、撞击与构图变化之间都不超过 3 秒 |
+| `change_3s`（motion=max） | 记录每帧与 3 秒后那一帧的最小差异，供人工复核静态段 |
 
 `cue_table.csv` 中置信度为“低”的事件（重拍上起音很弱），要在交付说明里点名，请用户试听复核。
 

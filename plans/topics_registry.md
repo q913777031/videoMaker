@@ -12,6 +12,10 @@
 | 冒名顶替现象 | 《升职了，为什么反而觉得自己是混进来的》`topics/impostor/` | kepu 黑金无旁白 |
 | 透明度错觉 | 《紧张的时候，别人真能一眼看穿吗》`topics/transparency/` | kepu 黑金无旁白 |
 | 喜欢差距 | 《聊完天，为什么总觉得对方不太喜欢自己》`topics/liking/` | kepu 黑金无旁白 |
+| 沉没成本效应 | 《项目明明没希望，为什么还舍不得停》`topics/sunk/` | kepu 黑金无旁白（竖屏、动效拉满） |
+| 峰终定律 | 《忙了一整周，为什么只记得最崩的那晚》`topics/peakend/` | kepu 黑金无旁白（竖屏、动效拉满） |
+| 宜家效应 | 《自己做的方案，为什么怎么看都比别人好》`topics/ikea/` | kepu 黑金无旁白（竖屏、动效拉满） |
+| 选择过载 | 《外卖翻了半小时，为什么还是点不下去》`topics/choice/` | kepu 黑金无旁白（竖屏、动效拉满） |
 | 休息内疚 | 《你不是在休息，你是在为休息感到内疚》`rest_guilt/` | 黑金无旁白 |
 | 社会比较 | 《生活没变，怎么一刷手机就落后了？》`social_comparison/` | 无声 |
 | 刷短视频停不下来 | 《为什么你刷短视频停不下来？》`scroll_short.py` | 黑金无声 |
@@ -30,7 +34,7 @@
 
 | 选题 | 生活钩子 | 核心文献（待核验） |
 |---|---|---|
-| 沉没成本谬误 | 难看的电影也要看完、烂项目舍不得停 | Arkes & Blumer (1985), Organizational Behavior and Human Decision Processes |
-| 峰终定律 | 一次旅行只记得最好和最后那天 | Kahneman, Fredrickson, Schreiber & Redelmeier (1993), Psychological Science |
-| 宜家效应 | 自己拼的柜子，看着就是比买的顺眼 | Norton, Mochon & Ariely (2012), Journal of Consumer Psychology |
-| 选择过载 | 外卖翻了半小时还是点不下去 | Iyengar & Lepper (2000), JPSP（后续重复研究结果不一，需交代） |
+| 禀赋效应 | 自己的旧东西卖二手时总觉得别人出价太低 | Kahneman, Knetsch & Thaler (1990), Journal of Political Economy |
+| 后见之明偏差 | 事后总觉得“我早就知道会这样” | Fischhoff (1975), JEP: Human Perception and Performance |
+| 社会惰化 | 群里分配的活总有人等别人先动 | Latané, Williams & Harkins (1979), JPSP |
+| 虚假共识效应 | 以为大多数同事都和自己想法一样 | Ross, Greene & House (1977), JESP |

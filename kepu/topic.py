@@ -20,6 +20,7 @@ class Topic:
     hashtags: str
     references: str                            # references.txt 全文（书目 + 核验范围）
     post_cues: Callable | None = None          # (cues, shots) 跨镜头衔接参数，例如承接上一镜的运动相位
+    motion: str = "calm"                       # "max"：持续运镜、镜头内卡拍二次构图、撞击冲击与震屏、字幕错峰入场
 
 
 def load(slug: str) -> Topic:

@@ -686,3 +686,137 @@ def shelf(c, x0, x1, y, n=5, a=1.0, lit=-1, lit_k=0.0):
         c.drawRect(skia.Rect.MakeLTRB(cx - step * 0.32, y - hh, cx + step * 0.32, y), d.stroke(GOLD, 1.2, (0.3 + 0.7 * on) * a))
         if on > 0:
             d.glow(c, cx, y - hh / 2, 80, GOLD, 0.35 * on)
+
+
+# ---------------------------------------------------------------- 死胡同、天平、座位排、体验曲线、价签、菜单卡、漏斗、散点
+
+def dead_end(c, x, y_floor, h=360, crack=0.0):
+    """路尽头的墙（走不通的项目）：深色墙体 + 金边，crack 为裂缝程度。"""
+    c.drawRect(skia.Rect.MakeLTRB(x - 40, y_floor - h, x + 40, y_floor), d.fill("#1A1B1F"))
+    c.drawRect(skia.Rect.MakeLTRB(x - 40, y_floor - h, x + 40, y_floor), d.stroke(GOLD, 2, 0.5))
+    for i in range(1, 6):
+        c.drawLine(x - 40, y_floor - h * i / 6, x + 40, y_floor - h * i / 6, d.stroke("#2A2C33", 2))
+    if crack > 0:
+        p = skia.Path()
+        p.moveTo(x - 10, y_floor - h)
+        p.lineTo(x + 8, y_floor - h * 0.75)
+        p.lineTo(x - 6, y_floor - h * 0.55)
+        p.lineTo(x + 12, y_floor - h * 0.3)
+        c.drawPath(p, d.stroke("#E8C987", 2.5, crack))
+
+
+def balance(c, x, y, tilt=0.0, left=None, right=None, a=1.0):
+    """天平：tilt 为横梁倾角（度，正值右侧下沉）；left / right 为托盘上要画的回调 (c, x, y)。"""
+    c.drawLine(x, y, x, y + 260, d.stroke(GOLD, 5, a))
+    c.drawRRect(d.rrect(x, y + 270, 160, 20, 8), d.fill("#2A2824", a))
+    ang = math.radians(tilt)
+    L = 220
+    lx, ly = x - L * math.cos(ang), y - L * math.sin(ang)
+    rx, ry = x + L * math.cos(ang), y + L * math.sin(ang)
+    c.drawLine(lx, ly, rx, ry, d.stroke(GOLD, 6, a))
+    c.drawCircle(x, y, 12, d.fill(GOLD, a))
+    for px, py, cb in ((lx, ly, left), (rx, ry, right)):
+        c.drawLine(px, py, px - 60, py + 110, d.stroke(GOLD, 2, 0.7 * a))
+        c.drawLine(px, py, px + 60, py + 110, d.stroke(GOLD, 2, 0.7 * a))
+        c.drawRRect(d.rrect(px, py + 114, 150, 12, 6), d.fill(GOLD, a))
+        if cb is not None:
+            cb(c, px, py + 100)
+
+
+def seats(c, x, y, n, lit, cols=8, s=1.0, a=1.0):
+    """剧场座位排：n 个座位，前 lit 个亮起。"""
+    for i in range(n):
+        cx = x + (i % cols - (cols - 1) / 2) * 46 * s
+        cy = y + (i // cols) * 50 * s
+        on = i < lit
+        c.drawRRect(d.rrect(cx, cy, 34 * s, 30 * s, 6 * s), d.fill(GOLD if on else "#2A2C33", a))
+        c.drawRRect(d.rrect(cx, cy - 18 * s, 34 * s, 10 * s, 4 * s), d.fill(GOLD if on else "#2A2C33", 0.8 * a))
+        if on:
+            d.glow(c, cx, cy, 30 * s, GOLD, 0.3 * a)
+
+
+def mood_curve(c, x0, x1, y, pts, upto=1.0, lit=1.0, warm_end=0.0):
+    """体验曲线：pts 为 [(0–1 位置, 起伏 -1–1)]，向下为难受；画到 upto 为止。不标刻度。返回曲线采样点。"""
+    p = skia.Path()
+    samples = []
+    n = 120
+    for i in range(n + 1):
+        u = i / n
+        if u > upto:
+            break
+        v = 0.0
+        for k in range(len(pts) - 1):
+            (u0, v0), (u1, v1) = pts[k], pts[k + 1]
+            if u0 <= u <= u1:
+                w = (u - u0) / max(u1 - u0, 1e-6)
+                w = w * w * (3 - 2 * w)
+                v = v0 + (v1 - v0) * w
+                break
+        if warm_end > 0 and u > 0.85:
+            v += warm_end * (u - 0.85) / 0.15 * 0.8
+        px, py = x0 + (x1 - x0) * u, y - v * 160
+        samples.append((px, py))
+        (p.moveTo if i == 0 else p.lineTo)(px, py)
+    c.drawLine(x0, y, x1, y, d.stroke("#3A3833", 2, 1.0, dash=((8, 8), 0)))
+    c.drawPath(p, d.stroke(GOLD, 5, 0.35 + 0.65 * lit))
+    return samples
+
+
+def pin(c, x, y, k=1.0, color=GOLD):
+    """标记钉：从上方插下的小旗钉。"""
+    if k <= 0:
+        return
+    c.drawLine(x, y, x, y - 70, d.stroke(color, 3, k))
+    c.drawCircle(x, y - 76, 12, d.fill(color, k))
+    d.glow(c, x, y, 40, color, 0.4 * k)
+
+
+def price_tag(c, x, y, h, label_k=1.0, a=1.0, dashed=False):
+    """价值条（不标数字）：从 y 向上高 h 的竖条，顶端一个小价签。"""
+    c.drawRRect(d.rrect(x, y - h / 2, 56, h, 10), d.stroke(GOLD, 2.5, a, dash=((10, 7), 0) if dashed else None)
+                if dashed else d.fill(GOLD, 0.85 * a))
+    tag = skia.Path()
+    ty = y - h - 34
+    tag.moveTo(x - 30, ty - 18)
+    tag.lineTo(x + 20, ty - 18)
+    tag.lineTo(x + 34, ty)
+    tag.lineTo(x + 20, ty + 18)
+    tag.lineTo(x - 30, ty + 18)
+    tag.close()
+    c.drawPath(tag, d.fill(d.WHITE, label_k * a))
+    c.drawCircle(x + 16, ty, 5, d.fill("#2A2824", label_k * a))
+
+
+def menu_card(c, x, y, w=120, h=90, seed=0, a=1.0, lit=0.0):
+    """外卖菜单卡：一张带“菜品图块”与两行字迹的小卡片。"""
+    d.paper(c, x, y, w, h, lift=0.4, a=a, edge=lit > 0)
+    c.drawRRect(d.rrect(x - w * 0.22, y - h * 0.05, w * 0.36, h * 0.6, 8),
+                d.fill(d.mix("#C9A86A", "#8A6E3A", (seed % 3) / 3), a))
+    c.drawLine(x + w * 0.05, y - h * 0.15, x + w * 0.38, y - h * 0.15, d.stroke("#8F897F", 4, a))
+    c.drawLine(x + w * 0.05, y + h * 0.12, x + w * 0.28, y + h * 0.12, d.stroke("#8F897F", 4, a))
+    if lit > 0:
+        c.drawRRect(d.rrect(x, y, w + 8, h + 8, 10), d.stroke(GOLD, 3, lit * a))
+
+
+def funnel(c, x, y, w=360, h=260, a=1.0):
+    """漏斗（筛选标准）。"""
+    p = skia.Path()
+    p.moveTo(x - w / 2, y - h / 2)
+    p.lineTo(x + w / 2, y - h / 2)
+    p.lineTo(x + w * 0.1, y + h * 0.15)
+    p.lineTo(x + w * 0.1, y + h / 2)
+    p.lineTo(x - w * 0.1, y + h / 2)
+    p.lineTo(x - w * 0.1, y + h * 0.15)
+    p.close()
+    c.drawPath(p, d.fill("#16171B", 0.9 * a))
+    c.drawPath(p, d.stroke(GOLD, 3, a))
+
+
+def scatter(c, x0, x1, y_mid, n, k=1.0, spread=150, seed=5):
+    """“各研究结果”散点：围绕中线（零效应）上下散开，不标刻度。"""
+    rng = np.random.default_rng(seed)
+    c.drawLine(x0, y_mid, x1, y_mid, d.stroke(GOLD, 2.5, 0.8))
+    for i in range(n):
+        x = x0 + (x1 - x0) * (i + 0.5) / n
+        v = rng.normal(0, 0.55) * spread
+        c.drawCircle(x, y_mid + v * k, 7, d.fill(d.WHITE if abs(v) < spread * 0.5 else GOLD, 0.9))

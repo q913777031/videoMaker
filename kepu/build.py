@@ -180,6 +180,34 @@ def visual_hits(tl, L, events) -> list:
     return out
 
 
+def event_gap(tl) -> dict:
+    """画面事件（切镜、撞击、二次构图）之间的最大间隔；motion=max 时要求 ≤ 3 秒。"""
+    times = sorted({0.0, tl.total} | {s.start for s in tl.shots}
+                   | {e["t"] for e in tl.events if e.get("orig_sound", e["sound"]) or e["key"].startswith("reframe")})
+    g, at = max((b - a, a) for a, b in zip(times, times[1:]))
+    return {"max_gap_s": round(g, 2), "from": round(at, 2), "ok": g <= 3.0}
+
+
+def change_3s(tl, L, step: float = 0.5, gap: float = 3.0) -> dict:
+    """“3 秒内画面不重复”检查：每隔 step 秒取一帧，与 gap 秒后的帧比较灰度平均绝对差（0–255），
+    报告最小值及其位置；同时报告各镜头内最长的“无明显变化”时长（相邻 0.5 秒帧差 < 1.0 连续累计）。"""
+    def gray(sec):
+        return cv2.cvtColor(render.still(tl, L, int(round(sec * FPS))), cv2.COLOR_RGBA2GRAY).astype(np.int16)
+    times = np.arange(0.0, tl.total - gap - 0.4, step)
+    cache = {}
+    g = lambda sec: cache.setdefault(round(sec, 3), gray(sec))
+    diffs = [(float(np.abs(g(x) - g(x + gap)).mean()), float(x)) for x in times]
+    still_run, best = 0.0, 0.0
+    for x in times:
+        if float(np.abs(g(x) - g(x + step)).mean()) < 1.0:
+            still_run += step
+            best = max(best, still_run)
+        else:
+            still_run = 0.0
+    m = min(diffs)
+    return {"min_diff_3s": round(m[0], 2), "at": round(m[1], 2), "longest_static_s": round(best, 2)}
+
+
 def ffprobe(path: Path) -> dict:
     j = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_streams", "-show_format", "-of", "json",
                                    str(path)], capture_output=True, text=True).stdout)
@@ -250,6 +278,13 @@ def write_delivery(out: Path, topic: Topic):
             L.append("- 原曲在该拍低频已足、按规则取消低音鼓叠加：" + "；".join(f"镜头{x[8]}（{x[13]}）" for x in cancel) + "。画面撞击仍在原拍点。")
     L.append(f"- 音画同步：音效起音帧与事件帧偏差 {onset} 帧；画面撞击峰值与事件帧最大偏差 {worst} 帧（共 {len(vh.get('vertical', []))} 个撞击事件/每版）。")
     L.append(f"- 阅读窗口：{len(reading)} 张主卡{'全部满足' if all(x['ok'] for x in reading) else '存在不满足项'}预算，最短稳定 {min(x['window'] for x in reading):.2f} s；主字幕宽度均在安全区内。")
+    for name, v in r.get("change_3s", {}).items():
+        L.append(f"- 3 秒画面变化（{name}）：每 0.5 秒取帧与 3 秒后比较，最小灰度平均差 {v['min_diff_3s']}（{v['at']} s 处）；"
+                 f"相邻 0.5 秒几乎无变化的最长连续时长 {v['longest_static_s']} s。")
+    if r.get("reframes"):
+        gap = r.get("max_event_gap", {})
+        L.append(f"- 镜头内二次构图 {len(r['reframes'])} 处（推近 / 拉开交替，卡在节拍上）；切镜、撞击与构图变化之间的最大间隔 "
+                 f"{gap.get('max_gap_s')} s（{gap.get('from')} s 起），{'满足' if gap.get('ok') else '不满足'}“3 秒内不重复”。")
     L.append("- 解码抽帧见 `check/`（首帧与约 1/3、2/3、片尾处）。")
     if low:
         L += ["", "## 需要试听复核", "", "置信度为“低”的事件（网格拍点上原曲起音较弱）：" + "；".join(f"镜头{x[8]} {x[9]}（强度 {x[4]}）" for x in low) + "。"]
@@ -368,6 +403,10 @@ def main():
             {"shot": tl.shots[k].no, "start": round(tl.shots[k].start, 3), "dur": round(tl.shots[k].dur, 3),
              "beat_pos": tl.boundaries[k][0].pos if tl.boundaries[k] else None,
              "why": tl.boundaries[k][1] if tl.boundaries[k] else "保持"} for k in range(1, len(tl.shots))]
+    if tl.reframes:
+        report["reframes"] = [f"镜头{e['shot']} {e['t']:.2f}s（{render.POS_NAME[e['beat'].pos] if e.get('beat') else '空档中点'}）"
+                              for e in tl.events if e["key"].startswith("reframe")]
+        report["max_event_gap"] = event_gap(tl)
     rows = reading_table(tl)
     report["reading"] = rows
     write_captions(out / "captions.txt", tl, rows, topic)
@@ -385,6 +424,8 @@ def main():
         report.setdefault("loudness_ffmpeg", {})[name] = ebur128(mp4)
         extract_frames(mp4, out / "check", check_times(tl))
         report.setdefault("visual_hits", {})[name] = visual_hits(tl, L, tl.events)
+        if topic.motion == "max":
+            report.setdefault("change_3s", {})[name] = change_3s(tl, L)
 
     (out / "verify_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1, default=str),
                                             encoding="utf-8")

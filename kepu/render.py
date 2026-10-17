@@ -1,5 +1,6 @@
 """时间轴构建（叙事基准或按原曲校准）、逐帧合成（场景 + 字幕 + 角标）、多进程渲染与封面。"""
 
+import math
 import subprocess
 from dataclasses import dataclass, field, replace
 from multiprocessing import get_context
@@ -25,6 +26,7 @@ class Timeline:
     calibrated: bool
     boundaries: list = field(default_factory=list)   # 每条边界的 (Beat, 原因)，无原曲时为 None
     topic: Topic | None = None
+    reframes: dict = field(default_factory=dict)      # 镜头号 → 镜头内二次构图时刻（motion=max）
 
 
 POS_NAME = {1: "小节重拍（第1拍）", 3: "次强拍（第3拍）", 2: "普通拍（第2拍）", 4: "普通拍（第4拍）"}
@@ -58,6 +60,50 @@ def _fit_boundaries(sh, an) -> tuple[list[float], list]:
                 bounds[i], info[i] = nb, (bt, why)
                 break
     return bounds, info
+
+
+MAX_GAP = 2.6                 # motion=max：画面事件（切镜、撞击、二次构图）之间的目标最大间隔（秒），留余量保证 ≤ 3 秒
+
+
+def _reframes(sh, cues, an, events) -> dict:
+    """motion=max：在镜头内插入卡拍的二次构图，使切镜、撞击与构图变化之间的间隔都不超过 MAX_GAP。
+
+    每次取当前最长空档的中点，优先贴附近的小节重拍、其次第 3 拍、再次任意拍；与已有事件相隔至少 0.35 秒，
+    离镜头首尾至少 0.6 秒；每镜最多 3 次。插入的构图变化同时记入事件表（无音效）。
+    """
+    out = {}
+    for s in sh:
+        marks = sorted([0.0, s.dur] + [v for k, v in cues[s.no].items() if not k.startswith("_")])
+        picks = []
+        for _ in range(3):
+            gaps = [(b - a, a, b) for a, b in zip(marks, marks[1:])]
+            g, a, b = max(gaps)
+            if g <= MAX_GAP:
+                break
+            mid = (a + b) / 2
+            ok = lambda lt: 0.6 <= lt <= s.dur - 0.6 and all(abs(lt - m) >= 0.35 for m in marks)
+            pick, why, lt = None, "空档中点（无合适拍点）", None
+            if an is not None:
+                for pos, name in (({1}, "小节重拍（第1拍）"), ({3}, "次强拍（第3拍）"), (None, "最近拍")):
+                    cands = [bt for bt in an.beats if (pos is None or bt.pos in pos) and ok(bt.t - s.start)
+                             and a < bt.t - s.start < b and abs(bt.t - s.start - mid) <= g / 2 - 0.35]
+                    if cands:
+                        pick = min(cands, key=lambda bt: abs(bt.t - s.start - mid))
+                        why, lt = name, round((pick.t - s.start) * FPS) / FPS
+                        break
+            if lt is None:
+                lt = round(mid * FPS) / FPS
+            marks = sorted(marks + [lt])
+            picks.append(lt)
+            events.append({"shot": s.no, "key": f"reframe{len(picks)}", "sound": "", "orig_sound": "",
+                           "action": "镜头内二次构图（推近 / 拉开交替）", "gain": 0.0, "base": s.start + mid,
+                           "strength": round(pick.strength, 3) if pick else None,
+                           "conf": ("高" if pick.pos == 1 else "中") if pick else "未确认",
+                           "method": f"motion=max 二次构图，贴{why}" + ("；自动分析，未人工试听" if pick else ""),
+                           "mix": "", "beat": pick, "music_t": pick.t if pick else None, "t": s.start + lt,
+                           "sfx_t": s.start + lt})
+        out[s.no] = sorted(picks)
+    return out
 
 
 def build_timeline(topic: Topic, analysis=None) -> Timeline:
@@ -122,7 +168,8 @@ def build_timeline(topic: Topic, analysis=None) -> Timeline:
             events.append(row)
     if topic.post_cues is not None:
         topic.post_cues(cues, sh)
-    tl = Timeline(sh, total, cues, events, an is not None, binfo, topic)
+    reframes = _reframes(sh, cues, an, events) if topic.motion == "max" else {}
+    tl = Timeline(sh, total, cues, events, an is not None, binfo, topic, reframes)
     return tl
 
 
@@ -136,6 +183,13 @@ class Frame:
         z = L.zoom
         self.view = tuple((x - c0 * (1 - z)) / z for x, c0 in zip(v, (500, 560, 500, 560)))
         self.starts = [x.start for x in tl.shots]
+        self.max = self.topic is not None and self.topic.motion == "max"
+        self.hits = {}
+        for e in tl.events:
+            snd = e.get("orig_sound", e["sound"])
+            if snd:
+                sh = tl.shots[e["shot"] - 1]
+                self.hits.setdefault(e["shot"], []).append((e["t"] - sh.start, snd))
 
     def locate(self, gt):
         k = max(0, min(len(self.starts) - 1, int(np.searchsorted(self.starts, gt + 1e-9, "right")) - 1))
@@ -149,8 +203,71 @@ class Frame:
         z = self.L.zoom
         c.translate(500 * (1 - z), 560 * (1 - z))
         c.scale(z, z)
+        if self.max:
+            self._camera(c, sh, t)
         self.topic.scenes[sh.no](c, t, sh.dur, self.tl.cues[sh.no], self.view)
         c.restore()
+
+    def _camera(self, c, sh, t):
+        """motion=max 的运镜：按镜头号轮换推、横移、拉、斜移；二次构图时刻再推近一档；撞击时冲击缩放与震屏。"""
+        D = max(sh.dur, 0.1)
+        u = d.ease_io(t / D)
+        p = sh.no % 4
+        sc, dx, rot = 1.0, 0.0, 0.0
+        if p == 0:
+            sc = d.lerp(1.0, 1.12, u)
+        elif p == 1:
+            sc, dx = 1.05, d.lerp(-35, 35, u)
+        elif p == 2:
+            sc = d.lerp(1.12, 1.0, u)
+        else:
+            sc, dx, rot = 1.04, d.lerp(35, -35, u), d.lerp(-2.0, 2.0, u)
+        dy = 0.0
+        # 二次构图：推近与拉开交替，并左右错开，每次 0.12 秒内完成（卡在拍点上的“跳切”感）
+        frames = [(1.0, 0, 0, 0.0), (1.10, -20, -25, 1.2), (1.03, 25, 10, -1.0), (1.12, -10, -30, 0.8)]
+        prev, n = frames[0], 0
+        for r in self.tl.reframes.get(sh.no, []):
+            if t >= r:
+                n += 1
+                k = d.ease_out(d.prog(t, r, 0.12))
+                cur = frames[n % len(frames)]
+                prev = tuple(d.lerp(pa, ca, k) for pa, ca in zip(prev, cur))
+        sc *= prev[0]
+        dx += prev[1]
+        dy += prev[2]
+        rot += prev[3]
+        sx = sy = 0.0
+        for ht, snd in self.hits.get(sh.no, []):
+            if t >= ht:
+                e = math.exp(-(t - ht) * 9)
+                sc *= 1 + 0.06 * e
+                if snd in ("kick", "rim", "tom", "framedrum"):
+                    a = 16 * math.exp(-(t - ht) * 12)
+                    sx += a * math.sin((t - ht) * 83)
+                    sy += a * math.cos((t - ht) * 71)
+        c.translate(500 + dx + sx, 560 + dy + sy)
+        c.rotate(rot)
+        c.scale(sc, sc)
+        c.translate(-500, -560)
+
+    def _fx(self, c, sh, t):
+        """motion=max 的屏幕层效果：撞击闪光与暖色晕边、持续漂浮的少量金尘。"""
+        L = self.L
+        for ht, snd in self.hits.get(sh.no, []):
+            if ht <= t < ht + 0.4:
+                k = math.exp(-(t - ht) * 12)
+                c.drawPaint(skia.Paint(Color=d.col("#FFF4DC", 0.16 * k)))
+                g = skia.GradientShader.MakeRadial(skia.Point(L.w / 2, L.h / 2), max(L.w, L.h) * 0.75,
+                                                   [d.col(GOLD, 0.0), d.col(GOLD, 0.22 * k)], [0.55, 1.0])
+                c.drawPaint(skia.Paint(Shader=g))
+        gt = sh.start + t
+        rng = np.random.default_rng(29)
+        for _ in range(26):
+            x0, y0 = rng.uniform(0, L.w), rng.uniform(0, L.h)
+            sp, ph = rng.uniform(12, 40), rng.uniform(0, 6.28)
+            x = (x0 + 18 * math.sin(gt * 0.7 + ph)) % L.w
+            y = (y0 - sp * gt) % L.h
+            c.drawCircle(x, y, rng.uniform(1.2, 2.6), d.fill("#F6E2B5", rng.uniform(0.15, 0.4)))
 
     def draw(self, c: skia.Canvas, frame: int):
         gt = frame / FPS
@@ -164,6 +281,8 @@ class Frame:
             c.restore()
         else:
             self._scene(c, sh, t)
+        if self.max:
+            self._fx(c, sh, t)
         self._scrim(c)
         self._tag(c, sh, t, k)
         if sh.credit:
@@ -220,7 +339,13 @@ class Frame:
             c.drawLine(L.text_x - 35, y0 - L.text_size * 1.1, L.text_x + 35, y0 - L.text_size * 1.1,
                        d.stroke(GOLD, 3, a))
         for i, ln in enumerate(lines):
-            d.draw_text(c, ln, L.text_x, y0 + i * L.text_line_gap + rise, L.text_size, WHITE, a,
+            ai, dx, ry = a, 0.0, rise
+            if self.max and k > 0:
+                x = d.ease_out(d.prog(t, 0.08 * i, TEXT_IN - 0.08 * i))
+                ai = a * x if t < TEXT_IN else a
+                dx = (1 - x) * (-40 if i % 2 == 0 else 40)
+                ry = (1 - x) * 30
+            d.draw_text(c, ln, L.text_x + dx, y0 + i * L.text_line_gap + ry, L.text_size, WHITE, ai,
                         align=L.text_align)
 
     def _credit(self, c, sh, t, k):
