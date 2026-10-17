@@ -227,11 +227,11 @@ def sofa_front(c, a=1.0, top_glow=0.0):
 ARMREST_TOP = ((256, 598), (552, 598))
 
 
-def belt(c, t, offset, a=1.0, flash=0.0, roll=0.0):
-    """沙发下的跑步机传送带。offset 为带面累计位移（单位），flash 为金色闪光强度，roll 0—1 为卷起进度（第 5 镜）。"""
+def belt(c, t, offset, a=1.0, flash=0.0, roll=0.0, x0=120, x1=720):
+    """家具下的跑步机传送带。offset 为带面累计位移（单位），flash 为金色闪光强度，roll 0—1 为卷起进度。"""
     if a <= 0:
         return
-    x0, x1, y = 120, 720, FLOOR_Y
+    y = FLOOR_Y
     c.save()
     if roll > 0:
         c.saveLayerAlpha(None, int(255 * (1 - roll)))
@@ -306,13 +306,14 @@ def joints(P: dict) -> dict:
     hu = (-math.sin(hr), -math.cos(hr))
     head = (sh[0] + hu[0] * (NECK + HEAD), sh[1] + hu[1] * (NECK + HEAD))
     j = {"hip": hip, "sh": sh, "head": head, "up": up, "hu": hu}
+    ls = P.get("leg_scale", 1.0)
     for side in ("n", "f"):
         el = _limb(sh, P["sh_" + side], UPPER)
         j["el_" + side] = el
         j["ha_" + side] = _limb(el, P["el_" + side], FORE)
-        kn = _limb(hip, P["th_" + side], THIGH)
+        kn = _limb(hip, P["th_" + side], THIGH * ls)
         j["kn_" + side] = kn
-        j["ft_" + side] = _limb(kn, P["kn_" + side], SHIN)
+        j["ft_" + side] = _limb(kn, P["kn_" + side], SHIN * ls)
     return j
 
 
@@ -364,7 +365,13 @@ def person_back(c, P: dict, a=1.0):
     c.drawCircle(hx + fwd[0] * 14 - up[0] * 12, hy + fwd[1] * 14 - up[1] * 12, HEAD - 2, fill(SKIN))
     c.restore()
     ex, ey = hx + fwd[0] * 26 - up[0] * 2, hy + fwd[1] * 26 - up[1] * 2
-    line(c, ex - 5 * fwd[0], ey - 5 * fwd[1], ex + 5 * fwd[0], ey + 5 * fwd[1], stroke("#2A211B", 3))
+    if P.get("eyes_closed", 0) > 0.5:
+        lid = skia.Path()
+        lid.moveTo(ex - 6 * up[0], ey - 6 * up[1])
+        lid.quadTo(ex + 4 * fwd[0], ey + 4 * fwd[1], ex + 6 * up[0], ey + 6 * up[1])
+        c.drawPath(lid, stroke("#2A211B", 2.6))
+    else:
+        line(c, ex - 5 * fwd[0], ey - 5 * fwd[1], ex + 5 * fwd[0], ey + 5 * fwd[1], stroke("#2A211B", 3))
     nose = (hx + fwd[0] * (HEAD + 2) - up[0] * 10, hy + fwd[1] * (HEAD + 2) - up[1] * 10)
     c.drawCircle(*nose, 6, fill(SKIN))
     c.drawCircle(hx - fwd[0] * 6 - up[0] * 6, hy - fwd[1] * 6 - up[1] * 6, 7, fill(SKIN_FAR))
@@ -748,3 +755,215 @@ def tag(c, L: Layout, text: str, a: float = 1.0):
     rrect(c, x, y, w, h, h / 2, stroke(GOLD, 1.6, 0.85 * a))
     c.drawCircle(x + size * 0.55, y + h / 2, size * 0.13, fill(GOLD, a))
     gfx.draw_text(c, text, x + size * 0.85, y + h / 2, size, "bold", WHITE, 0.92 * a, "left")
+
+
+# ---------------------------------------------------------------- 卧室（深夜版）
+
+BED_X0, BED_X1, MATTRESS_Y = 250, 830, 640
+STAND_X0, STAND_X1, STAND_Y = 0, 220, 600
+
+
+def room_far_night(c, t, light=1.0, lamp=1.0, door=False):
+    """远景：夜色窗户与月亮、墙面、可选的门（第 6 镜拉远时露出），由调用方套景深模糊。"""
+    c.drawRect(skia.Rect.MakeLTRB(-1500, FLOOR_Y, 2500, 2400), fill("#0B0C0E", 1))
+    rrect(c, 420, 150, 240, 260, 6, fill("#10151C", light))
+    p = skia.Paint(AntiAlias=True)
+    p.setShader(skia.GradientShader.MakeLinear([(420, 150), (660, 410)],
+                                               [gfx.col("#26324A", 0.8 * light), gfx.col("#121722", 0.9 * light)]))
+    rrect(c, 428, 158, 224, 244, 4, p)
+    c.drawCircle(600, 215, 26, fill("#E9E1CB", 0.85 * light))
+    c.drawCircle(612, 207, 24, fill("#1E2738", 0.95 * light))
+    line(c, 540, 158, 540, 402, stroke("#0D1117", 6, light))
+    line(c, 428, 280, 652, 280, stroke("#0D1117", 6, light))
+    g = skia.Paint(AntiAlias=True)
+    g.setShader(skia.GradientShader.MakeRadial((540, 520), 380, [gfx.col("#8FA6C8", 0.10 * light), gfx.col("#8FA6C8", 0)]))
+    c.drawCircle(540, 520, 380, g)
+    if lamp > 0:
+        g2 = skia.Paint(AntiAlias=True)
+        g2.setShader(skia.GradientShader.MakeRadial((190, 470), 360, [gfx.col("#E8C98A", 0.30 * lamp * light),
+                                                                    gfx.col("#E8C98A", 0)]))
+        c.drawCircle(190, 470, 360, g2)
+    if door:
+        rrect(c, 1010, 300, 170, 550, 4, fill("#121316", light))
+        rrect(c, 1022, 312, 146, 538, 3, fill("#17191D", light))
+        c.drawCircle(1150, 590, 7, fill(GOLD, 0.5 * light))
+
+
+def bed_back(c, a=1.0):
+    """床头板、床体与床垫（人物之下的部分）。"""
+    if a <= 0:
+        return
+    soft_shadow(c, 540, FLOOR_Y, 330, 16, 0.6 * a)
+    rrect(c, 214, 470, 40, 330, 10, fill("#2E2822", a))
+    rrect(c, 214, 470, 40, 12, 6, fill("#4A4036", a))
+    rrect(c, 250, 700, 580, 92, 8, fill("#2B2520", a))
+    rrect(c, 250, 700, 580, 92, 8, stroke("#3E352C", 1.4, a))
+    for lx in (270, 800):
+        rrect(c, lx, 792, 14, FLOOR_Y - 792, 3, fill("#1A1612", a))
+    rrect(c, 252, MATTRESS_Y, 576, 66, 18, fill("#3C4048", a))
+    rrect(c, 256, MATTRESS_Y + 2, 568, 10, 6, fill("#4D525B", 0.7 * a))
+    rrect(c, 262, 600, 120, 48, 22, fill("#C9C2B4", a))
+    rrect(c, 268, 604, 108, 12, 6, fill("#DDD6C9", 0.7 * a))
+
+
+def blanket(c, P: dict, a=1.0, from_hip=False):
+    """被子：沿人物身体上方 30 单位的平滑轮廓盖到床尾；from_hip=True 时只盖腿（坐起时）。"""
+    if a <= 0:
+        return
+    j = joints(P)
+    pts = [j["hip"], j["kn_n"], j["ft_n"]]
+    if not from_hip:
+        mid = ((j["sh"][0] + j["hip"][0]) / 2, (j["sh"][1] + j["hip"][1]) / 2)
+        pts = [(j["sh"][0] + 26, j["sh"][1]), mid] + pts
+    path = skia.Path()
+    x0 = pts[0][0]
+    path.moveTo(x0, MATTRESS_Y + 30)
+    path.lineTo(x0, pts[0][1] - 30)
+    for k in range(1, len(pts)):
+        px, py = pts[k - 1]
+        qx, qy = pts[k]
+        path.quadTo(px, py - 34, (px + qx) / 2, min(py, qy) - 32)
+    path.quadTo(min(BED_X1 - 6, pts[-1][0] + 40), pts[-1][1] - 30, BED_X1 + 6, MATTRESS_Y + 6)
+    path.lineTo(BED_X1 + 8, MATTRESS_Y + 74)
+    path.lineTo(x0, MATTRESS_Y + 74)
+    path.close()
+    c.drawPath(path, fill("#000000", 0.35 * a, blur=10))
+    p = skia.Paint(AntiAlias=True)
+    p.setShader(skia.GradientShader.MakeLinear([(0, 560), (0, 720)], [gfx.col("#6A6152", a), gfx.col("#463F35", a)]))
+    c.drawPath(path, p)
+    c.drawPath(path, stroke("#857A68", 1.6, 0.6 * a))
+    line(c, x0 + 6, pts[0][1] - 22, x0 + 6, MATTRESS_Y + 60, stroke("#8C826F", 3, 0.5 * a))
+
+
+def nightstand(c, a=1.0, drawer=0.0):
+    """床头柜（有抽屉），台面 y=600，x 0—220。"""
+    if a <= 0:
+        return
+    soft_shadow(c, 110, FLOOR_Y, 120, 10, 0.5 * a)
+    rrect(c, STAND_X0, STAND_Y - 8, 220, 16, 4, fill("#4A3D31", a))
+    rrect(c, 10, STAND_Y + 8, 200, 92, 3, fill(WOOD, a))
+    for lx in (14, 194):
+        rrect(c, lx, STAND_Y + 100, 12, FLOOR_Y - STAND_Y - 100, 2, fill("#2C241D", a))
+    dx = 70 * drawer
+    if drawer > 0:
+        rrect(c, 22, STAND_Y + 20, 176, 56, 2, fill("#120E0B", a))
+    rrect(c, 22 + dx, STAND_Y + 20, 176, 56, 3, fill("#4A3D31", a))
+    rrect(c, 22 + dx, STAND_Y + 20, 176, 56, 3, stroke("#5E4F40", 1.4, a))
+    rrect(c, 96 + dx, STAND_Y + 44, 28, 6, 3, fill(GOLD, 0.8 * a))
+
+
+def clock(c, text: str, colon: bool, a=1.0, glow=0.0):
+    """床头数字时钟（x 14—104），显示 HH:MM；colon 控制冒号随拍闪烁。"""
+    if a <= 0:
+        return
+    rrect(c, 14, STAND_Y - 52, 92, 46, 8, fill("#0E0F11", a))
+    rrect(c, 14, STAND_Y - 52, 92, 46, 8, stroke("#3A332B", 1.6, a))
+    if glow > 0:
+        rrect(c, 10, STAND_Y - 56, 100, 54, 10, fill(GOLD, 0.35 * glow * a, blur=12))
+    hh, mm = text.split(":")
+    y = STAND_Y - 29
+    gfx.draw_text(c, hh, 40, y, 30, "bold", GOLD, a)
+    gfx.draw_text(c, mm, 80, y, 30, "bold", GOLD, a)
+    if colon:
+        c.drawCircle(60, y - 7, 2.6, fill(GOLD, a))
+        c.drawCircle(60, y + 7, 2.6, fill(GOLD, a))
+
+
+def lamp(c, on=1.0, a=1.0):
+    """床头柜右侧的小台灯；on 0—1 为亮度。"""
+    if a <= 0:
+        return
+    rrect(c, 172, STAND_Y - 14, 44, 10, 4, fill("#3A332B", a))
+    line(c, 194, STAND_Y - 14, 194, STAND_Y - 96, stroke("#3A332B", 4, a))
+    shade = _path([(166, STAND_Y - 96), (222, STAND_Y - 96), (210, STAND_Y - 140), (178, STAND_Y - 140)])
+    shade.close()
+    c.drawPath(shade, fill(gfx.mix("#3E352B", "#E8CF9A", on), a))
+    if on > 0:
+        c.drawCircle(194, STAND_Y - 90, 70, fill("#E8C98A", 0.30 * on * a, blur=40))
+
+
+def name_plate(c, x, y, w, name, a=1.0, size=34):
+    """作者名牌：深色纸卡 + 金色圆点 + 拉丁字母全名（不画肖像）。"""
+    if a <= 0:
+        return
+    paper_card(c, x, y, w, 70, a, dark=True, r=8, lift=0.6)
+    c.drawCircle(x + 32, y + 35, 7, fill(GOLD, a))
+    gfx.draw_text(c, name, x + 56, y + 35, size, "bold", WHITE, a, "left")
+
+
+def label(c, text, x, y, size=34, a=1.0, color=WHITE, align="center"):
+    gfx.draw_text(c, text, x, y, size, "bold", color, a, align)
+
+
+def icon_dumbbell(c, x, y, s=1.0, a=1.0):
+    c.save(); c.translate(x, y); c.scale(s, s)
+    line(c, -26, 0, 26, 0, stroke("#BDB2A0", 7, a))
+    for sx in (-1, 1):
+        rrect(c, sx * 30 - 7, -18, 14, 36, 4, fill("#D8CCB4", a))
+        rrect(c, sx * 40 - 5, -12, 10, 24, 3, fill("#BDB2A0", a))
+    c.restore()
+
+
+def icon_certificate(c, x, y, s=1.0, a=1.0):
+    c.save(); c.translate(x, y); c.scale(s, s)
+    rrect(c, -30, -22, 60, 40, 4, fill("#D8CCB4", a))
+    for k in range(2):
+        line(c, -20, -10 + k * 10, 14, -10 + k * 10, stroke("#9A8C72", 2.4, a))
+    c.drawCircle(18, 12, 9, fill(GOLD, a))
+    c.drawPath(_path([(13, 18), (10, 30), (18, 25), (26, 30), (23, 18)]), fill(GOLD, a))
+    c.restore()
+
+
+def icon_laptop(c, x, y, s=1.0, a=1.0):
+    c.save(); c.translate(x, y); c.scale(s, s)
+    rrect(c, -28, -24, 56, 36, 4, fill("#2A2F37", a))
+    rrect(c, -24, -20, 48, 28, 2, fill("#3E4A5A", a))
+    rrect(c, -36, 12, 72, 8, 3, fill("#BDB2A0", a))
+    c.drawCircle(0, -6, 8, fill(GOLD, a))
+    c.restore()
+
+
+def icon_headphones(c, x, y, s=1.0, a=1.0):
+    c.save(); c.translate(x, y); c.scale(s, s)
+    arc = skia.Path()
+    arc.addArc(skia.Rect.MakeLTRB(-26, -30, 26, 22), 180, 180)
+    c.drawPath(arc, stroke("#D8CCB4", 6, a))
+    for sx in (-1, 1):
+        rrect(c, sx * 26 - 8, -6, 16, 26, 6, fill(GOLD, a))
+    c.restore()
+
+
+def runner(c, x, y, ph, s=1.0, a=1.0, colr="#BDB2A0"):
+    """奔跑小人剪影（无脸）；ph 为步态相位。"""
+    c.save(); c.translate(x, y); c.scale(s, s)
+    sw = math.sin(ph * 2 * math.pi)
+    c.drawCircle(-4, -42, 8, fill(colr, a))
+    line(c, -2, -32, 4, -10, stroke(colr, 6, a))
+    line(c, 4, -10, 4 - 12 * sw, 8, stroke(colr, 5, a))
+    line(c, 4, -10, 4 + 12 * sw, 8, stroke(colr, 5, a))
+    line(c, 0, -26, -12 * sw, -16, stroke(colr, 4, a))
+    line(c, 0, -26, 12 * sw, -16, stroke(colr, 4, a))
+    c.restore()
+
+
+def phone_feed(c, x, y, w, h, scroll, a=1.0, items=None):
+    """放大的手机屏幕：信息流卡片按 scroll（以条计，整数为停稳位置）向上滚动。"""
+    if a <= 0:
+        return
+    rrect(c, x - 10, y - 10, w + 20, h + 20, 30, fill("#000000", 0.5 * a, blur=16))
+    rrect(c, x - 10, y - 10, w + 20, h + 20, 30, fill("#0E0F12", a))
+    rrect(c, x - 10, y - 10, w + 20, h + 20, 30, stroke(GOLD, 1.6, 0.6 * a))
+    c.save()
+    c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y, w, h), 20, 20), doAntiAlias=True)
+    c.drawRect(skia.Rect.MakeXYWH(x, y, w, h), fill("#171B22", a))
+    items = items or [icon_dumbbell, icon_certificate, icon_laptop]
+    ih = 130
+    for k in range(-1, 6):
+        idx = k + int(math.floor(scroll))
+        yy = y + 20 + k * ih - (scroll - math.floor(scroll)) * ih
+        rrect(c, x + 14, yy, w - 28, ih - 18, 12, fill("#222831", a))
+        items[idx % len(items)](c, x + 64, yy + (ih - 18) / 2, 1.1, a)
+        line(c, x + 120, yy + 38, x + w - 34, yy + 38, stroke("#5A6472", 6, a))
+        line(c, x + 120, yy + 62, x + w - 70, yy + 62, stroke("#434B57", 6, a))
+        c.drawCircle(x + w - 40, yy + 86, 8, fill(GOLD, 0.7 * a))
+    c.restore()

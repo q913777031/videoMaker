@@ -1,11 +1,11 @@
-"""时间轴：叙事基准（未校准）与按原曲分析结果校准后的镜头边界、事件帧。
+"""时间轴：按小节网格排镜头，事件以拍计并贴到原曲实测起音上。
 
-校准规则（只在拿到真实原曲分析后执行）：
-1. 总长 = 选定原曲片段长度（87—93 秒），先按比例缩放基准边界；
-2. 每条内部边界在 ±0.4 秒内寻找强度 ≥ 0.5 的起音，按 强度 - 距离惩罚 取最优，找不到保持原位；
-3. 事件在其窗口内找起音：strong 需 ≥ 0.6，soft 需 ≥ 0.3（普通拍点也可）；找不到时
-   strong 降为柔和动作并取消音效，soft 保持基准时刻、不加强调；
-4. 每次移动后重算阅读窗口，不满足 story.read_budget 时回退该移动。
+校准规则（拿到真实原曲后）：
+1. 由起音拟合恒定速度网格（拍长、首个小节强拍）；镜头切点 = 小节强拍（第 1 镜从第 0 帧开始，最后一镜延续到曲终）；
+2. 事件的网格时刻 ±45 ms 内若有实测起音，吸附到该起音并记录强度；
+   strong 事件需要强度 ≥ 0.6，否则降为柔和动作并取消音效；soft 事件无起音时降 4 dB；
+3. 每拍、每个小节强拍都写入 beats / downbeats，供画面做逐拍的小动作；
+4. 重算阅读窗口，不满足预算的写入 notes。
 """
 
 import json
@@ -17,7 +17,7 @@ from .story import FPS
 ENTER = 0.4
 EXIT = 0.4
 FIRST_READY = 0.2
-BOUNDARY_SHIFT = 0.4
+SNAP = 0.045
 
 
 @dataclass
@@ -31,17 +31,20 @@ class EvT:
     source: str
     music_time: float | None = None
     strength: float | None = None
-    method: str = "叙事基准，未按原曲校准"
+    method: str = "名义网格，未按原曲校准"
     confidence: str = "未确认"
     mix_note: str = ""
+    grid_time: float | None = None
 
 
 @dataclass
 class Timeline:
     total_frames: int
-    bounds: list[int]  # 16 个边界帧：bounds[i] 为第 i+1 镜开始
+    bounds: list[int]
     events: list[EvT]
     beats: list[int] = field(default_factory=list)
+    downbeats: list[int] = field(default_factory=list)
+    beat_len: float = story.NOMINAL_BEAT
     calibrated: bool = False
     music: dict = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
@@ -51,7 +54,6 @@ class Timeline:
         return self.total_frames / FPS
 
     def shot_range(self, i: int) -> tuple[int, int]:
-        """第 i 镜（1 起）的 [开始帧, 结束帧)。"""
         return self.bounds[i - 1], self.bounds[i]
 
     def ev(self, shot: int, name: str) -> float:
@@ -67,7 +69,6 @@ class Timeline:
         return a / FPS + lead, b / FPS - EXIT
 
     def check_reading(self) -> list[str]:
-        """返回不满足阅读预算的镜头说明；空列表表示全部满足。"""
         bad = []
         for s in story.SHOTS:
             a, b = self.read_window(s.idx)
@@ -87,89 +88,75 @@ class Timeline:
         return Timeline(**d)
 
 
-def baseline() -> Timeline:
-    """90.00 秒叙事基准：每镜 6 秒，事件取分镜中的基准时刻；全部标记为未确认。"""
-    n = len(story.SHOTS)
-    bounds = [round(i * story.SHOT_LEN * FPS) for i in range(n + 1)]
-    evs = []
+def _build(T: float, first_down: float, total: float, onsets: list | None, method: str) -> Timeline:
+    total_frames = round(total * FPS)
+    bar = 4 * T
+    starts, acc = [], 0
     for s in story.SHOTS:
+        starts.append(first_down + acc * bar)
+        acc += s.bars
+    bounds = [0] + [round(t * FPS) for t in starts[1:]] + [total_frames]
+    tl = Timeline(total_frames, bounds, [], beat_len=T, calibrated=onsets is not None)
+    n_beats = int((total - first_down) / T) + 1
+    grid = [first_down + k * T for k in range(n_beats) if first_down + k * T < total]
+    tl.beats = [round(t * FPS) for t in grid]
+    tl.downbeats = [round(t * FPS) for k, t in enumerate(grid) if k % 4 == 0]
+    for s, st0 in zip(story.SHOTS, starts):
         for e in s.events:
-            evs.append(EvT(s.idx, e.name, bounds[s.idx - 1] + round(e.at * FPS), e.sfx, e.gain_db,
-                           "none", "叙事基准（候选）"))
-    return Timeline(bounds[-1], bounds, evs,
-                    notes=["时间轴为 90.00 秒叙事基准，未读取原曲，所有音效位置均为候选，非卡点结果。"])
+            gt = st0 + e.beat * T
+            ev = EvT(s.idx, e.name, round(gt * FPS), e.sfx, e.gain_db, e.tier, "", method=method,
+                     grid_time=round(gt, 4))
+            if onsets is None:
+                ev.mode, ev.source = "none", "名义网格（候选）"
+            else:
+                near = [o for o in onsets if abs(o["t"] - gt) <= SNAP]
+                o = max(near, key=lambda o: o["strength"] - abs(o["t"] - gt) * 5) if near else None
+                need = 0.6 if e.tier == "strong" else 0.0
+                if e.tier == "strong" and not (o and o["strength"] >= need):
+                    # 强拍上没有强重音：顺延到 3 拍内落在八分音符网格上的最强起音
+                    later = [q for q in onsets if gt < q["t"] <= gt + 3 * T + SNAP and q["strength"] >= need
+                             and abs(((q["t"] - gt) / (T / 2) - round((q["t"] - gt) / (T / 2))) * T / 2) < 0.025]
+                    if later:
+                        o = max(later, key=lambda q: q["strength"])
+                        ev.mix_note = f"强拍处无强重音，撞击顺延 {(o['t'] - gt) / T:.1f} 拍到原曲强起音"
+                if o and o["strength"] >= max(need, 0.15):
+                    ev.frame = round(o["t"] * FPS)
+                    ev.music_time = round(o["t"], 4)
+                    ev.strength = o["strength"]
+                    ev.source = "小节网格 + 吸附原曲起音"
+                    ev.confidence = "高" if o["strength"] >= 0.6 else "中"
+                else:
+                    ev.mode = "soft"
+                    ev.source = "网格位置附近无足够起音，改为柔和动作"
+                    if e.sfx and e.tier == "strong":
+                        ev.sfx = None
+                        ev.mix_note = "未找到强重音，取消该处音效，不硬造强拍"
+                    elif e.sfx:
+                        ev.gain_db -= 4.0
+                        ev.mix_note = "该拍无明显起音，音效降 4 dB"
+            ev.frame = max(ev.frame, bounds[s.idx - 1])
+            tl.events.append(ev)
+    bad = tl.check_reading()
+    if bad:
+        tl.notes.append("阅读窗口不足：" + "；".join(bad))
+    return tl
+
+
+def baseline(total: float = story.BASE_TOTAL) -> Timeline:
+    """无原曲时的名义网格（拍长取 story.NOMINAL_BEAT），所有事件标记为未确认。"""
+    tl = _build(story.NOMINAL_BEAT, 0.1, total, None, "名义网格，未按原曲校准")
+    tl.notes.append("未读取原曲：镜头与事件按名义节拍网格排布，非卡点结果。")
+    return tl
 
 
 def calibrate(analysis: dict) -> Timeline:
-    """按原曲分析结果生成校准时间轴。analysis 由 music.analyze 产生（时间相对选定片段起点）。"""
+    g = analysis["grid"]
     L = analysis["segment"]["length"]
-    total_frames = round(L * FPS)
-    onsets = [(o["t"], o["strength"]) for o in analysis["onsets"]]
-    scale = L / story.BASE_TOTAL
-    n = len(story.SHOTS)
-    bounds = [round(i * story.SHOT_LEN * scale * FPS) for i in range(n + 1)]
-    bounds[-1] = total_frames
-    tl = Timeline(total_frames, bounds, [], calibrated=True, music=analysis["summary"])
-    if abs(L - story.BASE_TOTAL) > 1e-3:
-        tl.notes.append(f"总长按原曲乐句改为 {L:.2f} 秒（{total_frames} 帧），基准边界按 {scale:.4f} 等比缩放。")
-    if tl.check_reading():
-        tl.notes.append("等比缩放后阅读窗口不足：" + "；".join(tl.check_reading()))
-
-    for k in range(1, n):
-        base = bounds[k] / FPS
-        cands = [(st - abs(t - base) / BOUNDARY_SHIFT * 0.3, t, st) for t, st in onsets
-                 if abs(t - base) <= BOUNDARY_SHIFT and st >= 0.5]
-        if not cands:
-            continue
-        _, t, st = max(cands)
-        old = bounds[k]
-        bounds[k] = round(t * FPS)
-        if bounds[k] <= bounds[k - 1] or bounds[k] >= bounds[k + 1] or tl.check_reading():
-            bounds[k] = old
-        else:
-            tl.notes.append(f"边界 {k:02d}|{k + 1:02d} 由 {old / FPS:.2f}s 移至原曲起音 {t:.3f}s（强度 {st:.2f}）。")
-
-    used: set[int] = set()
-    for s in story.SHOTS:
-        a = bounds[s.idx - 1]
-        b = bounds[s.idx]
-        shot_scale = (b - a) / (story.SHOT_LEN * FPS)
-        prev_frame = a - 1
-        for e in s.events:
-            base_f = a + round(e.at * shot_scale * FPS)
-            lo = a / FPS + e.win[0] * shot_scale
-            hi = min(a / FPS + e.win[1] * shot_scale, b / FPS - 0.3)
-            need = 0.6 if e.tier == "strong" else 0.3
-            cands = [(st, t) for t, st in onsets if lo <= t <= hi and st >= need
-                     and round(t * FPS) > prev_frame and round(t * FPS) not in used]
-            ev = EvT(s.idx, e.name, base_f, e.sfx, e.gain_db, e.tier, "", method=analysis["method"])
-            if cands:
-                if e.tier == "strong":
-                    st, t = max(cands)
-                else:
-                    st, t = min(cands, key=lambda c: abs(c[1] - base_f / FPS) - 0.3 * c[0])
-                ev.frame = round(t * FPS)
-                ev.music_time = round(analysis["segment"]["start"] + t, 4)
-                ev.strength = round(st, 3)
-                ev.source = "原曲起音"
-                ev.confidence = "高" if st >= 0.6 else "中"
-            else:
-                ev.frame = max(base_f, prev_frame + 1)
-                ev.mode = "soft"
-                ev.source = "窗口内无合适重音，按基准时刻做柔和动作"
-                ev.confidence = "未确认"
-                if e.sfx and e.tier == "strong":
-                    ev.mix_note = "未找到强重音，取消该处音效，不硬造强拍"
-                    ev.sfx = None
-                elif e.sfx:
-                    ev.gain_db -= 4.0
-                    ev.mix_note = "无对应起音，音效降 4 dB 作柔和点缀"
-            prev_frame = ev.frame
-            used.add(ev.frame)
-            tl.events.append(ev)
-    tl.bounds = bounds
-    tl.beats = sorted({round(t * FPS) for t in analysis.get("beats", [])})
-    bad = tl.check_reading()
-    if bad:
-        tl.notes.append("校准后仍有阅读窗口不足：" + "；".join(bad))
+    tl = _build(g["beat"], g["first_downbeat"], L,
+                analysis["onsets"], analysis["method"] + "；恒定速度网格拟合")
+    tl.music = analysis["summary"]
+    used = sum(s.bars for s in story.SHOTS)
+    tl.notes.append(f"节拍网格：{g['bpm']} BPM（拍长 {g['beat'] * 1000:.1f} ms），首个小节强拍 {g['first_downbeat']:.3f} s；"
+                    f"强起音落在拍上 {g['strong_on_beat']}、落在八分音符上 {g['strong_on_eighth']}，中位偏差 {g['median_abs_dev_ms']} ms。"
+                    f"镜头 1—{len(story.SHOTS) - 1} 共 {used} 小节，切点全部在小节强拍。")
     return tl

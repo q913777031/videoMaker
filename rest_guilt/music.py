@@ -143,6 +143,42 @@ def _novelty(B: np.ndarray, fr: float = 100.0, block: float = 0.5, half: int = 8
     return np.arange(m) * block, nov
 
 
+def fit_grid(onsets: list[dict], bpm_hint: float | None) -> dict:
+    """在起音上拟合恒定速度网格：搜索拍长与相位使「强度 × 高斯(偏差/20ms)」之和最大；
+    再按各拍位（模 4）累计低频起音强度确定小节强拍相位。返回拍长、首拍时刻、强拍相位与贴合度统计。"""
+    on = np.array([o["t"] for o in onsets])
+    st = np.array([o["strength"] for o in onsets])
+    lo = np.array([o["low"] for o in onsets])
+    T0 = 60 / bpm_hint if bpm_hint else 0.5
+    best = None
+    for T in np.arange(T0 * 0.98, T0 * 1.02, 0.0001):
+        ph = on % T
+        for p in np.arange(0, T, T / 200):
+            d = (ph - p + T / 2) % T - T / 2
+            sc = float((st * np.exp(-(d / 0.02) ** 2)).sum())
+            if best is None or sc > best[0]:
+                best = (sc, T, p)
+    _, T, t0 = best
+    k = np.round((on - t0) / T).astype(int)
+    d = on - t0 - k * T
+    near = np.abs(d) < 0.025
+    acc = np.zeros(4)
+    for kk, ll in zip(k[near], lo[near]):
+        acc[kk % 4] += ll
+    down = int(np.argmax(acc))
+    strong = st >= 0.5
+    eighth = np.abs(((on - t0) / (T / 2) - np.round((on - t0) / (T / 2))) * T / 2) < 0.025
+    # 首个强拍：t0 + down*T 之前若还有完整一拍则往前推
+    first = t0 + down * T
+    while first - 4 * T >= -1e-6:
+        first -= 4 * T
+    return {"beat": float(T), "bpm": round(60 / float(T), 3), "first_beat": float(t0 % T),
+            "first_downbeat": float(first), "downbeat_phase_low_energy": acc.round(3).tolist(),
+            "strong_on_beat": f"{int((near & strong).sum())}/{int(strong.sum())}",
+            "strong_on_eighth": f"{int((eighth & strong).sum())}/{int(strong.sum())}",
+            "median_abs_dev_ms": round(float(np.median(np.abs(d[strong])) * 1000), 1)}
+
+
 def analyze(x: np.ndarray, info: dict, target: float = 90.0, lo: float = 87.0, hi: float = 93.0) -> dict:
     """完整分析并选定约 90 秒的连续片段；返回片段内（时间以片段起点为 0）的起音、节拍与摘要。"""
     mono = x.mean(axis=1)
@@ -195,12 +231,14 @@ def analyze(x: np.ndarray, info: dict, target: float = 90.0, lo: float = 87.0, h
         onsets.append({"t": round(tr - a, 4), "strength": round(min(1.0, env[p] / norm), 3),
                        "low": round(float(low_env[p] / (low_env.max() + 1e-9)), 3)})
     bpm = [d["bpm"] for d in tempi if a - 4 <= d["t"] <= b]
+    grid = fit_grid(onsets, float(np.median(bpm)) if bpm else None)
     summary = {
         **info, "decoded_duration": round(dur, 3),
         "segment": f"{a:.3f}—{b:.3f} 秒（长 {seg_len:.3f} 秒）", "segment_reason": why,
         "tempo_median_bpm": float(np.median(bpm)) if bpm else None,
         "tempo_range_bpm": [float(min(bpm)), float(max(bpm))] if bpm else None,
         "n_onsets": len(onsets),
+        "grid": grid,
         "strength_norm": "相对重音强度 = 该起音处全频带谱通量 / 片段内全部起音谱通量 99 分位，截断到 0—1",
         "method": METHOD,
         "limits": "未实际试听；自动起音会把部分非节拍音量变化当作候选；未判定原曲是否含人声，需人工试听确认。",
@@ -208,6 +246,7 @@ def analyze(x: np.ndarray, info: dict, target: float = 90.0, lo: float = 87.0, h
     return {
         "summary": summary, "method": METHOD,
         "segment": {"start": a, "end": b, "length": seg_len},
+        "grid": grid,
         "onsets": onsets,
         "beats": [round(x - a, 4) for x in beats if a <= x < b],
         "tempi": tempi,

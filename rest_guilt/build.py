@@ -26,23 +26,26 @@ from .story import FPS
 
 ROOT = Path(__file__).resolve().parent.parent
 ACTION = {
-    (1, "reveal"): "传送带金光闪过、沙发轻震，镜头停住",
-    (2, "run"): "无字任务卡开始沿轨道奔跑",
-    (3, "card1"): "催促卡一（书本）贴近头部", (3, "card2"): "催促卡二（清单）贴近头部",
-    (3, "phone"): "手机翻面反扣到扶手上",
-    (4, "pull"): "镜头开始拉远，露出空房间",
-    (5, "roll"): "传送带卷起成论文页", (5, "icon1"): "阅读材料图标亮起",
-    (5, "icon2"): "看视频图标亮起", (5, "icon3"): "填写反馈图标亮起",
-    (6, "covers"): "两侧不同材料封面翻入", (6, "play"): "两块屏幕同时播放同一猫咪短片",
-    (7, "cover"): "框架卡覆盖其中一侧屏幕",
-    (8, "reveal"): "评价卡发光，驱动线点亮至传送带",
-    (9, "box"): "打卡框从地面长出", (9, "reach"): "主角伸手准备勾选，中途停下",
-    (10, "items"): "账单与工作通知落在桌上", (10, "tidy"): "主角整理成整齐一叠",
-    (11, "obj1"): "散步鞋出现", (11, "obj2"): "茶杯出现", (11, "obj3"): "朋友合照出现",
-    (12, "choose"): "选中茶杯", (12, "drawer"): "评价卡放入抽屉",
-    (13, "settle"): "打卡框退成普通相框，传送带开始减速停下",
-    (14, "return"): "回到首帧构图：真正的沙发，杯中热气",
-    (15, "end"): "署名落版，声音进入收尾",
+    (1, "flip"): "时钟 23:59 翻到 00:00，传送带金光闪过", (1, "lurch"): "传送带随拍一顿",
+    (2, "settle"): "人躺平、被子落定", (2, "lamp"): "伸手关灯，台灯熄灭",
+    (3, "card1"): "待办卡一挂上轨道", (3, "card2"): "待办卡二挂上轨道", (3, "card3"): "待办卡三挂上轨道",
+    (4, "phone"): "举起手机，放大的信息流出现", (4, "feed2"): "信息流滚动一条", (4, "feed3"): "信息流滚动一条",
+    (4, "feed4"): "信息流滚动一条",
+    (5, "pass1"): "别人的小人超过「我」，传送带加速", (5, "pass2"): "又一个小人超过「我」",
+    (6, "pull"): "镜头开始拉远，露出空房间", (6, "empty"): "传送带金光闪过，房间里没有别人",
+    (7, "roll"): "传送带卷成论文页", (7, "name1"): "作者名牌 Tonietto 落下", (7, "name2"): "作者名牌 Malkoc 落下",
+    (7, "name3"): "作者名牌 Reczek 落下", (7, "name4"): "作者名牌 Norton 落下",
+    (8, "cards"): "「浪费」与「休闲」两张卡弹出", (8, "ask"): "问号落下",
+    (9, "covers"): "两组材料封面翻入", (9, "play"): "两块屏幕播放同一段猫咪短片",
+    (10, "answer"): "框架卡遮住「浪费」一侧屏幕并变暗", (10, "glow"): "另一侧屏幕边框亮起",
+    (11, "reveal"): "评价卡发光，驱动线点亮到传送带", (11, "line"): "驱动线光点流动",
+    (12, "box"): "床尾长出打卡框", (12, "reach"): "伸手想勾，停在半空",
+    (13, "items"): "账单与工作通知落在床头柜", (13, "tidy"): "整理成整齐一叠",
+    (14, "obj1"): "选项卡：耳机", (14, "obj2"): "选项卡：热水", (14, "obj3"): "选项卡：朋友合照",
+    (15, "choose"): "戴上耳机、捧起热水", (15, "drawer"): "评价卡放进抽屉",
+    (16, "settle"): "打卡框退成墙上相框，传送带开始减速停下",
+    (17, "return"): "回扣首帧：躺下，传送带已消失", (17, "sleep"): "闭眼，台灯熄灭",
+    (18, "end"): "署名落版，音乐进入 3 秒淡出",
 }
 
 
@@ -67,7 +70,7 @@ def write_texts(out: Path, tl: TL.Timeline):
     for s in story.SHOTS:
         a, b = tl.shot_range(s.idx)
         r0, r1 = tl.read_window(s.idx)
-        lines += [f"镜头{s.idx:02d}｜{tc(a)}—{tc(b)}｜角标：{s.tag}",
+        lines += [f"镜头{s.idx:02d}｜{tc(a)}—{tc(b)}｜{s.bars or '至曲终'} 小节｜角标：{s.tag}",
                   "主字幕：" + "／".join(s.text),
                   f"汉字 {story.shot_han(s)} 字；稳定窗 {r0:.2f}—{r1:.2f} 秒（{r1 - r0:.2f} 秒，预算 {story.read_budget(s):.2f} 秒）",
                   f"画面：{s.action}", ""]
@@ -79,7 +82,11 @@ def write_texts(out: Path, tl: TL.Timeline):
         "参考资料", "",
         story.REFERENCE, "原论文：" + story.PAPER_URL, "",
         "片中使用的事实（白名单）：",
-        "- 2021 年 Tonietto 等研究休闲信念与享受；年份为文献发表年份，不是现象首次出现的年份。",
+        "- 2021 年 Tonietto、Malkoc、Reczek、Norton 四位作者研究休闲信念与享受；年份为文献发表年份，不是现象首次出现的年份。",
+        "- 片中研究问题：把休息（休闲）当成浪费，还能好好享受吗？——为对研究主题的通俗转述。",
+        "- 片中答案：视为浪费的人，享受得更少。——对应白名单结论「将休闲描述为浪费的框架会削弱该情境下的享受」。",
+        "- 作者仅写全名，未写职称与任职机构：本环境无法核验，避免写错。",
+        "- 片中「休闲是浪费」「其他说法」两张材料标签为示意，不是原研究材料原文；对照组的具体内容未写出。",
         "- 实验先让参与者阅读不同框架的材料，再观看同一段休闲视频并报告享受程度。",
         "- 将休闲描述为浪费的框架，会削弱该情境下的享受。",
         "", "片中未使用：样本量、量表分数、效应大小与任何柱高或百分比。",
@@ -146,7 +153,7 @@ def write_sfx_library(out: Path) -> dict:
 def check_layout() -> list[str]:
     """静态版式检查：主卡字号下限、文字是否落在安全区内、角标字号。"""
     probs = []
-    for L in (D.VERTICAL, D.HORIZONTAL):
+    for L in (D.VERTICAL,):
         x0, y0, x1, y1 = L.safe
         for s in story.SHOTS:
             bx0, by0, bx1, by1, size = D.main_card_bounds(L, s.text, s.source)
@@ -160,7 +167,7 @@ def check_layout() -> list[str]:
 
 def layout_sizes() -> dict:
     return {L.name: {f"{s.idx:02d}": round(D.main_card_bounds(L, s.text, s.source)[4], 1) for s in story.SHOTS}
-            for L in (D.VERTICAL, D.HORIZONTAL)}
+            for L in (D.VERTICAL,)}
 
 
 def ffprobe(path: Path) -> dict:
@@ -209,7 +216,8 @@ def main(argv=None):
     ap.add_argument("--out", default=str(ROOT / "out" / "rest_guilt"))
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--skip-video", action="store_true")
-    ap.add_argument("--only", choices=["vertical", "horizontal"], help="只渲染一个版本（封面同样只出该版本）")
+    ap.add_argument("--only", choices=["vertical"], default="vertical",
+                    help="当前分镜（深夜卧室版）只为竖屏设计，横屏未适配")
     args = ap.parse_args(argv)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -238,10 +246,10 @@ def main(argv=None):
     report["说明"] += tl.notes
     bad = tl.check_reading()
     (report["未完成"] if bad else report["已核验"]).append(
-        "阅读窗口：" + ("；".join(bad) if bad else "15 镜稳定窗全部满足预算（max(2, 汉字/4.5)，重要句 ≥3 秒，研究段与署名 ≥4.8 秒）"))
+        f"阅读窗口：" + ("；".join(bad) if bad else f"{len(story.SHOTS)} 镜稳定窗全部满足预算（max(2, 汉字/4.5)，重要句 ≥3 秒，研究段与署名 ≥4.8 秒）"))
     lay = check_layout()
     (report["未完成"] if lay else report["已核验"]).append(
-        "版式（静态计算，按实际字体测宽）：" + ("；".join(lay) if lay else "双版本主卡均在安全区内，主字与来源卡字号不低于下限") + f"；字号 {layout_sizes()}")
+        "版式（静态计算，按实际字体测宽）：" + ("；".join(lay) if lay else "竖屏主卡均在安全区内，主字与来源卡字号不低于下限") + f"；字号 {layout_sizes()}")
 
     tl.save(out / "timeline.json")
     write_texts(out, tl)
@@ -273,6 +281,15 @@ def main(argv=None):
         (report["已核验"] if worst <= 1 else report["未完成"]).append(
             f"音画起音偏差：{len(offs)} 个音效事件，最大 {worst} 帧（明细见 av_offsets.json）")
         (out / "av_offsets.json").write_text(json.dumps(offs, ensure_ascii=False), encoding="utf-8")
+        bt = [tl.downbeats[min(range(len(tl.downbeats)), key=lambda k: abs(tl.downbeats[k] - f))] for f in tl.bounds[1:-1]]
+        dev = [abs(f - d) for f, d in zip(tl.bounds[1:-1], bt)]
+        on = analysis["onsets"]
+        cut_str = [max([o["strength"] for o in on if abs(o["t"] - f / FPS) <= 0.045] or [0]) for f in tl.bounds[1:-1]]
+        (report["已核验"] if max(dev) == 0 else report["未完成"]).append(
+            f"切点：{len(dev)} 个镜头切点与小节强拍帧的最大偏差 {max(dev)} 帧；"
+            f"切点处原曲起音强度 {', '.join(f'{x:.2f}' for x in cut_str)}（0 表示该强拍无明显起音）")
+        report["已核验"].append(f"逐拍画面动作：{len(tl.beats)} 拍（传送带步进 / 时钟冒号 / 主卡金色节点），"
+                               f"{len(tl.downbeats)} 个小节强拍（舞台轻推）")
         report["未完成"].append("未经人工试听（含手机 / 小扬声器条件）；卡点与混音仅有信号分析依据。")
 
     if not args.skip_video:
@@ -286,7 +303,8 @@ def main(argv=None):
             bd = blackdetect(p)
             report["已核验" if not bd else "说明"].append(f"黑帧检测 {name}：{bd or '无 ≥0.1 秒黑段'}")
             b = tl.bounds
-            frames = {"first": 0, "research_reveal": b[6] + 60, "reflection": b[11] + 60, "ending": b[14] + 90,
+            frames = {"first": 0, "research_authors": b[7] - 20, "research_answer": b[10] - 20,
+                      "reflection": b[15] - 20, "ending": b[17] - 20,
                       "last": tl.total_frames - 1}
             extract(p, frames, out / "checks" / L.name)
             report["已核验"].append(f"抽帧（实际解码）：checks/{L.name}/ " + ", ".join(f"{k}@{v}" for k, v in frames.items()))
