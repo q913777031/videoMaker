@@ -206,12 +206,6 @@ python3 dyl_video.py out/designing_your_life.mp4
 
 Pillow 绘制的 1920×1080、约 44 秒讲解动画（使用系统文泉驿字体），配同一首 BGM：场景时长吸附到半小节，「好时光日志」对上音乐 drop。
 
-## 第三方资源许可
-
-- [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)：MIT License，© Microsoft
-- [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans / Serif CJK](https://github.com/notofonts/noto-cjk)：SIL Open Font License 1.1
-- [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)：Apache 2.0，通过 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 运行
-
 ## 静音竖屏短视频：逻辑训练（三人·三城·三种运动）
 
 ```bash
@@ -222,3 +216,9 @@ python3 logic/logic_short.py out/logic_short.mp4
 
 输出 1080×1920、30fps、90 秒、**无音频轨**的解题动画，以及封面 `out/logic_cover.png`。4 核机器约 1 分钟。
 完整制作方案（开头、字幕脚本、分镜、动效清单、核验说明）见 `logic/production_plan.md`。
+
+## 第三方资源许可
+
+- [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)：MIT License，© Microsoft
+- [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans / Serif CJK](https://github.com/notofonts/noto-cjk)：SIL Open Font License 1.1
+- [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)：Apache 2.0，通过 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 运行
