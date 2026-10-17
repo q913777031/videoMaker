@@ -1,5 +1,5 @@
 /** 主合成：按全片帧号找到镜头与子镜头，渲染对应 3D 场景，叠加切镜闪光、撞击闪光、字幕、角标、来源卡与混音。 */
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {AbsoluteFill, Audio, continueRender, delayRender, staticFile, useCurrentFrame} from 'remotion';
 import {ThreeCanvas} from '@remotion/three';
 import {FXProvider, World} from './lib/World';
@@ -29,15 +29,46 @@ const loadFonts = () => {
   return fontsReady;
 };
 
+/** 字体加载完成前不挂载 3D 画布：场景里的文字贴图要用同一套字体绘制。 */
 const useFonts = () => {
+  const [ready, setReady] = useState(false);
   const [handle] = useState(() => {
     const h = delayRender('fonts');
-    loadFonts().then(() => continueRender(h)).catch((e) => {
+    loadFonts().then(() => setReady(true)).catch((e) => {
       throw e;
     });
     return h;
   });
-  return handle;
+  // 画布挂载（其内部已登记自己的 delayRender）之后再放行字体等待
+  useEffect(() => {
+    if (ready) continueRender(handle);
+  }, [ready, handle]);
+  return ready;
+};
+
+/** 把一行字幕按关键词切成 [文本, 是否高亮] 片段。 */
+const split = (line: string, keys: string[]): [string, boolean][] => {
+  const out: [string, boolean][] = [];
+  let rest = line;
+  while (rest) {
+    let best = -1;
+    let key = '';
+    for (const k of keys) {
+      const i = rest.indexOf(k);
+      if (i >= 0 && (best < 0 || i < best)) {
+        best = i;
+        key = k;
+      }
+    }
+    if (best < 0) {
+      out.push([rest, false]);
+      break;
+    }
+    if (best > 0) out.push([rest.slice(0, best), false]);
+    out.push([key, true]);
+    rest = rest.slice(best + key.length);
+  }
+  return out;
 };
 
 const textAlpha = (sh: ShotT, T: number, first: boolean) => {
@@ -47,7 +78,7 @@ const textAlpha = (sh: ShotT, T: number, first: boolean) => {
 };
 
 export const Kepu: React.FC<KepuProps> = (p) => {
-  useFonts();
+  const ready = useFonts();
   const cur = useCurrentFrame();
   const frame = p.cover ? Math.round((p.cover.at ?? 0.5) * p.fps) : cur;
   const fps = p.fps;
@@ -74,12 +105,12 @@ export const Kepu: React.FC<KepuProps> = (p) => {
   return (
     <AbsoluteFill style={{backgroundColor: BG}}>
       <AbsoluteFill style={{transform: `scale(${punch})`}}>
-        <ThreeCanvas width={p.width} height={p.height} gl={{antialias: false, powerPreference: 'high-performance'}}
+        {ready && <ThreeCanvas width={p.width} height={p.height} gl={{antialias: false, powerPreference: 'high-performance'}}
           camera={{fov: 40, position: [0, 2, 8]}}>
           <FXProvider value={{T: G, frame, hit, shiftY: vertical ? 0.1 : 0}}>
             <World>{Scene ? <Scene {...sp} /> : null}</World>
           </FXProvider>
-        </ThreeCanvas>
+        </ThreeCanvas>}
       </AbsoluteFill>
       <AbsoluteFill style={{background: `radial-gradient(circle at 50% 58%, rgba(255,226,168,${0.5 * hit}) 0%, rgba(214,184,121,${0.28 * hit}) 35%, rgba(0,0,0,0) 75%)`}} />
       <AbsoluteFill style={{backgroundColor: `rgba(255,240,210,${0.22 * cut + 0.12 * soft})`}} />
@@ -129,7 +160,9 @@ const Caption: React.FC<{sh: ShotT; T: number; a: number; first: boolean; p: Kep
             textAlign: vertical ? 'center' : 'left', fontFamily: 'KepuSerif', fontSize: L.text_size,
             lineHeight: `${L.text_size * 1.24}px`, color: WHITE, opacity: a * (T < TEXT_IN ? x : 1),
             textShadow: '0 4px 18px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9)', whiteSpace: 'nowrap',
-          }}>{ln}</div>
+          }}>{split(ln, sh.keys ?? []).map(([s, hi], j) => (
+            <span key={j} style={hi ? {color: GOLD, textShadow: '0 0 18px rgba(214,184,121,0.55), 0 4px 18px rgba(0,0,0,0.85)'} : undefined}>{s}</span>
+          ))}</div>
         );
       })}
     </>

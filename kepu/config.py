@@ -77,6 +77,7 @@ class Shot:
     cues: list[Cue] = field(default_factory=list)
     extra: float = 0.0   # 额外阅读余量（研究段、陌生术语、来源卡等），含数字时另自动加 0.8 秒
     credit: bool = False  # 片尾来源卡：文字居中于卡片内、不做退场，卡片在本镜首个事件时刻落定
+    keys: tuple[str, ...] = ()   # 主字幕中要高亮（金色）的关键词，必须是原文子串；仅 3D 画面层使用
     start: float = 0.0
     dur: float = 6.0
 

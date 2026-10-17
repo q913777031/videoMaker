@@ -259,7 +259,7 @@ export const Coin: React.FC<{pos: V3; rot?: V3; s?: number}> = ({pos, rot = [0, 
 
 /** 书：open 0 合上、1 摊开；光从书页间溢出。 */
 export const Book: React.FC<{open: number; pos?: V3; s?: number; light?: number}> = ({open, pos = [0, 0, 0], s = 1, light = 0}) => {
-  const a = clamp(open) * (Math.PI / 2 - 0.08);
+  const a = (1 - clamp(open)) * (Math.PI / 2 - 0.04);
   return (
     <group position={pos} scale={s}>
       <group rotation={[0, 0, a]}>
@@ -626,3 +626,289 @@ export const SpotCone: React.FC<{pos: V3; h?: number; r?: number; k?: number}> =
 );
 
 export const shimmer = (T: number, seed: number) => 0.6 + 0.4 * wobble(T * 2, seed);
+
+// ---------------------------------------------------------------- 影院题材道具与场景内文字
+
+const texCache = new Map<string, {tex: THREE.CanvasTexture; aspect: number}>();
+/** 文字贴图（字体由 Kepu.tsx 预先加载）：同一文本只绘制一次。 */
+const textTexture = (text: string, color: string, font: string, bg: string | null) => {
+  const id = `${text}|${color}|${font}|${bg}`;
+  const hit = texCache.get(id);
+  if (hit) return hit;
+  const size = 128;
+  const cv = document.createElement('canvas');
+  const g = cv.getContext('2d')!;
+  g.font = `${size}px ${font}`;
+  const w = Math.ceil(g.measureText(text).width) + size * 0.6;
+  cv.width = w;
+  cv.height = Math.ceil(size * 1.5);
+  if (bg) {
+    g.fillStyle = bg;
+    g.fillRect(0, 0, cv.width, cv.height);
+  }
+  g.font = `${size}px ${font}`;
+  g.fillStyle = color;
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText(text, cv.width / 2, cv.height / 2 + size * 0.04);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const out = {tex, aspect: cv.width / cv.height};
+  texCache.set(id, out);
+  return out;
+};
+
+/** 场景内文字牌：h 为字高（世界单位），k>1 时发光进入泛光。 */
+export const Label: React.FC<{
+  text: string; pos?: V3; rot?: V3; h?: number; color?: string; k?: number; font?: string; bg?: string | null; opacity?: number;
+}> = ({text, pos = [0, 0, 0], rot = [0, 0, 0], h = 0.4, color = GOLD, k = 1, font = 'KepuSerif', bg = null, opacity = 1}) => {
+  const {tex, aspect} = textTexture(text, '#FFFFFF', font, bg);
+  const H = h * 1.5;
+  return (
+    <mesh position={pos} rotation={rot}>
+      <planeGeometry args={[H * aspect, H]} />
+      <meshBasicMaterial map={tex} color={glow(color, k)} transparent opacity={opacity} toneMapped={false} depthWrite={false} />
+    </mesh>
+  );
+};
+
+/** 电影票：金边象牙色票面 + 票根虚线，票面写“电影票”和价格。 */
+export const Ticket: React.FC<{pos?: V3; rot?: V3; s?: number; price?: string; lit?: number; title?: string}> = ({
+  pos = [0, 0, 0], rot = [0, 0, 0], s = 1, price = '¥80', lit = 0, title = '电影票',
+}) => (
+  <group position={pos} rotation={rot} scale={s}>
+    <mesh>
+      <boxGeometry args={[1.8, 0.03, 0.9]} />
+      <meshStandardMaterial color="#E9DFC9" roughness={0.6} emissive={GOLD} emissiveIntensity={0.08 + lit} />
+    </mesh>
+    <mesh position={[0, 0.017, 0]}>
+      <boxGeometry args={[1.7, 0.002, 0.8]} />
+      <meshStandardMaterial color="#B8862F" roughness={0.4} metalness={0.6} />
+    </mesh>
+    <mesh position={[0, 0.019, 0]}>
+      <boxGeometry args={[1.62, 0.002, 0.72]} />
+      <meshStandardMaterial color="#F2EADB" roughness={0.6} emissive={GOLD} emissiveIntensity={0.05 + lit * 0.5} />
+    </mesh>
+    {Array.from({length: 8}, (_, i) => (
+      <mesh key={i} position={[0.42, 0.022, -0.32 + i * 0.092]}>
+        <boxGeometry args={[0.02, 0.002, 0.05]} />
+        <meshStandardMaterial color="#8A6E3A" />
+      </mesh>
+    ))}
+    <Label text={title} pos={[-0.25, 0.024, -0.12]} rot={[-Math.PI / 2, 0, 0]} h={0.2} color="#2A2420" k={1} />
+    {price && <Label text={price} pos={[-0.25, 0.024, 0.18]} rot={[-Math.PI / 2, 0, 0]} h={0.17} color="#9A6B1F" k={1} />}
+    <Label text="ADMIT ONE" pos={[0.68, 0.024, 0]} rot={[-Math.PI / 2, 0, -Math.PI / 2]} h={0.07} color="#6E5630" k={1} font="KepuSans" />
+  </group>
+);
+
+/** 银幕：金色画框 + 屏幕；content 为屏上文字，noise 为雪花噪点强度（无聊的剧情）。 */
+export const Screen: React.FC<{pos?: V3; w?: number; content?: string; glowK?: number; noise?: number; T?: number; sub?: string}> = ({
+  pos = [0, 0, 0], w = 6, content = '', glowK = 1, noise = 0, T = 0, sub = '',
+}) => {
+  const h = w * 0.5;
+  const dots = useMemo(() => new Float32Array(240 * 3), []);
+  if (noise > 0) {
+    const r = rng(Math.floor(T * 30) + 7);
+    for (let i = 0; i < 240; i++) {
+      dots[i * 3] = (r() - 0.5) * w * 0.94;
+      dots[i * 3 + 1] = (r() - 0.5) * h * 0.9;
+      dots[i * 3 + 2] = 0.03;
+    }
+  }
+  return (
+    <group position={pos}>
+      <mesh position={[0, 0, -0.06]}>
+        <boxGeometry args={[w + 0.3, h + 0.3, 0.08]} />
+        <Gold />
+      </mesh>
+      <mesh>
+        <planeGeometry args={[w, h]} />
+        <meshBasicMaterial color={glow('#8C8E94', 0.55 * glowK)} toneMapped={false} />
+      </mesh>
+      {noise > 0 && <Points data={dots} size={0.09} color="#FFFFFF" k={1.2 * noise} />}
+      {content && <Label text={content} pos={[0, sub ? h * 0.1 : 0, 0.02]} h={h * 0.2} color="#3A3B40" k={1} />}
+      {sub && <Label text={sub} pos={[0, -h * 0.22, 0.02]} h={h * 0.1} color="#4A4B52" k={1} />}
+    </group>
+  );
+};
+
+/** 影院座椅（可坐人）。 */
+export const Seat: React.FC<{pos?: V3; rotY?: number; lit?: number}> = ({pos = [0, 0, 0], rotY = 0, lit = 0}) => (
+  <group position={pos} rotation={[0, rotY, 0]}>
+    <mesh position={[0, 0.42, 0]}>
+      <boxGeometry args={[0.72, 0.14, 0.62]} />
+      <meshStandardMaterial color="#4A1418" roughness={0.75} emissive={GOLD} emissiveIntensity={lit * 0.6} />
+    </mesh>
+    <mesh position={[0, 0.85, 0.3]}>
+      <boxGeometry args={[0.72, 0.8, 0.12]} />
+      <meshStandardMaterial color="#561A1E" roughness={0.75} emissive={GOLD} emissiveIntensity={lit * 0.6} />
+    </mesh>
+    {[-1, 1].map((sg) => (
+      <mesh key={sg} position={[0.4 * sg, 0.6, 0.02]}>
+        <boxGeometry args={[0.08, 0.06, 0.6]} />
+        <Gold />
+      </mesh>
+    ))}
+  </group>
+);
+
+/** 坐着的人：Figure 的坐姿版本（身体后仰 lean，头低 slump）。 */
+export const Sitter: React.FC<{pos?: V3; rotY?: number; slump?: number; arm?: number; s?: number}> = ({
+  pos = [0, 0, 0], rotY = 0, slump = 0, arm = 0, s = 1,
+}) => (
+  <group position={pos} rotation={[0, rotY, 0]} scale={s}>
+    <group position={[0, -0.05 - 0.08 * slump, 0.12]} rotation={[0.12 + 0.3 * slump, 0, 0]}>
+      <mesh position={[0, 0.92, 0]}>
+        <capsuleGeometry args={[0.24, 0.45, 6, 16]} />
+        <meshStandardMaterial color="#1E2026" roughness={0.55} metalness={0.2} />
+      </mesh>
+      <mesh position={[0, 1.45, -0.03 * slump]} rotation={[0.4 * slump, 0, 0]}>
+        <sphereGeometry args={[0.19, 24, 18]} />
+        <meshStandardMaterial color="#2A2C33" roughness={0.4} metalness={0.25} />
+      </mesh>
+      <mesh position={[0, 1.24, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.13, 0.025, 8, 32]} />
+        <Neon k={3} />
+      </mesh>
+      {[-1, 1].map((sg) => (
+        <group key={sg} position={[0.3 * sg, 1.14, 0]} rotation={[-(sg > 0 ? arm : 0) - 0.5, 0, 0.12 * sg]}>
+          <mesh position={[0, -0.26, 0]}>
+            <capsuleGeometry args={[0.07, 0.4, 4, 8]} />
+            <meshStandardMaterial color="#1E2026" roughness={0.55} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+    {[-1, 1].map((sg) => (
+      <group key={sg} position={[0.11 * sg, 0.55, 0.05]}>
+        <mesh position={[0, 0, -0.25]} rotation={[Math.PI / 2, 0, 0]}>
+          <capsuleGeometry args={[0.085, 0.38, 4, 8]} />
+          <meshStandardMaterial color="#15161A" roughness={0.6} />
+        </mesh>
+        <mesh position={[0, -0.28, -0.48]}>
+          <capsuleGeometry args={[0.075, 0.36, 4, 8]} />
+          <meshStandardMaterial color="#15161A" roughness={0.6} />
+        </mesh>
+      </group>
+    ))}
+  </group>
+);
+
+/** 钟面：分钟数 min 决定指针位置（60 分钟时针走一格）。 */
+export const Clock: React.FC<{min: number; pos?: V3; s?: number; lit?: number}> = ({min, pos = [0, 0, 0], s = 1, lit = 0}) => (
+  <group position={pos} scale={s}>
+    <mesh rotation={[Math.PI / 2, 0, 0]}>
+      <cylinderGeometry args={[1.25, 1.25, 0.14, 64]} />
+      <Gold lit={0.1 + lit} />
+    </mesh>
+    <mesh position={[0, 0, 0.075]}>
+      <circleGeometry args={[1.12, 64]} />
+      <meshStandardMaterial color="#F2EADB" roughness={0.6} emissive={GOLD} emissiveIntensity={0.1 + lit * 0.4} />
+    </mesh>
+    {Array.from({length: 12}, (_, i) => {
+      const a = (i / 12) * Math.PI * 2;
+      return (
+        <mesh key={i} position={[Math.sin(a) * 0.95, Math.cos(a) * 0.95, 0.09]} rotation={[0, 0, -a]}>
+          <boxGeometry args={[0.05, i % 3 === 0 ? 0.2 : 0.11, 0.01]} />
+          <meshStandardMaterial color="#2A2420" />
+        </mesh>
+      );
+    })}
+    <group position={[0, 0, 0.1]} rotation={[0, 0, -((min / 60) * Math.PI * 2) / 12 - Math.PI / 3]}>
+      <mesh position={[0, 0.27, 0]}>
+        <boxGeometry args={[0.08, 0.55, 0.02]} />
+        <meshStandardMaterial color="#1E2026" />
+      </mesh>
+    </group>
+    <group position={[0, 0, 0.12]} rotation={[0, 0, -(min / 60) * Math.PI * 2]}>
+      <mesh position={[0, 0.4, 0]}>
+        <boxGeometry args={[0.05, 0.8, 0.02]} />
+        <Neon k={2.2} />
+      </mesh>
+    </group>
+    <mesh position={[0, 0, 0.14]}>
+      <cylinderGeometry args={[0.06, 0.06, 0.04, 16]} />
+      <Gold />
+    </mesh>
+  </group>
+);
+
+/** 出口灯牌。 */
+export const ExitSign: React.FC<{pos?: V3; rotY?: number; k?: number}> = ({pos = [0, 0, 0], rotY = 0, k = 1}) => (
+  <group position={pos} rotation={[0, rotY, 0]}>
+    <mesh>
+      <boxGeometry args={[1.5, 0.6, 0.12]} />
+      <meshStandardMaterial color="#141518" metalness={0.5} roughness={0.4} />
+    </mesh>
+    <Label text="出口 →" pos={[0, 0, 0.065]} h={0.32} color="#FFE2A8" k={0.8 + 2.4 * k} />
+  </group>
+);
+
+/** 带投币口的箱子；locked 0–1 时挂锁落下扣死。 */
+export const Lockbox: React.FC<{pos?: V3; locked?: number; s?: number; lit?: number}> = ({pos = [0, 0, 0], locked = 0, s = 1, lit = 0}) => (
+  <group position={pos} scale={s}>
+    <mesh position={[0, 0.7, 0]}>
+      <boxGeometry args={[1.6, 1.4, 1.2]} />
+      <meshStandardMaterial color="#26272D" metalness={0.7} roughness={0.35} emissive={GOLD} emissiveIntensity={lit * 0.3} />
+    </mesh>
+    <mesh position={[0, 1.41, 0]}>
+      <boxGeometry args={[0.7, 0.02, 0.1]} />
+      <Neon k={1 + 2 * (1 - locked)} />
+    </mesh>
+    <group position={[0, 0.75 + 0.6 * (1 - locked), 0.62]}>
+      <mesh position={[0, 0.22, 0]}>
+        <torusGeometry args={[0.16, 0.04, 10, 24, Math.PI]} />
+        <Gold lit={0.3} />
+      </mesh>
+      <mesh>
+        <boxGeometry args={[0.42, 0.36, 0.14]} />
+        <Gold lit={0.2 + lit} />
+      </mesh>
+    </group>
+    <Label text="已支付" pos={[0, 0.45, 0.61]} h={0.16} color={GOLD} k={1.2} />
+  </group>
+);
+
+/** 对话气泡：圆角面板 + 尾巴 + 文字，pop 0–1 为弹出比例。 */
+export const Bubble: React.FC<{text: string; pos?: V3; pop?: number; flip?: boolean}> = ({text, pos = [0, 0, 0], pop = 1, flip = false}) => {
+  const s = Math.max(0.001, pop);
+  return (
+    <group position={pos} scale={[s * (flip ? -1 : 1), s, s]}>
+      <mesh>
+        <boxGeometry args={[1.9, 0.75, 0.06]} />
+        <meshStandardMaterial color="#F2EADB" roughness={0.5} emissive={GOLD} emissiveIntensity={0.25} />
+      </mesh>
+      <mesh position={[-0.55, -0.45, 0]} rotation={[0, 0, Math.PI]}>
+        <coneGeometry args={[0.14, 0.3, 3]} />
+        <meshStandardMaterial color="#F2EADB" roughness={0.5} emissive={GOLD} emissiveIntensity={0.25} />
+      </mesh>
+      <group scale={[flip ? -1 : 1, 1, 1]}>
+        <Label text={text} pos={[0, 0, 0.04]} h={0.3} color="#2A2420" k={1} />
+      </group>
+    </group>
+  );
+};
+
+/** 夜空：月亮 + 星点（片尾“晚上”）。 */
+export const NightSky: React.FC<{T: number; pos?: V3; moonY?: number}> = ({T, pos = [0, 0, -20], moonY = 6}) => {
+  const stars = useMemo(() => {
+    const r = rng(77);
+    return Array.from({length: 160}, () => [r(), r(), r()]);
+  }, []);
+  const data = new Float32Array(stars.length * 3);
+  stars.forEach(([a, b, c], i) => {
+    data[i * 3] = (a - 0.5) * 40;
+    data[i * 3 + 1] = 2 + b * 16;
+    data[i * 3 + 2] = -c * 4;
+  });
+  return (
+    <group position={pos}>
+      <Points data={data} size={0.18} color="#FFF4DD" k={1.5 + 0.5 * Math.sin(T * 3)} />
+      <mesh position={[4, moonY, 0]}>
+        <sphereGeometry args={[1.4, 40, 30]} />
+        <Neon k={2.2} color="#FFF1D2" />
+      </mesh>
+    </group>
+  );
+};

@@ -64,7 +64,7 @@ def props(tl, an, L: Layout, topic, subs: list[dict], audio: str, cover: bool = 
         "layout": {k: getattr(L, k) for k in ("name", "text_size", "text_line_gap", "text_x", "text_y", "text_align",
                                                "ref_size", "tag_size", "tag_x", "tag_y")},
         "shots": [{"no": s.no, "start": round(s.start, 4), "dur": round(s.dur, 4), "lines": s.lines, "tag": s.tag,
-                   "credit": s.credit, "cue": {k: round(v, 4) for k, v in tl.cues[s.no].items()}} for s in tl.shots],
+                   "credit": s.credit, "keys": list(s.keys), "cue": {k: round(v, 4) for k, v in tl.cues[s.no].items()}} for s in tl.shots],
         "subshots": subs,
         "hits": [{"shot": e["shot"], "key": e["key"], "t": round(e["t"], 4),
                   "soft": e.get("orig_sound", e["sound"]) in ("", "shaker")} for e in tl.events],
