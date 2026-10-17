@@ -20,7 +20,7 @@ import cv2
 import numpy as np
 import soundfile as sf
 
-from . import config, music, render, sfx
+from . import config, music, render, sfx, three
 from .config import FPS, SR, SOUNDS
 from .topic import Topic, load
 
@@ -281,6 +281,13 @@ def write_delivery(out: Path, topic: Topic):
     for name, v in r.get("change_3s", {}).items():
         L.append(f"- 3 秒画面变化（{name}）：每 0.5 秒取帧与 3 秒后比较，最小灰度平均差 {v['min_diff_3s']}（{v['at']} s 处）；"
                  f"相邻 0.5 秒几乎无变化的最长连续时长 {v['longest_static_s']} s。")
+    for name, v in r.get("cut_check", {}).items():
+        L.append(f"- 3D 子镜头（{name}）：{len(r.get('subshots', []))} 个镜头画面，切点全部取原曲节拍（小节重拍或第 3 拍）；"
+                 f"{v['cuts']} 个切点中 {v['peak_on_cut']} 个在解码成片上是 ±4 帧内帧差最大的一帧，最小切点帧差 {v['min_cut_diff']}。")
+    if r.get("subshots"):
+        gap = r.get("max_event_gap", {})
+        L.append(f"- 切镜与撞击之间的最大间隔 {gap.get('max_gap_s')} s（{gap.get('from')} s 起），"
+                 f"{'满足' if gap.get('ok') else '不满足'}“3 秒内画面不重复”。")
     if r.get("reframes"):
         gap = r.get("max_event_gap", {})
         L.append(f"- 镜头内二次构图 {len(r['reframes'])} 处（推近 / 拉开交替，卡在节拍上）；切镜、撞击与构图变化之间的最大间隔 "
@@ -320,6 +327,46 @@ def check_times(tl) -> dict:
     return pick
 
 
+BGM_SEARCH = (ROOT / "bgm.m4a", ROOT / "music" / "bgm.m4a", ROOT / "assets" / "bgm.m4a")
+
+
+def _find_bgm(args) -> Path | None:
+    return Path(args.bgm) if args.bgm else next((p for p in BGM_SEARCH if p.exists()), None)
+
+
+def _analysis(topic: Topic, bgm: Path | None):
+    if bgm is None or not bgm.exists():
+        raise SystemExit("bgm.m4a not found")
+    base = topic.shots()
+    return music.analyze(bgm, base[-1].start + base[-1].dur)
+
+
+def stills_three(topic: Topic, args, out: Path):
+    """renderer=three 的抽帧检查：按原曲校准时间轴，用 kepu3d/stills.mjs 批量出帧并拼图。"""
+    an = _analysis(topic, _find_bgm(args))
+    tl = render.build_timeline(topic, an)
+    subs = three.subshots(tl, an)
+    three.stage_assets(topic.slug, None)
+    times = [float(x) for x in args.stills.split(",")]
+    for name in ([args.only] if args.only else ["vertical"]):
+        p = three.props(tl, an, config.LAYOUTS[name], topic, subs, "")
+        pngs = three.stills(p, [int(round(t * FPS)) for t in times], out / f"stills_{name}", out / f"props_{name}.json")
+        three.contact_sheet(list(zip(times, pngs)), out / f"stills_{name}.png")
+        print(out / f"stills_{name}.png")
+
+
+def covers_three(topic: Topic, args, out: Path, an):
+    """renderer=three 的封面：钩子镜头撞击后的一帧 + 封面主副标题。"""
+    tl = render.build_timeline(topic, an)
+    subs = three.subshots(tl, an)
+    three.stage_assets(topic.slug, None)
+    for name in ([args.only] if args.only else ["vertical", "horizontal"]):
+        p = three.props(tl, an, config.LAYOUTS[name], topic, subs, "", cover=True)
+        p["cover"]["at"] = tl.cues[tl.shots[0].no].get("hook", 0.0) + 0.2
+        png = three.stills(p, [0], out / "cover_tmp", out / f"props_cover_{name}.json", comp="Cover")[0]
+        png.replace(out / f"cover_{name}.png")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--topic", required=True, help="topics/<slug> 的目录名")
@@ -341,9 +388,15 @@ def main():
     problems = layout_check(render.build_timeline(topic))
     if problems:
         raise SystemExit("layout check failed:\n  " + "\n  ".join(problems))
+    if args.stills and topic.renderer == "three":
+        stills_three(topic, args, out)
+        return
     if args.stills:
         contact_sheet(render.build_timeline(topic), [float(x) for x in args.stills.split(",")], out / "stills.png")
         print(out / "stills.png")
+        return
+    if args.covers_only and topic.renderer == "three":
+        covers_three(topic, args, out, _analysis(topic, _find_bgm(args)))
         return
     if args.covers_only:
         for name, L in config.LAYOUTS.items():
@@ -353,12 +406,11 @@ def main():
     (out / "check").mkdir(exist_ok=True)
     report = {"generated": time.strftime("%Y-%m-%d %H:%M:%S")}
 
-    search = (ROOT / "bgm.m4a", ROOT / "music" / "bgm.m4a", ROOT / "assets" / "bgm.m4a")
-    bgm = Path(args.bgm) if args.bgm else next((p for p in search if p.exists()), None)
+    search = BGM_SEARCH
+    bgm = _find_bgm(args)
     an = None
     if bgm is not None and bgm.exists():
-        base = topic.shots()
-        an = music.analyze(bgm, base[-1].start + base[-1].dur)
+        an = _analysis(topic, bgm)
         report["music"] = {"path": str(bgm), "duration": round(an.duration, 3), "sample_rate": an.sample_rate,
                            "channels": an.channels, "codec": an.codec, "segment": [round(an.seg_start, 3),
                            round(an.seg_end, 3)], "tempo_candidates": an.tempo, "grid": an.grid_info,
@@ -411,6 +463,36 @@ def main():
     report["reading"] = rows
     write_captions(out / "captions.txt", tl, rows, topic)
     (out / "references.txt").write_text(topic.references, encoding="utf-8")
+
+    if topic.renderer == "three":
+        if an is None:
+            raise SystemExit("renderer=three 需要原曲（music/bgm.m4a）：子镜头切点只取原曲节拍")
+        subs = three.subshots(tl, an)
+        three.stage_assets(topic.slug, audio_for_video)
+        report["subshots"] = subs
+        report["max_event_gap"] = three.event_gap(tl, subs)
+        for name in ([args.only] if args.only else ["vertical", "horizontal"]):
+            L = config.LAYOUTS[name]
+            p = three.props(tl, an, L, topic, subs, f"{topic.slug}/mix.wav")
+            mp4 = out / f"{topic.slug}_{name}.mp4"
+            t0 = time.time()
+            three.render(p, mp4, out / f"props_{name}.json", workers=args.workers)
+            report.setdefault("render_seconds", {})[name] = round(time.time() - t0, 1)
+            report.setdefault("ffprobe", {})[name] = ffprobe(mp4)
+            report.setdefault("blackdetect", {})[name] = blackdetect(mp4)
+            report.setdefault("loudness_ffmpeg", {})[name] = ebur128(mp4)
+            extract_frames(mp4, out / "check", check_times(tl))
+            fr = three.decode_gray(mp4)
+            report.setdefault("visual_hits", {})[name] = three.visual_hits(fr, tl.events)
+            report.setdefault("cut_check", {})[name] = three.cut_check(fr, subs)
+            report.setdefault("change_3s", {})[name] = three.change_3s(fr)
+        covers_three(topic, args, out, an)
+        (out / "verify_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1, default=str),
+                                                encoding="utf-8")
+        write_delivery(out, topic)
+        print(json.dumps({k: report[k] for k in ("ffprobe", "blackdetect", "loudness_ffmpeg") if k in report},
+                         ensure_ascii=False, indent=1))
+        return
 
     for name in ([args.only] if args.only else ["vertical", "horizontal"]):
         L = config.LAYOUTS[name]

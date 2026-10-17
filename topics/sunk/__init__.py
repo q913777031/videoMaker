@@ -39,5 +39,5 @@ TOPIC = Topic(
     publish_title="《项目明明没希望，为什么还舍不得停？》",
     hashtags="#知识科普 #心理学 #沉没成本 #职场 #上班族",
     references=REFERENCES,
-    motion="max",
+    renderer="three",
 )

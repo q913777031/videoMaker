@@ -1,0 +1,26 @@
+{
+  "name": "kepu3d",
+  "version": "1.0.0",
+  "private": true,
+  "description": "黑金科普短片的 3D 画面层（Remotion + three.js）；时间轴、卡点、音频与核验由 kepu/ Python 流程提供",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-three/drei": "9.117.3",
+    "@react-three/fiber": "8.17.10",
+    "@react-three/postprocessing": "2.16.3",
+    "@remotion/cli": "4.0.525",
+    "@remotion/three": "4.0.525",
+    "postprocessing": "6.36.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.525",
+    "three": "0.169.0"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/three": "0.169.0",
+    "typescript": "5.6.3"
+  }
+}
