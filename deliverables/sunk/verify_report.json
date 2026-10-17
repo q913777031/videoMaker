@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-17 11:21:57",
+ "generated": "2026-10-17 15:52:06",
  "music": {
   "path": "/home/user/videoMaker/music/bgm.m4a",
   "duration": 89.999,
@@ -150,7 +150,7 @@
  "sfx_onset_check": [
   {
    "shot": 1,
-   "key": "add",
+   "key": "yawn",
    "cue_frame": 67,
    "onset_frame": 67,
    "onset_s": 2.2256,
@@ -159,7 +159,7 @@
   },
   {
    "shot": 2,
-   "key": "clock",
+   "key": "price",
    "cue_frame": 258,
    "onset_frame": 258,
    "onset_s": 8.6024,
@@ -168,7 +168,7 @@
   },
   {
    "shot": 3,
-   "key": "more",
+   "key": "hour",
    "cue_frame": 449,
    "onset_frame": 449,
    "onset_s": 14.9792,
@@ -177,7 +177,7 @@
   },
   {
    "shot": 4,
-   "key": "tower",
+   "key": "lock",
    "cue_frame": 577,
    "onset_frame": 577,
    "onset_s": 19.2304,
@@ -258,7 +258,7 @@
   },
   {
    "shot": 13,
-   "key": "lamp",
+   "key": "talk",
    "cue_frame": 2235,
    "onset_frame": 2235,
    "onset_s": 74.496,
@@ -388,7 +388,7 @@
  "reading": [
   {
    "shot": 1,
-   "text": "项目明明没希望，／怎么还舍不得停？",
+   "text": "电影烂到想走，／为什么还坐着看完？",
    "han": 14,
    "start": 0.2,
    "end": 5.533333333333333,
@@ -400,49 +400,49 @@
   },
   {
    "shot": 2,
-   "text": "已经投了三个月，／现在停就全白费了。",
-   "han": 15,
+   "text": "票花了八十块，／现在走就白花了。",
+   "han": 13,
    "start": 6.333333333333334,
    "end": 11.4,
    "window": 5.066666666666666,
-   "budget": 3.3333333333333335,
-   "need": 3.3333333333333335,
+   "budget": 2.888888888888889,
+   "need": 3.0,
    "ok": true,
    "tag": "情境演绎"
   },
   {
    "shot": 3,
-   "text": "于是又加了一周，／再加一点预算。",
-   "han": 13,
+   "text": "于是又熬了一小时，／搭进去一整个晚上。",
+   "han": 16,
    "start": 12.200000000000001,
    "end": 16.700000000000003,
    "window": 4.500000000000002,
-   "budget": 2.888888888888889,
-   "need": 3.0,
+   "budget": 3.5555555555555554,
+   "need": 3.5555555555555554,
    "ok": true,
    "tag": "情境演绎"
   },
   {
    "shot": 4,
-   "text": "投入越多，／越难开口说放弃。",
-   "han": 11,
+   "text": "钱已经花出去了，／走不走都回不来。",
+   "han": 14,
    "start": 17.5,
    "end": 23.6,
    "window": 6.100000000000001,
-   "budget": 2.4444444444444446,
-   "need": 3.0,
+   "budget": 3.111111111111111,
+   "need": 3.111111111111111,
    "ok": true,
    "tag": "机制示意"
   },
   {
    "shot": 5,
-   "text": "继续做的理由，／是未来，还是过去？",
-   "han": 13,
+   "text": "坐着不走的理由，／是电影，还是票钱？",
+   "han": 14,
    "start": 24.4,
    "end": 29.46666666666667,
    "window": 5.06666666666667,
-   "budget": 2.888888888888889,
-   "need": 3.0,
+   "budget": 3.111111111111111,
+   "need": 3.111111111111111,
    "ok": true,
    "tag": "反思练习"
   },
@@ -508,31 +508,31 @@
   },
   {
    "shot": 11,
-   "text": "假如今天才开始，／你还会选它吗？",
-   "han": 13,
+   "text": "假如票是免费的，／你还会坐下去吗？",
+   "han": 14,
    "start": 60.03333333333333,
    "end": 65.6,
    "window": 5.566666666666663,
+   "budget": 3.111111111111111,
+   "need": 3.111111111111111,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 12,
+   "text": "只比较接下来的／两小时值不值。",
+   "han": 13,
+   "start": 66.4,
+   "end": 71.96666666666665,
+   "window": 5.566666666666649,
    "budget": 2.888888888888889,
    "need": 3.0,
    "ok": true,
    "tag": "反思练习"
   },
   {
-   "shot": 12,
-   "text": "只比较接下来的／代价和收获。",
-   "han": 12,
-   "start": 66.4,
-   "end": 71.96666666666665,
-   "window": 5.566666666666649,
-   "budget": 2.6666666666666665,
-   "need": 3.0,
-   "ok": true,
-   "tag": "反思练习"
-  },
-  {
    "shot": 13,
-   "text": "停下来很难，／可以找人一起复盘。",
+   "text": "不好意思先走，／可以和同伴商量。",
    "han": 13,
    "start": 72.76666666666667,
    "end": 77.3,
@@ -544,13 +544,13 @@
   },
   {
    "shot": 14,
-   "text": "停下不是白费，／是把以后的时间留住。",
-   "han": 15,
+   "text": "起身离开不是浪费，／是把晚上留给自己。",
+   "han": 16,
    "start": 78.10000000000001,
    "end": 83.66666666666666,
    "window": 5.566666666666649,
-   "budget": 3.3333333333333335,
-   "need": 3.3333333333333335,
+   "budget": 3.5555555555555554,
+   "need": 3.5555555555555554,
    "ok": true,
    "tag": "情境演绎"
   },
@@ -890,12 +890,12 @@
   "ok": true
  },
  "render_seconds": {
-  "vertical": 4639.9
+  "vertical": 4905.8
  },
  "ffprobe": {
   "vertical": {
    "file": "sunk_vertical.mp4",
-   "size_mb": 53.75,
+   "size_mb": 49.55,
    "duration": 90.048,
    "video": "h264 1080x1920 yuv420p 30/1 frames=2700",
    "audio": "aac 48000Hz ch=2"
@@ -915,39 +915,39 @@
     "cue_frame": 3,
     "visual_peak_frame": 3,
     "diff_frames": 0,
-    "peak_diff": 43.86
+    "peak_diff": 45.18
    },
    {
     "shot": 1,
-    "key": "add",
+    "key": "yawn",
     "cue_frame": 67,
     "visual_peak_frame": 67,
     "diff_frames": 0,
-    "peak_diff": 32.09
+    "peak_diff": 27.77
    },
    {
     "shot": 2,
-    "key": "clock",
+    "key": "price",
     "cue_frame": 258,
-    "visual_peak_frame": 259,
-    "diff_frames": 1,
-    "peak_diff": 29.43
+    "visual_peak_frame": 258,
+    "diff_frames": 0,
+    "peak_diff": 31.61
    },
    {
     "shot": 3,
-    "key": "more",
+    "key": "hour",
     "cue_frame": 449,
-    "visual_peak_frame": 449,
-    "diff_frames": 0,
-    "peak_diff": 30.31
+    "visual_peak_frame": 450,
+    "diff_frames": 1,
+    "peak_diff": 22.24
    },
    {
     "shot": 4,
-    "key": "tower",
+    "key": "lock",
     "cue_frame": 577,
     "visual_peak_frame": 577,
     "diff_frames": 0,
-    "peak_diff": 43.49
+    "peak_diff": 61.0
    },
    {
     "shot": 6,
@@ -955,7 +955,7 @@
     "cue_frame": 960,
     "visual_peak_frame": 960,
     "diff_frames": 0,
-    "peak_diff": 53.95
+    "peak_diff": 42.83
    },
    {
     "shot": 7,
@@ -963,7 +963,7 @@
     "cue_frame": 1151,
     "visual_peak_frame": 1151,
     "diff_frames": 0,
-    "peak_diff": 46.6
+    "peak_diff": 45.04
    },
    {
     "shot": 7,
@@ -971,7 +971,7 @@
     "cue_frame": 1215,
     "visual_peak_frame": 1216,
     "diff_frames": 1,
-    "peak_diff": 85.84
+    "peak_diff": 84.15
    },
    {
     "shot": 8,
@@ -979,7 +979,7 @@
     "cue_frame": 1342,
     "visual_peak_frame": 1342,
     "diff_frames": 0,
-    "peak_diff": 29.63
+    "peak_diff": 37.48
    },
    {
     "shot": 9,
@@ -987,7 +987,7 @@
     "cue_frame": 1533,
     "visual_peak_frame": 1533,
     "diff_frames": 0,
-    "peak_diff": 31.51
+    "peak_diff": 32.18
    },
    {
     "shot": 10,
@@ -995,7 +995,7 @@
     "cue_frame": 1661,
     "visual_peak_frame": 1661,
     "diff_frames": 0,
-    "peak_diff": 32.5
+    "peak_diff": 32.85
    },
    {
     "shot": 11,
@@ -1003,7 +1003,7 @@
     "cue_frame": 1852,
     "visual_peak_frame": 1852,
     "diff_frames": 0,
-    "peak_diff": 29.21
+    "peak_diff": 51.39
    },
    {
     "shot": 12,
@@ -1011,15 +1011,15 @@
     "cue_frame": 2044,
     "visual_peak_frame": 2044,
     "diff_frames": 0,
-    "peak_diff": 35.15
+    "peak_diff": 34.15
    },
    {
     "shot": 13,
-    "key": "lamp",
+    "key": "talk",
     "cue_frame": 2235,
     "visual_peak_frame": 2235,
     "diff_frames": 0,
-    "peak_diff": 48.08
+    "peak_diff": 36.37
    },
    {
     "shot": 14,
@@ -1027,7 +1027,7 @@
     "cue_frame": 2362,
     "visual_peak_frame": 2362,
     "diff_frames": 0,
-    "peak_diff": 47.57
+    "peak_diff": 35.42
    },
    {
     "shot": 15,
@@ -1035,30 +1035,23 @@
     "cue_frame": 2522,
     "visual_peak_frame": 2522,
     "diff_frames": 0,
-    "peak_diff": 49.09
+    "peak_diff": 57.5
    }
   ]
  },
  "cut_check": {
   "vertical": {
    "cuts": 44,
-   "peak_on_cut": 43,
-   "min_cut_diff": 24.24,
-   "off": [
-    {
-     "t": 17.1,
-     "frame": 513,
-     "peak": 510,
-     "diff": 32.15
-    }
-   ]
+   "peak_on_cut": 44,
+   "min_cut_diff": 22.71,
+   "off": []
   }
  },
  "change_3s": {
   "vertical": {
-   "min_diff_3s": 11.42,
-   "at": 69.0,
-   "longest_static_s": 0.5
+   "min_diff_3s": 10.8,
+   "at": 68.5,
+   "longest_static_s": 0.0
   }
  }
 }
