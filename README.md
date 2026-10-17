@@ -145,26 +145,31 @@ python3 gf_short.py out/gamblers_fallacy_silent.mp4
 - 画面全部矢量绘制（轮盘、记分灯、筹码、硬币、天平、抽奖机），不依赖 Emoji 与 TTS 模型
 - 排时用 `Video.layout_fixed(场景时长)`，渲染用 `Video.render(..., silent=True)`
 
-## 心理科普：《为什么一到晚上，就觉得自己的人生不行了》
+## 黑金无旁白科普短片引擎 `kepu/`（可量产）
 
 ```bash
-python3 fetch_assets.py          # 只需字体（思源宋体/黑体），无 TTS
-python3 night_short.py           # 依次查找 ./bgm.m4a、./music/bgm.m4a、./assets/bgm.m4a；缺失时只输出“待配乐预览”
+python3 fetch_assets.py --fonts-only               # 只需字体（思源宋体/黑体）
+python3 -m kepu.build --topic night                # 样板片《为什么一到晚上，就觉得自己的人生不行了》
+python3 -m kepu.build --topic night --stills 1,33,87   # 只出横竖屏抽帧拼图，检查画面
 ```
 
-90 秒、30fps，横竖屏独立排版（1080×1920 上下递进 / 1920×1080 左文右景），无旁白；黑金 2.5D 纸卡、原创中性人物、七类合成打击乐音效。
-4 核机器两版合计约 4 分钟。代码在 `night/`：
+每条片子是 `topics/<slug>/` 下的一个题材目录：`shots.py`（主字幕原文、角标、候选音画事件）、`scenes.py`（逐镜场景）、
+`__init__.py`（封面与发布文案、参考资料）。新片从 `topics/_template/` 复制开始。完整流程、卡点规则和验收线见
+`.claude/skills/kepu-video/SKILL.md`，固定提示词模板见同目录下的 `prompt_template.md`。
+
+输出到 `out/<slug>/`：1080×1920 / 1920×1080 两套独立排版（30fps，H.264 yuv420p，AAC）、封面、`bgm.wav` / `sfx.wav` / `mix.wav`、
+`cue_table.csv`、`beat_grid.csv`、逐屏文案、参考资料、`verify_report.json`。90 秒片子在 4 核机器上两版合计约 4 分钟。
 
 | 模块 | 职责 |
 |------|------|
-| `config.py` | 画幅排版、配色、15 镜分镜、主字幕原文、候选音效事件 |
-| `scenes.py` | 15 个镜头的场景绘制；所有撞击动作读事件时刻表，校准后自动跟随 |
-| `draw.py` | 纸卡与柔和阴影、透视桌面、城市剪影、台灯、原创人物骨架 |
-| `sfx.py` | 低音鼓 / 军鼓边击 / 木块 / 沙锤 / 框鼓与低音通鼓 / 邦戈鼓 / 轻柔吊镲 原创合成 |
-| `music.py` | 原曲解码、谱通量起音、节拍网格与小节重拍判定（低频能量 + 和声变化）、段落检测、90 秒片段选择、避让混音、-16 LUFS / -1 dBTP 母带 |
-| `render.py` | 时间轴、字幕与角标、匹配转场、多进程渲染、封面 |
+| `config.py` | 帧率、配色、横竖屏排版，`Shot` / `Cue` 数据结构与阅读预算 |
+| `music.py` | 原曲解码、谱通量起音、节拍网格与漂移校验、小节重拍判定（低频能量 + 和声变化）、段落检测、选段、避让混音、-16 LUFS / -1 dBTP 母带 |
+| `render.py` | 边界与事件贴拍、字幕与角标、来源卡、匹配转场、多进程渲染、封面 |
+| `draw.py` / `props.py` | 纸卡与柔和阴影、透视、城市剪影、台灯、原创人物骨架 / 可复用场景道具 |
+| `sfx.py` | 低音鼓、军鼓边击、木块、沙锤、框鼓与低音通鼓、邦戈鼓、轻柔吊镲的原创合成 |
+| `build.py` | 命令行入口：构建、核验（ffprobe、黑帧、响度、音画偏差、阅读窗口）、交付物 |
 
-交付物与核验报告输出到 `out/night/`（`DELIVERY.md` 说明哪些已渲染、已核验、未完成）。
+`night_short.py` 保留为兼容入口，等价于 `python3 -m kepu.build --topic night`。
 
 ## 竖屏无声版：《机会成本》
 

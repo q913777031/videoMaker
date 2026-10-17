@@ -1,16 +1,15 @@
 """时间轴构建（叙事基准或按原曲校准）、逐帧合成（场景 + 字幕 + 角标）、多进程渲染与封面。"""
 
-import math
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from multiprocessing import get_context
 
 import numpy as np
 import skia
 
 from . import draw as d
-from . import scenes
-from .config import BG, FPS, GOLD, WHITE, Layout, Shot, shots
+from .config import BG, FPS, GOLD, WHITE, Layout, Shot
+from .topic import Topic
 
 TRANS = 0.3            # 场景层交叉匹配转场时长（不影响字幕阅读窗口）
 TEXT_IN = 0.4
@@ -25,6 +24,7 @@ class Timeline:
     events: list[dict]    # 音效事件（视频绝对时间）
     calibrated: bool
     boundaries: list = field(default_factory=list)   # 每条边界的 (Beat, 原因)，无原曲时为 None
+    topic: Topic | None = None
 
 
 POS_NAME = {1: "小节重拍（第1拍）", 3: "次强拍（第3拍）", 2: "普通拍（第2拍）", 4: "普通拍（第4拍）"}
@@ -36,8 +36,7 @@ def _fit_boundaries(sh, an) -> tuple[list[float], list]:
     每次移动后核对两侧镜头的阅读窗口（时长 - 0.8s ≥ 预算需求且时长 ≥ 5s），不满足就退回下一级候选。
     """
     from . import music
-    need = {s.no: max(max(2.0, s.han / 4.5) + (0.8 if any(ch.isdigit() for ch in s.text) else 0)
-                      + (1.0 if s.no in (6, 15) else 0), 5.0 if s.no == 15 else 3.0) for s in sh}
+    need = {s.no: s.need for s in sh}
     bounds = [0.0] + [s.start for s in sh[1:]] + [an.total]
     info = [None] * len(bounds)
     for i in range(1, len(sh)):
@@ -61,12 +60,12 @@ def _fit_boundaries(sh, an) -> tuple[list[float], list]:
     return bounds, info
 
 
-def build_timeline(analysis=None) -> Timeline:
+def build_timeline(topic: Topic, analysis=None) -> Timeline:
     """无原曲时使用叙事基准；有原曲时边界贴拍、关键撞击贴小节重拍、移动类动作贴普通拍。"""
     from . import music
     an = analysis
-    sh = shots()
-    total = 90.0 if an is None else an.total
+    sh = topic.shots()
+    total = (sh[-1].start + sh[-1].dur) if an is None else an.total
     bounds, binfo = ([s.start for s in sh] + [total], [None] * (len(sh) + 1)) if an is None \
         else _fit_boundaries(sh, an)
     for i, s in enumerate(sh):
@@ -86,8 +85,8 @@ def build_timeline(analysis=None) -> Timeline:
                 g0 = s.start + base
                 lo = s.start + max(0.8 if cu.sound and cu.snap else 0.45, prev + 0.35)   # 避开入场转场
                 hi = s.start + s.dur - 0.6
-                if cu.key == "credit":
-                    lo, hi = s.start - 0.02, s.start + 0.45
+                if cu.window is not None:
+                    lo, hi = s.start + cu.window[0], s.start + cu.window[1]
                 if cu.sound and cu.snap:
                     tries = [(music.nearest_beat(an, g0, max(lo, g0 - 1.1), min(hi, g0 + 1.1), {1}), "高"),
                              (music.nearest_beat(an, g0, max(lo, g0 - 1.7), min(hi, g0 + 1.7), {1}), "高"),
@@ -120,9 +119,9 @@ def build_timeline(analysis=None) -> Timeline:
             if cu.sound and row["gain"] <= 0:
                 row["sound"] = ""
             events.append(row)
-    cues[5]["_t4"] = sh[3].dur - cues[4]["lap"]
-    tl = Timeline(sh, total, cues, events, an is not None)
-    tl.boundaries = binfo
+    if topic.post_cues is not None:
+        topic.post_cues(cues, sh)
+    tl = Timeline(sh, total, cues, events, an is not None, binfo, topic)
     return tl
 
 
@@ -130,7 +129,7 @@ def build_timeline(analysis=None) -> Timeline:
 
 class Frame:
     def __init__(self, tl: Timeline, L: Layout):
-        self.tl, self.L = tl, L
+        self.tl, self.L, self.topic = tl, L, tl.topic
         s = L.stage_scale
         v = ((0 - L.stage_ox) / s, (0 - L.stage_oy) / s, (L.w - L.stage_ox) / s, (L.h - L.stage_oy) / s)
         z = L.zoom
@@ -149,7 +148,7 @@ class Frame:
         z = self.L.zoom
         c.translate(500 * (1 - z), 560 * (1 - z))
         c.scale(z, z)
-        scenes.SCENES[sh.no](c, t, sh.dur, self.tl.cues[sh.no], self.view)
+        self.topic.scenes[sh.no](c, t, sh.dur, self.tl.cues[sh.no], self.view)
         c.restore()
 
     def draw(self, c: skia.Canvas, frame: int):
@@ -166,7 +165,7 @@ class Frame:
             self._scene(c, sh, t)
         self._scrim(c)
         self._tag(c, sh, t, k)
-        if sh.no == 15:
+        if sh.credit:
             self._credit(c, sh, t, k)
         else:
             self._caption(c, sh, t, k)
@@ -191,7 +190,7 @@ class Frame:
         else:
             x = d.prog(t, 0, TEXT_IN)
             a_in, rise = d.ease_out(x), 16 * (1 - d.ease_out(x))
-        a_out = 1 - d.prog(t, sh.dur - TEXT_OUT, TEXT_OUT) if sh.no != 15 else 1.0
+        a_out = 1 - d.prog(t, sh.dur - TEXT_OUT, TEXT_OUT) if not sh.credit else 1.0
         return a_in * a_out, rise
 
     def _tag(self, c, sh, t, k):
@@ -229,7 +228,7 @@ class Frame:
         cx, cy = L.w / 2, L.h / 2 - (60 if L.name == "vertical" else 0)
         w = max(d.text_width(x, "serif", L.ref_size) for x in sh.lines) + L.ref_size * 2.4
         h = L.ref_size * 4.6
-        land = d.ease_in(d.prog(t, 0, self.tl.cues[15]["credit"]))
+        land = d.ease_in(d.prog(t, 0, next(iter(self.tl.cues[sh.no].values()), TEXT_IN)))
         a = land
         c.save()
         c.translate(cx, cy + 30 * (1 - land))
@@ -284,34 +283,33 @@ def render(tl: Timeline, L: Layout, out_mp4: str, wav: str, workers: int = 4, fr
 
 # ---------------------------------------------------------------- 封面
 
-def cover(L: Layout) -> np.ndarray:
-    """封面：床边一张小卡片投射出巨大的城市阴影；主标题两行、副标题一行。"""
+def cover(L: Layout, topic: Topic) -> np.ndarray:
+    """封面：题材提供的主体画面 + 主标题（一到两行）+ 单独一行副标题。"""
     buf = np.zeros((L.h, L.w, 4), np.uint8)
     surf = skia.Surface(buf)
     c = surf.getCanvas()
     c.clear(d.col(BG))
-    from dataclasses import replace
     Lc = replace(L, stage_oy=L.stage_oy + 150) if L.name == "vertical" else replace(L, stage_ox=L.stage_ox - 40)
-    fr = Frame(build_timeline(None), Lc)
+    fr = Frame(build_timeline(topic), Lc)
     c.save()
     c.translate(Lc.stage_ox, Lc.stage_oy)
     c.scale(Lc.stage_scale, Lc.stage_scale)
     z = Lc.zoom
     c.translate(500 * (1 - z), 560 * (1 - z))
     c.scale(z, z)
-    scenes.bedroom(c, 0, fr.view, 3.3, city=1.0, card_rot=-12)
+    topic.cover_scene(c, fr.view)
     c.restore()
     fr._scrim(c)
     if L.name == "vertical":
         ts, x, y, align = 118, L.w / 2, 330, "center"
-        for i, ln in enumerate(("一到晚上，", "就否定人生？")):
+        for i, ln in enumerate(topic.cover_title):
             d.draw_text(c, ln, x, y + i * 150, ts, WHITE, align=align)
         c.drawLine(x - 50, y + 270, x + 50, y + 270, d.stroke(GOLD, 3))
-        d.draw_text(c, "一件小事，怎么变成全部", x, y + 345, 62, GOLD, name="serif_semi", align=align)
+        d.draw_text(c, topic.cover_subtitle, x, y + 345, 62, GOLD, name="serif_semi", align=align)
     else:
         ts, x, y = 104, 120, 350
-        for i, ln in enumerate(("一到晚上，", "就否定人生？")):
+        for i, ln in enumerate(topic.cover_title):
             d.draw_text(c, ln, x, y + i * 138, ts, WHITE, align="left")
         c.drawLine(x, y + 245, x + 90, y + 245, d.stroke(GOLD, 3))
-        d.draw_text(c, "一件小事，怎么变成全部", x, y + 320, 56, GOLD, name="serif_semi", align="left")
+        d.draw_text(c, topic.cover_subtitle, x, y + 320, 56, GOLD, name="serif_semi", align="left")
     return buf.copy()

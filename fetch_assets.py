@@ -1,7 +1,7 @@
 """下载视频渲染所需的外部资源：字体、Fluent 3D Emoji、离线 TTS 模型。
 
 已存在的文件会跳过；任一资源下载失败时以非零码退出并列出失败项。
-用法：python3 fetch_assets.py
+用法：python3 fetch_assets.py [--fonts-only]
 """
 
 import io
@@ -139,8 +139,9 @@ def fetch_model(failed: list[str]):
 def main():
     failed: list[str] = []
     fetch_fonts(failed)
-    fetch_emoji(failed)
-    fetch_model(failed)
+    if "--fonts-only" not in sys.argv:
+        fetch_emoji(failed)
+        fetch_model(failed)
     if failed:
         print("failed:\n  " + "\n  ".join(failed))
         sys.exit(1)

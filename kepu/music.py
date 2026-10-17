@@ -19,6 +19,7 @@ from .config import BASE_TOTAL, SR
 HOP = 480                       # 10 ms
 TARGET_LUFS = -16.0
 TP_LIMIT = -1.0
+DRIFT_LIMIT_MS = 15.0            # 固定网格与实际强起音的窗口中位偏差上限，超过即判定速度不稳，拒绝使用网格
 
 
 @dataclass
@@ -109,13 +110,17 @@ def local_tempo(t: np.ndarray, env: np.ndarray, win: float = 8.0) -> list[tuple[
     return out
 
 
-def choose_segment(x: np.ndarray, notes: list[str]) -> tuple[float, float]:
-    """选取约 90 秒的连续片段：起点贴近明显起音、终点处能量处于回落，返回原曲 (起, 止) 秒。"""
+def choose_segment(x: np.ndarray, notes: list[str], target: float = BASE_TOTAL) -> tuple[float, float]:
+    """选取约 target 秒的连续片段：起点贴近明显起音、终点处能量处于回落，返回原曲 (起, 止) 秒。
+
+    原曲短于 target - 3 秒时抛出 ValueError（不循环、不拉伸）；位于 target ± 3 秒时整曲使用。
+    """
     dur = len(x) / SR
-    if dur < 87.0:
-        raise ValueError(f"bgm too short: {dur:.2f}s < 87s")
-    if dur <= 93.0:
-        notes.append(f"原曲时长 {dur:.2f}s 位于 87–93s，整曲使用。")
+    lo, hi = target - 3.0, target + 3.0
+    if dur < lo:
+        raise ValueError(f"bgm too short: {dur:.2f}s < {lo:.0f}s")
+    if dur <= hi:
+        notes.append(f"原曲时长 {dur:.2f}s 位于 {lo:.0f}–{hi:.0f}s，整曲使用。")
         return 0.0, dur
     t, flux, _ = onset_envelope(x)
     flux = flux / (np.percentile(flux, 99) + 1e-12)
@@ -124,8 +129,8 @@ def choose_segment(x: np.ndarray, notes: list[str]) -> tuple[float, float]:
     rms = np.array([np.sqrt(np.mean(mono[int(a * SR):int((a + 0.4) * SR)] ** 2) + 1e-12) for a in rms_t])
     db = 20 * np.log10(rms)
     best, best_s = -1e9, 0.0
-    for s in np.arange(0, dur - 90.0 + 1e-6, 0.1):
-        e = s + 90.0
+    for s in np.arange(0, dur - target + 1e-6, 0.1):
+        e = s + target
         k0 = np.searchsorted(t, s)
         on = flux[max(0, k0 - 3):k0 + 4].max(initial=0)               # 起点有起音
         pre = db[max(0, int((s - 1) * 10)):int(s * 10) + 1].mean() if s > 0 else -60
@@ -136,18 +141,18 @@ def choose_segment(x: np.ndarray, notes: list[str]) -> tuple[float, float]:
         score = 1.0 * on + 0.08 * jump + 0.12 * fall
         if score > best:
             best, best_s = score, float(s)
-    notes.append(f"原曲 {dur:.2f}s，选取 {best_s:.2f}–{best_s + 90:.2f}s（起点起音强度与末尾能量回落的综合打分，"
+    notes.append(f"原曲 {dur:.2f}s，选取 {best_s:.2f}–{best_s + target:.2f}s（起点起音强度与末尾能量回落的综合打分，"
                  f"属信号启发式，需人工试听复核乐句完整性）。")
-    return best_s, best_s + 90.0
+    return best_s, best_s + target
 
 
-def analyze(path: Path) -> Analysis:
+def analyze(path: Path, target: float = BASE_TOTAL) -> Analysis:
     info = probe(path)
     st = next(s for s in info["streams"] if s["codec_type"] == "audio")
     x = decode(path)
     a = Analysis(path=str(path), duration=len(x) / SR, sample_rate=int(st["sample_rate"]),
                  channels=int(st["channels"]), codec=st["codec_name"])
-    a.seg_start, a.seg_end = choose_segment(x, a.notes)
+    a.seg_start, a.seg_end = choose_segment(x, a.notes, target)
     seg = x[int(a.seg_start * SR):int(a.seg_end * SR)]
     a.total = round(len(seg) / SR * 30) / 30
     a.audio = seg
@@ -166,7 +171,8 @@ def beat_grid(a: Analysis, x: np.ndarray):
     """拟合恒定拍长的节拍网格并判定小节重拍。
 
     拍长与相位：在包络自相关最强周期附近细扫，使网格点上起音强度均值最大；
-    再按每 15 秒窗口统计网格与实际强起音的偏差，验证没有明显漂移（漂移明显时写入 notes）。
+    再按每 15 秒窗口统计网格与实际强起音的中位偏差；任一窗口超过 DRIFT_LIMIT_MS 时抛出 ValueError，
+    不在速度不稳的曲子上硬套恒定网格。
     重拍相位：四个相位中“低频能量”与“和声变化（色度新颖度）”标准化得分之和最高者为第 1 拍。
     """
     t, env = a.env_t, a.env
@@ -210,6 +216,10 @@ def beat_grid(a: Analysis, x: np.ndarray):
         d = [pk[np.argmin(abs(pk - b))] - b for b in bb] if len(pk) else []
         d = [v for v in d if abs(v) < 0.08]
         drift.append(round(float(np.median(d)) * 1000, 1) if d else None)
+    worst = max((abs(v) for v in drift if v is not None), default=None)
+    if worst is None or worst > DRIFT_LIMIT_MS:
+        raise ValueError(f"beat grid does not fit this track (drift per 15s window: {drift} ms, limit "
+                         f"{DRIFT_LIMIT_MS} ms); tempo is not steady, use per-beat tracking instead of a fixed grid")
     # 段落起点：重拍上的 4 拍窗口响度与前 8 拍相比变化 ≥ 3 dB
     db = lambda a_, b_: 20 * np.log10(np.sqrt(np.mean(mono[int(a_ * SR):int(b_ * SR)] ** 2)) + 1e-9)
     secs = []
