@@ -97,13 +97,25 @@ def _npx(args: list[str], workers: int):
 def render(p: dict, out_mp4: Path, props_path: Path, workers: int = 4):
     """整片渲染：H.264 yuv420p 30fps（参数见 kepu3d/remotion.config.ts），音频 AAC 48 kHz。"""
     props_path.write_text(json.dumps(p, ensure_ascii=False), encoding="utf-8")
-    _npx(["render", "src/index.ts", "Kepu", str(out_mp4), f"--props={props_path}",
+    out_mp4, props_path = out_mp4.resolve(), props_path.resolve()
+    raw = out_mp4.with_name(out_mp4.stem + "_raw.mp4")
+    _npx(["render", "src/index.ts", "Kepu", str(raw), f"--props={props_path}",
           "--audio-codec=aac", "--audio-bitrate=192k"], workers)
+    to_tv_range(raw, out_mp4)
+    raw.unlink()
+
+
+def to_tv_range(src: Path, dst: Path):
+    """Remotion 的 JPEG 帧会产出全幅 yuvj420p；转成通用的有限幅 yuv420p（音频直接复制）。"""
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-vf", "scale=in_range=full:out_range=tv",
+                    "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", "-r", str(FPS),
+                    "-c:a", "copy", "-movflags", "+faststart", str(dst)], check=True)
 
 
 def stills(p: dict, frames: list[int], out_dir: Path, props_path: Path, comp: str = "Kepu") -> list[Path]:
     """批量抽帧（只打包一次）：返回 PNG 路径列表，顺序与 frames 一致。"""
     props_path.write_text(json.dumps(p, ensure_ascii=False), encoding="utf-8")
+    props_path, out_dir = props_path.resolve(), out_dir.resolve()
     r = subprocess.run(["node", "stills.mjs", str(props_path), str(out_dir), ",".join(map(str, frames)), comp], cwd=APP)
     if r.returncode != 0:
         raise RuntimeError(f"stills.mjs exited with code {r.returncode}")

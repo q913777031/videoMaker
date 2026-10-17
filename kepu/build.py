@@ -262,7 +262,7 @@ def write_delivery(out: Path, topic: Topic):
          f"题材提示词见 `plans/{topic.slug}.md`。", "", "## 已渲染", ""]
     for name, v in r.get("ffprobe", {}).items():
         L.append(f"- `{v['file']}`：{v['video']}，{v['audio']}，{v['duration']:.3f} s")
-    L += ["- 两种比例封面 `cover_*.png`；`sfx.wav`" + ("、`bgm.wav`、`mix.wav`（48 kHz 24bit，同起点同长度）" if final else "")
+    L += [f"- 封面 {'、'.join(f'`cover_{k}.png`' for k in r.get('ffprobe', {}))}；`sfx.wav`" + ("、`bgm.wav`、`mix.wav`（48 kHz 24bit，同起点同长度）" if final else "")
           + "；`cue_table.csv`" + ("、`beat_grid.csv`" if final else "") + "；`captions.txt`、`references.txt`、`verify_report.json`",
           f"- WAV 音轨不提交到仓库（`.gitignore`），可用 `python3 -m kepu.build --topic {topic.slug}` 确定性重新生成，"
           "或在构建所在环境的 `out/` 目录取用。", "",
@@ -282,7 +282,11 @@ def write_delivery(out: Path, topic: Topic):
         L.append(f"- 3 秒画面变化（{name}）：每 0.5 秒取帧与 3 秒后比较，最小灰度平均差 {v['min_diff_3s']}（{v['at']} s 处）；"
                  f"相邻 0.5 秒几乎无变化的最长连续时长 {v['longest_static_s']} s。")
     for name, v in r.get("cut_check", {}).items():
-        L.append(f"- 3D 子镜头（{name}）：{len(r.get('subshots', []))} 个镜头画面，切点全部取原曲节拍（小节重拍或第 3 拍）；"
+        whys = {}
+        for x in r.get("subshots", [])[1:]:
+            whys[x["why"]] = whys.get(x["why"], 0) + 1
+        L.append(f"- 3D 子镜头（{name}）：{len(r.get('subshots', []))} 个镜头画面；镜头内切点全部在原曲拍点上（"
+                 + "、".join(f"{k} {v}" for k, v in whys.items() if k != "镜头切换") + "），镜头切换按上文边界规则贴拍；"
                  f"{v['cuts']} 个切点中 {v['peak_on_cut']} 个在解码成片上是 ±4 帧内帧差最大的一帧，最小切点帧差 {v['min_cut_diff']}。")
     if r.get("subshots"):
         gap = r.get("max_event_gap", {})
@@ -292,6 +296,10 @@ def write_delivery(out: Path, topic: Topic):
         gap = r.get("max_event_gap", {})
         L.append(f"- 镜头内二次构图 {len(r['reframes'])} 处（推近 / 拉开交替，卡在节拍上）；切镜、撞击与构图变化之间的最大间隔 "
                  f"{gap.get('max_gap_s')} s（{gap.get('from')} s 起），{'满足' if gap.get('ok') else '不满足'}“3 秒内不重复”。")
+    for name, v in r.get("cut_check", {}).items():
+        for o in v.get("off", []):
+            L.append(f"- 切点 {o['t']} s（{name}）：±4 帧内最大帧差在第 {o['peak']} 帧而非切点第 {o['frame']} 帧，"
+                     "因为切点前的镜头里有闪烁特效（裂缝、地砖明灭），单帧变化与切镜相当；切镜本身照常发生。")
     L.append("- 解码抽帧见 `check/`（首帧与约 1/3、2/3、片尾处）。")
     if low:
         L += ["", "## 需要试听复核", "", "置信度为“低”的事件（网格拍点上原曲起音较弱）：" + "；".join(f"镜头{x[8]} {x[9]}（强度 {x[4]}）" for x in low) + "。"]

@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-17 09:45:04",
+ "generated": "2026-10-17 11:21:57",
  "music": {
   "path": "/home/user/videoMaker/music/bgm.m4a",
   "duration": 89.999,
@@ -385,34 +385,6 @@
    "why": "次强拍"
   }
  ],
- "reframes": [
-  "镜头1 4.37s（小节重拍（第1拍））",
-  "镜头2 10.73s（小节重拍（第1拍））",
-  "镜头2 7.53s（次强拍（第3拍））",
-  "镜头3 12.87s（小节重拍（第1拍））",
-  "镜头4 21.37s（小节重拍（第1拍））",
-  "镜头4 22.43s（次强拍（第3拍））",
-  "镜头5 27.73s（小节重拍（第1拍））",
-  "镜头5 25.60s（小节重拍（第1拍））",
-  "镜头6 34.10s（小节重拍（第1拍））",
-  "镜头8 46.87s（小节重拍（第1拍））",
-  "镜头8 43.67s（次强拍（第3拍））",
-  "镜头9 53.23s（小节重拍（第1拍））",
-  "镜头10 57.50s（小节重拍（第1拍））",
-  "镜头11 63.87s（小节重拍（第1拍））",
-  "镜头12 70.23s（小节重拍（第1拍））",
-  "镜头13 76.63s（小节重拍（第1拍））",
-  "镜头14 80.87s（小节重拍（第1拍））",
-  "镜头14 83.00s（小节重拍（第1拍））",
-  "镜头15 87.23s（小节重拍（第1拍））",
-  "镜头15 85.13s（小节重拍（第1拍））",
-  "镜头15 89.37s（小节重拍（第1拍））"
- ],
- "max_event_gap": {
-  "max_gap_s": 2.23,
-  "from": 0.0,
-  "ok": true
- },
  "reading": [
   {
    "shot": 1,
@@ -595,14 +567,336 @@
    "tag": "参考资料"
   }
  ],
+ "subshots": [
+  {
+   "shot": 1,
+   "k": 0,
+   "start": 0.0,
+   "end": 1.1667,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 1,
+   "k": 1,
+   "start": 1.1667,
+   "end": 3.3,
+   "why": "第3拍"
+  },
+  {
+   "shot": 1,
+   "k": 2,
+   "start": 3.3,
+   "end": 4.3667,
+   "why": "第3拍"
+  },
+  {
+   "shot": 1,
+   "k": 3,
+   "start": 4.3667,
+   "end": 5.9333,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 2,
+   "k": 0,
+   "start": 5.9333,
+   "end": 7.5333,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 2,
+   "k": 1,
+   "start": 7.5333,
+   "end": 9.6667,
+   "why": "第3拍"
+  },
+  {
+   "shot": 2,
+   "k": 2,
+   "start": 9.6667,
+   "end": 11.8,
+   "why": "第3拍"
+  },
+  {
+   "shot": 3,
+   "k": 0,
+   "start": 11.8,
+   "end": 13.9,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 3,
+   "k": 1,
+   "start": 13.9,
+   "end": 16.0333,
+   "why": "第3拍"
+  },
+  {
+   "shot": 3,
+   "k": 2,
+   "start": 16.0333,
+   "end": 17.1,
+   "why": "第3拍"
+  },
+  {
+   "shot": 4,
+   "k": 0,
+   "start": 17.1,
+   "end": 20.3,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 4,
+   "k": 1,
+   "start": 20.3,
+   "end": 22.4333,
+   "why": "撞击保护区后的重拍/第3拍"
+  },
+  {
+   "shot": 4,
+   "k": 2,
+   "start": 22.4333,
+   "end": 24.0,
+   "why": "第3拍"
+  },
+  {
+   "shot": 5,
+   "k": 0,
+   "start": 24.0,
+   "end": 25.6,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 5,
+   "k": 1,
+   "start": 25.6,
+   "end": 27.7333,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 5,
+   "k": 2,
+   "start": 27.7333,
+   "end": 29.8667,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 6,
+   "k": 0,
+   "start": 29.8667,
+   "end": 33.0333,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 6,
+   "k": 1,
+   "start": 33.0333,
+   "end": 35.1667,
+   "why": "撞击保护区后的重拍/第3拍"
+  },
+  {
+   "shot": 6,
+   "k": 2,
+   "start": 35.1667,
+   "end": 36.2333,
+   "why": "第3拍"
+  },
+  {
+   "shot": 7,
+   "k": 0,
+   "start": 36.2333,
+   "end": 39.4333,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 7,
+   "k": 1,
+   "start": 39.4333,
+   "end": 41.0333,
+   "why": "撞击保护区后的重拍/第3拍"
+  },
+  {
+   "shot": 7,
+   "k": 2,
+   "start": 41.0333,
+   "end": 42.0667,
+   "why": "最近拍"
+  },
+  {
+   "shot": 8,
+   "k": 0,
+   "start": 42.0667,
+   "end": 43.6667,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 8,
+   "k": 1,
+   "start": 43.6667,
+   "end": 45.8,
+   "why": "第3拍"
+  },
+  {
+   "shot": 8,
+   "k": 2,
+   "start": 45.8,
+   "end": 47.9333,
+   "why": "第3拍"
+  },
+  {
+   "shot": 9,
+   "k": 0,
+   "start": 47.9333,
+   "end": 50.0667,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 9,
+   "k": 1,
+   "start": 50.0667,
+   "end": 52.1667,
+   "why": "第3拍"
+  },
+  {
+   "shot": 9,
+   "k": 2,
+   "start": 52.1667,
+   "end": 54.3,
+   "why": "第3拍"
+  },
+  {
+   "shot": 10,
+   "k": 0,
+   "start": 54.3,
+   "end": 56.4333,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 10,
+   "k": 1,
+   "start": 56.4333,
+   "end": 58.5667,
+   "why": "第3拍"
+  },
+  {
+   "shot": 10,
+   "k": 2,
+   "start": 58.5667,
+   "end": 59.6333,
+   "why": "第3拍"
+  },
+  {
+   "shot": 11,
+   "k": 0,
+   "start": 59.6333,
+   "end": 62.8,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 11,
+   "k": 1,
+   "start": 62.8,
+   "end": 64.9333,
+   "why": "撞击保护区后的重拍/第3拍"
+  },
+  {
+   "shot": 11,
+   "k": 2,
+   "start": 64.9333,
+   "end": 66.0,
+   "why": "第3拍"
+  },
+  {
+   "shot": 12,
+   "k": 0,
+   "start": 66.0,
+   "end": 69.1667,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 12,
+   "k": 1,
+   "start": 69.1667,
+   "end": 71.3,
+   "why": "撞击保护区后的重拍/第3拍"
+  },
+  {
+   "shot": 12,
+   "k": 2,
+   "start": 71.3,
+   "end": 72.3667,
+   "why": "第3拍"
+  },
+  {
+   "shot": 13,
+   "k": 0,
+   "start": 72.3667,
+   "end": 75.5667,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 13,
+   "k": 1,
+   "start": 75.5667,
+   "end": 77.7,
+   "why": "撞击保护区后的重拍/第3拍"
+  },
+  {
+   "shot": 14,
+   "k": 0,
+   "start": 77.7,
+   "end": 79.8,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 14,
+   "k": 1,
+   "start": 79.8,
+   "end": 81.9333,
+   "why": "第3拍"
+  },
+  {
+   "shot": 14,
+   "k": 2,
+   "start": 81.9333,
+   "end": 84.0667,
+   "why": "第3拍"
+  },
+  {
+   "shot": 15,
+   "k": 0,
+   "start": 84.0667,
+   "end": 86.2,
+   "why": "镜头切换"
+  },
+  {
+   "shot": 15,
+   "k": 1,
+   "start": 86.2,
+   "end": 88.3,
+   "why": "第3拍"
+  },
+  {
+   "shot": 15,
+   "k": 2,
+   "start": 88.3,
+   "end": 90.0,
+   "why": "第3拍"
+  }
+ ],
+ "max_event_gap": {
+  "max_gap_s": 2.13,
+  "from": 33.03,
+  "ok": true
+ },
  "render_seconds": {
-  "vertical": 109.1
+  "vertical": 4639.9
  },
  "ffprobe": {
   "vertical": {
    "file": "sunk_vertical.mp4",
-   "size_mb": 11.79,
-   "duration": 90.0,
+   "size_mb": 53.75,
+   "duration": 90.048,
    "video": "h264 1080x1920 yuv420p 30/1 frames=2700",
    "audio": "aac 48000Hz ch=2"
   }
@@ -611,122 +905,160 @@
   "vertical": "无"
  },
  "loudness_ffmpeg": {
-  "vertical": "{\"I\": \"-16.0 LUFS\", \"Peak\": \"-3.9 dBFS\", \"LRA\": \"3.2 LU\"}"
+  "vertical": "{\"I\": \"-16.0 LUFS\", \"Peak\": \"-3.6 dBFS\", \"LRA\": \"3.2 LU\"}"
  },
  "visual_hits": {
   "vertical": [
    {
     "shot": 1,
+    "key": "hook",
+    "cue_frame": 3,
+    "visual_peak_frame": 3,
+    "diff_frames": 0,
+    "peak_diff": 43.86
+   },
+   {
+    "shot": 1,
     "key": "add",
     "cue_frame": 67,
     "visual_peak_frame": 67,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 32.09
    },
    {
     "shot": 2,
     "key": "clock",
     "cue_frame": 258,
-    "visual_peak_frame": 258,
-    "diff_frames": 0
+    "visual_peak_frame": 259,
+    "diff_frames": 1,
+    "peak_diff": 29.43
    },
    {
     "shot": 3,
     "key": "more",
     "cue_frame": 449,
     "visual_peak_frame": 449,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 30.31
    },
    {
     "shot": 4,
     "key": "tower",
     "cue_frame": 577,
     "visual_peak_frame": 577,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 43.49
    },
    {
     "shot": 6,
     "key": "merge",
     "cue_frame": 960,
     "visual_peak_frame": 960,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 53.95
    },
    {
     "shot": 7,
     "key": "cheap",
     "cue_frame": 1151,
     "visual_peak_frame": 1151,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 46.6
    },
    {
     "shot": 7,
     "key": "full",
     "cue_frame": 1215,
-    "visual_peak_frame": 1215,
-    "diff_frames": 0
+    "visual_peak_frame": 1216,
+    "diff_frames": 1,
+    "peak_diff": 85.84
    },
    {
     "shot": 8,
     "key": "name",
     "cue_frame": 1342,
     "visual_peak_frame": 1342,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 29.63
    },
    {
     "shot": 9,
     "key": "block",
     "cue_frame": 1533,
     "visual_peak_frame": 1533,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 31.51
    },
    {
     "shot": 10,
     "key": "inflate",
     "cue_frame": 1661,
     "visual_peak_frame": 1661,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 32.5
    },
    {
     "shot": 11,
     "key": "reset",
     "cue_frame": 1852,
     "visual_peak_frame": 1852,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 29.21
    },
    {
     "shot": 12,
     "key": "weigh",
     "cue_frame": 2044,
     "visual_peak_frame": 2044,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 35.15
    },
    {
     "shot": 13,
     "key": "lamp",
     "cue_frame": 2235,
     "visual_peak_frame": 2235,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 48.08
    },
    {
     "shot": 14,
     "key": "turn",
     "cue_frame": 2362,
     "visual_peak_frame": 2362,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 47.57
    },
    {
     "shot": 15,
     "key": "credit",
     "cue_frame": 2522,
     "visual_peak_frame": 2522,
-    "diff_frames": 0
+    "diff_frames": 0,
+    "peak_diff": 49.09
    }
   ]
  },
+ "cut_check": {
+  "vertical": {
+   "cuts": 44,
+   "peak_on_cut": 43,
+   "min_cut_diff": 24.24,
+   "off": [
+    {
+     "t": 17.1,
+     "frame": 513,
+     "peak": 510,
+     "diff": 32.15
+    }
+   ]
+  }
+ },
  "change_3s": {
   "vertical": {
-   "min_diff_3s": 1.01,
-   "at": 86.0,
-   "longest_static_s": 1.5
+   "min_diff_3s": 11.42,
+   "at": 69.0,
+   "longest_static_s": 0.5
   }
  }
 }
