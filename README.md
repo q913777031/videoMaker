@@ -118,6 +118,19 @@ python3 cave_short.py out/cave_allegory.mp4 --still 31 57   # 只渲染指定秒
 - **声音**：ZipVoice 旁白（语速 0.75）。环境音全部程序化合成：火、风、滴水、铁链、溪流、鸟鸣等，洞内声音加混响。
   配乐分三段：大提琴长音 → 出洞时抽空 0.5 秒 → 钢琴单音加弦乐，结尾停在一个长音上。
 
+## 无声科普竖屏：《为什么你刷短视频停不下来？》
+
+```bash
+python3 fetch_assets.py                      # 只需其中的思源黑体
+python3 scroll_short.py out/scroll_short.mp4 # 成片 + 竖版/横版封面
+python3 scroll_short.py --still 30 61.5      # 只渲染指定时刻的单帧，用于检查
+```
+
+黑金风格、动画主导：手机第一视角开场 → 历史 → 理论 → 推荐 → 方法。
+画面带辉光、扫光、光条、光球、扩散光环、微尘和镜头推拉，每 3 秒内至少一次动画事件。
+1080×1920、30fps、97 秒（含 6 秒参考资料），**不含音频流**，4 核渲染约 3 分钟。
+屏幕文案、分镜表、事实清单与参考资料见 `docs/scroll_short/`，成片与封面在 `docs/scroll_short/media/`。
+
 ## 横屏版
 
 ```bash
