@@ -248,5 +248,6 @@ python3 logic/logic_short.py out/logic_short.mp4
 ## 第三方资源许可
 
 - [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)：MIT License，© Microsoft
-- [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans / Serif CJK](https://github.com/notofonts/noto-cjk)：SIL Open Font License 1.1
+- [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans / Serif CJK](https://github.com/notofonts/noto-cjk)、[马善政毛笔楷书 Ma Shan Zheng](https://github.com/googlefonts/mashanzheng)：SIL Open Font License 1.1
+- [three.js](https://github.com/mrdoob/three.js)：MIT License
 - [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)：Apache 2.0，通过 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 运行

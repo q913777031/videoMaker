@@ -21,6 +21,7 @@ FLUENT = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets
 NOTO = "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/"
 NOTO_SERIF = "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Serif/OTF/SimplifiedChinese/"
 SMILEY = "https://github.com/atelier-anchor/smiley-sans/releases/download/v2.0.1/smiley-sans-v2.0.1.zip"
+MASHANZHENG = "https://raw.githubusercontent.com/google/fonts/main/ofl/mashanzheng/MaShanZheng-Regular.ttf"
 TTS_BASE = "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/"
 ZIPVOICE = "sherpa-onnx-zipvoice-distill-int8-zh-en-emilia"
 VOCOS = "https://github.com/k2-fsa/sherpa-onnx/releases/download/vocoder-models/vocos_24khz.onnx"
@@ -102,6 +103,12 @@ def fetch_fonts(failed: list[str]):
                 dst.write_bytes(get(NOTO_SERIF + f))
             except Exception as ex:
                 failed.append(f"font: {f} ({ex})")
+    dst = FONT_DIR / "MaShanZheng-Regular.ttf"                  # 马善政毛笔楷书（国风片标题），SIL OFL 1.1
+    if not dst.exists():
+        try:
+            dst.write_bytes(get(MASHANZHENG))
+        except Exception as ex:
+            failed.append(f"font: MaShanZheng ({ex})")
     dst = FONT_DIR / "SmileySans-Oblique.ttf"
     if not dst.exists():
         try:
