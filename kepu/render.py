@@ -116,6 +116,7 @@ def build_timeline(topic: Topic, analysis=None) -> Timeline:
             prev = local
             row["t"] = s.start + local
             row["sfx_t"] = exact if exact is not None else row["t"]
+            row["orig_sound"] = cu.sound
             if cu.sound and row["gain"] <= 0:
                 row["sound"] = ""
             events.append(row)

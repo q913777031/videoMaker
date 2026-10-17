@@ -344,3 +344,119 @@ def window(c, x0, y0, x1, y1, on, a=1.0):
                                            [d.col("#F2D59A", 0.55 * on), d.col("#F2D59A", 0)])
         c.drawRect(skia.Rect.MakeLTRB(x0, y0, x1, y1), skia.Paint(Shader=g))
     c.drawRect(skia.Rect.MakeLTRB(x0, y0, x1, y1), d.stroke(GOLD, 2, 0.5 * a))
+
+
+# ---------------------------------------------------------------- 聚光灯、会议桌、同事半身像、投影页、滑块
+
+def spotlight(c, x_top, y_top, x, y_floor, w_floor, k=1.0, warm=GOLD):
+    """自上而下的聚光灯：上窄下宽的光锥 + 地面光斑，k 为亮度（0 关闭）。"""
+    if k <= 0:
+        return
+    cone = skia.Path()
+    cone.moveTo(x_top - 22, y_top)
+    cone.lineTo(x_top + 22, y_top)
+    cone.lineTo(x + w_floor / 2, y_floor)
+    cone.lineTo(x - w_floor / 2, y_floor)
+    cone.close()
+    g = skia.GradientShader.MakeLinear([(x_top, y_top), (x, y_floor)],
+                                       [d.col("#FFF1D2", 0.42 * k), d.col(warm, 0.16 * k)])
+    c.drawPath(cone, skia.Paint(Shader=g, AntiAlias=True, MaskFilter=skia.MaskFilter.MakeBlur(
+        skia.kNormal_BlurStyle, 6)))
+    c.drawOval(d.rect(x, y_floor, w_floor * 1.05, w_floor * 0.2), d.fill("#F2D59A", 0.35 * k, blur=14))
+    c.drawRRect(d.rrect(x_top, y_top - 12, 70, 30, 8), d.fill("#2A2824"))
+    c.drawLine(x_top - 30, y_top + 3, x_top + 30, y_top + 3, d.stroke("#FFF1D2", 3, 0.9 * min(1, k)))
+
+
+def meeting_table(c, x0, x1, top):
+    """会议桌侧视：深色桌面 + 金色细边 + 两条桌腿。"""
+    c.drawRect(skia.Rect.MakeLTRB(x0, top, x1, top + 16), d.fill("#24231F"))
+    c.drawLine(x0, top, x1, top, d.stroke(GOLD, 1.6, 0.5))
+    c.drawRect(skia.Rect.MakeLTRB(x0 + 30, top + 16, x0 + 44, 760), d.fill("#171614"))
+    c.drawRect(skia.Rect.MakeLTRB(x1 - 44, top + 16, x1 - 30, 760), d.fill("#171614"))
+
+
+def laptop(c, x, y, facing=-1, glow_k=0.3):
+    """桌上的笔记本电脑（侧视）：屏幕朝 facing 方向的人。"""
+    c.drawLine(x - 34, y, x + 34, y, d.stroke("#3A3833", 5))
+    sx = x + facing * -30
+    c.drawLine(sx, y, sx + facing * -8, y - 46, d.stroke("#3A3833", 5))
+    if glow_k > 0:
+        d.glow(c, sx, y - 24, 60, "#CFE0F0", 0.18 * glow_k)
+
+
+def bust(c, x, y, look=0.0, lit=0.0, scale=1.0, card=0.0, card_dash=False, a=1.0):
+    """坐着的同事半身像（桌面以上部分）：look 为头部朝向（+1 朝右、-1 朝左、0 低头看电脑），
+    lit 为被照亮程度（金色轮廓与面部暖光），card>0 时头顶浮现一张“回放”小卡（card_dash 为虚线空框）。"""
+    s = scale
+    if a < 1:
+        c.saveLayerAlpha(None, int(255 * d.clamp01(a)))
+    body = skia.Path()
+    body.addRRect(skia.RRect.MakeRectXY(skia.Rect.MakeLTRB(x - 46 * s, y - 40 * s, x + 46 * s, y + 60 * s), 30 * s, 30 * s))
+    c.drawPath(body, d.fill(d.INK))
+    c.drawPath(body, d.stroke(GOLD, 1.4 * s, 0.12 + 0.6 * lit))
+    hx, hy = x + look * 6 * s, y - 70 * s + (8 * s if look == 0 else 0)
+    c.drawLine(x, y - 40 * s, hx, hy + 20 * s, d.stroke(d.mix(d.SKIN, "#000000", 0.25), 16 * s))
+    c.drawCircle(hx, hy, 27 * s, d.fill(d.mix(d.SKIN, "#F6E2B5", 0.3 * lit)))
+    hair = skia.Path()
+    front = 0.0 if look >= 0 else 180.0
+    if look == 0:
+        hair.addArc(skia.Rect.MakeLTRB(hx - 28 * s, hy - 29 * s, hx + 28 * s, hy + 27 * s), 180, 180)
+    else:
+        f = 1 if look > 0 else -1
+        hair.addArc(skia.Rect.MakeLTRB(hx - 28 * s, hy - 29 * s, hx + 28 * s, hy + 27 * s), front - f * 20, -f * 225)
+    hair.close()
+    c.drawPath(hair, d.fill(d.HAIR))
+    if lit > 0:
+        c.drawCircle(hx, hy, 27 * s, d.stroke(GOLD, 2 * s, 0.7 * lit))
+    if card > 0:
+        cy = hy - 80 * s - 10 * (1 - card)
+        if card_dash:
+            c.drawRRect(d.rrect(hx, cy, 74 * s, 50 * s, 6), d.stroke("#8C8574", 2, 0.8 * card, dash=((8, 6), 0)))
+        else:
+            d.mark_card(c, hx, cy, w=74 * s, h=50 * s, lift=0.3, a=card)
+    if a < 1:
+        c.restore()
+
+
+def slide(c, cx, cy, w=520, h=300, mark_k=0.0, fix_k=0.0, row=2, col=1, a=1.0):
+    """投影页：标题条 + 三行数字胶囊；(row, col) 那个数字可被金圈标出（mark_k）或被更正标签盖住（fix_k）。"""
+    c.save()
+    if a < 1:
+        c.saveLayerAlpha(None, int(255 * d.clamp01(a)))
+    d.soft_shadow(c, cx, cy, w, h, lift=1.2, a=0.6)
+    c.drawRRect(d.rrect(cx, cy, w, h, 10), d.fill(d.WHITE))
+    c.drawRRect(d.rrect(cx, cy, w - 4, h - 4, 10), d.stroke(GOLD, 1.5, 0.45))
+    c.drawLine(cx - w * 0.4, cy - h * 0.33, cx + w * 0.05, cy - h * 0.33, d.stroke("#5E594F", 9))
+    pos = None
+    for r in range(3):
+        y = cy - h * 0.08 + r * h * 0.2
+        c.drawLine(cx - w * 0.4, y, cx - w * 0.12, y, d.stroke("#9A948A", 6))
+        for k in range(2):
+            px = cx + w * (0.08 + 0.2 * k)
+            c.drawRRect(d.rrect(px, y, w * 0.13, h * 0.1, h * 0.05), d.fill("#C9C0AE"))
+            if (r, k) == (row, col):
+                pos = (px, y)
+    if mark_k > 0:
+        c.drawOval(d.rect(pos[0], pos[1], w * 0.22, h * 0.2), d.stroke(GOLD, 4, mark_k))
+    if fix_k > 0:
+        s = 1 + 0.25 * (1 - fix_k)
+        c.drawRRect(d.rrect(pos[0], pos[1] - 4, w * 0.17 * s, h * 0.13 * s, 8), d.fill("#F5E7C4", fix_k))
+        c.drawRRect(d.rrect(pos[0], pos[1] - 4, w * 0.17 * s, h * 0.13 * s, 8), d.stroke(GOLD, 3, fix_k))
+        c.drawLine(pos[0] - w * 0.05, pos[1] - 4, pos[0] + w * 0.05, pos[1] - 4, d.stroke("#7A6A48", 5, fix_k))
+    if a < 1:
+        c.restore()
+    c.restore()
+    return pos
+
+
+def slider(c, x0, x1, y, k, stop=None, stop_k=0.0):
+    """锚定—调整滑块：x0 端是“自己”，x1 端是“他人”；k 为滑块位置 0–1，stop 为挡板位置，剩余段画成虚线。"""
+    c.drawLine(x0, y, x1, y, d.stroke("#3A3833", 10))
+    kx = x0 + (x1 - x0) * k
+    c.drawLine(x0, y, kx, y, d.stroke(GOLD, 6))
+    if stop is not None and stop_k > 0:
+        sx = x0 + (x1 - x0) * stop
+        c.drawLine(sx + 16, y, x1, y, d.stroke(GOLD, 3, 0.7 * stop_k, dash=((12, 9), 0)))
+        c.drawRRect(d.rrect(sx + 14, y, 10, 70, 4), d.fill(d.mix("#3A3833", GOLD, stop_k)))
+    c.drawCircle(kx, y, 18, d.fill(d.WHITE))
+    c.drawCircle(kx, y, 18, d.stroke(GOLD, 3))

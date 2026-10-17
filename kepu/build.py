@@ -95,7 +95,8 @@ def write_cue_csv(path: Path, tl, an, onset_check: dict):
         on = onset_check.get((e["shot"], e["key"]))
         bt = e.get("beat")
         kind = render.POS_NAME[bt.pos] if bt else ("柔和动作（未贴拍）" if an else "候选事件")
-        kind = ("撞击｜" if e["sound"] and e["sound"] != "shaker" else "移动/动作｜") + kind
+        hit = e.get("orig_sound") and e["orig_sound"] != "shaker"
+        kind = ("撞击｜" if hit else "移动/动作｜") + kind
         rows.append([tc(e["t"]), f, f"{an.seg_start + e['music_t']:.3f}" if an and e["music_t"] is not None else "未确认",
                      kind, e["strength"] if e["strength"] is not None else "未确认", norm,
                      e["method"], e["conf"], e["shot"], e["action"], s.text, snd,
@@ -145,7 +146,7 @@ def visual_hits(tl, L, events) -> list:
     """在渲染帧上实测视觉撞击：事件前后 ±4 帧内相邻帧差（画面变化量）最大的一帧。"""
     out = []
     for e in events:
-        if not e["sound"] or e["sound"] == "shaker":
+        if e.get("orig_sound", e["sound"]) in ("", "shaker"):
             continue
         f0 = int(round(e["t"] * FPS))
         frames = {f: cv2.cvtColor(render.still(tl, L, f), cv2.COLOR_RGBA2GRAY).astype(np.int16)

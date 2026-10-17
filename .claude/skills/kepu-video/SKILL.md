@@ -16,6 +16,8 @@ description: 量产黑金 2.5D 无旁白知识科普短片（心理学 / 认知 
 
 题材内容（字幕原文、角标、事实边界、参考资料、封面和发布文案）一律来自提示词。字幕逐字照录，不自行加字幕。
 
+**选题去重**：自己挑选题时，先查 `plans/topics_registry.md` 的“已做”和仓库各分支（`git fetch` 后 `git ls-tree` 看新增目录），已做过的不再选；优先从“候选”里取。片子做完立即把它登记进“已做”，并从“候选”里删除。
+
 ## 1. 环境
 
 ```bash
@@ -95,7 +97,7 @@ python3 -m kepu.build --topic <slug>      # 4 核约 4 分钟；--only vertical 
 
 ## 8. 交付
 
-1. `cp -r out/<slug> deliverables/<slug>/`，写 `DELIVERY.md`，分“已渲染 / 已核验 / 未完成”三段，可参考 `deliverables/night_rumination/DELIVERY.md`。数值一律来自 `verify_report.json`，不把目标值写成实测值。
+1. 在 `plans/topics_registry.md` 登记本片。`cp -r out/<slug> deliverables/<slug>/`，写 `DELIVERY.md`，分“已渲染 / 已核验 / 未完成”三段，可参考 `deliverables/night_rumination/DELIVERY.md`。数值一律来自 `verify_report.json`，不把目标值写成实测值。
 2. 写明没做人工试听、没在手机上实听。原曲是否含人声也无法确认。
 3. 提交并推送；用 SendUserFile 发送两个 MP4、`cue_table.csv` 和 `DELIVERY.md`。
 4. 回复用户时，先给结论，再按“原曲分析 / 卡点 / 需要你确认”三段说明，列出不在重拍上的撞击事件及原因。
