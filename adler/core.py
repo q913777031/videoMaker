@@ -627,8 +627,13 @@ def end_shot(ep_refs: list[str], next_title: str | None, bars: int = 2) -> Shot:
         ap = g.p(4, 0.5)
         if next_title:
             K.text(c, "下一讲", W / 2, 1120, 34, "sans_medium", K.INK3, ap)
-            for j, ln in enumerate(K.wrap_lines(next_title, 56, 900, "serif_black")):
-                K.text(c, ln, W / 2, 1200 + j * 78, 56, "serif_black", g.acc, ap)
+            parts = [next_title]
+            if K.text_w(next_title, 56, "serif_black") > 900 and "：" in next_title:   # 在冒号处分成“期号概念 / 片名”两行
+                head, tail = next_title.split("：", 1)
+                parts = [head, tail]
+            for j, ln in enumerate(parts):
+                size = min(56.0, 56 * 900 / max(1.0, K.text_w(ln, 56, "serif_black")))
+                K.text(c, ln, W / 2, 1200 + j * 78, size, "serif_black", g.acc, ap)
         else:
             K.text(c, "阿德勒心理学 · 10讲 完", W / 2, 1180, 56, "serif_black", g.acc, ap)
             K.text(c, "感谢观看", W / 2, 1260, 36, "sans_medium", K.INK2, ap)
@@ -841,10 +846,12 @@ def cover(ep: Episode, path: str):
     K.rr(c, 72 + 70, 230, 140, 70, 35, ep.accent)
     K.text(c, f"{ep.no:02d}", 72 + 70, 230, 46, "black", K.PAPER)
     K.text(c, "阿德勒心理学", 72 + 160, 230, 40, "sans_medium", K.INK2, 1, "left")
-    lines = K.wrap_lines(ep.cover_title, 104, 900, "serif_black")
+    lines = ep.cover_title.split("|")
+    widest = max(K.text_w(gfx.plain(ln), 104, "serif_black") for ln in lines)
+    size = min(104.0, 104 * 920 / widest)       # 长标题整体缩字号，保持手动断行
     for i, ln in enumerate(lines):
-        y = 1450 + (i - (len(lines) - 1) / 2) * 140
-        gfx.draw_rich(c, ln, W / 2, y, 104, "serif_black", K.INK, ep.accent, 1.0)
+        y = 1450 + (i - (len(lines) - 1) / 2) * size * 1.35
+        gfx.draw_rich(c, ln, W / 2, y, size, "serif_black", K.INK, ep.accent, 1.0)
     if ep.cover_sub:
         K.text(c, ep.cover_sub, W / 2, 1450 + len(lines) * 70 + 70, 44, "sans_medium", K.INK2)
     surf.makeImageSnapshot().save(path, skia.kPNG)
