@@ -193,8 +193,8 @@ export function conclusion({ ui }) {
         l.children[0].material.emissiveIntensity = 0.9 * k;
         l.rotation.z = Math.sin(t * 2 + i) * 0.05;
       });
-      followPt(ui, 'a', W.camera, [-2.5, 2.6, -5], easeOut(prog(t, t1, 0.4)));
-      followPt(ui, 'b', W.camera, [2.5, 2.6, -5], easeOut(prog(t, t1, 0.4)));
+      followPt(ui, 'a', W.camera, [-2.5, 1.6, 0], easeOut(prog(t, t1, 0.4)));
+      followPt(ui, 'b', W.camera, [2.5, 1.6, 0], easeOut(prog(t, t1, 0.4)));
     },
     fx(g, lt, t) {
       const [x, y] = toScreen(pl, W.camera);
