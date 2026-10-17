@@ -149,7 +149,7 @@ python3 gf_short.py out/gamblers_fallacy_silent.mp4
 
 ```bash
 python3 fetch_assets.py          # 只需字体（思源宋体/黑体），无 TTS
-python3 night_short.py           # 自动查找 ./bgm.m4a；缺失时只输出“待配乐预览”
+python3 night_short.py           # 依次查找 ./bgm.m4a、./music/bgm.m4a、./assets/bgm.m4a；缺失时只输出“待配乐预览”
 ```
 
 90 秒、30fps，横竖屏独立排版（1080×1920 上下递进 / 1920×1080 左文右景），无旁白；黑金 2.5D 纸卡、原创中性人物、七类合成打击乐音效。
@@ -161,7 +161,7 @@ python3 night_short.py           # 自动查找 ./bgm.m4a；缺失时只输出�
 | `scenes.py` | 15 个镜头的场景绘制；所有撞击动作读事件时刻表，校准后自动跟随 |
 | `draw.py` | 纸卡与柔和阴影、透视桌面、城市剪影、台灯、原创人物骨架 |
 | `sfx.py` | 低音鼓 / 军鼓边击 / 木块 / 沙锤 / 框鼓与低音通鼓 / 邦戈鼓 / 轻柔吊镲 原创合成 |
-| `music.py` | 原曲解码、谱通量起音、局部速度候选、90 秒片段选择、事件贴拍、避让混音、-16 LUFS / -1 dBTP 母带 |
+| `music.py` | 原曲解码、谱通量起音、节拍网格与小节重拍判定（低频能量 + 和声变化）、段落检测、90 秒片段选择、避让混音、-16 LUFS / -1 dBTP 母带 |
 | `render.py` | 时间轴、字幕与角标、匹配转场、多进程渲染、封面 |
 
 交付物与核验报告输出到 `out/night/`（`DELIVERY.md` 说明哪些已渲染、已核验、未完成）。

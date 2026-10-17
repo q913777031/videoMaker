@@ -96,19 +96,29 @@ def write_cue_csv(path: Path, tl, an, onset_check: dict):
     norm = "片段内谱通量减局部中值÷片段第99百分位，截断0–1" if an else "未确认"
     rows = []
     for k, s in enumerate(tl.shots):
-        if k > 0:
-            rows.append([tc(s.start), int(round(s.start * FPS)),
-                         f"{an.seg_start + s.start:.3f}" if an else "未确认", "镜头切换", "未确认", norm,
-                         "叙事基准边界" if not an else "边界±0.3s内贴强起音（自动）", "未确认", s.no,
-                         "场景层0.3s匹配转场", s.text, "", "", ""])
+        if k == 0:
+            continue
+        info = tl.boundaries[k] if tl.boundaries else None
+        if info:
+            bt, why = info
+            rows.append([tc(s.start), int(round(s.start * FPS)), f"{an.seg_start + bt.t:.3f}",
+                         f"镜头切换｜{render.POS_NAME[bt.pos]}｜{why}", round(bt.strength, 3), norm,
+                         f"节拍网格 {an.grid_info['bpm']} BPM；自动分析，未人工试听", "高" if bt.pos == 1 else "中",
+                         s.no, "场景层0.3s匹配转场", s.text, "", "", ""])
+        else:
+            rows.append([tc(s.start), int(round(s.start * FPS)), "未确认" if not an else f"{an.seg_start + s.start:.3f}",
+                         "镜头切换", "未确认", norm, "叙事基准边界" if not an else "附近无合适拍点，保持叙事位置",
+                         "未确认", s.no, "场景层0.3s匹配转场", s.text, "", "", ""])
     for e in tl.events:
         s = tl.shots[e["shot"] - 1]
         f = int(round(e["t"] * FPS))
         snd = SOUNDS.get(e["sound"], "") if e["sound"] else "无新增音效"
         on = onset_check.get((e["shot"], e["key"]))
-        rows.append([tc(e["t"]), f, f"{an.seg_start + e['t']:.3f}" if an else "未确认",
-                     "候选重音事件" if e["sound"] else "柔和动作（不追重音）",
-                     e["strength"] if e["strength"] is not None else "未确认", norm,
+        bt = e.get("beat")
+        kind = render.POS_NAME[bt.pos] if bt else ("柔和动作（未贴拍）" if an else "候选事件")
+        kind = ("撞击｜" if e["sound"] and e["sound"] != "shaker" else "移动/动作｜") + kind
+        rows.append([tc(e["t"]), f, f"{an.seg_start + e['music_t']:.3f}" if an and e["music_t"] is not None else "未确认",
+                     kind, e["strength"] if e["strength"] is not None else "未确认", norm,
                      e["method"], e["conf"], e["shot"], e["action"], s.text, snd,
                      on if on is not None else "", e["mix"] or (f"增益 {e['gain']:.2f}" if e["sound"] else "")])
     rows.sort(key=lambda r: r[1])
@@ -116,6 +126,19 @@ def write_cue_csv(path: Path, tl, an, onset_check: dict):
         w = csv.writer(fh)
         w.writerow(cols)
         w.writerows(rows)
+
+
+def write_beat_csv(path: Path, an):
+    """完整节拍网格，供人工试听复核。"""
+    with path.open("w", newline="", encoding="utf-8-sig") as fh:
+        w = csv.writer(fh)
+        w.writerow(["视频时间码HH:MM:SS:FF", "帧号", "原曲时间", "小节", "拍位", "相对重音强度0-1", "是否段落起点"])
+        bar = 0
+        for b in an.beats:
+            if b.pos == 1:
+                bar += 1
+            w.writerow([tc(b.t), int(round(b.t * FPS)), f"{an.seg_start + b.t:.3f}", bar, b.pos,
+                        round(b.strength, 3), "是" if any(abs(b.t - x) < 1e-6 for x in an.sections) else ""])
 
 
 # ---------------------------------------------------------------- 核验
@@ -127,14 +150,15 @@ def measure_onsets(track: np.ndarray, tl) -> tuple[dict, list]:
     for e in tl.events:
         if not e["sound"]:
             continue
-        a, b = int((e["t"] - 0.1) * SR), int((e["t"] + 0.15) * SR)
+        a, b = int((e["sfx_t"] - 0.1) * SR), int((e["sfx_t"] + 0.15) * SR)
         w = env[max(0, a):b]
         i = int(np.argmax(w > 0.1 * w.max()))
         on = (max(0, a) + i) / SR
         fr = int(round(on * FPS))
         res[(e["shot"], e["key"])] = fr
         rows.append({"shot": e["shot"], "key": e["key"], "cue_frame": int(round(e["t"] * FPS)), "onset_frame": fr,
-                     "onset_s": round(on, 4), "diff_frames": fr - int(round(e["t"] * FPS))})
+                     "onset_s": round(on, 4), "diff_frames": fr - int(round(e["t"] * FPS)),
+                     "vs_beat_ms": round((on - e["music_t"]) * 1000, 1) if e.get("music_t") is not None else None})
     return res, rows
 
 
@@ -209,16 +233,17 @@ def main():
     (out / "check").mkdir(exist_ok=True)
     report = {"generated": time.strftime("%Y-%m-%d %H:%M:%S")}
 
-    bgm = Path(args.bgm) if args.bgm else next((p for p in (ROOT / "bgm.m4a", ROOT / "assets" / "bgm.m4a")
-                                               if p.exists()), None)
+    search = (ROOT / "bgm.m4a", ROOT / "music" / "bgm.m4a", ROOT / "assets" / "bgm.m4a")
+    bgm = Path(args.bgm) if args.bgm else next((p for p in search if p.exists()), None)
     an = None
     if bgm is not None and bgm.exists():
         an = music.analyze(bgm)
         report["music"] = {"path": str(bgm), "duration": round(an.duration, 3), "sample_rate": an.sample_rate,
                            "channels": an.channels, "codec": an.codec, "segment": [round(an.seg_start, 3),
-                           round(an.seg_end, 3)], "tempo_candidates": an.tempo, "notes": an.notes}
+                           round(an.seg_end, 3)], "tempo_candidates": an.tempo, "grid": an.grid_info,
+                           "notes": an.notes}
     else:
-        report["music"] = {"status": "缺失", "searched": [str(ROOT / "bgm.m4a"), str(ROOT / "assets" / "bgm.m4a")]}
+        report["music"] = {"status": "缺失", "searched": [str(p) for p in search]}
         print("bgm.m4a not found: rendering PREVIEW without music (no substitute score).", file=sys.stderr)
 
     tl = render.build_timeline(an)
@@ -227,11 +252,16 @@ def main():
     # 音效：样本与音效轨
     for name, fn in sfx.BANK.items():
         write_wav(out / "sfx_samples" / f"{name}.wav", np.repeat(fn()[:, None], 2, axis=1))
-    events = [(e["t"], e["sound"], e["gain"]) for e in tl.events if e["sound"]]
+    events = [(e["sfx_t"], e["sound"], e["gain"]) for e in tl.events if e["sound"]]
     sfx_track = sfx.render_track(events, total)
 
     if an is not None:
-        mus = music.fade_tail(an.audio[: len(sfx_track)])
+        src = an.audio[: len(sfx_track)]
+        src = np.pad(src, ((0, len(sfx_track) - len(src)), (0, 0)))
+        # 原曲在片尾仍是满电平：从最后 2–3.5 秒内的小节重拍起做余弦淡出，避免突然截断
+        fade_from = next((b.t for b in an.beats if b.pos == 1 and total - 3.5 <= b.t <= total - 2.0), total - 3.0)
+        mus = music.fade_tail(src, total - fade_from)
+        report["music"]["fade_out"] = [round(fade_from, 3), round(total, 3)]
         mus, sfx_track, mix, stats = music.master(mus, sfx_track)
         write_wav(out / "bgm.wav", mus)
         write_wav(out / "mix.wav", mix)
@@ -246,6 +276,12 @@ def main():
     onset_map, onset_rows = measure_onsets(sfx_track, tl)
     report["sfx_onset_check"] = onset_rows
     write_cue_csv(out / "cue_table.csv", tl, an, onset_map)
+    if an is not None:
+        write_beat_csv(out / "beat_grid.csv", an)
+        report["boundaries"] = [None] + [
+            {"shot": tl.shots[k].no, "start": round(tl.shots[k].start, 3), "dur": round(tl.shots[k].dur, 3),
+             "beat_pos": tl.boundaries[k][0].pos if tl.boundaries[k] else None,
+             "why": tl.boundaries[k][1] if tl.boundaries[k] else "保持"} for k in range(1, len(tl.shots))]
     rows = reading_table(tl)
     report["reading"] = rows
     write_captions(out / "captions.txt", tl, rows)

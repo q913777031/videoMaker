@@ -1,156 +1,415 @@
 {
- "generated": "2026-10-16 14:50:56",
+ "generated": "2026-10-17 07:41:11",
  "music": {
-  "status": "缺失",
-  "searched": [
-   "/home/user/videoMaker/bgm.m4a",
-   "/home/user/videoMaker/assets/bgm.m4a"
+  "path": "/home/user/videoMaker/music/bgm.m4a",
+  "duration": 89.999,
+  "sample_rate": 44100,
+  "channels": 1,
+  "codec": "aac",
+  "segment": [
+   0.0,
+   89.999
+  ],
+  "tempo_candidates": [
+   [
+    4.021333333333334,
+    113.2
+   ],
+   [
+    8.021333333333333,
+    113.2
+   ],
+   [
+    12.021333333333333,
+    113.2
+   ],
+   [
+    16.021333333333335,
+    113.2
+   ],
+   [
+    20.021333333333335,
+    113.2
+   ],
+   [
+    24.021333333333335,
+    113.2
+   ],
+   [
+    28.021333333333335,
+    113.2
+   ],
+   [
+    32.02133333333333,
+    113.2
+   ],
+   [
+    36.02133333333333,
+    113.2
+   ],
+   [
+    40.02133333333333,
+    113.2
+   ],
+   [
+    44.02133333333333,
+    113.2
+   ],
+   [
+    48.02133333333333,
+    113.2
+   ],
+   [
+    52.02133333333333,
+    113.2
+   ],
+   [
+    56.02133333333333,
+    113.2
+   ],
+   [
+    60.02133333333333,
+    113.2
+   ],
+   [
+    64.02133333333333,
+    113.2
+   ],
+   [
+    68.02133333333333,
+    113.2
+   ],
+   [
+    72.02133333333333,
+    113.2
+   ],
+   [
+    76.02133333333333,
+    113.2
+   ],
+   [
+    80.02133333333333,
+    113.2
+   ],
+   [
+    84.02133333333333,
+    113.2
+   ]
+  ],
+  "grid": {
+   "bpm": 112.91,
+   "beat_s": 0.5314,
+   "first_beat_s": 0.1,
+   "downbeat_phase": 0,
+   "phase_low_energy": [
+    0.3465,
+    0.2944,
+    0.1968,
+    0.301
+   ],
+   "phase_chroma_novelty": [
+    0.1001,
+    0.0354,
+    0.0243,
+    0.0584
+   ],
+   "phase_onset": [
+    0.637,
+    0.677,
+    0.793,
+    0.516
+   ],
+   "drift_ms_per_15s": [
+    -2.6,
+    -1.6,
+    0.1,
+    1.0,
+    -0.5,
+    -3.0
+   ],
+   "sections": [
+    17.105
+   ]
+  },
+  "notes": [
+   "原曲时长 90.00s 位于 87–93s，整曲使用。",
+   "节拍网格：112.91 BPM（拍长 0.5314s），首拍 0.100s；按 15 秒窗口统计网格与强起音中位偏差 [-2.6, -1.6, 0.1, 1.0, -0.5, -3.0] ms。重拍（第 1 拍）由四相位中低频能量与和声变化得分之和最高者判定。",
+   "相对重音强度 = 片段内谱通量（减局部中值）÷ 片段第 99 百分位，截断到 0–1。",
+   "未进行人工试听；拍点、乐句与情绪判断仅来自信号分析，置信度按强度分级。"
+  ],
+  "fade_out": [
+   87.25,
+   90.0
   ]
+ },
+ "mix_measured": {
+  "integrated_lufs": -16.0,
+  "true_peak_dbtp": -3.58,
+  "music_lufs": -16.01
  },
  "sfx_onset_check": [
   {
    "shot": 1,
    "key": "surge",
-   "cue_frame": 18,
-   "onset_frame": 18,
-   "onset_s": 0.6,
-   "diff_frames": 0
+   "cue_frame": 67,
+   "onset_frame": 67,
+   "onset_s": 2.2256,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 2,
    "key": "frame",
-   "cue_frame": 216,
-   "onset_frame": 216,
-   "onset_s": 7.2,
-   "diff_frames": 0
+   "cue_frame": 258,
+   "onset_frame": 258,
+   "onset_s": 8.6024,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
   },
   {
    "shot": 3,
    "key": "cover",
-   "cue_frame": 432,
-   "onset_frame": 432,
-   "onset_s": 14.4,
-   "diff_frames": 0
+   "cue_frame": 449,
+   "onset_frame": 449,
+   "onset_s": 14.9792,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 3,
    "key": "pull",
-   "cue_frame": 462,
-   "onset_frame": 462,
-   "onset_s": 15.4,
-   "diff_frames": 0
+   "cue_frame": 481,
+   "onset_frame": 481,
+   "onset_s": 16.042,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 4,
    "key": "lap",
-   "cue_frame": 588,
-   "onset_frame": 588,
-   "onset_s": 19.6,
-   "diff_frames": 0
+   "cue_frame": 577,
+   "onset_frame": 577,
+   "onset_s": 19.2304,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
   },
   {
    "shot": 6,
    "key": "merge",
-   "cue_frame": 978,
-   "onset_frame": 978,
-   "onset_s": 32.6,
-   "diff_frames": 0
+   "cue_frame": 960,
+   "onset_frame": 960,
+   "onset_s": 31.984,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 7,
    "key": "walk",
-   "cue_frame": 1098,
-   "onset_frame": 1098,
-   "onset_s": 36.6,
-   "diff_frames": 0
+   "cue_frame": 1103,
+   "onset_frame": 1103,
+   "onset_s": 36.7666,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 7,
    "key": "door",
-   "cue_frame": 1176,
-   "onset_frame": 1176,
-   "onset_s": 39.2,
-   "diff_frames": 0
+   "cue_frame": 1215,
+   "onset_frame": 1215,
+   "onset_s": 40.4864,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
   },
   {
    "shot": 8,
    "key": "fact",
-   "cue_frame": 1314,
-   "onset_frame": 1314,
-   "onset_s": 43.8,
-   "diff_frames": 0
+   "cue_frame": 1342,
+   "onset_frame": 1342,
+   "onset_s": 44.7376,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 8,
    "key": "act",
-   "cue_frame": 1338,
-   "onset_frame": 1338,
-   "onset_s": 44.6,
-   "diff_frames": 0
+   "cue_frame": 1406,
+   "onset_frame": 1406,
+   "onset_s": 46.8632,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 9,
    "key": "fold",
-   "cue_frame": 1488,
-   "onset_frame": 1488,
-   "onset_s": 49.6,
-   "diff_frames": 0
+   "cue_frame": 1470,
+   "onset_frame": 1470,
+   "onset_s": 48.9888,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
   },
   {
    "shot": 9,
    "key": "pick",
-   "cue_frame": 1530,
-   "onset_frame": 1530,
-   "onset_s": 51.0,
-   "diff_frames": 0
+   "cue_frame": 1533,
+   "onset_frame": 1533,
+   "onset_s": 51.1144,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
   },
   {
    "shot": 10,
    "key": "place",
-   "cue_frame": 1656,
-   "onset_frame": 1656,
-   "onset_s": 55.2,
-   "diff_frames": 0
+   "cue_frame": 1661,
+   "onset_frame": 1661,
+   "onset_s": 55.3656,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 10,
    "key": "slide",
-   "cue_frame": 1704,
-   "onset_frame": 1704,
-   "onset_s": 56.8,
-   "diff_frames": 0
+   "cue_frame": 1709,
+   "onset_frame": 1709,
+   "onset_s": 56.9598,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
   },
   {
    "shot": 11,
    "key": "point",
-   "cue_frame": 1854,
-   "onset_frame": 1854,
-   "onset_s": 61.8,
-   "diff_frames": 0
+   "cue_frame": 1852,
+   "onset_frame": 1852,
+   "onset_s": 61.7424,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
   },
   {
    "shot": 13,
    "key": "lamp",
-   "cue_frame": 2196,
-   "onset_frame": 2196,
-   "onset_s": 73.2,
-   "diff_frames": 0
+   "cue_frame": 2235,
+   "onset_frame": 2235,
+   "onset_s": 74.496,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 14,
    "key": "settle",
-   "cue_frame": 2370,
-   "onset_frame": 2370,
-   "onset_s": 79.0,
-   "diff_frames": 0
+   "cue_frame": 2362,
+   "onset_frame": 2362,
+   "onset_s": 78.7472,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
   },
   {
    "shot": 15,
    "key": "credit",
-   "cue_frame": 2532,
-   "onset_frame": 2532,
-   "onset_s": 84.4,
-   "diff_frames": 0
+   "cue_frame": 2522,
+   "onset_frame": 2522,
+   "onset_s": 84.0612,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  }
+ ],
+ "boundaries": [
+  null,
+  {
+   "shot": 2,
+   "start": 5.933,
+   "dur": 5.867,
+   "beat_pos": 4,
+   "why": "最近拍"
+  },
+  {
+   "shot": 3,
+   "start": 11.8,
+   "dur": 5.3,
+   "beat_pos": 3,
+   "why": "次强拍"
+  },
+  {
+   "shot": 4,
+   "start": 17.1,
+   "dur": 6.9,
+   "beat_pos": 1,
+   "why": "段落起点重拍"
+  },
+  {
+   "shot": 5,
+   "start": 24.0,
+   "dur": 5.867,
+   "beat_pos": 2,
+   "why": "最近拍"
+  },
+  {
+   "shot": 6,
+   "start": 29.867,
+   "dur": 6.367,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 7,
+   "start": 36.233,
+   "dur": 5.833,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 8,
+   "start": 42.067,
+   "dur": 5.867,
+   "beat_pos": 4,
+   "why": "最近拍"
+  },
+  {
+   "shot": 9,
+   "start": 47.933,
+   "dur": 6.367,
+   "beat_pos": 3,
+   "why": "次强拍"
+  },
+  {
+   "shot": 10,
+   "start": 54.3,
+   "dur": 5.333,
+   "beat_pos": 3,
+   "why": "次强拍"
+  },
+  {
+   "shot": 11,
+   "start": 59.633,
+   "dur": 6.367,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 12,
+   "start": 66.0,
+   "dur": 6.367,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 13,
+   "start": 72.367,
+   "dur": 5.333,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 14,
+   "start": 77.7,
+   "dur": 6.367,
+   "beat_pos": 3,
+   "why": "次强拍"
+  },
+  {
+   "shot": 15,
+   "start": 84.067,
+   "dur": 5.933,
+   "beat_pos": 3,
+   "why": "次强拍"
   }
  ],
  "reading": [
@@ -159,8 +418,8 @@
    "text": "白天只是出了错，／晚上怎么否定了人生？",
    "han": 16,
    "start": 0.2,
-   "end": 5.6,
-   "window": 5.3999999999999995,
+   "end": 5.533333333333333,
+   "window": 5.333333333333333,
    "budget": 3.5555555555555554,
    "need": 3.5555555555555554,
    "ok": true,
@@ -170,9 +429,9 @@
    "shot": 2,
    "text": "一份方案没做好。",
    "han": 7,
-   "start": 6.4,
-   "end": 11.6,
-   "window": 5.199999999999999,
+   "start": 6.333333333333334,
+   "end": 11.4,
+   "window": 5.066666666666666,
    "budget": 2.0,
    "need": 3.0,
    "ok": true,
@@ -182,9 +441,9 @@
    "shot": 3,
    "text": "怎么变成了：／我什么都做不好？",
    "han": 12,
-   "start": 12.4,
-   "end": 17.6,
-   "window": 5.200000000000001,
+   "start": 12.200000000000001,
+   "end": 16.700000000000003,
+   "window": 4.500000000000002,
    "budget": 2.6666666666666665,
    "need": 3.0,
    "ok": true,
@@ -194,9 +453,9 @@
    "shot": 4,
    "text": "越想，／越像已经有了结论。",
    "han": 10,
-   "start": 18.4,
+   "start": 17.5,
    "end": 23.6,
-   "window": 5.200000000000003,
+   "window": 6.100000000000001,
    "budget": 2.2222222222222223,
    "need": 3.0,
    "ok": true,
@@ -207,8 +466,8 @@
    "text": "反复想，／等于在解决吗？",
    "han": 9,
    "start": 24.4,
-   "end": 29.6,
-   "window": 5.200000000000003,
+   "end": 29.46666666666667,
+   "window": 5.06666666666667,
    "budget": 2.0,
    "need": 3.0,
    "ok": true,
@@ -218,9 +477,9 @@
    "shot": 6,
    "text": "2008年综述：／反刍与反思并不相同。",
    "han": 12,
-   "start": 30.4,
-   "end": 35.6,
-   "window": 5.200000000000003,
+   "start": 30.266666666666666,
+   "end": 35.833333333333336,
+   "window": 5.56666666666667,
    "budget": 2.6666666666666665,
    "need": 4.466666666666667,
    "ok": true,
@@ -230,9 +489,9 @@
    "shot": 7,
    "text": "反刍：／围着痛苦反复打转。",
    "han": 10,
-   "start": 36.4,
-   "end": 41.6,
-   "window": 5.200000000000003,
+   "start": 36.63333333333333,
+   "end": 41.66666666666667,
+   "window": 5.0333333333333385,
    "budget": 2.2222222222222223,
    "need": 3.0,
    "ok": true,
@@ -242,9 +501,9 @@
    "shot": 8,
    "text": "反思可以走向／具体信息和下一步。",
    "han": 14,
-   "start": 42.4,
-   "end": 47.6,
-   "window": 5.200000000000003,
+   "start": 42.46666666666667,
+   "end": 47.53333333333333,
+   "window": 5.066666666666663,
    "budget": 3.111111111111111,
    "need": 3.111111111111111,
    "ok": true,
@@ -254,9 +513,9 @@
    "shot": 9,
    "text": "今晚的判断，／有哪些事实支持？",
    "han": 12,
-   "start": 48.4,
-   "end": 53.6,
-   "window": 5.200000000000003,
+   "start": 48.33333333333333,
+   "end": 53.9,
+   "window": 5.56666666666667,
    "budget": 2.6666666666666665,
    "need": 3.0,
    "ok": true,
@@ -266,9 +525,9 @@
    "shot": 10,
    "text": "先写下：／究竟发生了什么。",
    "han": 10,
-   "start": 54.4,
-   "end": 59.6,
-   "window": 5.200000000000003,
+   "start": 54.699999999999996,
+   "end": 59.233333333333334,
+   "window": 4.5333333333333385,
    "budget": 2.2222222222222223,
    "need": 3.0,
    "ok": true,
@@ -278,9 +537,9 @@
    "shot": 11,
    "text": "再问一句：／下一步能做什么？",
    "han": 11,
-   "start": 60.4,
+   "start": 60.03333333333333,
    "end": 65.6,
-   "window": 5.199999999999996,
+   "window": 5.566666666666663,
    "budget": 2.4444444444444446,
    "need": 3.0,
    "ok": true,
@@ -291,8 +550,8 @@
    "text": "没有新增信息，／可以先暂停这轮审判。",
    "han": 15,
    "start": 66.4,
-   "end": 71.6,
-   "window": 5.199999999999989,
+   "end": 71.96666666666665,
+   "window": 5.566666666666649,
    "budget": 3.3333333333333335,
    "need": 3.3333333333333335,
    "ok": true,
@@ -302,9 +561,9 @@
    "shot": 13,
    "text": "难受持续影响生活，／也值得寻求支持。",
    "han": 15,
-   "start": 72.4,
-   "end": 77.6,
-   "window": 5.199999999999989,
+   "start": 72.76666666666667,
+   "end": 77.3,
+   "window": 4.533333333333331,
    "budget": 3.3333333333333335,
    "need": 3.3333333333333335,
    "ok": true,
@@ -314,9 +573,9 @@
    "shot": 14,
    "text": "今晚出了点问题，／不等于人生已被判定。",
    "han": 16,
-   "start": 78.4,
-   "end": 83.6,
-   "window": 5.199999999999989,
+   "start": 78.10000000000001,
+   "end": 83.66666666666666,
+   "window": 5.566666666666649,
    "budget": 3.5555555555555554,
    "need": 3.5555555555555554,
    "ok": true,
@@ -326,9 +585,9 @@
    "shot": 15,
    "text": "参考：2008年／《重新思考反刍》综述",
    "han": 11,
-   "start": 84.4,
+   "start": 84.46666666666667,
    "end": 89.6,
-   "window": 5.199999999999989,
+   "window": 5.133333333333326,
    "budget": 2.4444444444444446,
    "need": 5.0,
    "ok": true,
@@ -336,20 +595,20 @@
   }
  ],
  "render_seconds": {
-  "vertical": 113.3,
-  "horizontal": 109.7
+  "vertical": 98.5,
+  "horizontal": 95.5
  },
  "ffprobe": {
   "vertical": {
-   "file": "night_vertical_PREVIEW_noBGM.mp4",
-   "size_mb": 4.58,
+   "file": "night_vertical.mp4",
+   "size_mb": 6.42,
    "duration": 90.0,
    "video": "h264 1080x1920 yuv420p 30/1 frames=2700",
    "audio": "aac 48000Hz ch=2"
   },
   "horizontal": {
-   "file": "night_horizontal_PREVIEW_noBGM.mp4",
-   "size_mb": 4.31,
+   "file": "night_horizontal.mp4",
+   "size_mb": 6.13,
    "duration": 90.0,
    "video": "h264 1920x1080 yuv420p 30/1 frames=2700",
    "audio": "aac 48000Hz ch=2"
@@ -360,107 +619,107 @@
   "horizontal": "无"
  },
  "loudness_ffmpeg": {
-  "vertical": "{\"I\": \"-24.9 LUFS\", \"Peak\": \"-6.1 dBFS\", \"LRA\": \"17.5 LU\"}",
-  "horizontal": "{\"I\": \"-24.9 LUFS\", \"Peak\": \"-6.1 dBFS\", \"LRA\": \"17.5 LU\"}"
+  "vertical": "{\"I\": \"-16.0 LUFS\", \"Peak\": \"-3.5 dBFS\", \"LRA\": \"3.2 LU\"}",
+  "horizontal": "{\"I\": \"-16.0 LUFS\", \"Peak\": \"-3.5 dBFS\", \"LRA\": \"3.2 LU\"}"
  },
  "visual_hits": {
   "vertical": [
    {
     "shot": 1,
     "key": "surge",
-    "cue_frame": 18,
-    "visual_peak_frame": 18,
+    "cue_frame": 67,
+    "visual_peak_frame": 67,
     "diff_frames": 0
    },
    {
     "shot": 2,
     "key": "frame",
-    "cue_frame": 216,
-    "visual_peak_frame": 216,
-    "diff_frames": 0
+    "cue_frame": 258,
+    "visual_peak_frame": 259,
+    "diff_frames": 1
    },
    {
     "shot": 3,
     "key": "cover",
-    "cue_frame": 432,
-    "visual_peak_frame": 432,
+    "cue_frame": 449,
+    "visual_peak_frame": 449,
     "diff_frames": 0
    },
    {
     "shot": 4,
     "key": "lap",
-    "cue_frame": 588,
-    "visual_peak_frame": 588,
-    "diff_frames": 0
+    "cue_frame": 577,
+    "visual_peak_frame": 578,
+    "diff_frames": 1
    },
    {
     "shot": 6,
     "key": "merge",
-    "cue_frame": 978,
-    "visual_peak_frame": 978,
-    "diff_frames": 0
+    "cue_frame": 960,
+    "visual_peak_frame": 961,
+    "diff_frames": 1
    },
    {
     "shot": 7,
     "key": "door",
-    "cue_frame": 1176,
-    "visual_peak_frame": 1176,
-    "diff_frames": 0
+    "cue_frame": 1215,
+    "visual_peak_frame": 1216,
+    "diff_frames": 1
    },
    {
     "shot": 8,
     "key": "fact",
-    "cue_frame": 1314,
-    "visual_peak_frame": 1315,
+    "cue_frame": 1342,
+    "visual_peak_frame": 1343,
     "diff_frames": 1
    },
    {
     "shot": 8,
     "key": "act",
-    "cue_frame": 1338,
-    "visual_peak_frame": 1338,
-    "diff_frames": 0
+    "cue_frame": 1406,
+    "visual_peak_frame": 1407,
+    "diff_frames": 1
    },
    {
     "shot": 9,
     "key": "fold",
-    "cue_frame": 1488,
-    "visual_peak_frame": 1488,
-    "diff_frames": 0
+    "cue_frame": 1470,
+    "visual_peak_frame": 1469,
+    "diff_frames": -1
    },
    {
     "shot": 10,
     "key": "place",
-    "cue_frame": 1656,
-    "visual_peak_frame": 1656,
+    "cue_frame": 1661,
+    "visual_peak_frame": 1661,
     "diff_frames": 0
    },
    {
     "shot": 11,
     "key": "point",
-    "cue_frame": 1854,
-    "visual_peak_frame": 1855,
-    "diff_frames": 1
+    "cue_frame": 1852,
+    "visual_peak_frame": 1852,
+    "diff_frames": 0
    },
    {
     "shot": 13,
     "key": "lamp",
-    "cue_frame": 2196,
-    "visual_peak_frame": 2197,
+    "cue_frame": 2235,
+    "visual_peak_frame": 2236,
     "diff_frames": 1
    },
    {
     "shot": 14,
     "key": "settle",
-    "cue_frame": 2370,
-    "visual_peak_frame": 2370,
+    "cue_frame": 2362,
+    "visual_peak_frame": 2362,
     "diff_frames": 0
    },
    {
     "shot": 15,
     "key": "credit",
-    "cue_frame": 2532,
-    "visual_peak_frame": 2532,
+    "cue_frame": 2522,
+    "visual_peak_frame": 2522,
     "diff_frames": 0
    }
   ],
@@ -468,99 +727,99 @@
    {
     "shot": 1,
     "key": "surge",
-    "cue_frame": 18,
-    "visual_peak_frame": 18,
+    "cue_frame": 67,
+    "visual_peak_frame": 67,
     "diff_frames": 0
    },
    {
     "shot": 2,
     "key": "frame",
-    "cue_frame": 216,
-    "visual_peak_frame": 216,
-    "diff_frames": 0
+    "cue_frame": 258,
+    "visual_peak_frame": 259,
+    "diff_frames": 1
    },
    {
     "shot": 3,
     "key": "cover",
-    "cue_frame": 432,
-    "visual_peak_frame": 432,
+    "cue_frame": 449,
+    "visual_peak_frame": 449,
     "diff_frames": 0
    },
    {
     "shot": 4,
     "key": "lap",
-    "cue_frame": 588,
-    "visual_peak_frame": 588,
-    "diff_frames": 0
+    "cue_frame": 577,
+    "visual_peak_frame": 578,
+    "diff_frames": 1
    },
    {
     "shot": 6,
     "key": "merge",
-    "cue_frame": 978,
-    "visual_peak_frame": 978,
-    "diff_frames": 0
+    "cue_frame": 960,
+    "visual_peak_frame": 961,
+    "diff_frames": 1
    },
    {
     "shot": 7,
     "key": "door",
-    "cue_frame": 1176,
-    "visual_peak_frame": 1176,
-    "diff_frames": 0
+    "cue_frame": 1215,
+    "visual_peak_frame": 1216,
+    "diff_frames": 1
    },
    {
     "shot": 8,
     "key": "fact",
-    "cue_frame": 1314,
-    "visual_peak_frame": 1315,
+    "cue_frame": 1342,
+    "visual_peak_frame": 1343,
     "diff_frames": 1
    },
    {
     "shot": 8,
     "key": "act",
-    "cue_frame": 1338,
-    "visual_peak_frame": 1338,
-    "diff_frames": 0
+    "cue_frame": 1406,
+    "visual_peak_frame": 1407,
+    "diff_frames": 1
    },
    {
     "shot": 9,
     "key": "fold",
-    "cue_frame": 1488,
-    "visual_peak_frame": 1488,
-    "diff_frames": 0
+    "cue_frame": 1470,
+    "visual_peak_frame": 1469,
+    "diff_frames": -1
    },
    {
     "shot": 10,
     "key": "place",
-    "cue_frame": 1656,
-    "visual_peak_frame": 1656,
+    "cue_frame": 1661,
+    "visual_peak_frame": 1661,
     "diff_frames": 0
    },
    {
     "shot": 11,
     "key": "point",
-    "cue_frame": 1854,
-    "visual_peak_frame": 1855,
-    "diff_frames": 1
+    "cue_frame": 1852,
+    "visual_peak_frame": 1852,
+    "diff_frames": 0
    },
    {
     "shot": 13,
     "key": "lamp",
-    "cue_frame": 2196,
-    "visual_peak_frame": 2197,
+    "cue_frame": 2235,
+    "visual_peak_frame": 2236,
     "diff_frames": 1
    },
    {
     "shot": 14,
     "key": "settle",
-    "cue_frame": 2370,
-    "visual_peak_frame": 2370,
+    "cue_frame": 2362,
+    "visual_peak_frame": 2362,
     "diff_frames": 0
    },
    {
     "shot": 15,
     "key": "credit",
-    "cue_frame": 2532,
-    "visual_peak_frame": 2532,
+    "cue_frame": 2522,
+    "visual_peak_frame": 2522,
     "diff_frames": 0
    }
   ]

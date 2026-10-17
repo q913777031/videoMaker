@@ -37,7 +37,19 @@ class Analysis:
     peaks: list[tuple[float, float]] = field(default_factory=list)   # (视频时间, 强度)
     low_ratio: np.ndarray | None = None  # 每个包络帧的 40–150 Hz 能量占比
     tempo: list[tuple[float, float]] = field(default_factory=list)   # (窗口中心视频时间, BPM 候选)
+    beats: list = field(default_factory=list)       # Beat 列表（视频时间）
+    period: float = 0.0
+    sections: list[float] = field(default_factory=list)              # 段落起点（重拍，视频时间）
+    grid_info: dict = field(default_factory=dict)
     audio: np.ndarray | None = None      # 片段音频（48 kHz 立体声浮点）
+
+
+@dataclass
+class Beat:
+    t: float
+    idx: int
+    pos: int          # 小节内第几拍（1 = 重拍）
+    strength: float   # 该拍谱通量强度 0–1
 
 
 def probe(path: Path) -> dict:
@@ -144,9 +156,80 @@ def analyze(path: Path) -> Analysis:
     a.env_t, a.env, a.low_ratio = t, np.clip(flux / norm, 0, 1), ratio
     a.peaks = pick_peaks(t, a.env)
     a.tempo = local_tempo(t, a.env)
+    beat_grid(a, seg)
     a.notes.append("相对重音强度 = 片段内谱通量（减局部中值）÷ 片段第 99 百分位，截断到 0–1。")
     a.notes.append("未进行人工试听；拍点、乐句与情绪判断仅来自信号分析，置信度按强度分级。")
     return a
+
+
+def beat_grid(a: Analysis, x: np.ndarray):
+    """拟合恒定拍长的节拍网格并判定小节重拍。
+
+    拍长与相位：在包络自相关最强周期附近细扫，使网格点上起音强度均值最大；
+    再按每 15 秒窗口统计网格与实际强起音的偏差，验证没有明显漂移（漂移明显时写入 notes）。
+    重拍相位：四个相位中“低频能量”与“和声变化（色度新颖度）”标准化得分之和最高者为第 1 拍。
+    """
+    t, env = a.env_t, a.env
+    fps = SR / HOP
+    e = env - env.mean()
+    ac = np.correlate(e, e, "full")[len(e) - 1:]
+    lo, hi = int(60 / 180 * fps), int(60 / 60 * fps)
+    p0 = (lo + int(np.argmax(ac[lo:hi]))) / fps
+    best = (-1.0, p0, 0.0)
+    for p in np.arange(p0 * 0.985, p0 * 1.015, 0.00005):
+        for t0 in np.arange(0, p, 0.002):
+            sc = np.interp(np.arange(t0, a.total, p), t, env).mean()
+            if sc > best[0]:
+                best = (sc, p, t0)
+    _, p, t0 = best
+    times = np.arange(t0, a.total - 1e-6, p)
+    strength = np.interp(times, t, env)
+    mono = x.mean(axis=1)
+    low = signal.sosfiltfilt(signal.butter(4, 150, "low", fs=SR, output="sos"), mono)
+    low_e = np.array([np.sqrt(np.mean(low[int(b * SR):int((b + 0.08) * SR)] ** 2) + 1e-12) for b in times])
+    f, tt, z = signal.stft(mono, fs=SR, nperseg=8192, noverlap=8192 - 2400)
+    sel = (f > 80) & (f < 2000)
+    pc = (np.round(12 * np.log2(f[sel] / 440)) % 12).astype(int)
+    mag = np.abs(z)[sel]
+    chroma = np.stack([mag[pc == k].sum(axis=0) for k in range(12)])
+    bc = np.stack([chroma[:, (tt >= b) & (tt < b + p)].mean(axis=1) if ((tt >= b) & (tt < b + p)).any()
+                   else np.zeros(12) for b in times])
+    bc /= np.linalg.norm(bc, axis=1, keepdims=True) + 1e-9
+    nov = np.r_[0, 1 - (bc[1:] * bc[:-1]).sum(axis=1)]
+    zs = lambda v: (v - v.mean()) / (v.std() + 1e-12)
+    ph_low = np.array([low_e[k::4].mean() for k in range(4)])
+    ph_nov = np.array([nov[k::4].mean() for k in range(4)])
+    ph_on = np.array([strength[k::4].mean() for k in range(4)])
+    down = int(np.argmax(zs(ph_low) + zs(ph_nov)))
+    a.period = float(p)
+    a.beats = [Beat(float(b), i, (i - down) % 4 + 1, float(s)) for i, (b, s) in enumerate(zip(times, strength))]
+    drift = []
+    pk = np.array([q for q, s_ in a.peaks if s_ >= 0.5])
+    for w0 in np.arange(0, a.total, 15):
+        bb = times[(times >= w0) & (times < w0 + 15)]
+        d = [pk[np.argmin(abs(pk - b))] - b for b in bb] if len(pk) else []
+        d = [v for v in d if abs(v) < 0.08]
+        drift.append(round(float(np.median(d)) * 1000, 1) if d else None)
+    # 段落起点：重拍上的 4 拍窗口响度与前 8 拍相比变化 ≥ 3 dB
+    db = lambda a_, b_: 20 * np.log10(np.sqrt(np.mean(mono[int(a_ * SR):int(b_ * SR)] ** 2)) + 1e-9)
+    secs = []
+    for bt in a.beats:
+        if bt.pos == 1 and bt.t - 8 * p >= 0 and bt.t + 4 * p <= a.total:
+            if abs(db(bt.t, bt.t + 4 * p) - db(bt.t - 8 * p, bt.t)) >= 3.0:
+                secs.append(bt.t)
+    a.sections = secs
+    a.grid_info = {"bpm": round(60 / p, 2), "beat_s": round(float(p), 5), "first_beat_s": round(float(t0), 3),
+                   "downbeat_phase": down, "phase_low_energy": ph_low.round(4).tolist(),
+                   "phase_chroma_novelty": ph_nov.round(4).tolist(), "phase_onset": ph_on.round(3).tolist(),
+                   "drift_ms_per_15s": drift, "sections": [round(v, 3) for v in secs]}
+    a.notes.append(f"节拍网格：{60 / p:.2f} BPM（拍长 {p:.4f}s），首拍 {t0:.3f}s；按 15 秒窗口统计网格与强起音中位偏差 "
+                   f"{drift} ms。重拍（第 1 拍）由四相位中低频能量与和声变化得分之和最高者判定。")
+
+
+def nearest_beat(a: Analysis, t: float, lo: float, hi: float, pos: set | None = None):
+    """[lo, hi] 内距离 t 最近、且小节位置属于 pos 的拍；没有则返回 None。"""
+    c = [b for b in a.beats if lo <= b.t <= hi and (pos is None or b.pos in pos)]
+    return min(c, key=lambda b: abs(b.t - t)) if c else None
 
 
 def snap(a: Analysis, t: float, lo: float, hi: float, min_strength: float = 0.45) -> tuple[float, float, str]:

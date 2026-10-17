@@ -341,7 +341,7 @@ def shot06(c, t, D, cue, view):
         if k >= 1:
             continue
         px, py = d.lerp(x, 500, k), d.lerp(y, 520, k)
-        s = depth * (1 - 0.5 * k)
+        s = depth * (1 - 0.3 * k)
         blur_far = depth < 0.85
         c.save()
         if blur_far:
@@ -351,11 +351,11 @@ def shot06(c, t, D, cue, view):
         if blur_far:
             c.restore()
         c.restore()
-    if t >= m - 0.05:
-        pop = d.ease_back(d.prog(t, m - 0.05, 0.35), 2.2)
-        book(c, 500, 520, s=0.9 + 0.1 * pop, a=d.clamp01(pop * 1.5))
+    if t >= m - 1e-6:
+        pop = d.ease_out(d.prog(t, m, 0.35))
+        book(c, 500, 520, s=1.12 - 0.12 * pop)
         d.sparks(c, 500, 520, t, m, n=18, r=260, seed=6)
-        d.glow(c, 500, 520, 300, GOLD, 0.22 * d.pulse(t, m, 0.7))
+        d.glow(c, 500, 520, 340, GOLD, 0.6 * d.pulse(t, m, 0.7))
 
 
 # ---------------------------------------------------------------- 镜头 07 / 08
@@ -467,7 +467,7 @@ FIG9 = (800, 640)
 
 def shot09(c, t, D, cue, view):
     d.room(c, view, floor_y=760)
-    f = d.ease_io(d.prog(t, 0.1, cue["fold"] - 0.1))
+    f = d.ease_in(d.prog(t, 0.1, cue["fold"] - 0.1))
     # 手风琴式折叠：面板数 4 → 1，宽高同时收拢，颜色由暗转亮
     W0, H0 = 1100, 900
     W1, H1 = 300, 400

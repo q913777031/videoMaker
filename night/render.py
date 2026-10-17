@@ -2,7 +2,7 @@
 
 import math
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from multiprocessing import get_context
 
 import numpy as np
@@ -24,59 +24,106 @@ class Timeline:
     cues: dict            # 镜头号 → {键: 镜头内秒}
     events: list[dict]    # 音效事件（视频绝对时间）
     calibrated: bool
+    boundaries: list = field(default_factory=list)   # 每条边界的 (Beat, 原因)，无原曲时为 None
+
+
+POS_NAME = {1: "小节重拍（第1拍）", 3: "次强拍（第3拍）", 2: "普通拍（第2拍）", 4: "普通拍（第4拍）"}
+
+
+def _fit_boundaries(sh, an) -> tuple[list[float], list]:
+    """镜头边界贴拍：±1.0s 内有段落起点则贴段落起点，否则依次尝试 ±0.45s 内的小节重拍、±0.45s 内的第 3 拍、±0.3s 内任意拍。
+
+    每次移动后核对两侧镜头的阅读窗口（时长 - 0.8s ≥ 预算需求且时长 ≥ 5s），不满足就退回下一级候选。
+    """
+    from . import music
+    need = {s.no: max(max(2.0, s.han / 4.5) + (0.8 if any(ch.isdigit() for ch in s.text) else 0)
+                      + (1.0 if s.no in (6, 15) else 0), 5.0 if s.no == 15 else 3.0) for s in sh}
+    bounds = [0.0] + [s.start for s in sh[1:]] + [an.total]
+    info = [None] * len(bounds)
+    for i in range(1, len(sh)):
+        b = sh[i].start
+        tries = []
+        sec = [x for x in an.sections if abs(x - b) <= 1.0]
+        if sec:
+            bt = music.nearest_beat(an, min(sec, key=lambda x: abs(x - b)), 0, an.total, {1})
+            tries.append((bt, "段落起点重拍"))
+        tries.append((music.nearest_beat(an, b, b - 0.45, b + 0.45, {1}), "小节重拍"))
+        tries.append((music.nearest_beat(an, b, b - 0.45, b + 0.45, {3}), "次强拍"))
+        tries.append((music.nearest_beat(an, b, b - 0.3, b + 0.3), "最近拍"))
+        for bt, why in tries:
+            if bt is None:
+                continue
+            nb = round(bt.t * FPS) / FPS
+            left, right = nb - bounds[i - 1], bounds[i + 1] - nb
+            if left >= max(5.0, need[sh[i - 1].no] + 0.8) and right >= max(5.0, need[sh[i].no] + 0.8):
+                bounds[i], info[i] = nb, (bt, why)
+                break
+    return bounds, info
 
 
 def build_timeline(analysis=None) -> Timeline:
-    """无原曲时使用叙事基准；有原曲时在相邻镜头间小幅移动边界、把候选事件贴到真实起音。"""
+    """无原曲时使用叙事基准；有原曲时边界贴拍、关键撞击贴小节重拍、移动类动作贴普通拍。"""
     from . import music
+    an = analysis
     sh = shots()
-    total = 90.0 if analysis is None else analysis.total
-    bounds = [s.start for s in sh] + [total]
-    if analysis is not None:
-        for i in range(1, len(sh)):
-            b = bounds[i] * total / 90.0
-            nt, strength, _ = music.snap(analysis, b, b - 0.3, b + 0.3, min_strength=0.6)
-            bounds[i] = round((nt if strength else b) * FPS) / FPS
+    total = 90.0 if an is None else an.total
+    bounds, binfo = ([s.start for s in sh] + [total], [None] * (len(sh) + 1)) if an is None \
+        else _fit_boundaries(sh, an)
     for i, s in enumerate(sh):
         s.start, s.dur = bounds[i], bounds[i + 1] - bounds[i]
     cues, events = {}, []
     for s in sh:
         cues[s.no] = {}
+        prev, prev_base = 0.0, 0.0
         for cu in s.cues:
-            base = cu.t
+            base = max(cu.t, prev + (cu.t - prev_base)) if prev_base else cu.t   # 前一事件被推后时保持原间隔
+            prev_base = cu.t
             row = {"shot": s.no, "key": cu.key, "sound": cu.sound, "action": cu.action, "gain": cu.gain,
-                   "base": s.start + base, "strength": None, "conf": "未确认", "method": "", "mix": ""}
-            local = base
-            if analysis is not None:
-                lo, hi = s.start + max(0.25, base - 0.4), s.start + min(s.dur - 0.5, base + 0.4)
-                thr = 0.45 if cu.snap else 0.25
-                nt, strength, conf = music.snap(analysis, s.start + base, lo, hi, min_strength=thr)
-                local = nt - s.start
-                row.update(strength=round(strength, 3), conf=conf,
-                           method="谱通量起音检测（自动，未人工试听）" if strength else "窗口内无合适重音，保持叙事位置")
-                if not strength:
+                   "base": s.start + base, "strength": None, "conf": "未确认", "method": "", "mix": "",
+                   "beat": None, "music_t": None}
+            exact = None
+            if an is not None:
+                g0 = s.start + base
+                lo = s.start + max(0.8 if cu.sound and cu.snap else 0.45, prev + 0.35)   # 避开入场转场
+                hi = s.start + s.dur - 0.6
+                if cu.key == "credit":
+                    lo, hi = s.start - 0.02, s.start + 0.45
+                if cu.sound and cu.snap:
+                    tries = [(music.nearest_beat(an, g0, max(lo, g0 - 1.1), min(hi, g0 + 1.1), {1}), "高"),
+                             (music.nearest_beat(an, g0, max(lo, g0 - 1.7), min(hi, g0 + 1.7), {1}), "高"),
+                             (music.nearest_beat(an, g0, max(lo, g0 - 0.6), min(hi, g0 + 0.6), {3}), "中"),
+                             (music.nearest_beat(an, g0, max(lo, g0 - 0.3), min(hi, g0 + 0.3)), "中")]
+                else:
+                    tries = [(music.nearest_beat(an, g0, max(lo, g0 - 0.3), min(hi, g0 + 0.3)), "中")]
+                bt, conf = next(((b, c) for b, c in tries if b is not None), (None, "无合适拍点"))
+                if bt is not None:
+                    exact = bt.t
+                    row.update(strength=round(bt.strength, 3), beat=bt, music_t=bt.t,
+                               conf=conf if bt.strength >= 0.5 else "低",
+                               method=f"节拍网格 {an.grid_info['bpm']} BPM，{POS_NAME[bt.pos]}；自动分析，未人工试听")
+                else:
+                    row.update(method="窗口内无合适拍点，保持叙事位置（柔和动作）")
                     row["action"] += "（柔和动作，未贴拍）"
-                if cu.sound == "kick":
-                    low = music.low_energy_at(analysis, nt)
-                    if low > 0.5:
-                        row["gain"], row["mix"] = 0.0, f"原曲低频占比 {low:.2f}，取消低鼓叠加"
-                    elif low > 0.3:
-                        row["gain"], row["mix"] = cu.gain * 0.5, f"原曲低频占比 {low:.2f}，低鼓减半"
+                if cu.sound == "kick" and exact is not None:
+                    lowr = music.low_energy_at(an, exact)
+                    if lowr > 0.5:
+                        row["gain"], row["mix"] = 0.0, f"原曲此拍低频占比 {lowr:.2f}，取消低鼓叠加"
+                    elif lowr > 0.3:
+                        row["gain"], row["mix"] = cu.gain * 0.5, f"原曲此拍低频占比 {lowr:.2f}，低鼓减半"
             else:
                 row["method"] = "未检测：原曲缺失，按叙事基准放置"
-            local = round(local * FPS) / FPS
+            local = round(((exact - s.start) if exact is not None else base) * FPS) / FPS
             cues[s.no][cu.key] = local
+            prev = local
             row["t"] = s.start + local
-            if cu.sound and row["gain"] > 0:
-                events.append(row)
-            elif cu.sound:
+            row["sfx_t"] = exact if exact is not None else row["t"]
+            if cu.sound and row["gain"] <= 0:
                 row["sound"] = ""
-                events.append(row)
-            else:
-                events.append(row)
-    # 镜头 05 承接镜头 04 结尾的轨道角度
+            events.append(row)
     cues[5]["_t4"] = sh[3].dur - cues[4]["lap"]
-    return Timeline(sh, total, cues, events, analysis is not None)
+    tl = Timeline(sh, total, cues, events, an is not None)
+    tl.boundaries = binfo
+    return tl
 
 
 # ---------------------------------------------------------------- 逐帧
