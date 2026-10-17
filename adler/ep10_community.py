@@ -5,10 +5,10 @@ import math
 import numpy as np
 import skia
 
-from engine.gfx import clamp01, ease_in, ease_in_out, ease_out, ease_out_back, lerp, stroke_path
+from engine.gfx import clamp01, ease_in_out, ease_out, ease_out_back, lerp, stroke_path
 
 from . import kit as K
-from .core import Big, Bubble, Custom, Episode, Fig, Icon, Label, Shot, Txt, end_shot
+from .core import Big, Bubble, Custom, Episode, Fig, Icon, Label, Shot, end_shot
 
 ACC = "#5A5DB0"
 GROUND = 1130
@@ -562,12 +562,14 @@ def checklist(c, g, el_t, d):
             if ic == "water":
                 K.icon(c, "water", ix, y, 80, "#7FA6C2", a, 0.3)
             elif ic == "seat":
-                with K.fade(c, a):
-                    K.seat(c, ix, y + 34, 70, 44, K.OTHER3)
-                    K.rr(c, ix - 28, y - 4, 14, 74, 6, K.OTHER3)
+                with K.paper(c, a, 0.3):
+                    K.rr(c, ix - 22, y - 12, 13, 62, 5, K.shade(K.OTHER3, 0.15))
+                    K.rr(c, ix + 2, y + 14, 62, 14, 5, K.OTHER3)
+                    K.rr(c, ix - 22, y + 38, 9, 36, 3, K.shade(K.OTHER3, 0.15))
+                    K.rr(c, ix + 27, y + 38, 9, 36, 3, K.shade(K.OTHER3, 0.15))
             else:
                 with K.fade(c, a):
-                    K.bubble(c, ix, y - 4, "谢", 30, (0, 1), 1, 1, K.tint(ACC, 0.8), ACC)
+                    K.bubble(c, ix, y - 6, "谢", 38, (0, 1), 1, 1, K.tint(ACC, 0.8), ACC)
             k = clamp01(g.since(4 + i * 4) / 0.35)
             if k > 0:
                 path = skia.Path()
@@ -667,7 +669,7 @@ def build() -> Episode:
             note="升职、加薪、被夸奖的小图标浮起；主角接过奖杯高高举起，奖杯的光按拍一截截变暗，笑容也淡了"),
         # 2
         Shot(3, "帮朋友搬了一次家，|却开心了好几天。", "情境演绎", [
-            Icon("house", 905, 1000, 180, color=K.tint(ACC, 0.3), accent=K.GOLD, p=1, at=0, enter="pop"),
+            Icon("house", 888, 1000, 180, color=K.tint(ACC, 0.3), accent=K.GOLD, p=1, at=0, enter="pop"),
             Custom(box_pair, x=140, y=GROUND, at=0, enter="none", x0=140, x1=420, mood="smile",
                    moves=[(0.5, dict(x=420, dur=2.8)), (6, dict(mood="happy"))]),
             Custom(hearts, at=0, enter="none"),

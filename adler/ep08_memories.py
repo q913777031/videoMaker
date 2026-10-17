@@ -325,13 +325,16 @@ def magnet_scene(c, g, el_t, d):
         K.memory(c, x, y, 165, 135, sc, a, lerp(r0, r1, k), lerp(1, 1.05, k), "")
         if k <= 0:
             K.rr_stroke(c, x, y, 172, 142, 12, ACC, 5, a * 0.9)
-    # 无关的照片飘走
+    # 无关的照片飘走（只在舞台内淡出）
+    c.save()
+    c.clipRect(skia.Rect.MakeLTRB(70, 330, 1010, 1262))
     for i, ((x0, y0, r0), (vx, vy), sc) in enumerate(UNREL):
-        k = ease_in(clamp01(g.since(6) / 1.1))
-        a = clamp01(g.since(0.12 + i * 0.25) / 0.3) * (1 - k)
-        x = x0 + vx * 260 * k
-        y = y0 + vy * 260 * k + 6 * math.sin(g.t * 1.6 + i + 3)
+        k = ease_in(clamp01(g.since(6) / 0.9))
+        a = clamp01(g.since(0.12 + i * 0.25) / 0.3) * (1 - k) ** 1.4
+        x = x0 + vx * 120 * k
+        y = y0 + vy * 120 * k + 6 * math.sin(g.t * 1.6 + i + 3)
         K.memory(c, x, y, 165, 135, sc, a, r0 + vx * 25 * k, 1, "")
+    c.restore()
 
 
 # ---------------------------------------------------------------- 第 6 镜：眼镜落版
@@ -834,7 +837,7 @@ def build() -> Episode:
             note="小孩戴着灰眼镜长成大人，世界是灰的；第 4 拍摘下旧眼镜，第 8 拍戴上暖色新眼镜，世界变暖，小苗长高"),
         # 12
         Shot(4, "写下你最早的记忆，|问：它在提醒我什么？", "小练习", [
-            Custom(notebook, x=NB_X, y=NB_Y, at=0, enter="pop"),
+            Custom(notebook, x=NB_X, y=NB_Y, at=0, enter="rise"),
         ], hits=[(2, "shaker", 0.8, "铅笔开始写"), (6, "wood_low", 0.7, "写下第三行"),
                  (10, "wood_high", 0.9, "写出问句"), (12, "rim", 0.9, "问句被圈出")],
             note="笔记本左页贴着那张回忆照片，右页铅笔按拍写出几行字，最后写下“它在提醒我什么？”并圈起来"),
