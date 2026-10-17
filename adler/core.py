@@ -822,7 +822,7 @@ def write_docs(ep: Episode, out_dir: Path, events: list[dict]):
              f"- 概念：{ep.concept}", f"- 发布标题：{ep.publish_title or ep.title}", f"- 话题：{ep.hashtags}",
              f"- 封面：{ep.cover_title} / {ep.cover_sub}",
              f"- 时长：{ep.total:.1f} 秒（1080×1920，30fps，配乐 music/bgm.m4a，镜头边界与音效全部落在实测拍点上）", "",
-             "## 逐屏文案", "", "| # | 时间 | 角标 | 屏幕文字 | 画面 |", "|---|------|------|----------|------|"]
+             "## 逐屏文案", "", "| # | 时间（分:秒:帧） | 角标 | 屏幕文字 | 画面 |", "|---|------|------|----------|------|"]
     for i, s in enumerate(ep.shots):
         txt = gfx.plain(s.text).replace("|", "／") if s.text else "（参考资料）"
         lines.append(f"| {i + 1} | {tc(s.t0)}–{tc(s.t1)} | {s.tag} | {txt} | {s.note} |")
