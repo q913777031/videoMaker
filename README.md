@@ -86,6 +86,17 @@ python3 make_docs.py               # 生成 videos/脚本与核查.md
 - 字幕文案里 `【】` 标红，`|` 为手动换行；每条字幕不得超过两行（超出时渲染前会打印警告）。
 - 逐镜检查：`python3 make_stills.py 05 2.0` 导出各镜头静帧，`python3 make_sheet.py 05 0 6` 拼联系表。
 
+## 无声竖屏科普：《生活没变，怎么一刷手机就落后了？》（社会比较）
+
+`social_comparison/index.html` 是一个单文件 Canvas 动画，可以直接用浏览器打开，不依赖外部资源。播放控件放在画幅外，支持播放/暂停（空格）、重播、拖动进度和逐帧查看（← →）。按 R 进入录制模式隐藏控件，按 Esc 退出。也可以用 `?t=秒数` 打开到指定时刻，用 `?record=1&autoplay` 直接进入录制模式并开始播放。
+
+```bash
+node social_comparison/render.cjs out/social_comparison.mp4   # 逐帧导出无声 MP4（H.264 / yuv420p / 30fps / 无音频轨）
+node social_comparison/render.cjs --audit                      # 检查每张文字卡的稳定显示时长、字速和安全区
+```
+
+依赖 Playwright（使用本机已有的 Chromium）和带 libx264 的 FFmpeg。分镜表与资料来源见 `social_comparison/STORYBOARD.md`。
+
 ## 横屏版
 
 ```bash
