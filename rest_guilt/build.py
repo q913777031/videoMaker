@@ -54,7 +54,7 @@ def tc(f: int) -> str:
 def find_bgm(arg: str | None) -> Path | None:
     if arg:
         return Path(arg)
-    for p in (ROOT / "bgm.m4a", ROOT / "assets" / "bgm.m4a"):
+    for p in (ROOT / "music" / "bgm.m4a", ROOT / "bgm.m4a", ROOT / "assets" / "bgm.m4a"):
         if p.exists():
             return p
     return None
@@ -91,12 +91,19 @@ def write_texts(out: Path, tl: TL.Timeline):
     (out / "参考资料.txt").write_text("\n".join(ref) + "\n", encoding="utf-8")
 
 
-def write_cues(out: Path, tl: TL.Timeline, seg_start: float | None):
+def write_cues(out: Path, tl: TL.Timeline, seg_start: float | None, onsets: list | None = None):
     rows = []
     for k in range(len(story.SHOTS)):
         f = tl.bounds[k]
-        rows.append({"视频时间码": tc(f), "帧号": f, "原曲时间": f"{seg_start + f / FPS:.3f}" if seg_start is not None else "未确认",
-                     "事件类型": "镜头边界", "相对重音强度": "未确认", "强度口径": "", "检测/复核方式": "", "置信度": "未确认",
+        hit = [o for o in (onsets or []) if round(o["t"] * FPS) == f and k > 0]
+        o = max(hit, key=lambda o: o["strength"]) if hit else None
+        rows.append({"视频时间码": tc(f), "帧号": f,
+                     "原曲时间": f"{seg_start + (o['t'] if o else f / FPS):.3f}" if seg_start is not None else "未确认",
+                     "事件类型": "镜头边界｜贴原曲起音" if o else "镜头边界",
+                     "相对重音强度": f"{o['strength']:.3f}" if o else "未确认",
+                     "强度口径": tl.music.get("strength_norm", "") if o else "",
+                     "检测/复核方式": tl.music.get("method", "") if o else "",
+                     "置信度": ("高" if o["strength"] >= 0.6 else "中") if o else "未确认",
                      "镜头号": k + 1, "视觉撞击动作": "切入新镜头", "字幕": "／".join(story.SHOTS[k].text),
                      "音效类型": "", "音效起音帧": "", "混音调整": ""})
     norm = tl.music.get("strength_norm", "")
@@ -202,6 +209,7 @@ def main(argv=None):
     ap.add_argument("--out", default=str(ROOT / "out" / "rest_guilt"))
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--skip-video", action="store_true")
+    ap.add_argument("--only", choices=["vertical", "horizontal"], help="只渲染一个版本（封面同样只出该版本）")
     args = ap.parse_args(argv)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -241,16 +249,20 @@ def main(argv=None):
     metrics = write_sfx_library(out)
     report["已渲染"].append(f"七类合成音效素材（48 kHz / 24 bit）：{out / 'sfx_samples'}")
     report["已核验"].append("音效客观指标（未试听）：" + json.dumps(metrics, ensure_ascii=False))
-    for L in (D.VERTICAL, D.HORIZONTAL):
+    layouts = [L for L in (D.VERTICAL, D.HORIZONTAL) if args.only in (None, L.name)]
+    if args.only:
+        report["说明"].append(f"按要求只生成 {args.only} 版本，另一版本未渲染。")
+    for L in layouts:
         render.cover(L, str(out / f"cover_{L.name}.png"))
         report["已渲染"].append(f"封面 {L.W}×{L.H}：cover_{L.name}.png")
 
     audio_path = None
     if final:
-        seg = M.music_segment(music_x, analysis["segment"], len(music_x) / M.SR, tl.total_frames * M.SPF)
+        seg, tail_note = M.music_segment(music_x, analysis["segment"], len(music_x) / M.SR, tl.total_frames * M.SPF)
+        report["说明"].append("曲尾处理：" + tail_note)
         res = M.build(seg, tl)
         tl.save(out / "timeline.json")
-        write_cues(out, tl, analysis["segment"]["start"])
+        write_cues(out, tl, analysis["segment"]["start"], analysis["onsets"])
         for k in ("bgm", "sfx", "mix"):
             M.write24(out / f"{k}.wav", res[k])
         audio_path = str(out / "mix.wav")
@@ -264,7 +276,7 @@ def main(argv=None):
         report["未完成"].append("未经人工试听（含手机 / 小扬声器条件）；卡点与混音仅有信号分析依据。")
 
     if not args.skip_video:
-        for L in (D.VERTICAL, D.HORIZONTAL):
+        for L in layouts:
             name = f"rest_guilt_{L.name}.mp4" if final else f"preview_{L.name}_noaudio.mp4"
             p = out / name
             render.render(Film(L, tl), str(p), audio_path, args.workers)

@@ -45,8 +45,10 @@ def _duck_env(n: int, hits: list[tuple[int, float]]) -> np.ndarray:
     return 10 ** (-g / 20)
 
 
-def music_segment(x: np.ndarray, seg: dict, song_dur: float, n: int) -> np.ndarray:
-    """截取选定片段并做首尾包络：非曲首起点加 30 ms 淡入；非曲尾终点用 2.5 秒余弦淡出，曲尾则保留自然尾韵只做 0.3 秒收尾。"""
+def music_segment(x: np.ndarray, seg: dict, song_dur: float, n: int) -> tuple[np.ndarray, str]:
+    """截取选定片段并做首尾包络，返回 (音轨, 收尾说明)。
+    非曲首起点加 30 ms 淡入。只有「片段终点 = 曲尾」且曲尾 0.5 秒已比全片中位电平低 20 dB 以上（原曲自带淡出）时，
+    才保留自然尾韵只做 0.3 秒收尾；否则做 3 秒余弦淡出，避免突然截断。"""
     a = int(round(seg["start"] * SR))
     m = x[a:a + n].copy()
     if len(m) < n:
@@ -54,10 +56,18 @@ def music_segment(x: np.ndarray, seg: dict, song_dur: float, n: int) -> np.ndarr
     if a > 0:
         k = int(0.03 * SR)
         m[:k] *= np.linspace(0, 1, k)[:, None]
-    natural = abs(seg["end"] - song_dur) < 0.5
-    k = int((0.3 if natural else 2.5) * SR)
+    mono = m.mean(axis=1)
+    blk = int(0.5 * SR)
+    levels = [np.sqrt(np.mean(mono[i:i + blk] ** 2)) + 1e-9 for i in range(0, len(mono) - blk, blk)]
+    tail_db = 20 * np.log10(np.sqrt(np.mean(mono[-blk:] ** 2)) + 1e-9)
+    med_db = 20 * np.log10(float(np.median(levels)))
+    natural = abs(seg["end"] - song_dur) < 0.5 and tail_db < med_db - 20
+    fade = 0.3 if natural else 3.0
+    k = int(fade * SR)
     m[-k:] *= (0.5 + 0.5 * np.cos(np.linspace(0, np.pi, k)))[:, None]
-    return m
+    note = (f"原曲自带淡出（曲尾 {tail_db:.1f} dB，中位 {med_db:.1f} dB），保留自然尾韵，仅 0.3 秒收尾" if natural else
+            f"片段末 0.5 秒仍为 {tail_db:.1f} dB（全片中位 {med_db:.1f} dB），原曲未自带淡出，做 3 秒余弦淡出避免截断")
+    return m, note
 
 
 def build(music: np.ndarray, timeline, target_lufs: float = -16.0, tp_limit: float = -1.0) -> dict:

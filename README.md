@@ -42,7 +42,8 @@ python3 dyl_short.py out/designing_your_life_short.mp4
 
 ```bash
 python3 fetch_assets.py                                  # 只需字体
-python3 -m rest_guilt.build --bgm path/to/bgm.m4a        # 完整成片（也会自动查找 ./bgm.m4a、assets/bgm.m4a）
+python3 -m rest_guilt.build --bgm path/to/bgm.m4a        # 完整成片（默认依次查找 music/bgm.m4a、./bgm.m4a、assets/bgm.m4a）
+python3 -m rest_guilt.build --only vertical             # 只出竖屏
 python3 -m rest_guilt.build                              # 未提供原曲：只出无音频流的画面预览与素材，状态"待配乐"
 ```
 
