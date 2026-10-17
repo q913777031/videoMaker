@@ -48,5 +48,6 @@ PUBLISH_TITLE = DATA["publish_title"]
 HASHTAGS = DATA["hashtags"]
 FILE_NAME = DATA.get("file_name", "空调开还是关")
 REFS = DATA.get("refs", [])
+REFS_SHORT = DATA.get("refs_short", REFS)
 NOTES = DATA.get("notes", [])
 SHOTS = [_shot(s) for s in DATA["shots"]]

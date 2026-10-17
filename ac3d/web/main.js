@@ -64,8 +64,9 @@ export class ShotUI {
   }
 }
 
-const header = el('div', { left: '64px', top: '170px', font: '500 30px NotoSansSC', color: PAL.ink2, letterSpacing: '2px' });
-const headTitle = el('div', { left: '64px', top: '214px', font: '64px MaShanZheng', color: PAL.ink, whiteSpace: 'nowrap' });
+const HALO = '0 0 10px rgba(246,238,222,1), 0 0 4px rgba(246,238,222,1)';
+const header = el('div', { left: '64px', top: '170px', font: '500 30px NotoSansSC', color: PAL.ink2, letterSpacing: '2px', textShadow: HALO });
+const headTitle = el('div', { left: '64px', top: '214px', font: '64px MaShanZheng', color: PAL.ink, whiteSpace: 'nowrap', textShadow: HALO });
 const tagEl = el('div', { right: '64px', top: '226px', font: '700 28px NotoSansSC', padding: '8px 22px', borderRadius: '30px',
   border: '3px solid', background: 'rgba(248,242,231,0.85)' });
 const capEl = el('div', { left: '0', width: `${W}px`, top: '1330px', textAlign: 'center', font: '700 62px NotoSerifSC',

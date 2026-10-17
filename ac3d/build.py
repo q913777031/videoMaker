@@ -70,7 +70,7 @@ def timeline() -> dict:
         raise ValueError(f"story covers {b // 4} bars, music has {A.LAST_BAR}")
     shots[-1]["t1"] = END
     events.sort(key=lambda e: e["t"])
-    return dict(series=S.SERIES, title_short=S.TITLE_SHORT, title=S.TITLE, end=END, music_end=A.MUSIC_END,
+    return dict(series=S.SERIES, title_short=S.TITLE_SHORT, title=S.TITLE, refs=S.REFS_SHORT, end=END, music_end=A.MUSIC_END,
                 beats=[x["t"] for x in A.BEATS], shots=shots, cues=cues, captions=caps, _events=events)
 
 

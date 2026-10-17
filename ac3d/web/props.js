@@ -190,8 +190,6 @@ export function moonWindowProp(r = 1.8, outsideTex = null) {
       const grd = c.createLinearGradient(0, 0, 0, 512);
       grd.addColorStop(0, '#F6E7C8'); grd.addColorStop(1, '#F2D7A8');
       c.fillStyle = grd; c.fillRect(0, 0, 512, 512);
-      c.fillStyle = 'rgba(232,115,58,0.9)';
-      c.beginPath(); c.arc(360, 150, 46, 0, Math.PI * 2); c.fill();
       const r_ = rng(11);
       for (let L = 0; L < 3; L++) {
         c.beginPath(); c.moveTo(0, 512);
@@ -822,7 +820,8 @@ export function clayFigure({ color = PAL.azure, skin = '#F1D2B2', hat = null, s 
       armR.rotation.z = 0.12 + (aR > 0 ? 0.1 : 0);
       head.rotation.x = nod;
       head.rotation.z = tilt;
-      g.position.y = Math.abs(Math.sin(walk * Math.PI)) * 0.06 * amp * s;
+      g.children.forEach(ch => { if (ch.userData.base === undefined) ch.userData.base = ch.position.y;
+        ch.position.y = ch.userData.base + Math.abs(Math.sin(walk * Math.PI)) * 0.06 * amp * s; });
     },
   };
   g.userData.pose();
