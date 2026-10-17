@@ -420,8 +420,11 @@ def draw_el(c, el: El, g: G):
             sub = d.get("sub")
             if sub:
                 K.text(c, sub, 0, d.get("size", 150) * 0.78, d.get("sub_size", 40), "sans_medium", K.INK2, alpha)
-        if d.get("burst", True):
+        if d.get("burst", True) and 0 <= g.since(el.at) <= 0.4:
+            c.save()
+            c.clipRect(skia.Rect.MakeLTRB(0, 330, W, 1270))     # 放射线不进入页眉与字幕区
             K.burst(c, x, y, g.since(el.at), g.acc2, d.get("size", 150) * 0.9, d.get("size", 150) * 2.2, 12, 9)
+            c.restore()
     elif kind == "txt":
         with K.at(c, x, y, rot, sc):
             gfx.draw_rich(c, d["text"], 0, 0, d.get("size", 40), d.get("font", "serif"), d.get("color", K.INK),
@@ -613,7 +616,11 @@ def end_shot(ep_refs: list[str], next_title: str | None, bars: int = 2) -> Shot:
         y = 610
         for i, r in enumerate(ep_refs):
             ai = g.p(0.5 + i * 0.5, 0.5)
-            for j, ln in enumerate(K.wrap_lines(r, 34, 880, "sans_medium")):
+            parts = [r]
+            if K.text_w(r, 34, "sans_medium") > 880 and "（" in r:     # 中译名整体换到下一行
+                head, tail = r.split("（", 1)
+                parts = [head, "（" + tail]
+            for j, ln in enumerate(ln for part in parts for ln in K.wrap_lines(part, 34, 880, "sans_medium")):
                 K.text(c, ln, W / 2, y, 34, "sans_medium", K.INK2, ai)
                 y += 52
             y += 30

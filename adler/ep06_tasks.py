@@ -9,7 +9,7 @@ from engine.gfx import clamp01, ease_in, ease_in_out, ease_out, ease_out_back, l
 
 from . import core
 from . import kit as K
-from .core import Big, Bubble, Card, Custom, Episode, Fig, Icon, Label, Shot, Txt, end_shot
+from .core import Big, Bubble, Custom, Episode, Fig, Icon, Label, Shot, Txt, end_shot
 
 ACC = "#C8566E"
 GROUND = 1130
@@ -393,7 +393,9 @@ def pond(c, x, y, w, t):
             K.seg(c, x + dx + k * 10, y + 4, x + dx + k * 10 + (k - 1) * 8, y - 50 - 12 * k, K.GREEN, 6)
 
 
-H7 = dict(x0=290, x1=505, s=340, b=1, dur=2.4)
+H7 = dict(x0=290, x1=485, s=340, b=1, dur=2.4)
+ROPE_A = dict(lean=-4, head=-2, la1=84, la2=0, ra1=72, ra2=8, ll1=-6, ll2=0, rl1=8, rl2=-4)
+ROPE_B = dict(lean=-16, head=2, la1=58, la2=34, ra1=48, ra2=44, ll1=-16, ll2=0, rl1=20, rl2=-10)
 
 
 def horse_scene(c, g, t, d):
@@ -404,12 +406,12 @@ def horse_scene(c, g, t, d):
     amp = math.sin(math.pi * k) if 0 < k < 1 else 0.0
     turn = ease_in_out(clamp01(g.since(8) / 0.45))
     turn -= 0.12 * math.sin(clamp01(g.since(8.9) / 0.5) * math.pi * 2) * (g.since(8.9) > 0)
-    pond(c, 810, GROUND + 6, 270, g.t)
+    pond(c, 755, GROUND + 6, 290, g.t)
     horse(c, x, GROUND, H7["s"], (x - H7["x0"]) / 70, amp, clamp01(turn))
     # 缰绳：马嘴 → 人的远手
     th = math.radians(lerp(28, -24, clamp01(turn)))
     nx, ny = x + 0.31 * H7["s"] + 0.36 * H7["s"] * math.sin(th), GROUND - 0.66 * H7["s"] - 0.36 * H7["s"] * math.cos(th)
-    hx, hy = fig_at(d["person"], g)["far"]
+    hx, hy = fig_at(d["person"], g)["near"]
     path = skia.Path()
     path.moveTo(nx, ny + 10)
     path.quadTo((nx + hx) / 2, max(ny, hy) + 60, hx, hy)
@@ -574,10 +576,11 @@ def pops(g):
 
 def build() -> Episode:
     # 7 牵马的人
-    leader = Fig(380, GROUND, 290, at=0, enter="none", hair="short", mood="calm", pose="stand",
-                 moves=[(1, dict(x=555, dur=2.4)),
-                        (6, dict(pose="point", mood="open", sfx="wood_high", note="人指着水，示意马喝")),
-                        (10, dict(face=-1, pose="shrug", mood="flat", sfx="shaker", note="马不喝，人转身摊手"))])
+    leader = Fig(945, GROUND, 310, at=0, enter="none", hair="short", mood="calm", face=-1, pose=ROPE_A,
+                 moves=[(1, dict(pose=ROPE_B)), (2, dict(pose=ROPE_A)), (3, dict(pose=ROPE_B)), (4, dict(pose=ROPE_A)),
+                        (5, dict(pose=ROPE_B)),
+                        (6, dict(pose="point", mood="open", sfx="wood_high", note="马到了水边，人指着水示意它喝")),
+                        (10, dict(pose="shrug", mood="flat", sfx="shaker", note="马不喝，人摊手"))])
     # 3 背着气泡的主角
     carrier = Fig(610, GROUND, 350, at=0, enter="rise", hair="short", mood="worried", pose=BURDEN1,
                   moves=[(2, dict(pose=BURDEN2, mood="sad")), (4, dict(pose=BURDEN3))])

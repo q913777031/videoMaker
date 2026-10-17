@@ -184,6 +184,8 @@ def arrow(c, p0, p1, color=INK, width=10.0, alpha=1.0, p: float = 1.0, bend: flo
     if p <= 0 or alpha <= 0:
         return
     path = curve_path(p0, p1, bend)
+    if dash and len(dash) == 2:
+        dash = (dash[0], dash[1], 0)
     gfx.stroke_path(c, path, col_hex(color), width, alpha, ease_out(p), dash=dash)
     if p < 0.85:
         return
@@ -285,9 +287,15 @@ def wrap_lines(s: str, size: float, maxw: float, font: str = "serif") -> list[st
         line, w = "", 0.0
         for ch in part:
             cw = text_w(ch, size, font) if ch not in "【】" else 0
-            if w + cw > maxw and line and ch not in "，。！？、；：”’）》…":
-                out.append(line)
-                line, w = "", 0.0
+            if w + cw > maxw and line and ch not in "，。！？、；：”’）》…,.;:)":
+                carry = ""
+                if ch.isascii() and ch.isalnum() and line[-1].isascii() and line[-1].isalnum() and " " in line:
+                    line, carry = line.rsplit(" ", 1)      # 英文不在单词中间断开
+                while line and line[-1] in "（《“‘(":
+                    line, carry = line[:-1], line[-1] + carry   # 开括号、开引号不留在行尾
+                out.append(line.rstrip())
+                line = carry
+                w = text_w(gfx.plain(line), size, font) if line else 0.0
             line += ch
             w += cw
         if line:
