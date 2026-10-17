@@ -235,7 +235,9 @@ def write_delivery(out: Path, topic: Topic):
     for name, v in r.get("ffprobe", {}).items():
         L.append(f"- `{v['file']}`：{v['video']}，{v['audio']}，{v['duration']:.3f} s")
     L += ["- 两种比例封面 `cover_*.png`；`sfx.wav`" + ("、`bgm.wav`、`mix.wav`（48 kHz 24bit，同起点同长度）" if final else "")
-          + "；`cue_table.csv`" + ("、`beat_grid.csv`" if final else "") + "；`captions.txt`、`references.txt`、`verify_report.json`", "",
+          + "；`cue_table.csv`" + ("、`beat_grid.csv`" if final else "") + "；`captions.txt`、`references.txt`、`verify_report.json`",
+          f"- WAV 音轨不提交到仓库（`.gitignore`），可用 `python3 -m kepu.build --topic {topic.slug}` 确定性重新生成，"
+          "或在构建所在环境的 `out/` 目录取用。", "",
           "## 已核验（实际运行得到）", ""]
     L.append(f"- blackdetect：{'；'.join(f'{k} {v}' for k, v in r.get('blackdetect', {}).items())}。")
     if final:

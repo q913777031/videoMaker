@@ -101,7 +101,7 @@ python3 -m kepu.build --topic <slug>      # 4 核约 4 分钟；--only vertical 
 
 ## 8. 交付
 
-1. 在 `plans/topics_registry.md` 登记本片。构建结束时会根据 `verify_report.json` 和 `cue_table.csv` 自动生成 `DELIVERY.md`；只想重写说明时用 `--delivery-only`。核对无误后执行 `cp -r out/<slug> deliverables/<slug>/`（删掉 `stills.png`）。
+1. 在 `plans/topics_registry.md` 登记本片。构建结束时会根据 `verify_report.json` 和 `cue_table.csv` 自动生成 `DELIVERY.md`；只想重写说明时用 `--delivery-only`。核对无误后执行 `cp -r out/<slug> deliverables/<slug>/`（删掉 `stills.png`）。交付目录里的 WAV 已被 `.gitignore` 排除，不入库；需要音轨时用 SendUserFile 直接发给用户，或让用户重新构建。
 2. 写明没做人工试听、没在手机上实听。原曲是否含人声也无法确认。
-3. 提交并推送；用 SendUserFile 发送两个 MP4、`cue_table.csv` 和 `DELIVERY.md`。
+3. 提交并推送（仓库里只有 MP4、封面和文本）；用 SendUserFile 发送两个 MP4、`cue_table.csv` 和 `DELIVERY.md`，用户要音轨时再发 WAV。
 4. 回复用户时，先给结论，再按“原曲分析 / 卡点 / 需要你确认”三段说明，列出不在重拍上的撞击事件及原因。
