@@ -1,0 +1,568 @@
+{
+ "generated": "2026-10-16 14:50:56",
+ "music": {
+  "status": "缺失",
+  "searched": [
+   "/home/user/videoMaker/bgm.m4a",
+   "/home/user/videoMaker/assets/bgm.m4a"
+  ]
+ },
+ "sfx_onset_check": [
+  {
+   "shot": 1,
+   "key": "surge",
+   "cue_frame": 18,
+   "onset_frame": 18,
+   "onset_s": 0.6,
+   "diff_frames": 0
+  },
+  {
+   "shot": 2,
+   "key": "frame",
+   "cue_frame": 216,
+   "onset_frame": 216,
+   "onset_s": 7.2,
+   "diff_frames": 0
+  },
+  {
+   "shot": 3,
+   "key": "cover",
+   "cue_frame": 432,
+   "onset_frame": 432,
+   "onset_s": 14.4,
+   "diff_frames": 0
+  },
+  {
+   "shot": 3,
+   "key": "pull",
+   "cue_frame": 462,
+   "onset_frame": 462,
+   "onset_s": 15.4,
+   "diff_frames": 0
+  },
+  {
+   "shot": 4,
+   "key": "lap",
+   "cue_frame": 588,
+   "onset_frame": 588,
+   "onset_s": 19.6,
+   "diff_frames": 0
+  },
+  {
+   "shot": 6,
+   "key": "merge",
+   "cue_frame": 978,
+   "onset_frame": 978,
+   "onset_s": 32.6,
+   "diff_frames": 0
+  },
+  {
+   "shot": 7,
+   "key": "walk",
+   "cue_frame": 1098,
+   "onset_frame": 1098,
+   "onset_s": 36.6,
+   "diff_frames": 0
+  },
+  {
+   "shot": 7,
+   "key": "door",
+   "cue_frame": 1176,
+   "onset_frame": 1176,
+   "onset_s": 39.2,
+   "diff_frames": 0
+  },
+  {
+   "shot": 8,
+   "key": "fact",
+   "cue_frame": 1314,
+   "onset_frame": 1314,
+   "onset_s": 43.8,
+   "diff_frames": 0
+  },
+  {
+   "shot": 8,
+   "key": "act",
+   "cue_frame": 1338,
+   "onset_frame": 1338,
+   "onset_s": 44.6,
+   "diff_frames": 0
+  },
+  {
+   "shot": 9,
+   "key": "fold",
+   "cue_frame": 1488,
+   "onset_frame": 1488,
+   "onset_s": 49.6,
+   "diff_frames": 0
+  },
+  {
+   "shot": 9,
+   "key": "pick",
+   "cue_frame": 1530,
+   "onset_frame": 1530,
+   "onset_s": 51.0,
+   "diff_frames": 0
+  },
+  {
+   "shot": 10,
+   "key": "place",
+   "cue_frame": 1656,
+   "onset_frame": 1656,
+   "onset_s": 55.2,
+   "diff_frames": 0
+  },
+  {
+   "shot": 10,
+   "key": "slide",
+   "cue_frame": 1704,
+   "onset_frame": 1704,
+   "onset_s": 56.8,
+   "diff_frames": 0
+  },
+  {
+   "shot": 11,
+   "key": "point",
+   "cue_frame": 1854,
+   "onset_frame": 1854,
+   "onset_s": 61.8,
+   "diff_frames": 0
+  },
+  {
+   "shot": 13,
+   "key": "lamp",
+   "cue_frame": 2196,
+   "onset_frame": 2196,
+   "onset_s": 73.2,
+   "diff_frames": 0
+  },
+  {
+   "shot": 14,
+   "key": "settle",
+   "cue_frame": 2370,
+   "onset_frame": 2370,
+   "onset_s": 79.0,
+   "diff_frames": 0
+  },
+  {
+   "shot": 15,
+   "key": "credit",
+   "cue_frame": 2532,
+   "onset_frame": 2532,
+   "onset_s": 84.4,
+   "diff_frames": 0
+  }
+ ],
+ "reading": [
+  {
+   "shot": 1,
+   "text": "白天只是出了错，／晚上怎么否定了人生？",
+   "han": 16,
+   "start": 0.2,
+   "end": 5.6,
+   "window": 5.3999999999999995,
+   "budget": 3.5555555555555554,
+   "need": 3.5555555555555554,
+   "ok": true,
+   "tag": "情境演绎"
+  },
+  {
+   "shot": 2,
+   "text": "一份方案没做好。",
+   "han": 7,
+   "start": 6.4,
+   "end": 11.6,
+   "window": 5.199999999999999,
+   "budget": 2.0,
+   "need": 3.0,
+   "ok": true,
+   "tag": "情境演绎"
+  },
+  {
+   "shot": 3,
+   "text": "怎么变成了：／我什么都做不好？",
+   "han": 12,
+   "start": 12.4,
+   "end": 17.6,
+   "window": 5.200000000000001,
+   "budget": 2.6666666666666665,
+   "need": 3.0,
+   "ok": true,
+   "tag": "情境演绎"
+  },
+  {
+   "shot": 4,
+   "text": "越想，／越像已经有了结论。",
+   "han": 10,
+   "start": 18.4,
+   "end": 23.6,
+   "window": 5.200000000000003,
+   "budget": 2.2222222222222223,
+   "need": 3.0,
+   "ok": true,
+   "tag": "机制示意"
+  },
+  {
+   "shot": 5,
+   "text": "反复想，／等于在解决吗？",
+   "han": 9,
+   "start": 24.4,
+   "end": 29.6,
+   "window": 5.200000000000003,
+   "budget": 2.0,
+   "need": 3.0,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 6,
+   "text": "2008年综述：／反刍与反思并不相同。",
+   "han": 12,
+   "start": 30.4,
+   "end": 35.6,
+   "window": 5.200000000000003,
+   "budget": 2.6666666666666665,
+   "need": 4.466666666666667,
+   "ok": true,
+   "tag": "研究示意"
+  },
+  {
+   "shot": 7,
+   "text": "反刍：／围着痛苦反复打转。",
+   "han": 10,
+   "start": 36.4,
+   "end": 41.6,
+   "window": 5.200000000000003,
+   "budget": 2.2222222222222223,
+   "need": 3.0,
+   "ok": true,
+   "tag": "机制示意"
+  },
+  {
+   "shot": 8,
+   "text": "反思可以走向／具体信息和下一步。",
+   "han": 14,
+   "start": 42.4,
+   "end": 47.6,
+   "window": 5.200000000000003,
+   "budget": 3.111111111111111,
+   "need": 3.111111111111111,
+   "ok": true,
+   "tag": "机制示意"
+  },
+  {
+   "shot": 9,
+   "text": "今晚的判断，／有哪些事实支持？",
+   "han": 12,
+   "start": 48.4,
+   "end": 53.6,
+   "window": 5.200000000000003,
+   "budget": 2.6666666666666665,
+   "need": 3.0,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 10,
+   "text": "先写下：／究竟发生了什么。",
+   "han": 10,
+   "start": 54.4,
+   "end": 59.6,
+   "window": 5.200000000000003,
+   "budget": 2.2222222222222223,
+   "need": 3.0,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 11,
+   "text": "再问一句：／下一步能做什么？",
+   "han": 11,
+   "start": 60.4,
+   "end": 65.6,
+   "window": 5.199999999999996,
+   "budget": 2.4444444444444446,
+   "need": 3.0,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 12,
+   "text": "没有新增信息，／可以先暂停这轮审判。",
+   "han": 15,
+   "start": 66.4,
+   "end": 71.6,
+   "window": 5.199999999999989,
+   "budget": 3.3333333333333335,
+   "need": 3.3333333333333335,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 13,
+   "text": "难受持续影响生活，／也值得寻求支持。",
+   "han": 15,
+   "start": 72.4,
+   "end": 77.6,
+   "window": 5.199999999999989,
+   "budget": 3.3333333333333335,
+   "need": 3.3333333333333335,
+   "ok": true,
+   "tag": "生活提示"
+  },
+  {
+   "shot": 14,
+   "text": "今晚出了点问题，／不等于人生已被判定。",
+   "han": 16,
+   "start": 78.4,
+   "end": 83.6,
+   "window": 5.199999999999989,
+   "budget": 3.5555555555555554,
+   "need": 3.5555555555555554,
+   "ok": true,
+   "tag": "情境演绎"
+  },
+  {
+   "shot": 15,
+   "text": "参考：2008年／《重新思考反刍》综述",
+   "han": 11,
+   "start": 84.4,
+   "end": 89.6,
+   "window": 5.199999999999989,
+   "budget": 2.4444444444444446,
+   "need": 5.0,
+   "ok": true,
+   "tag": "参考资料"
+  }
+ ],
+ "render_seconds": {
+  "vertical": 113.3,
+  "horizontal": 109.7
+ },
+ "ffprobe": {
+  "vertical": {
+   "file": "night_vertical_PREVIEW_noBGM.mp4",
+   "size_mb": 4.58,
+   "duration": 90.0,
+   "video": "h264 1080x1920 yuv420p 30/1 frames=2700",
+   "audio": "aac 48000Hz ch=2"
+  },
+  "horizontal": {
+   "file": "night_horizontal_PREVIEW_noBGM.mp4",
+   "size_mb": 4.31,
+   "duration": 90.0,
+   "video": "h264 1920x1080 yuv420p 30/1 frames=2700",
+   "audio": "aac 48000Hz ch=2"
+  }
+ },
+ "blackdetect": {
+  "vertical": "无",
+  "horizontal": "无"
+ },
+ "loudness_ffmpeg": {
+  "vertical": "{\"I\": \"-24.9 LUFS\", \"Peak\": \"-6.1 dBFS\", \"LRA\": \"17.5 LU\"}",
+  "horizontal": "{\"I\": \"-24.9 LUFS\", \"Peak\": \"-6.1 dBFS\", \"LRA\": \"17.5 LU\"}"
+ },
+ "visual_hits": {
+  "vertical": [
+   {
+    "shot": 1,
+    "key": "surge",
+    "cue_frame": 18,
+    "visual_peak_frame": 18,
+    "diff_frames": 0
+   },
+   {
+    "shot": 2,
+    "key": "frame",
+    "cue_frame": 216,
+    "visual_peak_frame": 216,
+    "diff_frames": 0
+   },
+   {
+    "shot": 3,
+    "key": "cover",
+    "cue_frame": 432,
+    "visual_peak_frame": 432,
+    "diff_frames": 0
+   },
+   {
+    "shot": 4,
+    "key": "lap",
+    "cue_frame": 588,
+    "visual_peak_frame": 588,
+    "diff_frames": 0
+   },
+   {
+    "shot": 6,
+    "key": "merge",
+    "cue_frame": 978,
+    "visual_peak_frame": 978,
+    "diff_frames": 0
+   },
+   {
+    "shot": 7,
+    "key": "door",
+    "cue_frame": 1176,
+    "visual_peak_frame": 1176,
+    "diff_frames": 0
+   },
+   {
+    "shot": 8,
+    "key": "fact",
+    "cue_frame": 1314,
+    "visual_peak_frame": 1315,
+    "diff_frames": 1
+   },
+   {
+    "shot": 8,
+    "key": "act",
+    "cue_frame": 1338,
+    "visual_peak_frame": 1338,
+    "diff_frames": 0
+   },
+   {
+    "shot": 9,
+    "key": "fold",
+    "cue_frame": 1488,
+    "visual_peak_frame": 1488,
+    "diff_frames": 0
+   },
+   {
+    "shot": 10,
+    "key": "place",
+    "cue_frame": 1656,
+    "visual_peak_frame": 1656,
+    "diff_frames": 0
+   },
+   {
+    "shot": 11,
+    "key": "point",
+    "cue_frame": 1854,
+    "visual_peak_frame": 1855,
+    "diff_frames": 1
+   },
+   {
+    "shot": 13,
+    "key": "lamp",
+    "cue_frame": 2196,
+    "visual_peak_frame": 2197,
+    "diff_frames": 1
+   },
+   {
+    "shot": 14,
+    "key": "settle",
+    "cue_frame": 2370,
+    "visual_peak_frame": 2370,
+    "diff_frames": 0
+   },
+   {
+    "shot": 15,
+    "key": "credit",
+    "cue_frame": 2532,
+    "visual_peak_frame": 2532,
+    "diff_frames": 0
+   }
+  ],
+  "horizontal": [
+   {
+    "shot": 1,
+    "key": "surge",
+    "cue_frame": 18,
+    "visual_peak_frame": 18,
+    "diff_frames": 0
+   },
+   {
+    "shot": 2,
+    "key": "frame",
+    "cue_frame": 216,
+    "visual_peak_frame": 216,
+    "diff_frames": 0
+   },
+   {
+    "shot": 3,
+    "key": "cover",
+    "cue_frame": 432,
+    "visual_peak_frame": 432,
+    "diff_frames": 0
+   },
+   {
+    "shot": 4,
+    "key": "lap",
+    "cue_frame": 588,
+    "visual_peak_frame": 588,
+    "diff_frames": 0
+   },
+   {
+    "shot": 6,
+    "key": "merge",
+    "cue_frame": 978,
+    "visual_peak_frame": 978,
+    "diff_frames": 0
+   },
+   {
+    "shot": 7,
+    "key": "door",
+    "cue_frame": 1176,
+    "visual_peak_frame": 1176,
+    "diff_frames": 0
+   },
+   {
+    "shot": 8,
+    "key": "fact",
+    "cue_frame": 1314,
+    "visual_peak_frame": 1315,
+    "diff_frames": 1
+   },
+   {
+    "shot": 8,
+    "key": "act",
+    "cue_frame": 1338,
+    "visual_peak_frame": 1338,
+    "diff_frames": 0
+   },
+   {
+    "shot": 9,
+    "key": "fold",
+    "cue_frame": 1488,
+    "visual_peak_frame": 1488,
+    "diff_frames": 0
+   },
+   {
+    "shot": 10,
+    "key": "place",
+    "cue_frame": 1656,
+    "visual_peak_frame": 1656,
+    "diff_frames": 0
+   },
+   {
+    "shot": 11,
+    "key": "point",
+    "cue_frame": 1854,
+    "visual_peak_frame": 1855,
+    "diff_frames": 1
+   },
+   {
+    "shot": 13,
+    "key": "lamp",
+    "cue_frame": 2196,
+    "visual_peak_frame": 2197,
+    "diff_frames": 1
+   },
+   {
+    "shot": 14,
+    "key": "settle",
+    "cue_frame": 2370,
+    "visual_peak_frame": 2370,
+    "diff_frames": 0
+   },
+   {
+    "shot": 15,
+    "key": "credit",
+    "cue_frame": 2532,
+    "visual_peak_frame": 2532,
+    "diff_frames": 0
+   }
+  ]
+ }
+}

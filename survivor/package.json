@@ -1,0 +1,26 @@
+{
+  "name": "survivor-bias-short",
+  "version": "1.0.0",
+  "private": true,
+  "description": "幸存者偏差竖屏科普短视频（Remotion）",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts SurvivorBias out/survivor_bias.mp4",
+    "still": "remotion still src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "esbuild scripts/check_data.ts --bundle --platform=node --outfile=out/check.js --log-level=warning && node out/check.js",
+    "audio": "python3 scripts/build_audio.py"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.525",
+    "@remotion/cli": "4.0.525",
+    "@remotion/renderer": "^4.0.525",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.525"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "typescript": "5.6.3"
+  }
+}

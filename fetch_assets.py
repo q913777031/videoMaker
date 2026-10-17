@@ -86,13 +86,20 @@ def fetch_emoji(failed: list[str]):
 def fetch_fonts(failed: list[str]):
     FONT_DIR.mkdir(parents=True, exist_ok=True)
     sans = ("Black", "Bold", "Medium", "Regular")
-    serif = ("Black", "Bold", "Medium")
+    serif = ("Black", "Bold", "Medium", "SemiBold")
     files = [(NOTO, f"NotoSansCJKsc-{w}.otf") for w in sans] + [(NOTO_SERIF, f"NotoSerifCJKsc-{w}.otf") for w in serif]
     for base, f in files:
         dst = FONT_DIR / f
         if not dst.exists():
             try:
                 dst.write_bytes(get(base + f))
+            except Exception as ex:
+                failed.append(f"font: {f} ({ex})")
+    for f in ("NotoSerifCJKsc-Black.otf", "NotoSerifCJKsc-Bold.otf"):
+        dst = FONT_DIR / f
+        if not dst.exists():
+            try:
+                dst.write_bytes(get(NOTO_SERIF + f))
             except Exception as ex:
                 failed.append(f"font: {f} ({ex})")
     dst = FONT_DIR / "SmileySans-Oblique.ttf"
