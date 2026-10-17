@@ -1,14 +1,20 @@
-"""用 Pillow 逐帧绘制讲解动画，通过管道交给 FFmpeg 编码为 MP4。
+"""用 Pillow 逐帧绘制讲解动画，配上项目 BGM（场景切换卡在节拍上），通过管道交给 FFmpeg 编码为 MP4。
 
 用法：python3 dyl_video.py [输出路径]
 """
 
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
+import numpy as np
+import soundfile as sf
 from PIL import Image, ImageDraw, ImageFont
+
+from engine import audio, bgm
 
 W, H = 1920, 1080
 FPS = 30
@@ -185,6 +191,18 @@ SCENES = [
 ]
 
 FADE = 0.4
+DROP_SCENE = 3   # 第一个方法（好时光日志）与音乐 drop 对齐
+
+
+def beat_sync() -> tuple[list[float], bgm.Sync]:
+    """把各场景时长吸附到半小节的整数倍（drop 之前的场景向下取整，尽量赶在音乐 drop 之前），并让 DROP_SCENE 从小节线开始、与音乐 drop 对齐；返回 (场景时长, 节拍网格)。"""
+    grid = bgm.analyze()
+    half = grid.bar / 2
+    durs = [max(1, (int if k < DROP_SCENE else round)(s.duration / half)) * half for k, s in enumerate(SCENES)]
+    if round(sum(durs[:DROP_SCENE]) / half) % 2:
+        durs[DROP_SCENE - 1] += half
+    drop_bar = round(sum(durs[:DROP_SCENE]) / grid.bar)
+    return durs, bgm.Sync(offset_bars=max(0, round((grid.drop - grid.t0) / grid.bar) - drop_bar))
 
 
 def render_frame(scene: Scene, t: float) -> bytes:
@@ -198,20 +216,31 @@ def render_frame(scene: Scene, t: float) -> bytes:
 
 
 def main(out_path: str):
-    cmd = ["ffmpeg", "-y", "-loglevel", "error",
-           "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-           "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
-           "-movflags", "+faststart", out_path]
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-    assert proc.stdin is not None
-    try:
-        for scene in SCENES:
-            for i in range(int(scene.duration * FPS)):
-                proc.stdin.write(render_frame(scene, i / FPS))
-    finally:
-        proc.stdin.close()
-    if proc.wait() != 0:
-        raise RuntimeError(f"ffmpeg exited with code {proc.returncode}")
+    durs, sync = beat_sync()
+    for k, scene in enumerate(SCENES):
+        scene.duration = durs[k]
+    starts = np.cumsum([0.0] + durs)
+    n_frames = int(round(starts[-1] * FPS))
+    total = n_frames / FPS
+    n = int(total * audio.SR)
+    mix_ = audio.master(np.zeros(n), sync.track(total), np.zeros((n, 2)))
+    with tempfile.TemporaryDirectory() as tmp:
+        wav = str(Path(tmp) / "bgm.wav")
+        sf.write(wav, mix_, audio.SR)
+        cmd = ["ffmpeg", "-y", "-loglevel", "error",
+               "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-i", wav,
+               "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
+               "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out_path]
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+        assert proc.stdin is not None
+        try:
+            for f in range(n_frames):
+                k = min(len(SCENES) - 1, int(np.searchsorted(starts, f / FPS, side="right")) - 1)
+                proc.stdin.write(render_frame(SCENES[k], f / FPS - starts[k]))
+        finally:
+            proc.stdin.close()
+        if proc.wait() != 0:
+            raise RuntimeError(f"ffmpeg exited with code {proc.returncode}")
     print(f"written: {out_path}")
 
 

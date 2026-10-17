@@ -20,6 +20,11 @@ FONT_FILES = {
     "title": "SmileySans-Oblique.ttf",
     "black": "NotoSansCJKsc-Black.otf",
     "bold": "NotoSansCJKsc-Bold.otf",
+    "sans": "NotoSansCJKsc-Regular.otf",
+    "sans_medium": "NotoSansCJKsc-Medium.otf",
+    "serif": "NotoSerifCJKsc-Bold.otf",
+    "serif_black": "NotoSerifCJKsc-Black.otf",
+    "serif_medium": "NotoSerifCJKsc-Medium.otf",
 }
 SAMPLING = skia.SamplingOptions(skia.CubicResampler.Mitchell())
 CONFETTI = ("#FF5E7E", "#FFD23F", "#3BCEAC", "#4CC9F0", "#B388FF", "#FF9F1C")

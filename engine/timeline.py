@@ -14,7 +14,7 @@ import numpy as np
 import skia
 import soundfile as sf
 
-from . import audio, gfx
+from . import audio, bgm, gfx
 from .gfx import H, W
 
 FPS = 30
@@ -105,6 +105,23 @@ class Ctx:
         return gfx.prog(self.t, self.cue(i) + off, dur)
 
 
+ACCENT_STRONG = ("boom", "impact")
+ACCENT_SOFT = ("glitch", "crack", "pop", "pop2", "ding", "down", "buzz", "heart")
+
+
+def _accent(s: Scene, i: int, dur: float) -> tuple[float, bool]:
+    """第 i 句的重音相对句首的时刻与是否强重音：优先最早的 boom/impact，其次最早的点状音效，都没有时取句首。"""
+    for kinds, strong in ((ACCENT_STRONG, True), (ACCENT_SOFT, False)):
+        ts = []
+        for ev in s.events:
+            if ev.line == i and ev.kind in kinds:
+                n = max(1, len(gfx.plain(s.lines[i].text)))
+                ts.append(dur * min(ev.char or 0, n) / n + ev.offset)
+        if ts:
+            return min(ts), strong
+    return 0.0, False
+
+
 def _event_local(s: Scene, ev: Event) -> float:
     if ev.line < 0:
         return ev.offset
@@ -117,12 +134,19 @@ def _event_local(s: Scene, ev: Event) -> float:
 
 
 class Video:
-    """一条短视频：场景列表 + 调色板 + 配乐段落表。build 负责旁白排时与音频，render 输出 MP4。"""
+    """一条短视频：场景列表 + 调色板 + 配乐自动化表。build 负责旁白卡点排时与音频，render 输出 MP4。
 
-    def __init__(self, scenes: list[Scene], palettes: dict, music: list[tuple[str, int, str]],
-                 voice: str = "zv_yunxi", base_speed: float = 1.05):
-        self.scenes, self.palettes, self.music_plan = scenes, palettes, music
+    配乐固定使用 bgm_path（默认项目内置 music/bgm.m4a）；drop_at 为场景名时，该场景从小节线开始并与音乐 drop 对齐。
+    music 元素为 (场景名, 句序号 -1 为场景开始, "low" | "full"[, 关键词])。
+    """
+
+    def __init__(self, scenes: list[Scene], palettes: dict, music: list[tuple] = (),
+                 voice: str = "zv_yunxi", base_speed: float = 1.05,
+                 bgm_path: str | Path = bgm.DEFAULT_BGM, drop_at: str | None = None):
+        self.scenes, self.palettes, self.music = scenes, palettes, list(music)
         self.voice, self.base_speed = voice, base_speed
+        self.bgm, self.drop_at = bgm_path, drop_at
+        self.sync: bgm.Sync | None = None
         self.total = 0.0
         self.shakes, self.punches, self.flashes, self.glitches = [], [], [], []
         self.audio: np.ndarray | None = None
@@ -130,25 +154,57 @@ class Video:
     # ------------------------------------------------------------ 排时与音频
 
     def build(self, with_audio: bool = True):
-        """逐句合成旁白并排时，解析事件，合成配乐与音效并完成混音。"""
+        """逐句合成旁白并按 BGM 节拍排时（卡点），解析事件，叠加配乐与音效并完成混音。
+
+        卡点规则：场景切换落在半小节线上（可吃掉场景尾部 0.25 秒；drop_at 指定的场景落在小节线，并与音乐 drop 对齐）；
+        每句的重音（boom/impact 落在拍上，其余音效或句首落在半拍上）在"可压缩上一停顿 60%、最多推迟一个网格单位"的窗口内吸附到最近网格点。
+        """
         narrator = audio.Narrator(self.voice)
+        grid = bgm.analyze(self.bgm)
+        sync = bgm.Sync(self.bgm)
+        beat, bar = grid.period, grid.bar
         clips = []
         t0 = 0.0
-        for s in self.scenes:
+        drop_t = None
+        for k, s in enumerate(self.scenes):
+            s.t0 = t0
             s.starts, s.ends = [], []
-            pos = s.lead
-            for ln in s.lines:
+            pos, gap = s.lead, s.lead
+            for i, ln in enumerate(s.lines):
                 x = narrator.generate(gfx.plain(ln.text), self.base_speed * ln.speed)
+                dur = len(x) / audio.SR
+                accent, strong = _accent(s, i, dur)
+                unit = beat if strong else beat / 2
+                want = t0 + pos + accent
+                pos += sync.snap(want, unit, lo=0.6 * gap, hi=unit) - want
                 s.starts.append(pos)
                 clips.append((t0 + pos, x))
-                pos += len(x) / audio.SR
+                pos += dur
                 s.ends.append(pos)
                 pos += ln.pause
-            s.duration = round((s.ends[-1] + max(s.lines[-1].pause, s.tail)) * FPS) / FPS
-            s.t0 = t0
-            t0 += s.duration
+                gap = ln.pause
+            natural = t0 + s.ends[-1] + max(s.lines[-1].pause, s.tail)
+            is_drop = k + 1 < len(self.scenes) and self.scenes[k + 1].name == self.drop_at
+            t1 = sync.next_on(natural - 0.25, bar if is_drop else bar / 2)
+            if is_drop:
+                drop_t = t1
+            s.duration = t1 - t0
+            t0 = t1
         self.total = t0
         del narrator
+
+        offset_bars = 0
+        if drop_t is not None:
+            offset_bars = round((grid.drop - grid.t0) / bar) - round(drop_t / bar)
+            if offset_bars < 0:
+                print(f"warning: drop scene starts at {drop_t:.1f}s, later than music drop; music starts from top")
+                offset_bars = 0
+        sync = bgm.Sync(self.bgm, offset_bars)
+        self.sync = sync
+        for t in sync.downbeats(self.total):
+            self.punches.append((t, 0.012))
+        if drop_t is not None:
+            self.punches.append((drop_t, 0.05))
 
         n = int(self.total * audio.SR) + audio.SR
         voice = np.zeros(n)
@@ -182,13 +238,37 @@ class Video:
                     self.glitches.append((gt, fx["glitch"]))
         if not with_audio:
             return
-        by_name = {s.name: s for s in self.scenes}
-        marks = [(by_name[name].t0 + (by_name[name].starts[i] if i >= 0 else 0), style)
-                 for name, i, style in self.music_plan]
-        sections = [(t, marks[k + 1][0] if k + 1 < len(marks) else self.total, style)
-                    for k, (t, style) in enumerate(marks)]
-        music = audio.compose(sections, self.total + 1)
+        music = self._automate(sync.track(self.total + 1))
         self.audio = audio.master(audio.process_voice(voice), music, sfx_track)[: int(self.total * audio.SR)]
+
+    def _automate(self, music: np.ndarray) -> np.ndarray:
+        """按 music 表做配乐自动化：low 段切到低通闷音（0.5 秒渐入），full 段瞬间恢复全频，制造"收—放"的卡点对比。"""
+        by_name = {s.name: s for s in self.scenes}
+        marks = []
+        for name, i, style, *word in self.music:
+            s = by_name[name]
+            t = s.t0
+            if i >= 0:
+                n = max(1, len(gfx.plain(s.lines[i].text)))
+                char = gfx.plain(s.lines[i].text).find(word[0]) if word else 0
+                if char < 0:
+                    raise ValueError(f"'{word[0]}' not in line {i} of scene {name}")
+                t += s.starts[i] + (s.ends[i] - s.starts[i]) * char / n
+            marks.append((t, style))
+        if not marks:
+            return music
+        mix_ = np.zeros(len(music))
+        for t, style in sorted(marks):
+            i = int(t * audio.SR)
+            ramp = int((0.5 if style == "low" else 0.05) * audio.SR)
+            target = 1.0 if style == "low" else 0.0
+            start = mix_[i - 1] if i > 0 else 0.0
+            seg = np.full(len(mix_) - i, target)
+            seg[:ramp] = np.linspace(start, target, ramp)[: len(seg)]
+            mix_[i:] = seg
+        low = np.stack([audio.lowpass(music[:, ch], 600, 4) for ch in range(2)], axis=1) * 0.8
+        a = mix_[:, None]
+        return music * (1 - a) + low * a
 
     # ------------------------------------------------------------ 画面
 
