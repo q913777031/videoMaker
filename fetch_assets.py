@@ -95,6 +95,13 @@ def fetch_fonts(failed: list[str]):
                 dst.write_bytes(get(base + f))
             except Exception as ex:
                 failed.append(f"font: {f} ({ex})")
+    for f in ("NotoSerifCJKsc-Black.otf", "NotoSerifCJKsc-Bold.otf"):
+        dst = FONT_DIR / f
+        if not dst.exists():
+            try:
+                dst.write_bytes(get(NOTO_SERIF + f))
+            except Exception as ex:
+                failed.append(f"font: {f} ({ex})")
     dst = FONT_DIR / "SmileySans-Oblique.ttf"
     if not dst.exists():
         try:
