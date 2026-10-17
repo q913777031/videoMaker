@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>空调开关实验室</title>
+<style>
+  @font-face { font-family: "MaShanZheng"; src: url("../../assets/fonts/MaShanZheng-Regular.ttf"); }
+  @font-face { font-family: "NotoSerifSC"; src: url("../../assets/fonts/NotoSerifCJKsc-Bold.otf"); font-weight: 700; }
+  @font-face { font-family: "NotoSerifSC"; src: url("../../assets/fonts/NotoSerifCJKsc-Black.otf"); font-weight: 900; }
+  @font-face { font-family: "NotoSansSC"; src: url("../../assets/fonts/NotoSansCJKsc-Medium.otf"); font-weight: 500; }
+  @font-face { font-family: "NotoSansSC"; src: url("../../assets/fonts/NotoSansCJKsc-Bold.otf"); font-weight: 700; }
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #efe6d3; }
+  #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
+  #paper { position: absolute; inset: 0; }
+  #gl { position: absolute; left: 0; top: 0; }
+  #fx { position: absolute; left: 0; top: 0; pointer-events: none; }
+  #ui { position: absolute; inset: 0; pointer-events: none; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "../node_modules/three/build/three.module.js",
+               "three/addons/": "../node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/></filter>
+</svg>
+<div id="stage">
+  <canvas id="paper" width="1080" height="1920"></canvas>
+  <canvas id="gl" width="1080" height="1920"></canvas>
+  <canvas id="fx" width="1080" height="1920"></canvas>
+  <div id="ui"></div>
+</div>
+<script type="module" src="./main.js"></script>
+</body>
+</html>

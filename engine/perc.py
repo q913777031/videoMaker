@@ -1,4 +1,5 @@
-"""打击乐音效合成：低音鼓、军鼓边击、木块、沙锤、框鼓、低音通鼓、邦戈鼓、拍手、轻柔吊镲。
+"""打击乐音效合成：低音鼓、军鼓边击、木块、沙锤、框鼓、低音通鼓、邦戈鼓、拍手、轻柔吊镲；
+以及中国打击乐：堂鼓、大鼓、大锣、小锣、铙钹、梆子、木鱼、编钟。
 
 设计取向：
 - 每种音色都带 1–5 kHz 的起音成分，手机扬声器（低频截止约 200 Hz）上也能分辨；
@@ -135,6 +136,103 @@ def cymbal(dur: float = 2.6) -> np.ndarray:
     return _peak(_fade(y, 0.0, 0.3), 0.35)
 
 
+# ---------------------------------------------------------------- 中国打击乐
+
+def tanggu() -> np.ndarray:
+    """堂鼓：牛皮鼓面、鼓槌击中心，约 175 Hz 起音后轻微下滑，带 1.59 / 2.14 倍膜振动泛音与 2–5 kHz 槌击声，尾音约 0.45 秒。"""
+    t = _t(0.7)
+    f0 = 168 * (1 + 0.12 * np.exp(-t * 35))
+    ph = 2 * np.pi * np.cumsum(f0) / SR
+    y = np.sin(ph) * np.exp(-t / 0.16) + 0.55 * np.sin(1.59 * ph) * np.exp(-t / 0.09)
+    y += 0.35 * np.sin(2.14 * ph) * np.exp(-t / 0.06) + 0.2 * np.sin(2.65 * ph) * np.exp(-t / 0.045)
+    y += bandpass(_noise(len(t), 121), 900, 3200) * np.exp(-t / 0.025) * 2.4
+    y += bandpass(_noise(len(t), 122), 2000, 6000) * np.exp(-t / 0.004) * 0.9
+    return _peak(_fade(np.tanh(1.3 * y), 0.0, 0.08), 0.85)
+
+
+def dagu() -> np.ndarray:
+    """大鼓：大面积鼓皮，约 78 Hz 基频、低频饱满，起音带 1.2 kHz 槌声保证手机上可辨，尾音约 0.8 秒。"""
+    t = _t(1.1)
+    f0 = 74 * (1 + 0.18 * np.exp(-t * 18))
+    ph = 2 * np.pi * np.cumsum(f0) / SR
+    y = np.sin(ph) * np.exp(-t / 0.32) + 0.5 * np.sin(1.5 * ph) * np.exp(-t / 0.15)
+    y += 0.35 * np.sin(2.3 * ph) * np.exp(-t / 0.08)
+    y += bandpass(_noise(len(t), 123), 500, 1800) * np.exp(-t / 0.03) * 3.0
+    y += bandpass(_noise(len(t), 124), 1800, 4500) * np.exp(-t / 0.005) * 0.7
+    return _peak(_fade(np.tanh(1.6 * y), 0.0, 0.12), 0.9)
+
+
+def _metal(t, freqs, amps, decays, bend=0.0, bend_t=0.15, seed=0, shimmer=0.0):
+    """锣钹类金属体：非谐振分音之和，可带整体音高滑动（bend 为相对变化量）与缓慢拍频（shimmer）。"""
+    rng = np.random.default_rng(seed)
+    k = 1 + bend * (1 - np.exp(-t / bend_t))
+    y = np.zeros(len(t))
+    for f, a, d in zip(freqs, amps, decays):
+        ph = 2 * np.pi * np.cumsum(f * k) / SR + rng.random() * 6.28
+        am = 1 + shimmer * np.sin(2 * np.pi * (0.7 + 2.3 * rng.random()) * t + rng.random() * 6.28)
+        y += a * np.sin(ph) * np.exp(-t / d) * am
+    return y
+
+
+def daluo() -> np.ndarray:
+    """大锣：约 210 Hz 的深沉锣声，起音后音高略降，泛音缓慢拍动，尾音约 2.5 秒；起音带槌击噪声。"""
+    t = _t(3.0)
+    base = 210
+    ratios = (1.0, 1.52, 2.03, 2.48, 2.97, 3.61, 4.4, 5.3)
+    y = _metal(t, [base * r for r in ratios], (1, .7, .55, .45, .35, .25, .18, .12),
+               (1.1, .8, .65, .5, .4, .3, .22, .16), bend=-0.035, bend_t=0.4, seed=131, shimmer=0.25)
+    y += bandpass(_noise(len(t), 132), 400, 2500) * np.exp(-t / 0.02) * 1.6
+    y = lowpass(y, 6500)
+    return _peak(_fade(y, 0.0, 0.4), 0.8)
+
+
+def xiaoluo() -> np.ndarray:
+    """小锣（京剧“台”）：约 760 Hz 起音后音高上扬约 9%，明亮短促，尾音约 0.9 秒。"""
+    t = _t(1.2)
+    base = 760
+    y = _metal(t, [base, base * 1.48, base * 2.1, base * 2.9], (1, .45, .25, .12), (.35, .2, .12, .07),
+               bend=0.09, bend_t=0.12, seed=133)
+    y += bandpass(_noise(len(t), 134), 2000, 7000) * np.exp(-t / 0.006) * 0.6
+    return _peak(_fade(y, 0.0, 0.15), 0.7)
+
+
+def naobo() -> np.ndarray:
+    """铙钹：两片对击的“嚓”声，3–9 kHz 噪声爆发 + 金属分音，经 9 kHz 低通去刺，尾音约 1.2 秒。"""
+    t = _t(1.5)
+    n = bandpass(_noise(len(t), 135), 2800, 9000, 2)
+    env = np.minimum(1, t / 0.002) * (0.65 * np.exp(-t / 0.05) + 0.35 * np.exp(-t / 0.45))
+    y = n * env + bandpass(_noise(len(t), 143), 1500, 6000) * np.exp(-t / 0.003) * 2.5
+    y += 0.35 * _metal(t, [430 * r for r in (1, 1.71, 2.53, 3.37, 4.6, 5.9)], (1, .8, .7, .5, .4, .3),
+                       (.5, .4, .32, .25, .2, .15), seed=136)
+    y = lowpass(y, 9000)
+    return _peak(_fade(y, 0.0, 0.3), 0.6)
+
+
+def bangzi() -> np.ndarray:
+    """梆子：硬木对击，约 2.1 kHz 主共振、极短（约 70 ms），起音清脆。"""
+    t = _t(0.1)
+    y = _modes(t, (2100, 3400, 5200), (1.0, 0.35, 0.15), (0.022, 0.009, 0.005), 137)
+    y += bandpass(_noise(len(t), 138), 3000, 8000) * np.exp(-t / 0.0018) * 0.5
+    return _peak(_fade(y, 0.0, 0.015), 0.7)
+
+
+def muyu() -> np.ndarray:
+    """木鱼：空腔木器“笃”声，约 620 Hz 空腔共振 + 1.9 kHz 木质泛音，尾音约 0.12 秒。"""
+    t = _t(0.18)
+    y = _modes(t, (620, 1880, 2950), (1.0, 0.5, 0.18), (0.045, 0.014, 0.007), 139)
+    y += bandpass(_noise(len(t), 140), 1500, 5000) * np.exp(-t / 0.002) * 0.35
+    return _peak(_fade(y, 0.0, 0.03), 0.7)
+
+
+def bianzhong() -> np.ndarray:
+    """编钟：青铜钟“一钟双音”，正鼓音约 523 Hz、侧鼓音约 659 Hz，加钟体高次分音，尾音约 2 秒。"""
+    t = _t(2.4)
+    y = _metal(t, (523, 659, 1210, 1580, 2470, 3300), (1, .6, .35, .25, .12, .06), (1.0, .8, .4, .3, .16, .1),
+               seed=141, shimmer=0.08)
+    y += bandpass(_noise(len(t), 142), 1500, 5000) * np.exp(-t / 0.004) * 0.4
+    return _peak(_fade(y, 0.0, 0.35), 0.65)
+
+
 @functools.lru_cache(maxsize=32)
 def sound(name: str) -> np.ndarray:
     """按名称取音效（单声道）。名称见 TIMBRES。"""
@@ -143,6 +241,8 @@ def sound(name: str) -> np.ndarray:
         "wood_high": lambda: woodblock("high"), "wood_low": lambda: woodblock("low"), "shaker": shaker,
         "frame": frame_drum, "tom": low_tom, "bongo_high": lambda: bongo("high"),
         "bongo_low": lambda: bongo("low"), "clap": clap, "cymbal": cymbal,
+        "tanggu": tanggu, "dagu": dagu, "daluo": daluo, "xiaoluo": xiaoluo, "naobo": naobo,
+        "bangzi": bangzi, "muyu": muyu, "bianzhong": bianzhong,
     }
     return table[name]()
 
@@ -152,6 +252,8 @@ TIMBRES = {
     "wood_high": "木块（高）", "wood_low": "木块（低）", "shaker": "沙锤", "frame": "框鼓",
     "tom": "低音通鼓", "bongo_high": "邦戈鼓（高）", "bongo_low": "邦戈鼓（低）", "clap": "拍手",
     "cymbal": "轻柔吊镲",
+    "tanggu": "堂鼓", "dagu": "大鼓", "daluo": "大锣", "xiaoluo": "小锣", "naobo": "铙钹", "bangzi": "梆子",
+    "muyu": "木鱼", "bianzhong": "编钟",
 }
 
 

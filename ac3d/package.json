@@ -1,0 +1,8 @@
+{
+  "name": "ac3d",
+  "private": true,
+  "description": "国风 3D 科普短片《空调频繁开关省电，还是一直开着省电？》的逐帧渲染器",
+  "dependencies": {
+    "three": "0.169.0"
+  }
+}
