@@ -1,0 +1,823 @@
+{
+ "generated": "2026-10-17 08:44:14",
+ "music": {
+  "path": "/home/user/videoMaker/music/bgm.m4a",
+  "duration": 89.999,
+  "sample_rate": 44100,
+  "channels": 1,
+  "codec": "aac",
+  "segment": [
+   0.0,
+   89.999
+  ],
+  "tempo_candidates": [
+   [
+    4.021333333333334,
+    113.2
+   ],
+   [
+    8.021333333333333,
+    113.2
+   ],
+   [
+    12.021333333333333,
+    113.2
+   ],
+   [
+    16.021333333333335,
+    113.2
+   ],
+   [
+    20.021333333333335,
+    113.2
+   ],
+   [
+    24.021333333333335,
+    113.2
+   ],
+   [
+    28.021333333333335,
+    113.2
+   ],
+   [
+    32.02133333333333,
+    113.2
+   ],
+   [
+    36.02133333333333,
+    113.2
+   ],
+   [
+    40.02133333333333,
+    113.2
+   ],
+   [
+    44.02133333333333,
+    113.2
+   ],
+   [
+    48.02133333333333,
+    113.2
+   ],
+   [
+    52.02133333333333,
+    113.2
+   ],
+   [
+    56.02133333333333,
+    113.2
+   ],
+   [
+    60.02133333333333,
+    113.2
+   ],
+   [
+    64.02133333333333,
+    113.2
+   ],
+   [
+    68.02133333333333,
+    113.2
+   ],
+   [
+    72.02133333333333,
+    113.2
+   ],
+   [
+    76.02133333333333,
+    113.2
+   ],
+   [
+    80.02133333333333,
+    113.2
+   ],
+   [
+    84.02133333333333,
+    113.2
+   ]
+  ],
+  "grid": {
+   "bpm": 112.91,
+   "beat_s": 0.5314,
+   "first_beat_s": 0.1,
+   "downbeat_phase": 0,
+   "phase_low_energy": [
+    0.3465,
+    0.2944,
+    0.1968,
+    0.301
+   ],
+   "phase_chroma_novelty": [
+    0.1001,
+    0.0354,
+    0.0243,
+    0.0584
+   ],
+   "phase_onset": [
+    0.637,
+    0.677,
+    0.793,
+    0.516
+   ],
+   "drift_ms_per_15s": [
+    -2.6,
+    -1.6,
+    0.1,
+    1.0,
+    -0.5,
+    -3.0
+   ],
+   "sections": [
+    17.105
+   ]
+  },
+  "notes": [
+   "原曲时长 90.00s 位于 87–93s，整曲使用。",
+   "节拍网格：112.91 BPM（拍长 0.5314s），首拍 0.100s；按 15 秒窗口统计网格与强起音中位偏差 [-2.6, -1.6, 0.1, 1.0, -0.5, -3.0] ms。重拍（第 1 拍）由四相位中低频能量与和声变化得分之和最高者判定。",
+   "相对重音强度 = 片段内谱通量（减局部中值）÷ 片段第 99 百分位，截断到 0–1。",
+   "未进行人工试听；拍点、乐句与情绪判断仅来自信号分析，置信度按强度分级。"
+  ],
+  "fade_out": [
+   87.25,
+   90.0
+  ]
+ },
+ "mix_measured": {
+  "integrated_lufs": -16.0,
+  "true_peak_dbtp": -3.58,
+  "music_lufs": -16.01
+ },
+ "sfx_onset_check": [
+  {
+   "shot": 1,
+   "key": "pass",
+   "cue_frame": 67,
+   "onset_frame": 67,
+   "onset_s": 2.2256,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  },
+  {
+   "shot": 2,
+   "key": "plan",
+   "cue_frame": 258,
+   "onset_frame": 258,
+   "onset_s": 8.6024,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
+  },
+  {
+   "shot": 3,
+   "key": "drop1",
+   "cue_frame": 386,
+   "onset_frame": 386,
+   "onset_s": 12.8536,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  },
+  {
+   "shot": 3,
+   "key": "drop2",
+   "cue_frame": 449,
+   "onset_frame": 449,
+   "onset_s": 14.9792,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  },
+  {
+   "shot": 4,
+   "key": "dream",
+   "cue_frame": 577,
+   "onset_frame": 577,
+   "onset_s": 19.2304,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
+  },
+  {
+   "shot": 6,
+   "key": "merge",
+   "cue_frame": 960,
+   "onset_frame": 960,
+   "onset_s": 31.984,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  },
+  {
+   "shot": 7,
+   "key": "study",
+   "cue_frame": 1151,
+   "onset_frame": 1151,
+   "onset_s": 38.3608,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
+  },
+  {
+   "shot": 7,
+   "key": "chore",
+   "cue_frame": 1215,
+   "onset_frame": 1215,
+   "onset_s": 40.4864,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
+  },
+  {
+   "shot": 9,
+   "key": "gaze",
+   "cue_frame": 1470,
+   "onset_frame": 1470,
+   "onset_s": 48.9888,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
+  },
+  {
+   "shot": 9,
+   "key": "future",
+   "cue_frame": 1533,
+   "onset_frame": 1533,
+   "onset_s": 51.1144,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
+  },
+  {
+   "shot": 10,
+   "key": "link",
+   "cue_frame": 1661,
+   "onset_frame": 1661,
+   "onset_s": 55.3656,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  },
+  {
+   "shot": 11,
+   "key": "pull",
+   "cue_frame": 1852,
+   "onset_frame": 1852,
+   "onset_s": 61.7424,
+   "diff_frames": 0,
+   "vs_beat_ms": -0.0
+  },
+  {
+   "shot": 12,
+   "key": "buffer",
+   "cue_frame": 2044,
+   "onset_frame": 2044,
+   "onset_s": 68.1192,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  },
+  {
+   "shot": 13,
+   "key": "lamp",
+   "cue_frame": 2235,
+   "onset_frame": 2235,
+   "onset_s": 74.496,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  },
+  {
+   "shot": 14,
+   "key": "settle",
+   "cue_frame": 2362,
+   "onset_frame": 2362,
+   "onset_s": 78.7472,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  },
+  {
+   "shot": 15,
+   "key": "credit",
+   "cue_frame": 2522,
+   "onset_frame": 2522,
+   "onset_s": 84.0612,
+   "diff_frames": 0,
+   "vs_beat_ms": 0.0
+  }
+ ],
+ "boundaries": [
+  null,
+  {
+   "shot": 2,
+   "start": 5.933,
+   "dur": 5.867,
+   "beat_pos": 4,
+   "why": "最近拍"
+  },
+  {
+   "shot": 3,
+   "start": 11.8,
+   "dur": 5.3,
+   "beat_pos": 3,
+   "why": "次强拍"
+  },
+  {
+   "shot": 4,
+   "start": 17.1,
+   "dur": 6.9,
+   "beat_pos": 1,
+   "why": "段落起点重拍"
+  },
+  {
+   "shot": 5,
+   "start": 24.0,
+   "dur": 5.867,
+   "beat_pos": 2,
+   "why": "最近拍"
+  },
+  {
+   "shot": 6,
+   "start": 29.867,
+   "dur": 6.367,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 7,
+   "start": 36.233,
+   "dur": 5.833,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 8,
+   "start": 42.067,
+   "dur": 5.867,
+   "beat_pos": 4,
+   "why": "最近拍"
+  },
+  {
+   "shot": 9,
+   "start": 47.933,
+   "dur": 6.367,
+   "beat_pos": 3,
+   "why": "次强拍"
+  },
+  {
+   "shot": 10,
+   "start": 54.3,
+   "dur": 5.833,
+   "beat_pos": 3,
+   "why": "次强拍"
+  },
+  {
+   "shot": 11,
+   "start": 60.133,
+   "dur": 5.867,
+   "beat_pos": 2,
+   "why": "最近拍"
+  },
+  {
+   "shot": 12,
+   "start": 66.0,
+   "dur": 6.367,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 13,
+   "start": 72.367,
+   "dur": 5.333,
+   "beat_pos": 1,
+   "why": "小节重拍"
+  },
+  {
+   "shot": 14,
+   "start": 77.7,
+   "dur": 6.367,
+   "beat_pos": 3,
+   "why": "次强拍"
+  },
+  {
+   "shot": 15,
+   "start": 84.067,
+   "dur": 5.933,
+   "beat_pos": 3,
+   "why": "次强拍"
+  }
+ ],
+ "reading": [
+  {
+   "shot": 1,
+   "text": "说好周五交，／怎么又拖到下周？",
+   "han": 12,
+   "start": 0.2,
+   "end": 5.533333333333333,
+   "window": 5.333333333333333,
+   "budget": 2.6666666666666665,
+   "need": 3.0,
+   "ok": true,
+   "tag": "情境演绎"
+  },
+  {
+   "shot": 2,
+   "text": "开工时，／明明觉得时间够用。",
+   "han": 11,
+   "start": 6.333333333333334,
+   "end": 11.4,
+   "window": 5.066666666666666,
+   "budget": 2.4444444444444446,
+   "need": 3.0,
+   "ok": true,
+   "tag": "情境演绎"
+  },
+  {
+   "shot": 3,
+   "text": "做着做着，／意外一件接一件。",
+   "han": 11,
+   "start": 12.200000000000001,
+   "end": 16.700000000000003,
+   "window": 4.500000000000002,
+   "budget": 2.4444444444444446,
+   "need": 3.0,
+   "ok": true,
+   "tag": "情境演绎"
+  },
+  {
+   "shot": 4,
+   "text": "估算时，／脑子里只有顺利剧本。",
+   "han": 12,
+   "start": 17.5,
+   "end": 23.6,
+   "window": 6.100000000000001,
+   "budget": 2.6666666666666665,
+   "need": 3.0,
+   "ok": true,
+   "tag": "机制示意"
+  },
+  {
+   "shot": 5,
+   "text": "上次类似的事，／你花了多久？",
+   "han": 11,
+   "start": 24.4,
+   "end": 29.46666666666667,
+   "window": 5.06666666666667,
+   "budget": 2.4444444444444446,
+   "need": 3.0,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 6,
+   "text": "1994年研究：／常把用时估得太短。",
+   "han": 11,
+   "start": 30.266666666666666,
+   "end": 35.833333333333336,
+   "window": 5.56666666666667,
+   "budget": 2.4444444444444446,
+   "need": 4.2444444444444445,
+   "ok": true,
+   "tag": "研究示意"
+  },
+  {
+   "shot": 7,
+   "text": "学业和非学业任务，／都出现这种偏差。",
+   "han": 15,
+   "start": 36.63333333333333,
+   "end": 41.66666666666667,
+   "window": 5.0333333333333385,
+   "budget": 3.3333333333333335,
+   "need": 4.333333333333334,
+   "ok": true,
+   "tag": "研究示意"
+  },
+  {
+   "shot": 8,
+   "text": "这叫计划谬误：／总按理想剧本估时间。",
+   "han": 15,
+   "start": 42.46666666666667,
+   "end": 47.53333333333333,
+   "window": 5.066666666666663,
+   "budget": 3.3333333333333335,
+   "need": 4.333333333333334,
+   "ok": true,
+   "tag": "机制示意"
+  },
+  {
+   "shot": 9,
+   "text": "预测时多想未来，／很少翻看过去的经验。",
+   "han": 16,
+   "start": 48.33333333333333,
+   "end": 53.9,
+   "window": 5.56666666666667,
+   "budget": 3.5555555555555554,
+   "need": 4.555555555555555,
+   "ok": true,
+   "tag": "机制示意"
+  },
+  {
+   "shot": 10,
+   "text": "对照过往经验后，／这种乐观偏差消失了。",
+   "han": 16,
+   "start": 54.699999999999996,
+   "end": 59.733333333333334,
+   "window": 5.0333333333333385,
+   "budget": 3.5555555555555554,
+   "need": 4.555555555555555,
+   "ok": true,
+   "tag": "研究示意"
+  },
+  {
+   "shot": 11,
+   "text": "下次估时间前，／先翻翻上次的记录。",
+   "han": 14,
+   "start": 60.53333333333333,
+   "end": 65.6,
+   "window": 5.066666666666663,
+   "budget": 3.111111111111111,
+   "need": 3.111111111111111,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 12,
+   "text": "再给意外，／留一段空白。",
+   "han": 9,
+   "start": 66.4,
+   "end": 71.96666666666665,
+   "window": 5.566666666666649,
+   "budget": 2.0,
+   "need": 3.0,
+   "ok": true,
+   "tag": "反思练习"
+  },
+  {
+   "shot": 13,
+   "text": "长期被截止日压垮，／也值得和人一起商量。",
+   "han": 17,
+   "start": 72.76666666666667,
+   "end": 77.3,
+   "window": 4.533333333333331,
+   "budget": 3.7777777777777777,
+   "need": 3.7777777777777777,
+   "ok": true,
+   "tag": "生活提示"
+  },
+  {
+   "shot": 14,
+   "text": "拖了不等于你不行，／可能只是估得太乐观。",
+   "han": 17,
+   "start": 78.10000000000001,
+   "end": 83.66666666666666,
+   "window": 5.566666666666649,
+   "budget": 3.7777777777777777,
+   "need": 3.7777777777777777,
+   "ok": true,
+   "tag": "情境演绎"
+  },
+  {
+   "shot": 15,
+   "text": "参考：1994年／《探索计划谬误》论文",
+   "han": 11,
+   "start": 84.46666666666667,
+   "end": 89.6,
+   "window": 5.133333333333326,
+   "budget": 2.4444444444444446,
+   "need": 5.0,
+   "ok": true,
+   "tag": "参考资料"
+  }
+ ],
+ "render_seconds": {
+  "vertical": 102.5,
+  "horizontal": 99.2
+ },
+ "ffprobe": {
+  "vertical": {
+   "file": "planning_vertical.mp4",
+   "size_mb": 5.18,
+   "duration": 90.0,
+   "video": "h264 1080x1920 yuv420p 30/1 frames=2700",
+   "audio": "aac 48000Hz ch=2"
+  },
+  "horizontal": {
+   "file": "planning_horizontal.mp4",
+   "size_mb": 4.97,
+   "duration": 90.0,
+   "video": "h264 1920x1080 yuv420p 30/1 frames=2700",
+   "audio": "aac 48000Hz ch=2"
+  }
+ },
+ "blackdetect": {
+  "vertical": "无",
+  "horizontal": "无"
+ },
+ "loudness_ffmpeg": {
+  "vertical": "{\"I\": \"-16.0 LUFS\", \"Peak\": \"-3.9 dBFS\", \"LRA\": \"3.2 LU\"}",
+  "horizontal": "{\"I\": \"-16.0 LUFS\", \"Peak\": \"-3.9 dBFS\", \"LRA\": \"3.2 LU\"}"
+ },
+ "visual_hits": {
+  "vertical": [
+   {
+    "shot": 1,
+    "key": "pass",
+    "cue_frame": 67,
+    "visual_peak_frame": 67,
+    "diff_frames": 0
+   },
+   {
+    "shot": 2,
+    "key": "plan",
+    "cue_frame": 258,
+    "visual_peak_frame": 259,
+    "diff_frames": 1
+   },
+   {
+    "shot": 3,
+    "key": "drop2",
+    "cue_frame": 449,
+    "visual_peak_frame": 450,
+    "diff_frames": 1
+   },
+   {
+    "shot": 4,
+    "key": "dream",
+    "cue_frame": 577,
+    "visual_peak_frame": 578,
+    "diff_frames": 1
+   },
+   {
+    "shot": 6,
+    "key": "merge",
+    "cue_frame": 960,
+    "visual_peak_frame": 961,
+    "diff_frames": 1
+   },
+   {
+    "shot": 7,
+    "key": "study",
+    "cue_frame": 1151,
+    "visual_peak_frame": 1151,
+    "diff_frames": 0
+   },
+   {
+    "shot": 7,
+    "key": "chore",
+    "cue_frame": 1215,
+    "visual_peak_frame": 1215,
+    "diff_frames": 0
+   },
+   {
+    "shot": 8,
+    "key": "name",
+    "cue_frame": 1342,
+    "visual_peak_frame": 1343,
+    "diff_frames": 1
+   },
+   {
+    "shot": 9,
+    "key": "future",
+    "cue_frame": 1533,
+    "visual_peak_frame": 1533,
+    "diff_frames": 0
+   },
+   {
+    "shot": 10,
+    "key": "link",
+    "cue_frame": 1661,
+    "visual_peak_frame": 1661,
+    "diff_frames": 0
+   },
+   {
+    "shot": 11,
+    "key": "pull",
+    "cue_frame": 1852,
+    "visual_peak_frame": 1852,
+    "diff_frames": 0
+   },
+   {
+    "shot": 12,
+    "key": "buffer",
+    "cue_frame": 2044,
+    "visual_peak_frame": 2044,
+    "diff_frames": 0
+   },
+   {
+    "shot": 13,
+    "key": "lamp",
+    "cue_frame": 2235,
+    "visual_peak_frame": 2235,
+    "diff_frames": 0
+   },
+   {
+    "shot": 14,
+    "key": "settle",
+    "cue_frame": 2362,
+    "visual_peak_frame": 2362,
+    "diff_frames": 0
+   },
+   {
+    "shot": 15,
+    "key": "credit",
+    "cue_frame": 2522,
+    "visual_peak_frame": 2522,
+    "diff_frames": 0
+   }
+  ],
+  "horizontal": [
+   {
+    "shot": 1,
+    "key": "pass",
+    "cue_frame": 67,
+    "visual_peak_frame": 67,
+    "diff_frames": 0
+   },
+   {
+    "shot": 2,
+    "key": "plan",
+    "cue_frame": 258,
+    "visual_peak_frame": 259,
+    "diff_frames": 1
+   },
+   {
+    "shot": 3,
+    "key": "drop2",
+    "cue_frame": 449,
+    "visual_peak_frame": 450,
+    "diff_frames": 1
+   },
+   {
+    "shot": 4,
+    "key": "dream",
+    "cue_frame": 577,
+    "visual_peak_frame": 578,
+    "diff_frames": 1
+   },
+   {
+    "shot": 6,
+    "key": "merge",
+    "cue_frame": 960,
+    "visual_peak_frame": 961,
+    "diff_frames": 1
+   },
+   {
+    "shot": 7,
+    "key": "study",
+    "cue_frame": 1151,
+    "visual_peak_frame": 1151,
+    "diff_frames": 0
+   },
+   {
+    "shot": 7,
+    "key": "chore",
+    "cue_frame": 1215,
+    "visual_peak_frame": 1215,
+    "diff_frames": 0
+   },
+   {
+    "shot": 8,
+    "key": "name",
+    "cue_frame": 1342,
+    "visual_peak_frame": 1343,
+    "diff_frames": 1
+   },
+   {
+    "shot": 9,
+    "key": "future",
+    "cue_frame": 1533,
+    "visual_peak_frame": 1533,
+    "diff_frames": 0
+   },
+   {
+    "shot": 10,
+    "key": "link",
+    "cue_frame": 1661,
+    "visual_peak_frame": 1661,
+    "diff_frames": 0
+   },
+   {
+    "shot": 11,
+    "key": "pull",
+    "cue_frame": 1852,
+    "visual_peak_frame": 1852,
+    "diff_frames": 0
+   },
+   {
+    "shot": 12,
+    "key": "buffer",
+    "cue_frame": 2044,
+    "visual_peak_frame": 2044,
+    "diff_frames": 0
+   },
+   {
+    "shot": 13,
+    "key": "lamp",
+    "cue_frame": 2235,
+    "visual_peak_frame": 2235,
+    "diff_frames": 0
+   },
+   {
+    "shot": 14,
+    "key": "settle",
+    "cue_frame": 2362,
+    "visual_peak_frame": 2362,
+    "diff_frames": 0
+   },
+   {
+    "shot": 15,
+    "key": "credit",
+    "cue_frame": 2522,
+    "visual_peak_frame": 2522,
+    "diff_frames": 0
+   }
+  ]
+ }
+}

@@ -57,6 +57,7 @@ cp -r topics/_template topics/<slug>
   - 不要让 `ease_io` 或 `ease_out` 的主体运动跨在撞击点之前；不要在撞击前做大面积的透明度渐变。
   - 暗色物体落定时，配一个光晕脉冲，否则帧差不明显。
 - 每 4–8 秒至少有一个有解释作用的物体变化；字幕阅读期间文字不漂浮、不缩放。
+- 通用镜头可直接调用：研究段用 `review_merge`（论文汇成综述），求助提示用 `pendant_talk`（吊灯下两人对坐）。
 
 ## 5. 抽帧检查（快，约 0.03 秒/帧）
 
@@ -65,6 +66,9 @@ python3 -m kepu.build --topic <slug> --stills 0.1,9,33,57,87    # 输出 out/<sl
 ```
 
 用 Read 查看拼图：字幕是否溢出、关键物体是否落在安全区（竖屏 x 90–920、y 180–1580；横屏四边各留 80）、人物与道具是否穿帮。
+
+- 构建与抽帧前会自动检查主字幕宽度，超出安全区直接报错。竖屏主字 80px 时**每行最多 10 个字（含标点）**。中文引号在宋体里会留出明显空白，主字幕尽量不用引号。
+- 小拼图看不清时，用 `render.still()` 按单帧放大检查。半身像 `bust` 在 `look=±1` 时发型弧线不好看，群像和远景优先用 `look=0`。
 
 ## 6. 构建成片
 
@@ -97,7 +101,7 @@ python3 -m kepu.build --topic <slug>      # 4 核约 4 分钟；--only vertical 
 
 ## 8. 交付
 
-1. 在 `plans/topics_registry.md` 登记本片。`cp -r out/<slug> deliverables/<slug>/`，写 `DELIVERY.md`，分“已渲染 / 已核验 / 未完成”三段，可参考 `deliverables/night_rumination/DELIVERY.md`。数值一律来自 `verify_report.json`，不把目标值写成实测值。
+1. 在 `plans/topics_registry.md` 登记本片。构建结束时会根据 `verify_report.json` 和 `cue_table.csv` 自动生成 `DELIVERY.md`；只想重写说明时用 `--delivery-only`。核对无误后执行 `cp -r out/<slug> deliverables/<slug>/`（删掉 `stills.png`）。
 2. 写明没做人工试听、没在手机上实听。原曲是否含人声也无法确认。
 3. 提交并推送；用 SendUserFile 发送两个 MP4、`cue_table.csv` 和 `DELIVERY.md`。
 4. 回复用户时，先给结论，再按“原曲分析 / 卡点 / 需要你确认”三段说明，列出不在重拍上的撞击事件及原因。

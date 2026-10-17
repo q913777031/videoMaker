@@ -1,0 +1,14 @@
+参考资料
+
+Thomas Gilovich, Kenneth Savitsky, Victoria Husted Medvec (1998).
+The illusion of transparency: Biased assessments of others' ability to read one's emotional states.
+Journal of Personality and Social Psychology, 75(2), 332–346.
+
+核验范围
+- 制作环境的网络策略拒绝直接访问 APA、doi.org 等站点；书目信息与以下结论经网络搜索结果（学术机构文献页、
+  综述与百科条目）核对，未读到摘要原文与全文。
+- 片中使用的结论仅限：人们倾向于高估自己的内心状态（想法、感受）被他人看出的程度，即“透明度错觉”。
+- 未核验、未进片：各子研究的具体程序与比例（如说谎实验中“自认被识破”与“实际被识破”的比例，只见于二手转述）。
+- 片中面试场景为情境演绎；镜头 07 两框中心形的亮度只是“自己以为更明显”的示意，不代表论文数据。
+- 本片不主张“别人完全看不出你紧张”。“先问证据 / 把注意力放回问题”属于反思练习，不替代专业帮助。
+- 年份 1998 为文献发表年份。

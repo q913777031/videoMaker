@@ -460,3 +460,229 @@ def slider(c, x0, x1, y, k, stop=None, stop_k=0.0):
         c.drawRRect(d.rrect(sx + 14, y, 10, 70, 4), d.fill(d.mix("#3A3833", GOLD, stop_k)))
     c.drawCircle(kx, y, 18, d.fill(d.WHITE))
     c.drawCircle(kx, y, 18, d.stroke(GOLD, 3))
+
+
+# ---------------------------------------------------------------- 通用镜头：综述汇合、吊灯下对坐
+
+def review_merge(c, t, m, view):
+    """多篇论文缩略页从四周飞来，在 m 时刻汇合成一本综述（研究段通用镜头，m 为撞击时刻）。"""
+    d.backdrop(c, view)
+    for i, (x, y, rot, depth, delay) in enumerate(THUMBS):
+        k = d.ease_in(d.prog(t, 0.2 + delay, m - 0.2 - delay))
+        if k >= 1:
+            continue
+        px, py = d.lerp(x, 500, k), d.lerp(y, 520, k)
+        s = depth * (1 - 0.3 * k)
+        blur_far = depth < 0.85
+        c.save()
+        if blur_far:
+            c.saveLayerAlpha(None, 200)
+        d.paper(c, px, py + 8 * math.sin(t * 1.3 + i), 110 * s, 145 * s, rot=rot * (1 - k), lines=6,
+                lift=0.6 * s, line_seed=i)
+        if blur_far:
+            c.restore()
+        c.restore()
+    if t >= m - 1e-6:
+        pop = d.ease_out(d.prog(t, m, 0.35))
+        book(c, 500, 520, s=1.12 - 0.12 * pop)
+        d.sparks(c, 500, 520, t, m, n=18, r=260, seed=6)
+        d.glow(c, 500, 520, 340, GOLD, 0.6 * d.pulse(t, m, 0.7))
+
+
+def pendant_talk(c, t, lamp_t, view, floor=760):
+    """吊灯下的小圆桌，两人对坐；lamp_t 时刻吊灯亮起（“寻求支持”的通用镜头）。"""
+    FLOOR = floor
+    on = t >= lamp_t - 1e-6
+    d.room(c, view, floor_y=FLOOR, warm=(500, 420, 1.0 if on else 0.15))
+    c.drawLine(500, view[1], 500, 300, d.stroke("#3A3833", 3))
+    shade = skia.Path()
+    shade.moveTo(470, 300)
+    shade.lineTo(530, 300)
+    shade.lineTo(560, 345)
+    shade.lineTo(440, 345)
+    shade.close()
+    c.drawPath(shade, d.fill(d.mix("#3A352C", "#E8D2A0", 1.0 if on else 0.1)))
+    if on:
+        g = skia.GradientShader.MakeLinear([(500, 345), (500, FLOOR)], [d.col("#F2D59A", 0.30), d.col("#F2D59A", 0.0)])
+        cone = skia.Path()
+        cone.moveTo(440, 345)
+        cone.lineTo(560, 345)
+        cone.lineTo(760, FLOOR)
+        cone.lineTo(240, FLOOR)
+        cone.close()
+        c.drawPath(cone, skia.Paint(Shader=g, AntiAlias=True))
+    # 小圆桌与两把椅子
+    c.drawRect(skia.Rect.MakeLTRB(410, 620, 590, 634), d.fill("#2A2824"))
+    c.drawLine(410, 620, 590, 620, d.stroke(GOLD, 1.5, 0.5))
+    c.drawRect(skia.Rect.MakeLTRB(494, 634, 506, FLOOR), d.fill("#1D1C19"))
+    for x, f in ((300, 1), (700, -1)):
+        c.drawRect(skia.Rect.MakeLTRB(x - 50, 650, x + 50, 662), d.fill("#1D1C19"))
+        c.drawRect(skia.Rect.MakeLTRB(x - 50 * f - 6, 520, x - 50 * f + 6, FLOOR), d.fill("#1D1C19"))
+        d.figure(c, x, 648, d.SIT_EASE, facing=f, scale=0.9, rim=1.0 if on else 0.4)
+    for x in (470, 530):
+        c.drawRRect(d.rrect(x, 606, 22, 26, 4), d.fill("#E8DCC6"))
+    d.glow(c, 500, 330, 120, "#FFF1D2", (0.6 if on else 0.0) + 0.4 * d.pulse(t, lamp_t, 0.6))
+    rng = np.random.default_rng(13)
+    for _ in range(14):
+        x = 380 + rng.uniform(0, 240)
+        y = 360 + ((rng.uniform(0, 260) - t * rng.uniform(6, 14)) % 260)
+        c.drawCircle(x, y, rng.uniform(1.2, 2.2), d.fill("#F6E2B5", (0.35 if on else 0.0) * rng.uniform(0.4, 1)))
+
+
+# ---------------------------------------------------------------- 日程条、思维气泡、骰子、面具、光罐、对话气泡、心形、卡片台座、档案架
+
+def schedule(c, x0, x1, y, ticks=10, flag=None, flag_k=1.0, a=1.0):
+    """日程条：一条带刻度的时间轴（不标数字），flag 为截止旗位置（0–1）。"""
+    c.drawLine(x0, y, x1, y, d.stroke("#5E594F", 4, a))
+    for i in range(ticks + 1):
+        x = x0 + (x1 - x0) * i / ticks
+        c.drawLine(x, y - 10, x, y + 10, d.stroke("#5E594F", 2, a))
+    if flag is not None and flag_k > 0:
+        deadline_flag(c, x0 + (x1 - x0) * flag, y, a * flag_k)
+
+
+def deadline_flag(c, x, y, a=1.0):
+    """截止旗：竖杆底部在 (x, y)。"""
+    c.drawLine(x, y, x, y - 110, d.stroke(GOLD, 3, a))
+    p = skia.Path()
+    p.moveTo(x, y - 110)
+    p.lineTo(x + 50, y - 95)
+    p.lineTo(x, y - 80)
+    p.close()
+    c.drawPath(p, d.fill(GOLD, a))
+
+
+def bar(c, x0, x1, y, h=34, color=GOLD, a=1.0, dashed=False):
+    """甘特条：从 x0 到 x1 的圆角条；dashed 为预留空白段。"""
+    if x1 <= x0:
+        return
+    r = d.rrect((x0 + x1) / 2, y, x1 - x0, h, h / 2)
+    if dashed:
+        c.drawRRect(r, d.stroke(color, 2.5, a, dash=((10, 7), 0)))
+    else:
+        c.drawRRect(r, d.fill(color, a))
+
+
+def thought_bubble(c, x, y, w, h, a=1.0, tail=(-1, 1)):
+    """思维气泡：圆角主体 + 两个逐渐变小的尾巴圆点（tail 为尾巴方向）。"""
+    if a <= 0:
+        return
+    c.drawRRect(d.rrect(x, y, w, h, min(w, h) * 0.45), d.fill("#16171B", 0.92 * a))
+    c.drawRRect(d.rrect(x, y, w, h, min(w, h) * 0.45), d.stroke(GOLD, 2, 0.6 * a))
+    tx, ty = tail
+    for i, r in enumerate((14, 8)):
+        cx, cy = x + tx * (w * 0.3 + i * 26), y + ty * (h / 2 + 22 + i * 24)
+        c.drawCircle(cx, cy, r, d.fill("#16171B", 0.92 * a))
+        c.drawCircle(cx, cy, r, d.stroke(GOLD, 1.5, 0.6 * a))
+
+
+def die(c, x, y, s=1.0, rot=0.0, a=1.0):
+    """骰子（代表“运气”）：圆角方块 + 五个点。"""
+    c.save()
+    c.translate(x, y)
+    c.rotate(rot)
+    d.soft_shadow(c, 0, 0, 80 * s, 80 * s, lift=0.5, a=0.5 * a)
+    c.drawRRect(d.rrect(0, 0, 80 * s, 80 * s, 14 * s), d.fill(d.WHITE, a))
+    c.drawRRect(d.rrect(0, 0, 80 * s, 80 * s, 14 * s), d.stroke(GOLD, 2, 0.6 * a))
+    for px, py in ((-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)):
+        c.drawCircle(px * 20 * s, py * 20 * s, 7 * s, d.fill("#2A2824", a))
+    c.restore()
+
+
+def mask(c, x, y, s=1.0, a=1.0):
+    """眼罩式面具（代表“冒充”）：金色轮廓、两个眼孔。"""
+    p = skia.Path()
+    p.moveTo(x - 70 * s, y - 10 * s)
+    p.cubicTo(x - 60 * s, y - 40 * s, x - 15 * s, y - 34 * s, x, y - 18 * s)
+    p.cubicTo(x + 15 * s, y - 34 * s, x + 60 * s, y - 40 * s, x + 70 * s, y - 10 * s)
+    p.cubicTo(x + 66 * s, y + 26 * s, x + 20 * s, y + 30 * s, x, y + 10 * s)
+    p.cubicTo(x - 20 * s, y + 30 * s, x - 66 * s, y + 26 * s, x - 70 * s, y - 10 * s)
+    p.close()
+    c.drawPath(p, d.fill("#2A2620", a))
+    c.drawPath(p, d.stroke(GOLD, 3 * s, a))
+    for sx in (-1, 1):
+        c.drawOval(d.rect(x + sx * 34 * s, y - 4 * s, 34 * s, 18 * s), d.fill("#0B0C0E", a))
+
+
+def jar(c, x, y, level, s=1.0, dashed=False, a=1.0):
+    """光罐（代表“对方有多喜欢你”）：玻璃罐轮廓 + 暖光液面，level 0–1；dashed 表示“自己猜的”。"""
+    w, h = 120 * s, 170 * s
+    body = d.rrect(x, y, w, h, 24 * s)
+    c.drawRRect(body, d.fill("#121317", 0.9 * a))
+    lv = max(0.0, min(1.0, level))
+    if lv > 0:
+        c.save()
+        c.clipRRect(body, doAntiAlias=True)
+        top = y + h / 2 - h * lv
+        g = skia.GradientShader.MakeLinear([(x, top), (x, y + h / 2)], [d.col("#F6E2B5", 0.95 * a), d.col(GOLD, 0.8 * a)])
+        c.drawRect(skia.Rect.MakeLTRB(x - w / 2, top, x + w / 2, y + h / 2), skia.Paint(Shader=g))
+        c.restore()
+        d.glow(c, x, top + 20 * s, 90 * s, GOLD, 0.25 * lv * a)
+    if dashed:
+        c.drawRRect(body, d.stroke(GOLD, 2.5 * s, a, dash=((10, 7), 0)))
+    else:
+        c.drawRRect(body, d.stroke(GOLD, 2.5 * s, a))
+    c.drawRRect(d.rrect(x, y - h / 2 - 8 * s, w * 0.7, 16 * s, 6 * s), d.fill("#3A3833", a))
+
+
+def speech_bubble(c, x, y, w=150, h=80, side=1, mark=0.0, a=1.0, warm=0.0):
+    """对话气泡：side=1 尾巴朝左下（右侧的人说），-1 朝右下；mark 为金圈（尴尬的一句），warm 为暖色（友好回应）。"""
+    fillc = d.mix(d.WHITE, "#F2D59A", warm)
+    c.drawRRect(d.rrect(x, y, w, h, 18), d.fill(fillc, a))
+    p = skia.Path()
+    bx = x - side * w * 0.3
+    p.moveTo(bx - 10, y + h / 2 - 2)
+    p.lineTo(bx + 10, y + h / 2 - 2)
+    p.lineTo(bx - side * 26, y + h / 2 + 26)
+    p.close()
+    c.drawPath(p, d.fill(fillc, a))
+    for i, ln in enumerate((0.55, 0.38)):
+        c.drawLine(x - w * 0.32, y - 12 + i * 22, x - w * 0.32 + w * ln, y - 12 + i * 22, d.stroke("#8F897F", 5, a))
+    if mark > 0:
+        c.drawOval(d.rect(x, y, w * 1.2, h * 1.35), d.stroke(GOLD, 4, mark * a))
+
+
+def heart(c, x, y, s=1.0, k=1.0, color="#E8C987"):
+    """心形（内心状态）：k 控制亮度与外圈光晕。"""
+    p = skia.Path()
+    p.moveTo(x, y + 26 * s)
+    p.cubicTo(x - 46 * s, y - 4 * s, x - 30 * s, y - 40 * s, x, y - 18 * s)
+    p.cubicTo(x + 30 * s, y - 40 * s, x + 46 * s, y - 4 * s, x, y + 26 * s)
+    p.close()
+    d.glow(c, x, y, 70 * s, color, 0.5 * k)
+    c.drawPath(p, d.fill(color, 0.35 + 0.65 * k))
+
+
+def pedestal(c, x, base, n, hollow=0.0, solid_glow=0.0, w=260, h=46):
+    """卡片台座：n 层纸卡自下而上叠成台阶；hollow 0–1 让卡片变成虚线空壳（“全是侥幸”的错觉），
+    solid_glow 让每层卡亮起（“每层都是做过的事”）。返回顶面 y。"""
+    for i in range(int(math.ceil(n))):
+        k = min(1.0, n - i)
+        y = base - h / 2 - i * (h + 6)
+        cw = w - i * 18
+        if hollow > 0:
+            c.drawRRect(d.rrect(x, y, cw, h, 8), d.fill(d.WHITE, (1 - hollow) * k))
+            c.drawRRect(d.rrect(x, y, cw, h, 8), d.stroke("#8C8574", 2.5, hollow * k, dash=((12, 8), 0)))
+        else:
+            d.soft_shadow(c, x, y, cw, h, lift=0.4, a=0.45 * k)
+            c.drawRRect(d.rrect(x, y, cw, h, 8), d.fill(d.WHITE, k))
+            c.drawLine(x - cw * 0.35, y, x + cw * 0.1, y, d.stroke("#9A948A", 5, k))
+            c.drawCircle(x + cw * 0.32, y, 9, d.fill(GOLD, (0.4 + 0.6 * solid_glow) * k))
+        if solid_glow > 0:
+            c.drawRRect(d.rrect(x, y, cw, h, 8), d.stroke(GOLD, 2.5, solid_glow * k))
+    return base - n * (h + 6)
+
+
+def shelf(c, x0, x1, y, n=5, a=1.0, lit=-1, lit_k=0.0):
+    """档案架：一层隔板上立着 n 份旧记录（过去的经验），lit 号记录可被点亮。"""
+    c.drawRect(skia.Rect.MakeLTRB(x0, y, x1, y + 12), d.fill("#2A2824", a))
+    c.drawLine(x0, y, x1, y, d.stroke(GOLD, 1.5, 0.5 * a))
+    step = (x1 - x0) / n
+    for i in range(n):
+        cx = x0 + step * (i + 0.5)
+        hh = 90 + 14 * ((i * 7) % 3)
+        on = lit_k if i == lit else 0.0
+        c.drawRect(skia.Rect.MakeLTRB(cx - step * 0.32, y - hh, cx + step * 0.32, y), d.fill(d.mix("#4A463F", "#F5E7C4", on), a))
+        c.drawRect(skia.Rect.MakeLTRB(cx - step * 0.32, y - hh, cx + step * 0.32, y), d.stroke(GOLD, 1.2, (0.3 + 0.7 * on) * a))
+        if on > 0:
+            d.glow(c, cx, y - hh / 2, 80, GOLD, 0.35 * on)

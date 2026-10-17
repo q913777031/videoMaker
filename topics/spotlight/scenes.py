@@ -5,12 +5,11 @@
 
 import math
 
-import numpy as np
 import skia
 
 from kepu import draw as d
 from kepu.config import GOLD
-from kepu.props import F, bust, desk, laptop, meeting_table, slide, slider, spotlight
+from kepu.props import F, bust, desk, laptop, meeting_table, pendant_talk, slide, slider, spotlight
 
 FLOOR = 760
 TABLE = (70, 650, 600)                  # 会议桌 x0, x1, 桌面 y
@@ -233,41 +232,7 @@ def shot12(c, t, D, cue, view):
 
 
 def shot13(c, t, D, cue, view):
-    on = t >= cue["lamp"] - 1e-6
-    d.room(c, view, floor_y=FLOOR, warm=(500, 420, 1.0 if on else 0.15))
-    c.drawLine(500, view[1], 500, 300, d.stroke("#3A3833", 3))
-    shade = skia.Path()
-    shade.moveTo(470, 300)
-    shade.lineTo(530, 300)
-    shade.lineTo(560, 345)
-    shade.lineTo(440, 345)
-    shade.close()
-    c.drawPath(shade, d.fill(d.mix("#3A352C", "#E8D2A0", 1.0 if on else 0.1)))
-    if on:
-        g = skia.GradientShader.MakeLinear([(500, 345), (500, FLOOR)], [d.col("#F2D59A", 0.30), d.col("#F2D59A", 0.0)])
-        cone = skia.Path()
-        cone.moveTo(440, 345)
-        cone.lineTo(560, 345)
-        cone.lineTo(760, FLOOR)
-        cone.lineTo(240, FLOOR)
-        cone.close()
-        c.drawPath(cone, skia.Paint(Shader=g, AntiAlias=True))
-    # 小圆桌与两把椅子
-    c.drawRect(skia.Rect.MakeLTRB(410, 620, 590, 634), d.fill("#2A2824"))
-    c.drawLine(410, 620, 590, 620, d.stroke(GOLD, 1.5, 0.5))
-    c.drawRect(skia.Rect.MakeLTRB(494, 634, 506, FLOOR), d.fill("#1D1C19"))
-    for x, f in ((300, 1), (700, -1)):
-        c.drawRect(skia.Rect.MakeLTRB(x - 50, 650, x + 50, 662), d.fill("#1D1C19"))
-        c.drawRect(skia.Rect.MakeLTRB(x - 50 * f - 6, 520, x - 50 * f + 6, FLOOR), d.fill("#1D1C19"))
-        d.figure(c, x, 648, d.SIT_EASE, facing=f, scale=0.9, rim=1.0 if on else 0.4)
-    for x in (470, 530):
-        c.drawRRect(d.rrect(x, 606, 22, 26, 4), d.fill("#E8DCC6"))
-    d.glow(c, 500, 330, 120, "#FFF1D2", (0.6 if on else 0.0) + 0.4 * d.pulse(t, cue["lamp"], 0.6))
-    rng = np.random.default_rng(13)
-    for _ in range(14):
-        x = 380 + rng.uniform(0, 240)
-        y = 360 + ((rng.uniform(0, 260) - t * rng.uniform(6, 14)) % 260)
-        c.drawCircle(x, y, rng.uniform(1.2, 2.2), d.fill("#F6E2B5", (0.35 if on else 0.0) * rng.uniform(0.4, 1)))
+    pendant_talk(c, t, cue["lamp"], view, floor=FLOOR)
 
 
 def shot14(c, t, D, cue, view):

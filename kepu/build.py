@@ -50,6 +50,28 @@ def reading_table(tl) -> list[dict]:
     return rows
 
 
+def layout_check(tl) -> list[str]:
+    """主字幕与来源卡是否超出各画幅的关键内容安全区；返回问题列表（空表示通过）。"""
+    from . import draw as d
+    bad = []
+    for L in config.LAYOUTS.values():
+        l, _, r, _ = L.safe
+        for s in tl.shots:
+            size = L.ref_size if s.credit else L.text_size
+            for ln in s.lines:
+                w = d.text_width(ln, "serif", size)
+                if s.credit:
+                    w += L.ref_size * 2.4
+                    x0 = L.w / 2 - w / 2
+                elif L.text_align == "center":
+                    x0 = L.text_x - w / 2
+                else:
+                    x0 = L.text_x
+                if x0 < l or x0 + w > r:
+                    bad.append(f"{L.name} 镜头{s.no:02d}「{ln}」宽 {w:.0f}px，超出安全区 x {l}–{r}")
+    return bad
+
+
 def write_captions(path: Path, tl, rows, topic: Topic):
     out = [f"{topic.title}逐屏文案", "",
            "说明：“／”为主字幕换行；稳定窗口不含入场、退场；预算 = max(2, 汉字数/4.5) 秒（排版预算，不是心理学定律）。",
@@ -193,6 +215,46 @@ def extract_frames(mp4: Path, out_dir: Path, times: dict):
                         str(out_dir / f"{mp4.stem}_{name}.png")], check=True)
 
 
+def write_delivery(out: Path, topic: Topic):
+    """根据 verify_report.json 与 cue_table.csv 生成 DELIVERY.md；数值全部来自实测文件，不写目标值。"""
+    r = json.loads((out / "verify_report.json").read_text(encoding="utf-8"))
+    rows = list(csv.reader((out / "cue_table.csv").open(encoding="utf-8-sig")))[1:]
+    final = "mix_measured" in r
+    hits = [x for x in rows if x[3].startswith("撞击")]
+    off = [x for x in hits if "第1拍" not in x[3]]
+    low = [x for x in rows if x[7] == "低"]
+    cancel = [x for x in rows if "取消" in x[13]]
+    vh = r.get("visual_hits", {})
+    worst = max((abs(h["diff_frames"]) for v in vh.values() for h in v), default=None)
+    onset = sorted({x["diff_frames"] for x in r.get("sfx_onset_check", [])})
+    reading = r.get("reading", [])
+    scope = topic.references.split("核验范围", 1)[-1].strip()
+    L = [f"# {topic.title}交付说明", "",
+         f"**交付状态：{'已配乐成片' if final else '待配乐预览（原曲缺失，未生成替代配乐）'}。** 由 `python3 -m kepu.build --topic {topic.slug}` 生成；"
+         f"题材提示词见 `plans/{topic.slug}.md`。", "", "## 已渲染", ""]
+    for name, v in r.get("ffprobe", {}).items():
+        L.append(f"- `{v['file']}`：{v['video']}，{v['audio']}，{v['duration']:.3f} s")
+    L += ["- 两种比例封面 `cover_*.png`；`sfx.wav`" + ("、`bgm.wav`、`mix.wav`（48 kHz 24bit，同起点同长度）" if final else "")
+          + "；`cue_table.csv`" + ("、`beat_grid.csv`" if final else "") + "；`captions.txt`、`references.txt`、`verify_report.json`", "",
+          "## 已核验（实际运行得到）", ""]
+    L.append(f"- blackdetect：{'；'.join(f'{k} {v}' for k, v in r.get('blackdetect', {}).items())}。")
+    if final:
+        m = r["mix_measured"]
+        L.append(f"- 响度：mix.wav 实测 {m['integrated_lufs']} LUFS-I、真峰值 {m['true_peak_dbtp']} dBTP；"
+                 f"ffmpeg ebur128 成片实测 {r['loudness_ffmpeg'].get('vertical')}。")
+        L.append(f"- 卡点：{len(hits)} 个撞击事件中 {len(hits) - len(off)} 个落在小节重拍。"
+                 + ("不在重拍上的：" + "；".join(f"镜头{x[8]} {x[9]}（{x[3].split('｜')[1]}）" for x in off) + "。" if off else ""))
+        if cancel:
+            L.append("- 原曲在该拍低频已足、按规则取消低音鼓叠加：" + "；".join(f"镜头{x[8]}（{x[13]}）" for x in cancel) + "。画面撞击仍在原拍点。")
+    L.append(f"- 音画同步：音效起音帧与事件帧偏差 {onset} 帧；画面撞击峰值与事件帧最大偏差 {worst} 帧（共 {len(vh.get('vertical', []))} 个撞击事件/每版）。")
+    L.append(f"- 阅读窗口：{len(reading)} 张主卡{'全部满足' if all(x['ok'] for x in reading) else '存在不满足项'}预算，最短稳定 {min(x['window'] for x in reading):.2f} s；主字幕宽度均在安全区内。")
+    L.append("- 解码抽帧见 `check/`（首帧与约 1/3、2/3、片尾处）。")
+    if low:
+        L += ["", "## 需要试听复核", "", "置信度为“低”的事件（网格拍点上原曲起音较弱）：" + "；".join(f"镜头{x[8]} {x[9]}（强度 {x[4]}）" for x in low) + "。"]
+    L += ["", "## 核验范围与局限", "", scope, "", "- 没有人工试听，也没有在手机或小扬声器上实听；原曲是否含人声无法确认。"]
+    (out / "DELIVERY.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+
+
 # ---------------------------------------------------------------- 主流程
 
 def contact_sheet(tl, times: list[float], path: Path):
@@ -230,10 +292,18 @@ def main():
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--covers-only", action="store_true")
     ap.add_argument("--stills", default=None, help="逗号分隔的秒数：只输出抽帧拼图 stills.png")
+    ap.add_argument("--delivery-only", action="store_true", help="只根据已有核验文件重写 DELIVERY.md")
     args = ap.parse_args()
     topic = load(args.topic)
     out = Path(args.out) if args.out else ROOT / "out" / topic.slug
     out.mkdir(parents=True, exist_ok=True)
+    if args.delivery_only:
+        write_delivery(out, topic)
+        print(out / "DELIVERY.md")
+        return
+    problems = layout_check(render.build_timeline(topic))
+    if problems:
+        raise SystemExit("layout check failed:\n  " + "\n  ".join(problems))
     if args.stills:
         contact_sheet(render.build_timeline(topic), [float(x) for x in args.stills.split(",")], out / "stills.png")
         print(out / "stills.png")
@@ -316,6 +386,7 @@ def main():
 
     (out / "verify_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1, default=str),
                                             encoding="utf-8")
+    write_delivery(out, topic)
     print(json.dumps({k: report[k] for k in ("ffprobe", "blackdetect", "loudness_ffmpeg") if k in report},
                      ensure_ascii=False, indent=1))
 

@@ -12,9 +12,9 @@ import skia
 from kepu import draw as d
 from kepu.config import GOLD, WHITE
 from kepu.props import (
-    C1, C2, DOOR, F, FIG9, LOOP, PERIOD, REC, RING, THUMBS, bedroom, book, cell, city, desk, doc_on_desk,
+    C1, C2, DOOR, F, FIG9, LOOP, PERIOD, REC, RING, bedroom, cell, city, desk, doc_on_desk,
     door, event_icon, inlet, lap_shade, loop_floor, mark_pos_on_doc, paragraph, problem_card, ring_card,
-    ring_floor, sheet, vague_label, walker, window,
+    review_merge, ring_floor, sheet, vague_label, walker, window,
 )
 
 
@@ -124,28 +124,7 @@ def shot05(c, t, D, cue, view):
 
 
 def shot06(c, t, D, cue, view):
-    d.backdrop(c, view)
-    m = cue["merge"]
-    for i, (x, y, rot, depth, delay) in enumerate(THUMBS):
-        k = d.ease_in(d.prog(t, 0.2 + delay, m - 0.2 - delay))
-        if k >= 1:
-            continue
-        px, py = d.lerp(x, 500, k), d.lerp(y, 520, k)
-        s = depth * (1 - 0.3 * k)
-        blur_far = depth < 0.85
-        c.save()
-        if blur_far:
-            c.saveLayerAlpha(None, 200)
-        d.paper(c, px, py + 8 * math.sin(t * 1.3 + i), 110 * s, 145 * s, rot=rot * (1 - k), lines=6,
-                lift=0.6 * s, line_seed=i)
-        if blur_far:
-            c.restore()
-        c.restore()
-    if t >= m - 1e-6:
-        pop = d.ease_out(d.prog(t, m, 0.35))
-        book(c, 500, 520, s=1.12 - 0.12 * pop)
-        d.sparks(c, 500, 520, t, m, n=18, r=260, seed=6)
-        d.glow(c, 500, 520, 340, GOLD, 0.6 * d.pulse(t, m, 0.7))
+    review_merge(c, t, cue["merge"], view)
 
 
 def shot07(c, t, D, cue, view):
