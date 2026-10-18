@@ -2,7 +2,7 @@
 // 互动答题卡在屏幕空间：展开 → 3 秒倒计时（3、2、1 各落在实测拍点上）→ 下一镜第 0 拍揭晓（朱砂“对”印）→ 卷起。
 import {
   W, H, INK, clamp01, lerp, easeOut, easeIn, easeInOut, easeOutBack, prog, win, rng, canvas, rgba, paintPaper, mountains, mist,
-  brushText, stamp, splash, blot, reveal, stroke, pine, chrysanthemum, zhuyu, crane, figure, pavilion, palace, village, darkCloud,
+  brushText, stamp, warmMountains, splash, blot, reveal, stroke, pine, chrysanthemum, zhuyu, crane, figure, pavilion, palace, village, darkCloud,
   cakeLayer, cakePlate, winePot, climbMountain, geese, roundFan,
 } from './ink.js';
 
@@ -363,6 +363,7 @@ async function boot() {
   PAPER = canvas(W, H); paintPaper(PAPER.getContext('2d'));
   CARD = cardSprite();
   buildSprites();
+  warmMountains(-1200, TL.shots[TL.shots.length - 1].x + 1200);
   window.AC.ready = true;
 }
 

@@ -185,6 +185,12 @@ function tile(name, i) {
   tiles.set(key, c);
   return c;
 }
+/** 预先生成长卷 [x0, x1]（近景坐标）范围内两层远山的全部图块，避免渲染中途生成拖慢某一帧。 */
+export function warmMountains(x0, x1) {
+  for (const [name, L] of Object.entries(LAYERS)) {
+    for (let i = Math.floor(x0 * L.par / TILE) - 1; i <= Math.floor((x1 * L.par + W) / TILE) + 1; i++) tile(name, i);
+  }
+}
 /** 画一层远山：camX 为长卷镜头位置（近景坐标），按视差系数平移。 */
 export function mountains(g, name, camX) {
   const L = LAYERS[name];

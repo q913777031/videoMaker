@@ -51,7 +51,7 @@ async function openPage(browser, port) {
 
 async function grab(page, t) {
   await page.evaluate(x => window.AC.seek(x), t);
-  return page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1080, height: 1920 } });
+  return page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1080, height: 1920 }, timeout: 180000 });
 }
 
 async function renderRange(browser, port, from, to, outFile, label) {
