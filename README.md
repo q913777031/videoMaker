@@ -65,6 +65,17 @@ python3 zodiac.py out/zodiac --no-video # 只出音频分轨、封面与文档
 - 输出（`out/zodiac/`）：`zodiac_portrait_1080x1920.mp4`、`zodiac_landscape_1920x1080.mp4`、`cover_*.png`、
   `bgm_track.wav` / `sfx_track.wav`（两轨相加即限幅前混音）、`cue_sheet.md` / `.csv`、`copy_and_references.md`
 
+## 水墨长卷科普：《重阳节是怎么来的？边看边答题》
+
+```bash
+python3 fetch_assets.py            # 字体
+python3 -m chongyang.build         # 成片 → out/chongyang/
+```
+
+一幅连续平移的水墨长卷讲重阳节：九为阳数、两九相重；九九谐音久久；《西京杂记》的早期记载；桓景登高避灾的传说；
+王维诗；糕谐音高；今天的法定老年节。中间 4 道互动题，每题 A/B 两个选项、3 秒倒计时（3、2、1 卡实测拍点），
+揭晓时朱砂“对”印砸在拍点上。成片与文案出处在 `videos/chongyang/`，说明见 [`chongyang/README.md`](chongyang/README.md)。
+
 ## 3D 科普：《出门一会儿，空调关不关？》
 
 ```bash

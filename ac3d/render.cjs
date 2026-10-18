@@ -4,7 +4,7 @@
  * 用法：
  *   node ac3d/render.cjs --stills <目录> 0.5,17.2,40      导出静帧 PNG
  *   node ac3d/render.cjs --video <输出.mp4> [--workers 4]  完整渲染（H.264 / yuv420p / 30fps，无音轨）
- *   追加 --only 镜头名[,镜头名]  只构建这些镜头（其余为空场景），用于快速检查静帧
+ *   追加 --page 相对仓库根目录的页面路径（默认 ac3d/web/index.html），供其他短片复用
  *
  * 依赖：Playwright（使用本机 Chromium，软件 WebGL：SwiftShader）、带 libx264 的 FFmpeg。
  * 页面通过本地静态服务器加载（file:// 下浏览器禁止 ES 模块与 fetch）。
@@ -36,12 +36,13 @@ function serve() {
 }
 
 let ONLY = '';
+let PAGE = 'ac3d/web/index.html';
 
 async function openPage(browser, port) {
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
   page.on('pageerror', e => console.error('pageerror', e.message));
   page.on('console', m => { if (m.type() === 'error') console.error('console', m.text()); });
-  await page.goto(`http://127.0.0.1:${port}/ac3d/web/index.html?render=1${ONLY ? '&only=' + ONLY : ''}`);
+  await page.goto(`http://127.0.0.1:${port}/${PAGE}?render=1${ONLY ? '&only=' + ONLY : ''}`);
   await page.waitForFunction(() => window.AC && (window.AC.ready || window.AC.error), null, { timeout: 120000 });
   const err = await page.evaluate(() => window.AC.error);
   if (err) throw new Error(err);
@@ -73,6 +74,8 @@ async function main() {
   const args = process.argv.slice(2);
   const oi = args.indexOf('--only');
   if (oi >= 0) { ONLY = args[oi + 1]; args.splice(oi, 2); }
+  const pi = args.indexOf('--page');
+  if (pi >= 0) { PAGE = args[pi + 1]; args.splice(pi, 2); }
   const srv = await serve();
   const port = srv.address().port;
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',

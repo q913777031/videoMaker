@@ -32,6 +32,8 @@ from . import story as S
 ROOT = Path(__file__).resolve().parent.parent
 WEB = Path(__file__).resolve().parent / "web"
 OUT = ROOT / "out" / "ac3d"
+PAGE = "ac3d/web/index.html"
+EXTRA: dict = {}          # 额外写进 timeline.json 的字段（其他短片复用本构建脚本时使用）
 FPS = 30
 END = A.END
 
@@ -72,7 +74,7 @@ def timeline() -> dict:
     shots[-1]["t1"] = END
     events.sort(key=lambda e: e["t"])
     return dict(series=S.SERIES, title_short=S.TITLE_SHORT, title=S.TITLE, refs=S.REFS_SHORT, end=END, music_end=A.MUSIC_END,
-                beats=[x["t"] for x in A.BEATS], shots=shots, cues=cues, captions=caps, _events=events)
+                beats=[x["t"] for x in A.BEATS], shots=shots, cues=cues, captions=caps, _events=events, **EXTRA)
 
 
 def write_timeline(tl: dict) -> Path:
@@ -172,7 +174,7 @@ def write_docs(tl: dict, events: list[dict], out: Path):
 # ---------------------------------------------------------------- 渲染与核验
 
 def node(*args):
-    subprocess.run(["node", str(Path(__file__).resolve().parent / "render.cjs"), *args], check=True)
+    subprocess.run(["node", str(Path(__file__).resolve().parent / "render.cjs"), "--page", PAGE, *args], check=True)
 
 
 def verify(mp4: Path, events: list[dict]) -> str:
@@ -229,6 +231,13 @@ def main():
     report = verify(final, events)
     (OUT / "核验.txt").write_text(report + "\n", encoding="utf-8")
     print(report)
+
+
+def run(story, web: Path, out: Path, page: str, extra: dict | None = None):
+    """用另一份分镜与页面复用整条构建流程（时间轴、混音、渲染、核验）。"""
+    global S, WEB, OUT, PAGE, EXTRA
+    S, WEB, OUT, PAGE, EXTRA = story, web, out, page, extra or {}
+    main()
 
 
 if __name__ == "__main__":
