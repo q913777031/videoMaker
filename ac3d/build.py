@@ -7,6 +7,7 @@
     python3 -m ac3d.build --stills 3.2 --only hook   # 只构建指定镜头，启动更快
     python3 -m ac3d.build --audio         # 只出音频分轨与卡点表
     python3 -m ac3d.build --verify        # 核验已渲染成片
+    python3 -m ac3d.build --remux         # 只重做混音并换进已渲染成片（画面不重渲）
 
 时间轴规则与阿德勒系列一致：镜头以小节（4 个实测拍点）为单位，带音效的动作必须落在整数拍（实测拍点），
 音效按起音峰值提前放置，峰值与画面撞击帧同帧或相邻帧。
@@ -141,6 +142,10 @@ def build_audio(tl: dict):
     knee, ceil = 0.6, 0.84
     over = a > knee
     mix[over] = np.sign(mix[over]) * (knee + (ceil - knee) * np.tanh((a[over] - knee) / (ceil - knee)))
+    tp = np.abs(signal.resample_poly(mix, 4, 1, axis=0)).max()       # 4 倍过采样估真峰值，留出 AAC 编码过冲的余量
+    if tp > 10 ** (-2.0 / 20):
+        k = 10 ** (-2.0 / 20) / tp
+        mix, music_d, sfx = mix * k, music_d * k, sfx * k
     return mix.astype(np.float32), music_d.astype(np.float32), sfx.astype(np.float32), events
 
 
@@ -218,7 +223,14 @@ def main():
     if "--audio" in args:
         return
     final = OUT / f"{S.FILE_NAME}.mp4"
-    if "--verify" not in args:
+    if "--remux" in args and final.exists():                             # 只换音轨：沿用已渲染成片的画面
+        with tempfile.TemporaryDirectory() as tmp:
+            wav, tmpv = Path(tmp) / "mix.wav", Path(tmp) / "v.mp4"
+            sf.write(wav, mix, audio.SR)
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(final), "-i", str(wav), "-map", "0:v", "-map", "1:a",
+                            "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(tmpv)], check=True)
+            tmpv.replace(final)
+    elif "--verify" not in args:
         with tempfile.TemporaryDirectory() as tmp:
             silent = Path(tmp) / "silent.mp4"
             wav = Path(tmp) / "mix.wav"
