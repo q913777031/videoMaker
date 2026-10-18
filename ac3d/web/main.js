@@ -1,87 +1,35 @@
-// 入口：加载时间轴 → 构建全部镜头 → 暴露 window.AC.seek(t)，供逐帧渲染器调用。
-import {
-  THREE, W, H, PAL, TL, loadTimeline, initRenderer, paintPaper, inkWipe, clamp01, easeOut, easeIn, prog, lerp,
-} from './engine.js';
-import { SHOT_FACTORIES } from './shots/index.js';
+// 入口：加载时间轴 → 构建整片唯一的客厅场景 → 暴露 window.AC.seek(t)，供逐帧渲染器调用。
+// 画面层次：#bg 浅色渐变底 → #gl three.js 场景 → #fx 淡入淡出 → #ui DOM 字幕与标签。
+import { W, H, TL, loadTimeline, initRenderer, clamp01, easeOut, easeIn, prog } from './engine.js';
+import { MOD } from './room.js';
+import { createFilm } from './film.js';
 
-const params = new URLSearchParams(location.search);
-
-// ---------------------------------------------------------------- DOM 界面层
 const uiRoot = document.getElementById('ui');
-function el(tag, css, parent = uiRoot, html = '') {
-  const e = document.createElement(tag);
+function el(css, html = '') {
+  const e = document.createElement('div');
   Object.assign(e.style, { position: 'absolute', ...css });
   e.innerHTML = html;
-  parent.appendChild(e);
+  uiRoot.appendChild(e);
   return e;
 }
 
-/** 镜头私有 UI：每个镜头一个容器，只在镜头激活时显示。 */
-export class ShotUI {
-  constructor() { this.root = el('div', { inset: '0', display: 'none' }); this.items = {}; }
-  add(id, html, css) { this.items[id] = el('div', css, this.root, html); return this.items[id]; }
-  /** 书法大字：每个字单独一个 span，brush(id, k) 逐字落笔（k∈[0,1]）。 */
-  brushText(id, text, css) {
-    const e = this.add(id, [...text].map(ch => `<span style="display:inline-block;opacity:0">${ch}</span>`).join(''),
-      { font: '200px MaShanZheng', color: PAL.ink, whiteSpace: 'nowrap', left: '540px', top: '700px',
-        transform: 'translate(-50%, -50%)', ...css });
-    e._chars = [...e.querySelectorAll('span')];
-    return e;
-  }
-  brush(id, k, stagger = 0.75) {
-    const e = this.items[id];
-    const n = e._chars.length;
-    e._chars.forEach((c, i) => {
-      const q = clamp01((k * (n * (1 - stagger) + stagger * n) - i * stagger) / 1.0);
-      const a = clamp01(q * 1.6);
-      c.style.opacity = String(a);
-      c.style.transform = `scale(${1.25 - 0.25 * easeOut(q)})`;
-      c.style.filter = q < 1 ? `blur(${(1 - q) * 3}px)` : 'none';
-    });
-  }
-  /** 朱砂印章（白文）：stamp(id, dt) 以 dt=0 为落章拍点，0.12 秒内从 1.8 倍砸到原大并轻微回弹。 */
-  sealStamp(id, text, css) {
-    const n = [...text].length;
-    const cols = n <= 2 ? 1 : 2;
-    const html = `<div style="width:${cols * 96 + 40}px;height:${Math.ceil(n / cols) * 96 + 40}px;background:${PAL.cinnabar};
-      border-radius:14px;display:flex;flex-direction:column;flex-wrap:wrap;align-content:center;justify-content:center;
-      box-shadow:inset 0 0 0 7px ${PAL.cinnabar}, inset 0 0 0 11px #F3E3D3;writing-mode:vertical-rl;
-      font:900 88px NotoSerifSC;color:#F7EDE3;line-height:96px;letter-spacing:4px;filter:url(#rough)">${text}</div>`;
-    return this.add(id, html, { left: '540px', top: '900px', opacity: 0, ...css });
-  }
-  stamp(id, dt, { x = null, y = null, r = -6 } = {}) {
-    if (dt < 0) { this.set(id, { o: 0, x, y }); return; }
-    const k = clamp01(dt / 0.12);
-    const s = dt < 0.12 ? lerp(1.8, 1, easeIn(k)) : 1 + 0.06 * Math.exp(-(dt - 0.12) * 12) * Math.cos((dt - 0.12) * 40);
-    this.set(id, { o: clamp01(dt / 0.05), x, y, s, r });
-  }
-  set(id, { o = null, x = null, y = null, s = 1, r = 0, html = null } = {}) {
-    const e = this.items[id];
-    if (o !== null) e.style.opacity = String(clamp01(o));
-    if (html !== null && e._html !== html) { e.innerHTML = html; e._html = html; }
-    const tx = x === null ? '' : `translate(${x}px, ${y}px) `;
-    e.style.transform = `${tx}translate(-50%, -50%) scale(${s}) rotate(${r}deg)`;
-  }
-}
-
-const HALO = '0 0 10px rgba(246,238,222,1), 0 0 4px rgba(246,238,222,1)';
-const header = el('div', { left: '64px', top: '170px', font: '500 30px NotoSansSC', color: PAL.ink2, letterSpacing: '2px', textShadow: HALO });
-const headTitle = el('div', { left: '64px', top: '214px', font: '64px MaShanZheng', color: PAL.ink, whiteSpace: 'nowrap', textShadow: HALO });
-const tagEl = el('div', { right: '64px', top: '226px', font: '700 28px NotoSansSC', padding: '8px 22px', borderRadius: '30px',
-  border: '3px solid', background: 'rgba(248,242,231,0.85)' });
-const capEl = el('div', { left: '0', width: `${W}px`, top: '1330px', textAlign: 'center', font: '700 62px NotoSerifSC',
-  color: PAL.ink, lineHeight: '96px', textShadow: '0 0 14px rgba(246,238,222,0.95), 0 0 4px rgba(246,238,222,1)' });
-const noteEl = el('div', { left: '0', width: `${W}px`, top: '1262px', textAlign: 'center', font: '500 28px NotoSansSC',
-  color: PAL.ink2, textShadow: '0 0 8px rgba(246,238,222,1)' });
+const HALO = '0 0 12px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,1)';
+const header = el({ left: '64px', top: '168px', font: '500 30px NotoSansSC', color: MOD.ink2, letterSpacing: '2px', textShadow: HALO });
+const headTitle = el({ left: '64px', top: '210px', font: '900 64px NotoSansSC', color: MOD.ink, whiteSpace: 'nowrap', textShadow: HALO });
+const tagEl = el({ right: '64px', top: '228px', font: '700 30px NotoSansSC', padding: '8px 24px', borderRadius: '30px', color: '#fff' });
+const capEl = el({ left: '540px', top: '1330px', textAlign: 'center', font: '700 64px NotoSansSC', whiteSpace: 'nowrap',
+  color: MOD.ink, lineHeight: '92px', padding: '14px 46px', borderRadius: '30px', background: 'rgba(255,255,255,0.86)',
+  boxShadow: '0 8px 26px rgba(20,30,40,0.12)' });
+const noteEl = el({ left: '90px', width: `${W - 180}px`, top: '1576px', textAlign: 'center', font: '500 30px NotoSansSC',
+  color: MOD.ink2, lineHeight: '44px', padding: '10px 28px', boxSizing: 'border-box', borderRadius: '20px',
+  background: 'rgba(255,255,255,0.8)' });
 
 function richHTML(s) {
-  return s.split('|').map(line => line.replace(/【(.*?)】/g,
-    `<span style="color:${PAL.cinnabar};background:linear-gradient(transparent 62%, rgba(194,58,43,0.18) 62%)">$1</span>`))
-    .join('<br>');
+  return s.split('|').map(line => line.replace(/【(.*?)】/g, `<span style="color:#E2701D">$1</span>`)).join('<br>');
 }
 
-const TAG_COLORS = { '原理': PAL.azure, '实验': PAL.jade, '标准': PAL.ochre, '误区': PAL.cinnabar, '建议': PAL.jade,
-  '情境': PAL.ink2, '结论': PAL.cinnabar, '出处': PAL.ink2 };
+const TAG_COLORS = { '情境': '#5B6875', '问题': '#5B6875', '原理': MOD.cool, '实验': MOD.ok, '误区': MOD.hot, '提示': MOD.heat,
+  '结论': MOD.hot, '出处': '#5B6875' };
 
 function drawUI(t, si) {
   const sh = TL.shots[si];
@@ -90,73 +38,57 @@ function drawUI(t, si) {
   headTitle.style.opacity = a;
   header.textContent = TL.series || '';
   headTitle.textContent = TL.title_short || '';
-  if (sh.tag) {
-    const c = Object.entries(TAG_COLORS).find(([k]) => sh.tag.startsWith(k));
-    tagEl.style.color = c ? c[1] : PAL.ink2;
-    tagEl.style.borderColor = c ? c[1] : PAL.ink2;
-    tagEl.textContent = sh.tag;
-    tagEl.style.opacity = a * easeOut(prog(t, sh.t0, 0.4));
-  } else tagEl.style.opacity = 0;
+  // 角标：镜头切换时旧角标淡出、新角标淡入（不硬切）
+  const k = prog(t, sh.t0 - 0.2, 0.45);
+  const prev = si > 0 ? TL.shots[si - 1].tag : '';
+  const tag = k < 0.5 && prev ? prev : sh.tag;
+  tagEl.textContent = tag;
+  tagEl.style.background = TAG_COLORS[tag] || MOD.ink2;
+  tagEl.style.opacity = String(a * (prev && prev !== sh.tag ? Math.abs(1 - 2 * k) : 1));
   const cap = TL.captions.find(c => t >= c.t0 - 0.01 && t < c.t1);
   if (cap) {
-    const k = easeOut(prog(t, cap.t0, 0.38)), out = 1 - easeIn(prog(t, cap.t1 - 0.28, 0.28));
+    const ki = easeOut(prog(t, cap.t0, 0.38)), out = 1 - easeIn(prog(t, cap.t1 - 0.28, 0.28));
     if (capEl._text !== cap.text) { capEl.innerHTML = richHTML(cap.text); capEl._text = cap.text; }
-    capEl.style.opacity = String(k * out);
-    capEl.style.transform = `translateY(${(1 - k) * 28 + (1 - out) * 14}px)`;
+    capEl.style.opacity = String(ki * out);
+    capEl.style.transform = `translateX(-50%) translateY(${(1 - ki) * 24 + (1 - out) * 12}px)`;
     if (cap.note) {
       if (noteEl._text !== cap.note) { noteEl.textContent = cap.note; noteEl._text = cap.note; }
-      noteEl.style.opacity = String(k * out * easeOut(prog(t, cap.t0 + 0.4, 0.4)));
+      noteEl.style.opacity = String(ki * out * easeOut(prog(t, cap.t0 + 0.4, 0.4)));
     } else noteEl.style.opacity = 0;
   } else { capEl.style.opacity = 0; noteEl.style.opacity = 0; }
 }
 
-// ---------------------------------------------------------------- 水墨特效层
 const fx = document.getElementById('fx').getContext('2d');
-function drawFX(t, si, shot) {
+function drawFX(t) {
   fx.clearRect(0, 0, W, H);
-  for (let i = 1; i < TL.shots.length; i++) {          // 镜头边界的泼墨转场：拍点上完全遮住
-    const s = TL.shots[i];
-    if (s.transition !== 'ink') continue;
-    const k = (t - (s.t0 - 0.3)) / 0.3;
-    if (k > 0 && k < 2) inkWipe(fx, k, i % 2 ? 1 : -1, PAL.ink, 7 + i);
-  }
-  if (shot.fx) shot.fx(fx, t - TL.shots[si].t0, t);
-  const fin = 1 - clamp01(t / 0.45), fout = clamp01((t - (TL.end - 1.1)) / 1.0);
-  const veil = Math.max(fin, fout);
-  if (veil > 0) { fx.fillStyle = `rgba(239,230,211,${veil})`; fx.fillRect(0, 0, W, H); }
+  const veil = Math.max(1 - clamp01(t / 0.5), clamp01((t - (TL.end - 1.1)) / 1.0));
+  if (veil > 0) { fx.fillStyle = `rgba(244,247,249,${veil})`; fx.fillRect(0, 0, W, H); }
 }
 
-// ---------------------------------------------------------------- 启动
-let SHOTS = [];
-let active = -1;
-let renderer = null;
+function paintBackground(canvas) {
+  const g = canvas.getContext('2d');
+  const lin = g.createLinearGradient(0, 0, 0, H);
+  lin.addColorStop(0, '#F5F8FA');
+  lin.addColorStop(0.55, MOD.bg);
+  lin.addColorStop(1, MOD.bg2);
+  g.fillStyle = lin; g.fillRect(0, 0, W, H);
+  const rad = g.createRadialGradient(W / 2, H * 0.48, 80, W / 2, H * 0.48, H * 0.6);
+  rad.addColorStop(0, 'rgba(255,255,255,0.7)');
+  rad.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = rad; g.fillRect(0, 0, W, H);
+}
+
+let film = null, renderer = null;
 
 async function boot() {
   const data = await (await fetch('./timeline.json')).json();
   loadTimeline(data);
-  paintPaper(document.getElementById('paper'));
+  paintBackground(document.getElementById('bg'));
   renderer = initRenderer(document.getElementById('gl'));
-  await document.fonts.load('64px MaShanZheng');
-  await document.fonts.load('700 62px NotoSerifSC');
-  await document.fonts.load('900 62px NotoSerifSC');
-  await document.fonts.load('500 30px NotoSansSC');
-  await document.fonts.load('700 30px NotoSansSC');
-  const only = params.get('only');                     // 只构建指定镜头（检查静帧时加快启动）
-  SHOTS = TL.shots.map(s => {
-    const f = only && only.split(',').indexOf(s.name) < 0 ? stubShot : SHOT_FACTORIES[s.name];
-    if (!f) throw new Error('no shot factory for ' + s.name);
-    const ui = new ShotUI();
-    const shot = f({ ui, info: s });
-    shot.ui = ui;
-    return shot;
-  });
-  // 预编译着色器，避免首帧卡顿影响确定性
-  for (const sh of SHOTS) renderer.compile(sh.scene, sh.camera);
+  for (const f of ['500 30px NotoSansSC', '700 30px NotoSansSC', '900 30px NotoSansSC']) await document.fonts.load(f);
+  film = createFilm();
+  renderer.compile(film.scene, film.camera);
   window.AC.ready = true;
-}
-
-function stubShot() {
-  return { scene: new THREE.Scene(), camera: new THREE.PerspectiveCamera(35, W / H, 0.1, 10), update() {} };
 }
 
 function shotIndex(t) {
@@ -168,17 +100,10 @@ window.AC = {
   ready: false,
   seek(t) {
     const i = shotIndex(t);
-    if (i !== active) {
-      if (active >= 0) SHOTS[active].ui.root.style.display = 'none';
-      SHOTS[i].ui.root.style.display = 'block';
-      active = i;
-    }
-    const sh = SHOTS[i];
-    const lt = t - TL.shots[i].t0;
-    sh.update(lt, t);
-    renderer.render(sh.scene, sh.camera);
+    film.update(t - TL.shots[i].t0, t);
+    renderer.render(film.scene, film.camera);
     drawUI(t, i);
-    drawFX(t, i, sh);
+    drawFX(t);
     return i;
   },
   info() { return { shots: TL.shots.length, end: TL.end }; },

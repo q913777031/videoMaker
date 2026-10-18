@@ -1,4 +1,4 @@
-"""国风 3D 科普短片构建：分镜（story.py）→ 实测拍点时间轴 → 配乐 + 中国打击乐音效 → 3D 逐帧渲染 → 混流与核验。
+"""3D 科普短片构建：分镜（story.py）→ 实测拍点时间轴 → 配乐 + 打击乐音效 → 3D 逐帧渲染 → 混流与核验。
 
 用法：
     python3 -m ac3d.build                 # 完整成片 out/ac3d/
@@ -36,8 +36,9 @@ FPS = 30
 END = A.END
 
 SFX_LEVEL = {"tanggu": 0.55, "dagu": 0.6, "daluo": 0.42, "xiaoluo": 0.32, "naobo": 0.3, "bangzi": 0.34, "muyu": 0.34,
-             "bianzhong": 0.3, "kick": 0.5, "kick_light": 0.5, "wood_high": 0.3, "shaker": 0.22}
-DUCK_DEPTH = {"tanggu": 0.2, "dagu": 0.24, "daluo": 0.2, "xiaoluo": 0.08, "naobo": 0.12, "bianzhong": 0.1, "kick": 0.2}
+             "bianzhong": 0.3, "kick": 0.5, "kick_light": 0.5, "wood_high": 0.3, "wood_low": 0.32, "shaker": 0.22, "rim": 0.32,
+             "tom": 0.45, "clap": 0.3}
+DUCK_DEPTH = {"tanggu": 0.2, "dagu": 0.24, "daluo": 0.2, "xiaoluo": 0.08, "naobo": 0.12, "bianzhong": 0.1, "kick": 0.2, "tom": 0.14}
 
 
 # ---------------------------------------------------------------- 时间轴

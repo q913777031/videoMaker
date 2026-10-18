@@ -65,20 +65,20 @@ python3 zodiac.py out/zodiac --no-video # 只出音频分轨、封面与文档
 - 输出（`out/zodiac/`）：`zodiac_portrait_1080x1920.mp4`、`zodiac_landscape_1920x1080.mp4`、`cover_*.png`、
   `bgm_track.wav` / `sfx_track.wav`（两轨相加即限幅前混音）、`cue_sheet.md` / `.csv`、`copy_and_references.md`
 
-## 国风 3D 科普：《出门一会儿，空调关不关？》
+## 3D 科普：《出门一会儿，空调关不关？》
 
 ```bash
-python3 fetch_assets.py            # 字体（含马善政毛笔楷书）
+python3 fetch_assets.py            # 字体
 (cd ac3d && npm install)           # three.js
 python3 -m ac3d.build              # 成片 → out/ac3d/（4 核约 40 分钟）
 ```
 
 真 3D（three.js 程序化建模，Playwright 无头 Chromium 软件 WebGL 逐帧渲染），1080×1920、30fps、92.6 秒。
-贯穿比喻：房子是浮在橙色“热潮”上的漏船，船内外水位差（温差）决定热从板缝渗进来的快慢，空调是往外车水的龙骨水车，每车一斗落一枚铜钱；
-用“鱼缸剖面”视角让两侧水位一眼可比。配乐为 `music/bgm.m4a`，镜头与 27 个打击乐音效落在实测拍点上；
-音效为 `engine/perc.py` 新增的中国打击乐（堂鼓、大鼓、大锣、小锣、铙钹、梆子、木鱼、编钟），第 8 小节 drop 处“板缝齐开”配大鼓。
-事实依据经 5 个方向调研、每条上屏说法双路核验，见 [`ac3d/事实清单.md`](ac3d/事实清单.md)；成片、卡点表、文案与出处在 `videos/ac3d/`。
-引擎与道具 API 见 [`ac3d/README.md`](ac3d/README.md)。
+整片是同一间现代客厅的剖面（白色分体空调室内机、阳台上的室外机、电视、沙发），只有一台相机连续运镜，没有硬切；
+每句字幕都对应画面里的具体动作：热粒子从墙和窗钻进屋、空调把热顺着管路搬到室外机、关机后室温读数上涨、
+重开时耗电条冲顶、电视上播实测柱状图、遥控器连按触发“保护中”、定频机室外机自己启停。
+配乐为 `music/bgm.m4a`，镜头边界与 29 个打击乐音效（`engine/perc.py`：低音鼓、军鼓边击、低音通鼓、拍手、木块、沙锤）落在实测拍点上。
+事实依据见 [`ac3d/事实清单.md`](ac3d/事实清单.md)；成片、卡点表、文案与出处在 `videos/ac3d/`。引擎说明见 [`ac3d/README.md`](ac3d/README.md)。
 
 ## 系列科普动画：阿德勒心理学 10 讲
 
