@@ -350,3 +350,100 @@ export function rain(g, t, a = 1, W = 1080, H = 1920) {
   }
   g.stroke();
 }
+
+/** 江水：y 处一条横向水带（淡墨波纹），宽度覆盖整屏。 */
+export function river(g, y, h, t, cx = 0, W = 1080) {
+  const grd = g.createLinearGradient(0, y, 0, y + h);
+  grd.addColorStop(0, 'rgba(110,128,136,0.30)'); grd.addColorStop(1, 'rgba(110,128,136,0.10)');
+  g.fillStyle = grd; g.fillRect(-40, y, W + 80, h);
+  g.strokeStyle = 'rgba(70,86,94,0.35)'; g.lineWidth = 2;
+  for (let k = 0; k < 6; k++) {
+    const yy = y + 20 + k * h / 6;
+    g.beginPath();
+    for (let x = -40; x <= W + 40; x += 20) {
+      const v = yy + Math.sin((x + cx * 0.6) * 0.02 + t * 1.5 + k) * 4;
+      x === -40 ? g.moveTo(x, v) : g.lineTo(x, v);
+    }
+    g.stroke();
+  }
+}
+
+/** 龙舟（原点：船身中心，船头朝 dir=-1 左 / 1 右），t 驱动划桨，鼓手在船中。 */
+export function dragonBoat(g, x, y, t, s = 1, dir = -1, seed = 1) {
+  g.save(); g.translate(x, y); g.scale(s * -dir, s);
+  g.fillStyle = INK.red; g.beginPath(); g.moveTo(-260, -10); g.quadraticCurveTo(0, 40, 260, -10); g.lineTo(240, 10); g.quadraticCurveTo(0, 50, -240, 10); g.closePath(); g.fill();
+  g.fillStyle = INK.gold; g.fillRect(-240, -6, 480, 6);
+  // 龙头（船头在 +x）
+  g.fillStyle = INK.red; g.beginPath(); g.moveTo(240, -10); g.quadraticCurveTo(280, -70, 320, -80); g.lineTo(330, -60); g.quadraticCurveTo(300, -40, 270, 6); g.closePath(); g.fill();
+  g.fillStyle = INK.ink; g.beginPath(); g.arc(312, -70, 5, 0, Math.PI * 2); g.fill();
+  stroke(g, [[300, -84], [320, -110], [336, -104]], 6, { color: INK.gold, seed, dry: 0 });
+  // 龙尾
+  stroke(g, curve([[-240, -6], [-280, -40], [-300, -80], [-286, -96]], 4), 12, { color: INK.red, seed: seed + 1, dry: 0, taper: [0.05, 0.8] });
+  for (let i = 0; i < 8; i++) {                              // 划手与桨
+    const px = -190 + i * 52, ph = t * 7 + i * 0.4, a = Math.sin(ph) * 0.5;
+    g.fillStyle = INK.ink; g.beginPath(); g.arc(px, -28, 9, 0, Math.PI * 2); g.fill();
+    g.fillStyle = i % 2 ? INK.azure : INK.ochre; g.fillRect(px - 8, -20, 16, 16);
+    g.save(); g.translate(px, -10); g.rotate(0.6 + a);
+    g.strokeStyle = '#5A4632'; g.lineWidth = 4; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 60); g.stroke();
+    g.fillStyle = '#5A4632'; g.beginPath(); g.ellipse(0, 64, 6, 12, 0, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+  g.fillStyle = INK.red; g.beginPath(); g.ellipse(0, -40, 24, 16, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#E9D9B8'; g.beginPath(); g.ellipse(0, -46, 20, 8, 0, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+
+/** 粽子（原点：中心）：三角锥形绿叶包，腰缠五彩丝。 */
+export function zongzi(g, x, y, s = 1, rot = 0) {
+  g.save(); g.translate(x, y); g.rotate(rot); g.scale(s, s);
+  g.fillStyle = '#5E8A4E'; g.beginPath(); g.moveTo(0, -60); g.lineTo(55, 40); g.lineTo(-55, 40); g.closePath(); g.fill();
+  g.strokeStyle = rgba(INK.ink, 0.7); g.lineWidth = 3; g.stroke();
+  g.strokeStyle = 'rgba(30,50,30,0.5)'; g.lineWidth = 2;
+  for (const k of [-0.5, 0, 0.5]) { g.beginPath(); g.moveTo(0, -60); g.lineTo(k * 55, 40); g.stroke(); }
+  const cols = [INK.red, INK.gold, INK.azure, INK.green2, '#FFFFFF'];
+  cols.forEach((c, i) => { g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.moveTo(-30, 0 + i * 3); g.lineTo(30, 4 + i * 3); g.stroke(); });
+  g.restore();
+}
+
+/** 一束艾草（原点：束底），或菖蒲（剑形叶）。 */
+export function herbBundle(g, x, y, s = 1, kind = 'ai', seed = 3) {
+  const r = rng(seed);
+  g.save(); g.translate(x, y); g.scale(s, s);
+  if (kind === 'ai') {
+    for (let i = 0; i < 9; i++) {
+      const a = (i - 4) * 0.08, l = 240 + r() * 80;
+      stroke(g, [[0, 0], [Math.sin(a) * l * 0.5, -l * 0.5], [Math.sin(a) * l, -l]], 5, { color: '#5A6B4C', seed: seed + i, dry: 0, taper: [0.05, 0.6] });
+      for (let j = 0; j < 6; j++) {
+        const u = 0.3 + j * 0.12, lx = Math.sin(a) * l * u, ly = -l * u, sd = j % 2 ? 1 : -1;
+        g.fillStyle = rgba(j % 2 ? '#7E9070' : '#94A487', 0.85);
+        g.beginPath(); g.ellipse(lx + sd * 16, ly, 18, 7, sd * 0.6, 0, Math.PI * 2); g.fill();
+      }
+    }
+  } else {
+    for (let i = 0; i < 8; i++) {
+      const a = (i - 3.5) * 0.06, l = 320 + r() * 80;
+      stroke(g, [[0, 0], [Math.sin(a) * l * 0.5, -l * 0.5], [Math.sin(a) * l * 1.2, -l]], 14, { color: i % 2 ? INK.green : INK.green2, seed: seed + i, dry: 1, taper: [0.1, 0.9] });
+    }
+  }
+  g.strokeStyle = INK.red; g.lineWidth = 6; g.beginPath(); g.moveTo(-14, -20); g.lineTo(14, -16); g.stroke();
+  g.restore();
+}
+
+/** 香囊（原点：挂绳顶端）。 */
+export function sachet(g, x, y, t, s = 1) {
+  g.save(); g.translate(x, y); g.rotate(Math.sin(t * 2) * 0.08); g.scale(s, s);
+  g.strokeStyle = INK.red; g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 50); g.stroke();
+  g.fillStyle = INK.red; g.beginPath(); g.moveTo(0, 50); g.bezierCurveTo(70, 50, 60, 150, 0, 170); g.bezierCurveTo(-60, 150, -70, 50, 0, 50); g.fill();
+  g.fillStyle = INK.gold; g.font = '54px MaShanZheng'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('福', 0, 112);
+  g.strokeStyle = INK.gold; g.lineWidth = 3; for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 4, 170); g.lineTo(i * 5, 220); g.stroke(); }
+  g.restore();
+}
+
+/** 五彩绳：一圈五色丝绕成的手绳（原点：中心）。 */
+export function colorRope(g, x, y, s = 1) {
+  const cols = [INK.red, INK.gold, INK.azure, INK.green2, '#FFFFFF'];
+  g.save(); g.translate(x, y); g.scale(s, s);
+  cols.forEach((c, i) => { g.strokeStyle = c; g.lineWidth = 7; g.beginPath(); g.ellipse(0, 0, 90 - i * 4, 34 - i * 2, 0.1 * i, 0, Math.PI * 2); g.stroke(); });
+  g.strokeStyle = rgba(INK.ink, 0.5); g.lineWidth = 1.5; g.beginPath(); g.ellipse(0, 0, 96, 40, 0, 0, Math.PI * 2); g.stroke();
+  g.restore();
+}
