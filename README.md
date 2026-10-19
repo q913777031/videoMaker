@@ -65,6 +65,77 @@ python3 zodiac.py out/zodiac --no-video # 只出音频分轨、封面与文档
 - 输出（`out/zodiac/`）：`zodiac_portrait_1080x1920.mp4`、`zodiac_landscape_1920x1080.mp4`、`cover_*.png`、
   `bgm_track.wav` / `sfx_track.wav`（两轨相加即限幅前混音）、`cue_sheet.md` / `.csv`、`copy_and_references.md`
 
+## 水墨长卷科普：《重阳节是怎么来的？边看边答题》
+
+```bash
+python3 fetch_assets.py            # 字体
+python3 -m chongyang.build         # 成片 → out/chongyang/
+```
+
+一幅连续平移的水墨长卷讲重阳节：九为阳数、两九相重；九九谐音久久；《西京杂记》的早期记载；桓景登高避灾的传说；
+王维诗；糕谐音高；今天的法定老年节。中间 4 道互动题，每题 A/B 两个选项、3 秒倒计时（3、2、1 卡实测拍点），
+揭晓时朱砂“对”印砸在拍点上。成片与文案出处在 `videos/chongyang/`，说明见 [`chongyang/README.md`](chongyang/README.md)。
+
+## 水墨长卷科普：《元旦是怎么来的？》《春节是怎么来的？》《元宵节是怎么来的？》《清明节是怎么来的？》《端午节是怎么来的？》
+
+```bash
+python3 -m yuandan.build           # 元旦 → out/yuandan/
+python3 -m chunjie.build           # 春节 → out/chunjie/
+python3 -m yuanxiao.build          # 元宵节 → out/yuanxiao/
+python3 -m qingming.build          # 清明节 → out/qingming/
+python3 -m duanwu.build            # 端午节 → out/duanwu/
+```
+
+与重阳节同一套水墨长卷框架与互动答题（4 题、3 秒倒计时、A/B 选项、拍点揭晓）。元旦：旦字字形、萧子云诗、三正岁首、
+秦以十月为岁首、太初历、1912 改用公历、1949 定名、法定放假 1 天。春节：烧竹爆竹、年兽传说、桃符到春联、王安石《元日》、
+压岁谐音压祟、1914 定名春节、2024 列入人类非遗。元宵节：元是正月宵是夜、上元与三元、唐代宵禁与“放夜”、辛弃疾《青玉案·元夕》、
+元宵滚汤圆包、南宋灯谜、不是法定假日。清明：按太阳位置定日子、天清地明、寒食禁火与介子推传说、旧题杜牧《清明》、
+《清明上河图》画汴京、寒食上墓编入五礼、2008 年成为法定假日。端午：端是开头午同五、恶月驱邪、屈原传说与龙舟粽子、
+文秀《端午》、艾草菖蒲、角黍、2009 年列入人类非遗。成片、封面、文案与出处在 `videos/<节日拼音>/`。
+
+## 3D 科普：《出门一会儿，空调关不关？》
+
+```bash
+python3 fetch_assets.py            # 字体
+(cd ac3d && npm install)           # three.js
+python3 -m ac3d.build              # 成片 → out/ac3d/（4 核约 40 分钟）
+```
+
+真 3D（three.js 程序化建模，Playwright 无头 Chromium 软件 WebGL 逐帧渲染），1080×1920、30fps、92.6 秒。
+整片是同一间现代客厅的剖面（白色分体空调室内机、阳台上的室外机、电视、沙发），只有一台相机连续运镜，没有硬切；
+每句字幕都对应画面里的具体动作：热粒子从墙和窗钻进屋、空调把热顺着管路搬到室外机、关机后室温读数上涨、
+重开时耗电条冲顶、电视上播实测柱状图、遥控器连按触发“保护中”、定频机室外机自己启停。
+配乐为 `music/bgm.m4a`，镜头边界与 29 个打击乐音效（`engine/perc.py`：低音鼓、军鼓边击、低音通鼓、拍手、木块、沙锤）落在实测拍点上。
+事实依据见 [`ac3d/事实清单.md`](ac3d/事实清单.md)；成片、卡点表、文案与出处在 `videos/ac3d/`。引擎说明见 [`ac3d/README.md`](ac3d/README.md)。
+
+## 系列科普动画：阿德勒心理学 10 讲
+
+```bash
+python3 fetch_assets.py              # 只需其中的字体
+python3 -m adler.build               # 渲染全部 10 期到 out/adler/epXX/；也可指定期号：python3 -m adler.build 03 07
+python3 -m adler.build 03 --sheet    # 逐镜联系表，检查画面
+```
+
+无旁白、纸片剪影风格，每期 1080×1920、30fps、92.6 秒；配乐统一为 `music/bgm.m4a`，镜头边界与全部打击乐音效都落在 `bgm.detect()` 的实测拍点上，
+第 8 小节（17.14 秒，音乐 drop）落版每期的概念名。成片、封面、卡点表与逐期“文案与出处”在 `videos/adler/`。
+
+| 期 | 概念 | 片名 |
+|----|------|------|
+| 01 | 目的论 | 过去，真的决定了现在的你吗？ |
+| 02 | 自卑感 | 觉得自己不如别人，是坏事吗？ |
+| 03 | 自卑情结 | “要不是因为……，我早就……” |
+| 04 | 追求优越 | 你一直在和谁比赛？ |
+| 05 | 人生课题 | 为什么烦恼，总和人有关？ |
+| 06 | 课题分离 | 别人怎么看你，是谁的课题？ |
+| 07 | 鼓励 | 为什么“你真棒”，不一定是最好的夸奖？ |
+| 08 | 早期记忆 | 你最早的记忆，藏着什么？ |
+| 09 | 出生顺序 | 老大懂事、老幺任性，是真的吗？ |
+| 10 | 共同体感觉 | 人在什么时候，会觉得自己有价值？ |
+
+- 每镜右上角标注内容性质：阿德勒原著 / 大意、岸见一郎阐释（《被讨厌的勇气》中的表述）、研究证据、常见误解、小练习等；
+  “课题分离”“一切烦恼都是人际关系的烦恼”等岸见一郎的说法不署名阿德勒。逐条出处见 [`adler/事实核查.md`](adler/事实核查.md)。
+- 引擎与写法见 [`adler/README.md`](adler/README.md)：`core.py`（实测拍点时间轴、声明式元素、混音与输出）、`kit.py`（纸片人物、图标、气泡等元件）、`epXX_*.py`（各期分镜）。
+
 ## 无声知识短视频（认知偏差系列 04–08）
 
 ```bash
@@ -220,5 +291,6 @@ python3 logic/logic_short.py out/logic_short.mp4
 ## 第三方资源许可
 
 - [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)：MIT License，© Microsoft
-- [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans / Serif CJK](https://github.com/notofonts/noto-cjk)：SIL Open Font License 1.1
+- [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans / Serif CJK](https://github.com/notofonts/noto-cjk)、[马善政毛笔楷书 Ma Shan Zheng](https://github.com/googlefonts/mashanzheng)：SIL Open Font License 1.1
+- [three.js](https://github.com/mrdoob/three.js)：MIT License
 - [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)：Apache 2.0，通过 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 运行

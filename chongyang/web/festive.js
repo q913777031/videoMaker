@@ -1,0 +1,449 @@
+// 节庆小景（水墨笔触）：红梅、木门与春联、鞭炮串、水墨烟花、日历页、红灯笼、红包、铜钱串、年兽、篝火、年夜饭桌。
+// 与 ink.js 一样都是确定性绘制：随机数只来自 seed。
+import { INK, clamp01, lerp, easeOut, rng, canvas, rgba, stroke, curve, blot } from './ink.js';
+
+export function sprite(w, h, f) { const c = canvas(w, h); f(c.getContext('2d'), w, h); return c; }
+
+/** 红梅一枝（原点：枝根，向右下伸出）。 */
+export function plum(seed = 3) {
+  return sprite(620, 520, (g) => {
+    const r = rng(seed);
+    const main = curve([[0, 30], [160, 70], [300, 60], [420, 140], [560, 170]], 6);
+    stroke(g, main, 22, { seed, dry: 4, taper: [0.02, 0.6], color: '#3A2E26' });
+    const tw = [];
+    for (let i = 0; i < 6; i++) {
+      const p = main[Math.floor(main.length * (0.15 + i * 0.13))];
+      const e = [p[0] + 40 + r() * 70, p[1] + (r() < 0.5 ? -1 : 1) * (40 + r() * 80)];
+      stroke(g, [p, [lerp(p[0], e[0], 0.5), lerp(p[1], e[1], 0.5) + 8], e], 7, { seed: seed + i, dry: 1, color: '#3A2E26' });
+      tw.push(e, [lerp(p[0], e[0], 0.6), lerp(p[1], e[1], 0.6)]);
+    }
+    tw.push(main[main.length - 1], main[Math.floor(main.length * 0.5)]);
+    for (const [x, y] of tw) {
+      const n = 1 + Math.floor(r() * 2);
+      for (let k = 0; k < n; k++) {
+        const bx = x + (r() - 0.5) * 30, by = y + (r() - 0.5) * 24, R = 13 + r() * 6;
+        for (let j = 0; j < 5; j++) {
+          const a = j / 5 * Math.PI * 2 + r();
+          g.fillStyle = rgba(INK.red2, 0.85);
+          g.beginPath(); g.arc(bx + Math.cos(a) * R * 0.55, by + Math.sin(a) * R * 0.55, R * 0.5, 0, Math.PI * 2); g.fill();
+        }
+        g.fillStyle = INK.gold; g.beginPath(); g.arc(bx, by, 3, 0, Math.PI * 2); g.fill();
+      }
+    }
+  });
+}
+
+/** 木门（原点：底部中心）。couplets=[右联, 左联] 为 null 时不贴春联；fu 为是否贴倒“福”。 */
+export function door({ couplets = ['爆竹声中一岁除', '春风送暖入屠苏'], fu = true, upside = false } = {}) {
+  return sprite(760, 760, (g, w, h) => {
+    const cx = w / 2, b = h - 10;
+    g.fillStyle = '#7A4A30'; g.fillRect(cx - 200, b - 600, 400, 600);
+    g.strokeStyle = rgba(INK.ink, 0.85); g.lineWidth = 5; g.strokeRect(cx - 200, b - 600, 400, 600);
+    g.beginPath(); g.moveTo(cx, b - 600); g.lineTo(cx, b); g.stroke();
+    for (const x of [-100, 100]) for (const y of [-470, -250]) { g.strokeStyle = 'rgba(40,24,16,0.6)'; g.lineWidth = 3; g.strokeRect(cx + x - 70, b + y - 80, 140, 160); }
+    for (const x of [-26, 26]) { g.fillStyle = '#C8A15E'; g.beginPath(); g.arc(cx + x, b - 300, 14, 0, Math.PI * 2); g.fill(); }
+    stroke(g, [[cx - 250, b - 610], [cx + 250, b - 610]], 30, { seed: 3, dry: 2, color: INK.ink, taper: [0.02, 0.02] });
+    if (couplets) {
+      const couplet = (x, text) => {
+        g.fillStyle = INK.red; g.fillRect(x - 40, b - 590, 80, 560);
+        g.fillStyle = '#1E1B19'; g.font = '62px MaShanZheng'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        const step = Math.min(78, 540 / text.length), y0 = b - 590 + (560 - step * text.length) / 2;
+        [...text].forEach((ch, i) => g.fillText(ch, x, y0 + step * (i + 0.5)));
+      };
+      couplet(cx + 260, couplets[0]);
+      couplet(cx - 260, couplets[1]);
+    }
+    if (fu) {
+      g.fillStyle = INK.red; g.save(); g.translate(cx, b - 400); g.rotate(Math.PI / 4); g.fillRect(-70, -70, 140, 140); g.restore();
+      g.save(); g.translate(cx, b - 396); if (upside) g.rotate(Math.PI);
+      g.fillStyle = '#1E1B19'; g.font = '110px MaShanZheng'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('福', 0, upside ? -8 : 0);
+      g.restore();
+    }
+  });
+}
+
+/** 鞭炮串：在 (x,y) 起垂下 n 节，随 t 轻摆。 */
+export function firecrackers(g, x, y, t, n = 12, s = 1) {
+  g.save(); g.translate(x, y); g.rotate(Math.sin(t * 3) * 0.06); g.scale(s, s);
+  g.strokeStyle = INK.ink; g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 40 + n * 40); g.stroke();
+  for (let i = 0; i < n; i++) {
+    const yy = 40 + i * 40, sd = i % 2 ? 1 : -1;
+    g.save(); g.translate(sd * 14, yy); g.rotate(sd * 0.5);
+    g.fillStyle = INK.red; g.fillRect(-8, -24, 16, 48); g.fillStyle = INK.gold; g.fillRect(-8, -24, 16, 6); g.restore();
+  }
+  g.restore();
+}
+
+/** 水墨烟花：dt 秒后绽开并散落。 */
+export function firework(g, x, y, dt, color, seed, R = 210) {
+  if (dt < 0 || dt > 2.6) return;
+  const r = rng(seed);
+  const k = easeOut(dt / 0.5), fade = 1 - clamp01((dt - 0.9) / 1.6);
+  for (let i = 0; i < 26; i++) {
+    const a = i / 26 * Math.PI * 2 + r() * 0.2, l = R * (0.75 + r() * 0.35) * k;
+    const x1 = x + Math.cos(a) * l, y1 = y + Math.sin(a) * l + dt * dt * 22;
+    const x0 = x + Math.cos(a) * l * 0.55, y0 = y + Math.sin(a) * l * 0.55;
+    stroke(g, [[x0, y0], [lerp(x0, x1, 0.5), lerp(y0, y1, 0.5)], [x1, y1]], 7, { color, alpha: 0.85 * fade, seed: seed + i, dry: 0, taper: [0.6, 0.15] });
+    g.fillStyle = rgba(INK.gold2, 0.9 * fade); g.beginPath(); g.arc(x1, y1, 4, 0, Math.PI * 2); g.fill();
+  }
+  blot(g, x, y, 70 * k, color, 0.25 * fade);
+}
+
+/** 手撕日历一页（原点：中心）。 */
+export function calPage(top, big, bottom, { red = true, w = 380, h = 470 } = {}) {
+  return sprite(w + 20, h + 20, (g) => {
+    g.translate(10, 10);
+    g.fillStyle = 'rgba(60,40,20,0.18)'; g.fillRect(8, 10, w, h);
+    g.fillStyle = '#FBF6EC'; g.fillRect(0, 0, w, h);
+    g.fillStyle = red ? INK.red : INK.ink2; g.fillRect(0, 0, w, 96);
+    g.strokeStyle = rgba(INK.ink, 0.8); g.lineWidth = 4; g.strokeRect(0, 0, w, h);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = '#FBF1E6'; g.font = '700 54px NotoSerifSC'; g.fillText(top, w / 2, 50);
+    g.fillStyle = red ? INK.red : INK.ink; g.font = `700 ${big.length > 2 ? 88 : 200}px NotoSerifSC`; g.fillText(big, w / 2, 250);
+    g.fillStyle = INK.ink; g.font = '64px MaShanZheng'; g.fillText(bottom, w / 2, h - 70);
+    for (const x of [w * 0.3, w * 0.7]) { g.fillStyle = '#5A4632'; g.beginPath(); g.arc(x, 0, 10, 0, Math.PI * 2); g.fill(); }
+  });
+}
+
+/** 红灯笼（原点：挂绳顶端；lit 为点亮程度 0–1）。 */
+export function lantern(g, x, y, s = 1, lit = 1, t = 0, seed = 1) {
+  g.save(); g.translate(x, y); g.rotate(Math.sin(t * 2 + seed) * 0.05); g.scale(s, s);
+  g.strokeStyle = INK.ink; g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 60); g.stroke();
+  if (lit > 0) blot(g, 0, 160, 170, '#FF9A3C', 0.35 * lit);
+  g.fillStyle = '#2A2622'; g.fillRect(-34, 56, 68, 18); g.fillRect(-34, 246, 68, 18);
+  const grd = g.createRadialGradient(-20, 140, 10, 0, 160, 110);
+  grd.addColorStop(0, lit > 0 ? '#F25A3A' : INK.red); grd.addColorStop(1, '#9E2A20');
+  g.fillStyle = grd; g.beginPath(); g.ellipse(0, 160, 96, 92, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = rgba('#5A1A12', 0.6); g.lineWidth = 2;
+  for (const k of [-0.6, -0.3, 0, 0.3, 0.6]) { g.beginPath(); g.ellipse(0, 160, 96 * Math.abs(k) + 2, 92, 0, 0, Math.PI * 2); g.stroke(); }
+  g.strokeStyle = INK.gold; g.lineWidth = 3;
+  for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(i * 5, 264); g.lineTo(i * 6, 330); g.stroke(); }
+  g.restore();
+}
+
+/** 红包（原点：中心）。 */
+export function redEnvelope(g, x, y, s = 1, rot = 0) {
+  g.save(); g.translate(x, y); g.rotate(rot); g.scale(s, s);
+  g.fillStyle = INK.red; g.beginPath(); g.roundRect(-60, -85, 120, 170, 10); g.fill();
+  g.fillStyle = '#A82E24'; g.beginPath(); g.moveTo(-60, -85); g.lineTo(0, -30); g.lineTo(60, -85); g.closePath(); g.fill();
+  g.fillStyle = INK.gold; g.beginPath(); g.arc(0, -30, 18, 0, Math.PI * 2); g.fill();
+  g.fillStyle = INK.gold; g.font = '64px MaShanZheng'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('福', 0, 34);
+  g.restore();
+}
+
+/** 铜钱串（原点：顶端）。 */
+export function coinString(g, x, y, t, n = 7) {
+  g.save(); g.translate(x, y); g.rotate(Math.sin(t * 2.5) * 0.08);
+  g.strokeStyle = INK.red; g.lineWidth = 4; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, n * 40 + 20); g.stroke();
+  for (let i = 0; i < n; i++) {
+    const cy = 30 + i * 40;
+    g.fillStyle = '#C8A15E'; g.beginPath(); g.arc(0, cy, 22, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = rgba(INK.ink, 0.7); g.lineWidth = 2; g.stroke();
+    g.fillStyle = INK.paper; g.fillRect(-6, cy - 6, 12, 12);
+  }
+  g.restore();
+}
+
+/** 年兽（原点：脚底中心，面朝左）：浓墨身形、独角、红眼、长尾。 */
+export function nianBeast(seed = 5) {
+  return sprite(720, 520, (g, w, h) => {
+    const r = rng(seed);
+    g.filter = 'blur(3px)';
+    for (let i = 0; i < 26; i++) blot(g, w * (0.3 + r() * 0.45), h * (0.42 + r() * 0.3), 70 + r() * 60, '#1E1B19', 0.45);
+    g.filter = 'none';
+    g.fillStyle = rgba('#1E1B19', 0.92);
+    g.beginPath(); g.ellipse(w * 0.5, h * 0.55, 220, 120, -0.05, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(w * 0.22, h * 0.42, 110, 95, 0.2, 0, Math.PI * 2); g.fill();
+    for (const x of [0.32, 0.45, 0.6, 0.72]) stroke(g, [[w * x, h * 0.62], [w * x - 6, h * 0.82], [w * x - 14, h - 8]], 34, { seed: seed + x * 10, dry: 2, taper: [0.05, 0.05] });
+    stroke(g, curve([[w * 0.2, h * 0.28], [w * 0.16, h * 0.12], [w * 0.24, h * 0.02]], 5), 22, { seed: seed + 3, dry: 1, taper: [0.02, 0.8] });
+    stroke(g, curve([[w * 0.72, h * 0.48], [w * 0.88, h * 0.35], [w * 0.96, h * 0.12], [w * 0.88, h * 0.04]], 6), 20, { seed: seed + 4, dry: 3, taper: [0.05, 0.9] });
+    for (let i = 0; i < 14; i++) stroke(g, [[w * (0.3 + i * 0.03), h * 0.36], [w * (0.31 + i * 0.03), h * 0.26 - r() * 20]], 8, { seed: seed + 20 + i, dry: 0, taper: [0.05, 0.8] });
+    g.fillStyle = '#E8392A'; g.beginPath(); g.ellipse(w * 0.14, h * 0.38, 16, 11, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#FFE08A'; g.beginPath(); g.arc(w * 0.135, h * 0.38, 4, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#F7EFE0';
+    for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(w * (0.05 + i * 0.03), h * 0.5); g.lineTo(w * (0.065 + i * 0.03), h * 0.56); g.lineTo(w * (0.08 + i * 0.03), h * 0.5); g.fill(); }
+  });
+}
+
+/** 篝火（原点：底部中心）：t 驱动火舌摆动。 */
+export function bonfire(g, x, y, t, s = 1, seed = 2) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  for (const [a, l] of [[-0.5, 150], [0.5, 150], [-0.15, 160], [0.2, 140]]) {
+    g.save(); g.rotate(a); stroke(g, [[-l / 2, 0], [0, -6], [l / 2, 0]], 26, { seed: seed + l, dry: 2, color: '#4A3A2E', taper: [0.02, 0.02] }); g.restore();
+  }
+  blot(g, 0, -90, 190, '#FF9A3C', 0.35);
+  const r = rng(seed);
+  for (let i = 0; i < 9; i++) {
+    const ph = r() * 6, hgt = 120 + r() * 120, xx = (r() - 0.5) * 110;
+    const sw = Math.sin(t * (5 + r() * 3) + ph) * 18;
+    const col = i % 3 === 0 ? '#F2C14E' : i % 3 === 1 ? '#E8603A' : INK.red;
+    g.fillStyle = rgba(col, 0.75);
+    g.beginPath(); g.moveTo(xx - 34, -10); g.quadraticCurveTo(xx - 30 + sw, -hgt * 0.6, xx + sw * 1.6, -hgt);
+    g.quadraticCurveTo(xx + 30 + sw, -hgt * 0.5, xx + 34, -10); g.closePath(); g.fill();
+  }
+  g.restore();
+}
+
+/** 年夜饭圆桌（原点：桌面中心）。 */
+export function dinnerTable() {
+  return sprite(760, 360, (g, w, h) => {
+    const cx = w / 2, cy = 120;
+    g.fillStyle = '#7A4A30'; g.fillRect(cx - 18, cy + 40, 36, 200);
+    g.fillStyle = '#9E6A45'; g.beginPath(); g.ellipse(cx, cy + 20, 340, 90, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#B98A5E'; g.beginPath(); g.ellipse(cx, cy, 340, 90, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = rgba(INK.ink, 0.8); g.lineWidth = 4; g.stroke();
+    const dish = (x, y, rw, fill) => {
+      g.fillStyle = '#F7F2E8'; g.beginPath(); g.ellipse(x, y, rw, rw * 0.35, 0, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = rgba(INK.azure, 0.8); g.lineWidth = 3; g.stroke(); fill(x, y, rw);
+    };
+    dish(cx, cy - 5, 120, (x, y) => {                       // 鱼：年年有余
+      g.fillStyle = '#D9803F'; g.beginPath(); g.ellipse(x - 10, y, 80, 24, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.moveTo(x + 62, y); g.lineTo(x + 100, y - 22); g.lineTo(x + 100, y + 22); g.closePath(); g.fill();
+      g.fillStyle = INK.ink; g.beginPath(); g.arc(x - 70, y - 4, 4, 0, Math.PI * 2); g.fill();
+    });
+    dish(cx - 210, cy + 20, 80, (x, y) => {                 // 饺子
+      for (const [dx, dy] of [[-28, -4], [0, 6], [28, -4], [-12, -14], [14, -14]]) {
+        g.fillStyle = '#FBF6EC'; g.strokeStyle = rgba(INK.ink, 0.6); g.lineWidth = 2;
+        g.beginPath(); g.ellipse(x + dx, y + dy, 20, 12, 0, Math.PI, 0); g.closePath(); g.fill(); g.stroke();
+      }
+    });
+    dish(cx + 210, cy + 20, 80, (x, y) => {                 // 年糕
+      g.fillStyle = '#EAD7AE'; g.fillRect(x - 40, y - 20, 80, 26); g.fillStyle = INK.red; g.beginPath(); g.arc(x, y - 22, 8, 0, Math.PI * 2); g.fill();
+    });
+  });
+}
+
+/** 小挂轴：竖排大字 + 小字（原点：顶部中心）。 */
+export function hangScroll(big, small, seed = 1) {
+  return sprite(220, 600, (g, w, h) => {
+    g.fillStyle = INK.silk; g.fillRect(14, 10, w - 28, h - 30);
+    g.fillStyle = '#F8F1E2'; g.fillRect(30, 50, w - 60, h - 110);
+    stroke(g, [[0, 12], [w, 12]], 16, { seed, dry: 0, color: '#5A4632', taper: [0.02, 0.02] });
+    stroke(g, [[4, h - 18], [w - 4, h - 18]], 18, { seed: seed + 1, dry: 0, color: '#5A4632', taper: [0.02, 0.02] });
+    g.fillStyle = INK.ink; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = `${big.length > 1 ? 88 : 120}px MaShanZheng`; g.fillText(big, w / 2, 150);
+    g.fillStyle = INK.red; g.font = `${small.length > 4 ? 52 : 64}px MaShanZheng`;
+    const step = Math.min(70, 300 / small.length);
+    [...small].forEach((ch, i) => g.fillText(ch, w / 2, 260 + step * (i + 0.5)));
+  });
+}
+
+/** 满月：宣纸白月面 + 淡墨晕边（原点：圆心）。 */
+export function moon(g, x, y, r = 120, a = 1) {
+  if (a <= 0) return;
+  g.save(); g.globalAlpha = a;
+  blot(g, x, y, r * 2.2, '#C9C2B0', 0.35);
+  const grd = g.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+  grd.addColorStop(0, '#FFFDF6'); grd.addColorStop(1, '#EDE5D2');
+  g.fillStyle = grd; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = rgba(INK.ink3, 0.5); g.lineWidth = 3; g.stroke();
+  for (const [dx, dy, rr] of [[-0.3, -0.1, 0.18], [0.25, 0.2, 0.12], [0.1, -0.35, 0.09]]) blot(g, x + dx * r, y + dy * r, rr * r, INK.ink3, 0.18);
+  g.restore();
+}
+
+/** 一碗元宵（原点：碗底中心），t 驱动热气。 */
+export function tangyuanBowl(g, x, y, t, s = 1) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  for (let i = 0; i < 3; i++) {
+    const ph = t * 1.2 + i * 2;
+    g.strokeStyle = `rgba(150,140,130,${0.35 + 0.15 * Math.sin(ph)})`; g.lineWidth = 5; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(-50 + i * 50, -150);
+    g.bezierCurveTo(-70 + i * 50 + Math.sin(ph) * 15, -200, -30 + i * 50 - Math.sin(ph) * 15, -240, -50 + i * 50, -290); g.stroke();
+  }
+  g.fillStyle = '#F7F2E8'; g.beginPath(); g.ellipse(0, -110, 150, 34, 0, 0, Math.PI * 2); g.fill();
+  for (const [dx, dy] of [[-70, -116], [-20, -122], [32, -114], [80, -118], [5, -104], [-45, -104]]) {
+    g.fillStyle = '#FFFFFF'; g.beginPath(); g.arc(dx, dy, 24, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = rgba(INK.ink, 0.45); g.lineWidth = 2; g.stroke();
+  }
+  g.fillStyle = '#E7E1D4'; g.strokeStyle = rgba(INK.azure, 0.9); g.lineWidth = 4;
+  g.beginPath(); g.moveTo(-150, -110); g.quadraticCurveTo(-140, 0, -50, 0); g.lineTo(50, 0); g.quadraticCurveTo(140, 0, 150, -110); g.closePath(); g.fill(); g.stroke();
+  g.strokeStyle = rgba(INK.azure, 0.7); g.lineWidth = 3;
+  g.beginPath(); g.moveTo(-120, -70); g.quadraticCurveTo(0, -40, 120, -70); g.stroke();
+  g.restore();
+}
+
+/** 竹笸箩里滚元宵（原点：笸箩中心），k 为来回摇晃相位。 */
+export function sieve(g, x, y, k, s = 1, grow = 1) {
+  g.save(); g.translate(x, y); g.rotate(Math.sin(k) * 0.12); g.scale(s, s);
+  g.fillStyle = '#E8DDC6'; g.beginPath(); g.ellipse(0, 0, 260, 80, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#8A6A44'; g.lineWidth = 14; g.stroke();
+  g.strokeStyle = 'rgba(138,106,68,0.35)'; g.lineWidth = 2;
+  for (let i = -5; i <= 5; i++) { g.beginPath(); g.moveTo(i * 44, -70); g.lineTo(i * 44, 70); g.stroke(); }
+  g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.ellipse(0, 10, 200, 50, 0, 0, Math.PI * 2); g.fill();
+  for (let i = 0; i < 7; i++) {
+    const px = (i - 3) * 52 + Math.sin(k + i) * 26, py = Math.cos(k * 1.3 + i) * 14 + 4;
+    g.fillStyle = '#FFFFFF'; g.beginPath(); g.arc(px, py, 14 + 10 * grow, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = rgba(INK.ink, 0.4); g.lineWidth = 2; g.stroke();
+  }
+  g.restore();
+}
+
+/** 垂柳（原点：树根）：主干斜出，十几条柳丝垂下，t 驱动随风摆动。 */
+export function willow(g, x, y, t, s = 1, seed = 4) {
+  const r = rng(seed);
+  g.save(); g.translate(x, y); g.scale(s, s);
+  const trunk = curve([[0, 0], [10, -160], [-20, -320], [30, -440]], 6);
+  stroke(g, trunk, 40, { seed, dry: 5, taper: [0.02, 0.6], color: '#3A2E26' });
+  const tips = [];
+  for (let i = 0; i < 4; i++) {
+    const p = trunk[Math.floor(trunk.length * (0.45 + i * 0.15))];
+    const dir = i % 2 ? 1 : -1;
+    const e = [p[0] + dir * (120 + r() * 80), p[1] - 40 - r() * 40];
+    stroke(g, [p, [lerp(p[0], e[0], 0.5), p[1] - 50], e], 10, { seed: seed + i, dry: 1, color: '#3A2E26' });
+    tips.push(p, e, [lerp(p[0], e[0], 0.5), p[1] - 45]);
+  }
+  for (const [px, py] of tips) {
+    for (let k = 0; k < 4; k++) {
+      const len = 150 + r() * 160, ph = r() * 6, sw = Math.sin(t * 1.6 + ph) * 18;
+      const ox = (r() - 0.5) * 40;
+      g.strokeStyle = rgba(INK.green2, 0.75); g.lineWidth = 2.2;
+      g.beginPath(); g.moveTo(px + ox, py);
+      g.quadraticCurveTo(px + ox + sw * 0.5, py + len * 0.5, px + ox + sw, py + len); g.stroke();
+      for (let j = 1; j < 8; j++) {                           // 柳叶
+        const u = j / 8, lx = px + ox + sw * u * u, ly = py + len * u;
+        g.fillStyle = rgba(j % 2 ? INK.green2 : INK.green, 0.7);
+        g.beginPath(); g.ellipse(lx + (j % 2 ? 6 : -6), ly, 9, 3.5, j % 2 ? 0.8 : -0.8, 0, Math.PI * 2); g.fill();
+      }
+    }
+  }
+  g.restore();
+}
+
+/** 燕子：(x,y) 处一只燕子，翅膀随 t 扇动。 */
+export function swallow(g, x, y, t, s = 1, ph = 0) {
+  const f = Math.sin(t * 9 + ph);
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.fillStyle = '#1E1B19';
+  g.beginPath(); g.moveTo(-30, 0); g.quadraticCurveTo(-10, -26 * f - 6, 0, -2); g.quadraticCurveTo(10, -26 * f - 6, 30, 0);
+  g.quadraticCurveTo(10, 4, 0, 6); g.quadraticCurveTo(-10, 4, -30, 0); g.fill();
+  g.beginPath(); g.ellipse(-4, 2, 12, 5, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.moveTo(6, 3); g.lineTo(26, 14); g.lineTo(16, 4); g.lineTo(26, -2); g.closePath(); g.fill();
+  g.restore();
+}
+
+/** 风筝（菱形红纸 + 尾穗），(x,y) 为风筝中心，线拉向 (hx,hy)。 */
+export function kite(g, x, y, t, hx, hy, s = 1) {
+  g.strokeStyle = rgba(INK.ink, 0.6); g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(x, y + 40 * s); g.quadraticCurveTo(lerp(x, hx, 0.5) + 40, lerp(y, hy, 0.5) + 60, hx, hy); g.stroke();
+  g.save(); g.translate(x, y); g.rotate(Math.sin(t * 1.5) * 0.12); g.scale(s, s);
+  g.fillStyle = rgba(INK.red, 0.9); g.beginPath(); g.moveTo(0, -60); g.lineTo(44, 0); g.lineTo(0, 70); g.lineTo(-44, 0); g.closePath(); g.fill();
+  g.strokeStyle = '#5A4632'; g.lineWidth = 3; g.beginPath(); g.moveTo(0, -60); g.lineTo(0, 70); g.moveTo(-44, 0); g.lineTo(44, 0); g.stroke();
+  g.strokeStyle = rgba(INK.red, 0.8); g.lineWidth = 3;
+  g.beginPath(); g.moveTo(0, 70);
+  for (let i = 1; i <= 6; i++) g.lineTo(Math.sin(t * 3 + i) * 14, 70 + i * 26);
+  g.stroke();
+  for (let i = 1; i <= 6; i += 2) { g.fillStyle = INK.gold; g.beginPath(); g.ellipse(Math.sin(t * 3 + i) * 14, 70 + i * 26, 8, 4, 0.5, 0, Math.PI * 2); g.fill(); }
+  g.restore();
+}
+
+/** 细雨：全屏斜落的淡墨雨丝，a 为浓淡（0 不画）。 */
+export function rain(g, t, a = 1, W = 1080, H = 1920) {
+  if (a <= 0) return;
+  const r = rng(17);
+  g.strokeStyle = `rgba(90,96,104,${0.28 * a})`; g.lineWidth = 1.6;
+  g.beginPath();
+  for (let i = 0; i < 160; i++) {
+    const x0 = r() * (W + 300), sp = 900 + r() * 500, l = 30 + r() * 40;
+    const y = (r() * H + t * sp) % (H + 100) - 50, x = (x0 - (t * sp) * 0.18) % (W + 300);
+    const xx = x < -150 ? x + W + 300 : x;
+    g.moveTo(xx, y); g.lineTo(xx - l * 0.18, y + l);
+  }
+  g.stroke();
+}
+
+/** 江水：y 处一条横向水带（淡墨波纹），宽度覆盖整屏。 */
+export function river(g, y, h, t, cx = 0, W = 1080) {
+  const grd = g.createLinearGradient(0, y, 0, y + h);
+  grd.addColorStop(0, 'rgba(110,128,136,0.30)'); grd.addColorStop(1, 'rgba(110,128,136,0.10)');
+  g.fillStyle = grd; g.fillRect(-40, y, W + 80, h);
+  g.strokeStyle = 'rgba(70,86,94,0.35)'; g.lineWidth = 2;
+  for (let k = 0; k < 6; k++) {
+    const yy = y + 20 + k * h / 6;
+    g.beginPath();
+    for (let x = -40; x <= W + 40; x += 20) {
+      const v = yy + Math.sin((x + cx * 0.6) * 0.02 + t * 1.5 + k) * 4;
+      x === -40 ? g.moveTo(x, v) : g.lineTo(x, v);
+    }
+    g.stroke();
+  }
+}
+
+/** 龙舟（原点：船身中心，船头朝 dir=-1 左 / 1 右），t 驱动划桨，鼓手在船中。 */
+export function dragonBoat(g, x, y, t, s = 1, dir = -1, seed = 1) {
+  g.save(); g.translate(x, y); g.scale(s * -dir, s);
+  g.fillStyle = INK.red; g.beginPath(); g.moveTo(-260, -10); g.quadraticCurveTo(0, 40, 260, -10); g.lineTo(240, 10); g.quadraticCurveTo(0, 50, -240, 10); g.closePath(); g.fill();
+  g.fillStyle = INK.gold; g.fillRect(-240, -6, 480, 6);
+  // 龙头（船头在 +x）
+  g.fillStyle = INK.red; g.beginPath(); g.moveTo(240, -10); g.quadraticCurveTo(280, -70, 320, -80); g.lineTo(330, -60); g.quadraticCurveTo(300, -40, 270, 6); g.closePath(); g.fill();
+  g.fillStyle = INK.ink; g.beginPath(); g.arc(312, -70, 5, 0, Math.PI * 2); g.fill();
+  stroke(g, [[300, -84], [320, -110], [336, -104]], 6, { color: INK.gold, seed, dry: 0 });
+  // 龙尾
+  stroke(g, curve([[-240, -6], [-280, -40], [-300, -80], [-286, -96]], 4), 12, { color: INK.red, seed: seed + 1, dry: 0, taper: [0.05, 0.8] });
+  for (let i = 0; i < 8; i++) {                              // 划手与桨
+    const px = -190 + i * 52, ph = t * 7 + i * 0.4, a = Math.sin(ph) * 0.5;
+    g.fillStyle = INK.ink; g.beginPath(); g.arc(px, -28, 9, 0, Math.PI * 2); g.fill();
+    g.fillStyle = i % 2 ? INK.azure : INK.ochre; g.fillRect(px - 8, -20, 16, 16);
+    g.save(); g.translate(px, -10); g.rotate(0.6 + a);
+    g.strokeStyle = '#5A4632'; g.lineWidth = 4; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 60); g.stroke();
+    g.fillStyle = '#5A4632'; g.beginPath(); g.ellipse(0, 64, 6, 12, 0, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+  g.fillStyle = INK.red; g.beginPath(); g.ellipse(0, -40, 24, 16, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#E9D9B8'; g.beginPath(); g.ellipse(0, -46, 20, 8, 0, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+
+/** 粽子（原点：中心）：三角锥形绿叶包，腰缠五彩丝。 */
+export function zongzi(g, x, y, s = 1, rot = 0) {
+  g.save(); g.translate(x, y); g.rotate(rot); g.scale(s, s);
+  g.fillStyle = '#5E8A4E'; g.beginPath(); g.moveTo(0, -60); g.lineTo(55, 40); g.lineTo(-55, 40); g.closePath(); g.fill();
+  g.strokeStyle = rgba(INK.ink, 0.7); g.lineWidth = 3; g.stroke();
+  g.strokeStyle = 'rgba(30,50,30,0.5)'; g.lineWidth = 2;
+  for (const k of [-0.5, 0, 0.5]) { g.beginPath(); g.moveTo(0, -60); g.lineTo(k * 55, 40); g.stroke(); }
+  const cols = [INK.red, INK.gold, INK.azure, INK.green2, '#FFFFFF'];
+  cols.forEach((c, i) => { g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.moveTo(-30, 0 + i * 3); g.lineTo(30, 4 + i * 3); g.stroke(); });
+  g.restore();
+}
+
+/** 一束艾草（原点：束底），或菖蒲（剑形叶）。 */
+export function herbBundle(g, x, y, s = 1, kind = 'ai', seed = 3) {
+  const r = rng(seed);
+  g.save(); g.translate(x, y); g.scale(s, s);
+  if (kind === 'ai') {
+    for (let i = 0; i < 9; i++) {
+      const a = (i - 4) * 0.08, l = 240 + r() * 80;
+      stroke(g, [[0, 0], [Math.sin(a) * l * 0.5, -l * 0.5], [Math.sin(a) * l, -l]], 5, { color: '#5A6B4C', seed: seed + i, dry: 0, taper: [0.05, 0.6] });
+      for (let j = 0; j < 6; j++) {
+        const u = 0.3 + j * 0.12, lx = Math.sin(a) * l * u, ly = -l * u, sd = j % 2 ? 1 : -1;
+        g.fillStyle = rgba(j % 2 ? '#7E9070' : '#94A487', 0.85);
+        g.beginPath(); g.ellipse(lx + sd * 16, ly, 18, 7, sd * 0.6, 0, Math.PI * 2); g.fill();
+      }
+    }
+  } else {
+    for (let i = 0; i < 8; i++) {
+      const a = (i - 3.5) * 0.06, l = 320 + r() * 80;
+      stroke(g, [[0, 0], [Math.sin(a) * l * 0.5, -l * 0.5], [Math.sin(a) * l * 1.2, -l]], 14, { color: i % 2 ? INK.green : INK.green2, seed: seed + i, dry: 1, taper: [0.1, 0.9] });
+    }
+  }
+  g.strokeStyle = INK.red; g.lineWidth = 6; g.beginPath(); g.moveTo(-14, -20); g.lineTo(14, -16); g.stroke();
+  g.restore();
+}
+
+/** 香囊（原点：挂绳顶端）。 */
+export function sachet(g, x, y, t, s = 1) {
+  g.save(); g.translate(x, y); g.rotate(Math.sin(t * 2) * 0.08); g.scale(s, s);
+  g.strokeStyle = INK.red; g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 50); g.stroke();
+  g.fillStyle = INK.red; g.beginPath(); g.moveTo(0, 50); g.bezierCurveTo(70, 50, 60, 150, 0, 170); g.bezierCurveTo(-60, 150, -70, 50, 0, 50); g.fill();
+  g.fillStyle = INK.gold; g.font = '54px MaShanZheng'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('福', 0, 112);
+  g.strokeStyle = INK.gold; g.lineWidth = 3; for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 4, 170); g.lineTo(i * 5, 220); g.stroke(); }
+  g.restore();
+}
+
+/** 五彩绳：一圈五色丝绕成的手绳（原点：中心）。 */
+export function colorRope(g, x, y, s = 1) {
+  const cols = [INK.red, INK.gold, INK.azure, INK.green2, '#FFFFFF'];
+  g.save(); g.translate(x, y); g.scale(s, s);
+  cols.forEach((c, i) => { g.strokeStyle = c; g.lineWidth = 7; g.beginPath(); g.ellipse(0, 0, 90 - i * 4, 34 - i * 2, 0.1 * i, 0, Math.PI * 2); g.stroke(); });
+  g.strokeStyle = rgba(INK.ink, 0.5); g.lineWidth = 1.5; g.beginPath(); g.ellipse(0, 0, 96, 40, 0, 0, Math.PI * 2); g.stroke();
+  g.restore();
+}
