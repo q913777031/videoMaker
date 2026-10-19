@@ -212,3 +212,68 @@ export function dinnerTable() {
     });
   });
 }
+
+/** 小挂轴：竖排大字 + 小字（原点：顶部中心）。 */
+export function hangScroll(big, small, seed = 1) {
+  return sprite(220, 600, (g, w, h) => {
+    g.fillStyle = INK.silk; g.fillRect(14, 10, w - 28, h - 30);
+    g.fillStyle = '#F8F1E2'; g.fillRect(30, 50, w - 60, h - 110);
+    stroke(g, [[0, 12], [w, 12]], 16, { seed, dry: 0, color: '#5A4632', taper: [0.02, 0.02] });
+    stroke(g, [[4, h - 18], [w - 4, h - 18]], 18, { seed: seed + 1, dry: 0, color: '#5A4632', taper: [0.02, 0.02] });
+    g.fillStyle = INK.ink; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = `${big.length > 1 ? 88 : 120}px MaShanZheng`; g.fillText(big, w / 2, 150);
+    g.fillStyle = INK.red; g.font = `${small.length > 4 ? 52 : 64}px MaShanZheng`;
+    const step = Math.min(70, 300 / small.length);
+    [...small].forEach((ch, i) => g.fillText(ch, w / 2, 260 + step * (i + 0.5)));
+  });
+}
+
+/** 满月：宣纸白月面 + 淡墨晕边（原点：圆心）。 */
+export function moon(g, x, y, r = 120, a = 1) {
+  if (a <= 0) return;
+  g.save(); g.globalAlpha = a;
+  blot(g, x, y, r * 2.2, '#C9C2B0', 0.35);
+  const grd = g.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+  grd.addColorStop(0, '#FFFDF6'); grd.addColorStop(1, '#EDE5D2');
+  g.fillStyle = grd; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = rgba(INK.ink3, 0.5); g.lineWidth = 3; g.stroke();
+  for (const [dx, dy, rr] of [[-0.3, -0.1, 0.18], [0.25, 0.2, 0.12], [0.1, -0.35, 0.09]]) blot(g, x + dx * r, y + dy * r, rr * r, INK.ink3, 0.18);
+  g.restore();
+}
+
+/** 一碗元宵（原点：碗底中心），t 驱动热气。 */
+export function tangyuanBowl(g, x, y, t, s = 1) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  for (let i = 0; i < 3; i++) {
+    const ph = t * 1.2 + i * 2;
+    g.strokeStyle = `rgba(150,140,130,${0.35 + 0.15 * Math.sin(ph)})`; g.lineWidth = 5; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(-50 + i * 50, -150);
+    g.bezierCurveTo(-70 + i * 50 + Math.sin(ph) * 15, -200, -30 + i * 50 - Math.sin(ph) * 15, -240, -50 + i * 50, -290); g.stroke();
+  }
+  g.fillStyle = '#F7F2E8'; g.beginPath(); g.ellipse(0, -110, 150, 34, 0, 0, Math.PI * 2); g.fill();
+  for (const [dx, dy] of [[-70, -116], [-20, -122], [32, -114], [80, -118], [5, -104], [-45, -104]]) {
+    g.fillStyle = '#FFFFFF'; g.beginPath(); g.arc(dx, dy, 24, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = rgba(INK.ink, 0.45); g.lineWidth = 2; g.stroke();
+  }
+  g.fillStyle = '#E7E1D4'; g.strokeStyle = rgba(INK.azure, 0.9); g.lineWidth = 4;
+  g.beginPath(); g.moveTo(-150, -110); g.quadraticCurveTo(-140, 0, -50, 0); g.lineTo(50, 0); g.quadraticCurveTo(140, 0, 150, -110); g.closePath(); g.fill(); g.stroke();
+  g.strokeStyle = rgba(INK.azure, 0.7); g.lineWidth = 3;
+  g.beginPath(); g.moveTo(-120, -70); g.quadraticCurveTo(0, -40, 120, -70); g.stroke();
+  g.restore();
+}
+
+/** 竹笸箩里滚元宵（原点：笸箩中心），k 为来回摇晃相位。 */
+export function sieve(g, x, y, k, s = 1, grow = 1) {
+  g.save(); g.translate(x, y); g.rotate(Math.sin(k) * 0.12); g.scale(s, s);
+  g.fillStyle = '#E8DDC6'; g.beginPath(); g.ellipse(0, 0, 260, 80, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#8A6A44'; g.lineWidth = 14; g.stroke();
+  g.strokeStyle = 'rgba(138,106,68,0.35)'; g.lineWidth = 2;
+  for (let i = -5; i <= 5; i++) { g.beginPath(); g.moveTo(i * 44, -70); g.lineTo(i * 44, 70); g.stroke(); }
+  g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.ellipse(0, 10, 200, 50, 0, 0, Math.PI * 2); g.fill();
+  for (let i = 0; i < 7; i++) {
+    const px = (i - 3) * 52 + Math.sin(k + i) * 26, py = Math.cos(k * 1.3 + i) * 14 + 4;
+    g.fillStyle = '#FFFFFF'; g.beginPath(); g.arc(px, py, 14 + 10 * grow, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = rgba(INK.ink, 0.4); g.lineWidth = 2; g.stroke();
+  }
+  g.restore();
+}

@@ -22,8 +22,8 @@ function draw(g, H, v) {
   const paper = canvas(W, 1920); paintPaper(paper.getContext('2d'));
   g.drawImage(paper, 0, 0, W, H);
   // 红日 + 远山 + 云雾
-  blot(g, 770, Y(560), 330, INK.red2, 0.22);
-  g.fillStyle = rgba(INK.red, 0.88); g.beginPath(); g.arc(770, Y(560), 150, 0, Math.PI * 2); g.fill();
+  if (CFG.sky) CFG.sky(g, 770, Y(560));                  // 默认红日；可换成满月等
+  else { blot(g, 770, Y(560), 330, INK.red2, 0.22); g.fillStyle = rgba(INK.red, 0.88); g.beginPath(); g.arc(770, Y(560), 150, 0, Math.PI * 2); g.fill(); }
   g.save(); g.translate(0, Y(0) + (v ? -120 : 140));
   mountains(g, 'far', 3000); mist(g, 900, 260, 0, 3000, 0.3, 0.8, 3);
   mountains(g, 'mid', 3000); mist(g, 1160, 300, 0, 3000, 0.55, 0.9, 7);
@@ -87,7 +87,8 @@ window.AC = {
   seek(t) { g.clearRect(0, 0, W, 1920); const v = Math.round(t); draw(g, v ? 1440 : 1920, v); return v; },
   info() { return { shots: 2, end: 2 }; },
 };
-/** cfg：{ title 书法标题, seal 朱砂印文字, hook 钩子句, opts [A, B] 答题预告选项, sprites() → 精灵表, decorate(g, H, v, SP) 画近景 } */
+/** cfg：{ title 书法标题, seal 朱砂印文字, hook 钩子句, opts [A, B] 答题预告选项, sprites() → 精灵表, decorate(g, H, v, SP) 画近景,
+ *        sky(g, x, y) 可选，替换默认红日 } */
 export function runCover(cfg) {
   CFG = cfg;
   boot().catch(e => { window.AC.error = String(e && e.stack || e); console.error(e); });
