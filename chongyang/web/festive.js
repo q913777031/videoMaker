@@ -277,3 +277,76 @@ export function sieve(g, x, y, k, s = 1, grow = 1) {
   }
   g.restore();
 }
+
+/** 垂柳（原点：树根）：主干斜出，十几条柳丝垂下，t 驱动随风摆动。 */
+export function willow(g, x, y, t, s = 1, seed = 4) {
+  const r = rng(seed);
+  g.save(); g.translate(x, y); g.scale(s, s);
+  const trunk = curve([[0, 0], [10, -160], [-20, -320], [30, -440]], 6);
+  stroke(g, trunk, 40, { seed, dry: 5, taper: [0.02, 0.6], color: '#3A2E26' });
+  const tips = [];
+  for (let i = 0; i < 4; i++) {
+    const p = trunk[Math.floor(trunk.length * (0.45 + i * 0.15))];
+    const dir = i % 2 ? 1 : -1;
+    const e = [p[0] + dir * (120 + r() * 80), p[1] - 40 - r() * 40];
+    stroke(g, [p, [lerp(p[0], e[0], 0.5), p[1] - 50], e], 10, { seed: seed + i, dry: 1, color: '#3A2E26' });
+    tips.push(p, e, [lerp(p[0], e[0], 0.5), p[1] - 45]);
+  }
+  for (const [px, py] of tips) {
+    for (let k = 0; k < 4; k++) {
+      const len = 150 + r() * 160, ph = r() * 6, sw = Math.sin(t * 1.6 + ph) * 18;
+      const ox = (r() - 0.5) * 40;
+      g.strokeStyle = rgba(INK.green2, 0.75); g.lineWidth = 2.2;
+      g.beginPath(); g.moveTo(px + ox, py);
+      g.quadraticCurveTo(px + ox + sw * 0.5, py + len * 0.5, px + ox + sw, py + len); g.stroke();
+      for (let j = 1; j < 8; j++) {                           // 柳叶
+        const u = j / 8, lx = px + ox + sw * u * u, ly = py + len * u;
+        g.fillStyle = rgba(j % 2 ? INK.green2 : INK.green, 0.7);
+        g.beginPath(); g.ellipse(lx + (j % 2 ? 6 : -6), ly, 9, 3.5, j % 2 ? 0.8 : -0.8, 0, Math.PI * 2); g.fill();
+      }
+    }
+  }
+  g.restore();
+}
+
+/** 燕子：(x,y) 处一只燕子，翅膀随 t 扇动。 */
+export function swallow(g, x, y, t, s = 1, ph = 0) {
+  const f = Math.sin(t * 9 + ph);
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.fillStyle = '#1E1B19';
+  g.beginPath(); g.moveTo(-30, 0); g.quadraticCurveTo(-10, -26 * f - 6, 0, -2); g.quadraticCurveTo(10, -26 * f - 6, 30, 0);
+  g.quadraticCurveTo(10, 4, 0, 6); g.quadraticCurveTo(-10, 4, -30, 0); g.fill();
+  g.beginPath(); g.ellipse(-4, 2, 12, 5, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.moveTo(6, 3); g.lineTo(26, 14); g.lineTo(16, 4); g.lineTo(26, -2); g.closePath(); g.fill();
+  g.restore();
+}
+
+/** 风筝（菱形红纸 + 尾穗），(x,y) 为风筝中心，线拉向 (hx,hy)。 */
+export function kite(g, x, y, t, hx, hy, s = 1) {
+  g.strokeStyle = rgba(INK.ink, 0.6); g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(x, y + 40 * s); g.quadraticCurveTo(lerp(x, hx, 0.5) + 40, lerp(y, hy, 0.5) + 60, hx, hy); g.stroke();
+  g.save(); g.translate(x, y); g.rotate(Math.sin(t * 1.5) * 0.12); g.scale(s, s);
+  g.fillStyle = rgba(INK.red, 0.9); g.beginPath(); g.moveTo(0, -60); g.lineTo(44, 0); g.lineTo(0, 70); g.lineTo(-44, 0); g.closePath(); g.fill();
+  g.strokeStyle = '#5A4632'; g.lineWidth = 3; g.beginPath(); g.moveTo(0, -60); g.lineTo(0, 70); g.moveTo(-44, 0); g.lineTo(44, 0); g.stroke();
+  g.strokeStyle = rgba(INK.red, 0.8); g.lineWidth = 3;
+  g.beginPath(); g.moveTo(0, 70);
+  for (let i = 1; i <= 6; i++) g.lineTo(Math.sin(t * 3 + i) * 14, 70 + i * 26);
+  g.stroke();
+  for (let i = 1; i <= 6; i += 2) { g.fillStyle = INK.gold; g.beginPath(); g.ellipse(Math.sin(t * 3 + i) * 14, 70 + i * 26, 8, 4, 0.5, 0, Math.PI * 2); g.fill(); }
+  g.restore();
+}
+
+/** 细雨：全屏斜落的淡墨雨丝，a 为浓淡（0 不画）。 */
+export function rain(g, t, a = 1, W = 1080, H = 1920) {
+  if (a <= 0) return;
+  const r = rng(17);
+  g.strokeStyle = `rgba(90,96,104,${0.28 * a})`; g.lineWidth = 1.6;
+  g.beginPath();
+  for (let i = 0; i < 160; i++) {
+    const x0 = r() * (W + 300), sp = 900 + r() * 500, l = 30 + r() * 40;
+    const y = (r() * H + t * sp) % (H + 100) - 50, x = (x0 - (t * sp) * 0.18) % (W + 300);
+    const xx = x < -150 ? x + W + 300 : x;
+    g.moveTo(xx, y); g.lineTo(xx - l * 0.18, y + l);
+  }
+  g.stroke();
+}
