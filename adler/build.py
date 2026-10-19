@@ -26,6 +26,7 @@ import skia
 from . import core
 
 ROOT = Path(__file__).resolve().parent.parent
+PKG = "adler"                       # 其他系列复用本入口时覆盖 PKG / OUT / MODS
 OUT = ROOT / "out" / "adler"
 MODS = {
     "01": "ep01_teleology", "02": "ep02_inferiority", "03": "ep03_complex", "04": "ep04_competition",
@@ -35,7 +36,7 @@ MODS = {
 
 
 def load(key: str) -> core.Episode:
-    return importlib.import_module(f"adler.{MODS[key]}").build()
+    return importlib.import_module(f"{PKG}.{MODS[key]}").build()
 
 
 def sheet(ep: core.Episode, path: Path, cols: int = 4):
@@ -59,7 +60,7 @@ def sheet(ep: core.Episode, path: Path, cols: int = 4):
 
 
 def _video(k: str, ep: core.Episode) -> Path:
-    return OUT / f"ep{k}" / f"阿德勒{ep.no:02d}_{ep.concept}.mp4"
+    return OUT / f"ep{k}" / f"{core.SERIES['prefix']}{ep.no:02d}_{ep.concept}.mp4"
 
 
 def verify(keys: list[str]) -> bool:
@@ -91,7 +92,7 @@ def verify(keys: list[str]) -> bool:
         rows.append(f"| {k} | {ep.concept} | {dur:.2f}s | {v['width']}×{v['height']} {v['r_frame_rate']} {v['pix_fmt']} | "
                     f"{a['sample_rate']} Hz | {lufs:.1f} LUFS / {tp:.1f} dBTP | {len(cues)} 个，最大 {worst:.2f} 帧 | "
                     f"{'✓' if ok else '✗'} |")
-    text = "\n".join(["# 阿德勒 10 讲成片核验", "",
+    text = "\n".join([f"# {core.SERIES['name']} {core.SERIES['count']}成片核验", "",
                       f"标准：1080×1920、30fps、yuv420p、时长 {core.END:.2f}s（±0.05）、音效峰值与画面撞击帧偏差 ≤1 帧、真峰值 ≤ -0.5 dBTP。", "",
                       "| 期 | 概念 | 时长 | 视频 | 音频 | 响度 / 真峰值 | 音效卡点 | 结果 |",
                       "|----|------|------|------|------|---------------|----------|------|"] + rows) + "\n"
@@ -105,7 +106,7 @@ def publish(keys: list[str]):
     for k in keys:
         ep = load(k)
         src = OUT / f"ep{k}"
-        dst = ROOT / "videos" / "adler" / f"{k}_{ep.concept}"
+        dst = ROOT / "videos" / PKG / f"{k}_{ep.concept}"
         dst.mkdir(parents=True, exist_ok=True)
         shutil.copy2(_video(k, ep), dst / _video(k, ep).name)
         for name in ("cover.png", "cue_sheet.csv", "文案与出处.md"):
