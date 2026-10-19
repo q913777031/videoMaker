@@ -5,6 +5,7 @@ python3 fetch_assets.py                       # 字体（马善政毛笔楷书�
 python3 -m chongyang.build                    # 完整成片 → out/chongyang/
 python3 -m chongyang.build --stills 3,18      # 静帧 → out/chongyang/stills/
 python3 -m chongyang.build --audio            # 只出音频分轨与卡点表
+node ac3d/render.cjs --page chongyang/web/cover.html --stills out/chongyang/cover 0,1   # 封面：0 = 9:16，1 = 3:4（取上方 1080×1440）
 ```
 
 1080×1920、30fps、92.6 秒。整片是一幅横向水墨长卷，镜头沿卷连续平移，没有硬切；两层远山视差、三层云雾，近景小景
@@ -20,6 +21,7 @@ python3 -m chongyang.build --audio            # 只出音频分轨与卡点表
 | `build.py` | 复用 `ac3d.build` 的整条流程（实测拍点时间轴、配乐 + 中国打击乐混音、逐帧渲染、混流、核验） |
 | `web/ink.js` | 水墨笔触库：宣纸、分块缓存的远山长卷、笔画与飞白、墨点、书法逐字落笔、朱砂印、各类小景精灵 |
 | `web/main.js` | 长卷镜头路径、各镜小景、答题卡、页眉与字幕 |
+| `web/cover.html` / `cover.js` | 封面（9:16 竖版与 3:4 版）：巨幅书法“重阳”、红日远山、朱砂钩子条、A/B 答题预告、“你能答对几道？” |
 
 配乐为 `music/bgm.m4a`，按 `bgm.detect()` 实测拍点卡点；音效为 `engine/perc.py` 的中国打击乐（堂鼓、大鼓、大锣、梆子、木鱼、编钟），
 峰值与画面撞击帧同帧或相邻帧。
