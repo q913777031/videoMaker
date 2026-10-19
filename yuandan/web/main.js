@@ -1,41 +1,12 @@
-// 《元旦是怎么来的？》各镜小景（冬日水墨长卷，飘雪）；长卷镜头、答题卡、字幕复用 chongyang/web/scroll.js。
+// 《元旦是怎么来的？》各镜小景（冬日水墨长卷，飘雪）；长卷镜头、答题卡、字幕复用 chongyang/web/scroll.js，节庆小景来自 festive.js。
 import {
-  W, H, INK, clamp01, lerp, easeOut, easeIn, easeInOut, easeOutBack, prog, rng, canvas, rgba,
-  brushText, stamp, splash, blot, stroke, curve, pine, figure, palace, climbMountain,
+  W, H, INK, clamp01, lerp, easeOut, easeIn, easeOutBack, prog, rng, rgba,
+  brushText, stamp, splash, blot, stroke, pine, figure, palace, climbMountain,
 } from '../../chongyang/web/ink.js';
+import { sprite, plum, door, calPage, firework, firecrackers } from '../../chongyang/web/festive.js';
 import { TL, cue, label, draw, runScroll } from '../../chongyang/web/scroll.js';
 
-function sprite(w, h, f) { const c = canvas(w, h); f(c.getContext('2d'), w, h); return c; }
-
 // ---------------------------------------------------------------- 本片小景
-/** 红梅一枝（原点：枝根，向右下伸出）。 */
-function plum(seed = 3) {
-  return sprite(620, 520, (g) => {
-    const r = rng(seed);
-    const main = curve([[0, 30], [160, 70], [300, 60], [420, 140], [560, 170]], 6);
-    stroke(g, main, 22, { seed, dry: 4, taper: [0.02, 0.6], color: '#3A2E26' });
-    const tw = [];
-    for (let i = 0; i < 6; i++) {
-      const p = main[Math.floor(main.length * (0.15 + i * 0.13))];
-      const e = [p[0] + 40 + r() * 70, p[1] + (r() < 0.5 ? -1 : 1) * (40 + r() * 80)];
-      stroke(g, [p, [lerp(p[0], e[0], 0.5), lerp(p[1], e[1], 0.5) + 8], e], 7, { seed: seed + i, dry: 1, color: '#3A2E26' });
-      tw.push(e, [lerp(p[0], e[0], 0.6), lerp(p[1], e[1], 0.6)]);
-    }
-    tw.push(main[main.length - 1], main[Math.floor(main.length * 0.5)]);
-    for (const [x, y] of tw) {
-      const n = 1 + Math.floor(r() * 2);
-      for (let k = 0; k < n; k++) {
-        const bx = x + (r() - 0.5) * 30, by = y + (r() - 0.5) * 24, R = 13 + r() * 6;
-        for (let j = 0; j < 5; j++) {
-          const a = j / 5 * Math.PI * 2 + r();
-          g.fillStyle = rgba(INK.red2, 0.85);
-          g.beginPath(); g.arc(bx + Math.cos(a) * R * 0.55, by + Math.sin(a) * R * 0.55, R * 0.5, 0, Math.PI * 2); g.fill();
-        }
-        g.fillStyle = INK.gold; g.beginPath(); g.arc(bx, by, 3, 0, Math.PI * 2); g.fill();
-      }
-    }
-  });
-}
 /** 小挂轴：竖排大字 + 小字（原点：顶部中心）。 */
 function hangScroll(big, small, seed = 1) {
   return sprite(220, 600, (g, w, h) => {
@@ -50,57 +21,6 @@ function hangScroll(big, small, seed = 1) {
     [...small].forEach((ch, i) => g.fillText(ch, w / 2, 280 + i * 70));
   });
 }
-/** 木门与春联（原点：底部中心）。 */
-function door() {
-  return sprite(760, 760, (g, w, h) => {
-    const cx = w / 2, b = h - 10;
-    g.fillStyle = '#7A4A30'; g.fillRect(cx - 200, b - 600, 400, 600);
-    g.strokeStyle = rgba(INK.ink, 0.85); g.lineWidth = 5; g.strokeRect(cx - 200, b - 600, 400, 600);
-    g.beginPath(); g.moveTo(cx, b - 600); g.lineTo(cx, b); g.stroke();
-    for (const x of [-100, 100]) for (const y of [-470, -250]) { g.strokeStyle = 'rgba(40,24,16,0.6)'; g.lineWidth = 3; g.strokeRect(cx + x - 70, b + y - 80, 140, 160); }
-    for (const x of [-26, 26]) { g.fillStyle = '#C8A15E'; g.beginPath(); g.arc(cx + x, b - 300, 14, 0, Math.PI * 2); g.fill(); }
-    stroke(g, [[cx - 250, b - 610], [cx + 250, b - 610]], 30, { seed: 3, dry: 2, color: INK.ink, taper: [0.02, 0.02] });
-    const couplet = (x, text) => {
-      g.fillStyle = INK.red; g.fillRect(x - 40, b - 590, 80, 560);
-      g.fillStyle = '#1E1B19'; g.font = '62px MaShanZheng'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      [...text].forEach((ch, i) => g.fillText(ch, x, b - 548 + i * 78));
-    };
-    couplet(cx + 260, '爆竹声中一岁除');
-    couplet(cx - 260, '春风送暖入屠苏');
-    g.fillStyle = INK.red; g.save(); g.translate(cx, b - 400); g.rotate(Math.PI / 4); g.fillRect(-70, -70, 140, 140); g.restore();
-    g.fillStyle = '#1E1B19'; g.font = '110px MaShanZheng'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('福', cx, b - 396);
-  });
-}
-/** 手撕日历一页（原点：中心）。 */
-function calPage(top, big, bottom, { red = true, w = 380, h = 470 } = {}) {
-  return sprite(w + 20, h + 20, (g) => {
-    g.translate(10, 10);
-    g.fillStyle = 'rgba(60,40,20,0.18)'; g.fillRect(8, 10, w, h);
-    g.fillStyle = '#FBF6EC'; g.fillRect(0, 0, w, h);
-    g.fillStyle = red ? INK.red : INK.ink2; g.fillRect(0, 0, w, 96);
-    g.strokeStyle = rgba(INK.ink, 0.8); g.lineWidth = 4; g.strokeRect(0, 0, w, h);
-    g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillStyle = '#FBF1E6'; g.font = '700 54px NotoSerifSC'; g.fillText(top, w / 2, 50);
-    g.fillStyle = red ? INK.red : INK.ink; g.font = `700 ${big.length > 2 ? 88 : 200}px NotoSerifSC`; g.fillText(big, w / 2, 250);
-    g.fillStyle = INK.ink; g.font = '64px MaShanZheng'; g.fillText(bottom, w / 2, h - 70);
-    for (const x of [w * 0.3, w * 0.7]) { g.fillStyle = '#5A4632'; g.beginPath(); g.arc(x, 0, 10, 0, Math.PI * 2); g.fill(); }
-  });
-}
-/** 水墨烟花：dt 秒后绽开并散落。 */
-function firework(g, x, y, dt, color, seed, R = 210) {
-  if (dt < 0 || dt > 2.6) return;
-  const r = rng(seed);
-  const k = easeOut(dt / 0.5), fade = 1 - clamp01((dt - 0.9) / 1.6);
-  for (let i = 0; i < 26; i++) {
-    const a = i / 26 * Math.PI * 2 + r() * 0.2, l = R * (0.75 + r() * 0.35) * k;
-    const x1 = x + Math.cos(a) * l, y1 = y + Math.sin(a) * l + dt * dt * 22;
-    const x0 = x + Math.cos(a) * l * 0.55, y0 = y + Math.sin(a) * l * 0.55;
-    stroke(g, [[x0, y0], [lerp(x0, x1, 0.5), lerp(y0, y1, 0.5)], [x1, y1]], 7, { color, alpha: 0.85 * fade, seed: seed + i, dry: 0, taper: [0.6, 0.15] });
-    g.fillStyle = rgba(INK.gold2, 0.9 * fade); g.beginPath(); g.arc(x1, y1, 4, 0, Math.PI * 2); g.fill();
-  }
-  blot(g, x, y, 70 * k, color, 0.25 * fade);
-}
-
 let SP = {};
 function buildSprites() {
   SP = {
@@ -195,15 +115,7 @@ const SCENES = {
   },
   yuanri(g, ox, t) {
     draw(g, SP.door, ox - 30, 1260, 0.95, clamp01(prog(t, TL.shot.yuanri.t0 - 0.6, 1.0)));
-    const sw = Math.sin(t * 3) * 0.06;
-    g.save(); g.translate(ox + 380, 420); g.rotate(sw);
-    g.strokeStyle = INK.ink; g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 520); g.stroke();
-    for (let i = 0; i < 12; i++) {
-      const y = 40 + i * 40, sd = i % 2 ? 1 : -1;
-      g.save(); g.translate(sd * 14, y); g.rotate(sd * 0.5);
-      g.fillStyle = INK.red; g.fillRect(-8, -24, 16, 48); g.fillStyle = INK.gold; g.fillRect(-8, -24, 16, 6); g.restore();
-    }
-    g.restore();
+    firecrackers(g, ox + 380, 420, t, 12);
   },
   a3(g, ox, t) {
     const c = cue('a3.cal'), f = cue('a3.flip');

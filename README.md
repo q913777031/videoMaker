@@ -76,6 +76,17 @@ python3 -m chongyang.build         # 成片 → out/chongyang/
 王维诗；糕谐音高；今天的法定老年节。中间 4 道互动题，每题 A/B 两个选项、3 秒倒计时（3、2、1 卡实测拍点），
 揭晓时朱砂“对”印砸在拍点上。成片与文案出处在 `videos/chongyang/`，说明见 [`chongyang/README.md`](chongyang/README.md)。
 
+## 水墨长卷科普：《元旦是怎么来的？》《春节是怎么来的？》
+
+```bash
+python3 -m yuandan.build           # 元旦 → out/yuandan/
+python3 -m chunjie.build           # 春节 → out/chunjie/
+```
+
+与重阳节同一套水墨长卷框架与互动答题（4 题、3 秒倒计时、A/B 选项、拍点揭晓）。元旦：旦字字形、萧子云诗、三正岁首、
+秦以十月为岁首、太初历、1912 改用公历、1949 定名、法定放假 1 天。春节：烧竹爆竹、年兽传说、桃符到春联、王安石《元日》、
+压岁谐音压祟、1914 定名春节、2024 列入人类非遗。成片、封面、文案与出处在 `videos/yuandan/`、`videos/chunjie/`。
+
 ## 3D 科普：《出门一会儿，空调关不关？》
 
 ```bash

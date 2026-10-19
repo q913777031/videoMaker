@@ -224,6 +224,7 @@ export function brushText(g, text, x, y, size, k, { color = INK.ink, vertical = 
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   const total = (n - 1) * size * gap;
+  const base = g.getTransform();                          // 叠加在调用方的变换（平移、缩放、震屏）之上
   for (let i = 0; i < n; i++) {
     const q = clamp01((k * (n * (1 - stagger) + stagger * n) - i * stagger) / 1.0);
     if (q <= 0) continue;
@@ -232,12 +233,12 @@ export function brushText(g, text, x, y, size, k, { color = INK.ink, vertical = 
     g.globalAlpha = alpha * clamp01(q * 1.8);
     g.filter = q < 1 ? `blur(${((1 - q) * 4).toFixed(2)}px)` : 'none';
     const s = 1.22 - 0.22 * easeOut(q);
-    g.setTransform(s, 0, 0, s, cx, cy);
+    g.setTransform(base); g.translate(cx, cy); g.scale(s, s);
     g.shadowColor = rgba(color, 0.35);
     g.shadowBlur = 5;
     g.fillStyle = color;
     g.fillText(chars[i], 0, 0);
-    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.setTransform(base);
   }
   g.restore();
 }
