@@ -1,0 +1,467 @@
+{
+ "series": "心理学名家",
+ "title": "弗洛伊德：你没发现的那部分自己",
+ "title_short": "弗洛伊德",
+ "publish_title": "弗洛伊德到底说了什么？90 秒看懂精神分析",
+ "hashtags": "#弗洛伊德 #心理学 #精神分析 #潜意识",
+ "file_name": "弗洛伊德核心观点",
+ "concept": "维也纳旧宅墙面上一排金色画框，镜头沿墙平移逐幅讲：无意识（冰山比喻）、本我自我超我、骑手与马、压抑、梦、口误、自由联想、科学批评与影响。",
+ "refs": [
+  "Freud, S. (1899/1900). Die Traumdeutung（《梦的解析》）",
+  "Freud, S. (1901). Zur Psychopathologie des Alltagslebens（《日常生活的精神病理学》）",
+  "Freud, S. (1923). Das Ich und das Es（《自我与本我》）",
+  "Freud, A. (1936). Das Ich und die Abwehrmechanismen（《自我与防御机制》）",
+  "Popper, K. (1963). Conjectures and Refutations"
+ ],
+ "refs_short": [
+  "《梦的解析》",
+  "《日常生活的精神病理学》",
+  "《自我与本我》",
+  "《自我与防御机制》",
+  "Popper《猜想与反驳》"
+ ],
+ "notes": [
+  "冰山比喻并非弗洛伊德本人原话，片中写“后人常用冰山来比喻”。",
+  "“骑手与马”出自《自我与本我》。",
+  "防御机制概念源于弗洛伊德，系统整理归功于安娜·弗洛伊德。",
+  "片末加入科学性批评，避免把精神分析当作已被证实的结论。"
+ ],
+ "shots": [
+  {
+   "name": "intro",
+   "bars": 4,
+   "tag": "Vienna",
+   "scene": "维也纳旧宅的墙面：深色墙纸、金色画框；画框里是一扇门牌“Berggasse 19”的木门缓缓打开，门后一片幽暗。",
+   "camera": "沿墙面缓缓平移。",
+   "captions": [
+    {
+     "at": 1,
+     "out": null,
+     "text": "有些想法|连你自己都没发现",
+     "note": null
+    }
+   ],
+   "cues": [
+    {
+     "name": "door",
+     "beat": 0,
+     "action": "画框里的木门缓缓打开",
+     "sfx": null,
+     "gain": 0
+    },
+    {
+     "name": "glow",
+     "beat": 8,
+     "action": "门缝透出一道光",
+     "sfx": "kick",
+     "gain": 0.8
+    }
+   ]
+  },
+  {
+   "name": "who",
+   "bars": 4,
+   "tag": "Freud",
+   "scene": "椭圆画框中一位戴圆眼镜、留胡须的绅士侧影（版画风），下方铭牌“SIGMUND FREUD 1856–1939”。",
+   "camera": "平移到肖像框。",
+   "captions": [
+    {
+     "at": 1,
+     "out": null,
+     "text": "弗洛伊德|精神分析的创始人",
+     "note": "1856–1939，奥地利神经科医生，长居维也纳，1938 年流亡伦敦"
+    }
+   ],
+   "cues": [
+    {
+     "name": "portrait",
+     "beat": 0,
+     "action": "肖像以版画线条逐层显现",
+     "sfx": "tom",
+     "gain": 0.8
+    },
+    {
+     "name": "plate",
+     "beat": 8,
+     "action": "铜铭牌落下",
+     "sfx": "rim",
+     "gain": 0.8
+    }
+   ]
+  },
+  {
+   "name": "iceberg",
+   "bars": 4,
+   "tag": "Unconscious",
+   "scene": "大画框：海面上一小截冰山，水下是巨大的冰体；水面以上标“意识”，水线附近标“前意识”，水下标“无意识”。",
+   "camera": "平移到冰山画框，镜头下沉。",
+   "captions": [
+    {
+     "at": 1,
+     "out": 8,
+     "text": "心里的东西|大半在“水面之下”",
+     "note": "后人常用冰山来比喻弗洛伊德的意识层次说"
+    },
+    {
+     "at": 8,
+     "out": null,
+     "text": "他把这部分|叫作“无意识”",
+     "note": null
+    }
+   ],
+   "cues": [
+    {
+     "name": "sea",
+     "beat": 0,
+     "action": "海面一道墨线横过，冰山露出尖顶",
+     "sfx": "kick",
+     "gain": 1.0
+    },
+    {
+     "name": "deep",
+     "beat": 4,
+     "action": "水下巨大冰体逐层显现",
+     "sfx": "tom",
+     "gain": 0.9
+    },
+    {
+     "name": "labels",
+     "beat": 8,
+     "action": "三层标签依次亮起",
+     "sfx": "rim",
+     "gain": 0.8
+    }
+   ]
+  },
+  {
+   "name": "trio",
+   "bars": 4,
+   "tag": "Id · Ego · Superego",
+   "scene": "三个小画框并排：左“本我 Id”一团红色火焰般的野兽，右“超我 Superego”一只天平与法槌，中“自我 Ego”一个站在中间张开双臂的人。",
+   "camera": "平移到三联画。",
+   "captions": [
+    {
+     "at": 1,
+     "out": 8,
+     "text": "本我要满足|超我讲规矩",
+     "note": null
+    },
+    {
+     "at": 8,
+     "out": null,
+     "text": "自我夹在中间|两头协调",
+     "note": "弗洛伊德《自我与本我》（1923）"
+    }
+   ],
+   "cues": [
+    {
+     "name": "id",
+     "beat": 0,
+     "action": "左框“本我”亮起",
+     "sfx": "tom",
+     "gain": 0.8
+    },
+    {
+     "name": "superego",
+     "beat": 2,
+     "action": "右框“超我”亮起",
+     "sfx": "tom",
+     "gain": 0.8
+    },
+    {
+     "name": "ego",
+     "beat": 4,
+     "action": "中框“自我”亮起",
+     "sfx": "rim",
+     "gain": 0.8
+    },
+    {
+     "name": "pull",
+     "beat": 8,
+     "action": "左右两股力拉扯中间的人",
+     "sfx": "clap",
+     "gain": 0.7
+    }
+   ]
+  },
+  {
+   "name": "rider",
+   "bars": 4,
+   "tag": "Ego",
+   "scene": "版画风大画框：一匹高大的黑马扬蹄，背上的骑手勒住缰绳。",
+   "camera": "平移到马与骑手。",
+   "captions": [
+    {
+     "at": 1,
+     "out": 8,
+     "text": "自我像骑手|本我像马",
+     "note": "出自《自我与本我》"
+    },
+    {
+     "at": 8,
+     "out": null,
+     "text": "马力气更大|骑手只能尽量引导",
+     "note": null
+    }
+   ],
+   "cues": [
+    {
+     "name": "horse",
+     "beat": 0,
+     "action": "黑马扬蹄",
+     "sfx": "kick",
+     "gain": 0.9
+    },
+    {
+     "name": "rein",
+     "beat": 8,
+     "action": "骑手勒紧缰绳，马稍稍收势",
+     "sfx": "tom",
+     "gain": 0.8
+    }
+   ]
+  },
+  {
+   "name": "defense",
+   "bars": 4,
+   "tag": "Repression",
+   "scene": "画框里一个人把一只贴着“？”的箱子推进地下室，“砰”地关上暗门；箱子在门下微微晃动。",
+   "camera": "平移到地下室剖面画。",
+   "captions": [
+    {
+     "at": 1,
+     "out": 8,
+     "text": "不愿面对的念头|被“压”回无意识",
+     "note": null
+    },
+    {
+     "at": 8,
+     "out": null,
+     "text": "这叫“压抑”|一种心理防御",
+     "note": "防御机制后由其女儿安娜·弗洛伊德系统整理（1936）"
+    }
+   ],
+   "cues": [
+    {
+     "name": "push",
+     "beat": 0,
+     "action": "箱子被推向暗门",
+     "sfx": null,
+     "gain": 0
+    },
+    {
+     "name": "slam",
+     "beat": 4,
+     "action": "暗门“砰”地关上",
+     "sfx": "kick",
+     "gain": 0.9
+    },
+    {
+     "name": "rattle",
+     "beat": 8,
+     "action": "箱子在门下晃动",
+     "sfx": "rim",
+     "gain": 0.8
+    }
+   ]
+  },
+  {
+   "name": "dream",
+   "bars": 4,
+   "tag": "Dreams",
+   "scene": "月夜卧室画框：熟睡的人头顶升起一串梦泡，里面漂着钥匙、楼梯、怀表等符号。",
+   "camera": "平移到卧室画框。",
+   "captions": [
+    {
+     "at": 1,
+     "out": 8,
+     "text": "他认为梦|是愿望的伪装满足",
+     "note": "《梦的解析》（1899 年出版，版权页印 1900 年）"
+    },
+    {
+     "at": 8,
+     "out": null,
+     "text": "梦是通往无意识的|“康庄大道”",
+     "note": null
+    }
+   ],
+   "cues": [
+    {
+     "name": "sleep",
+     "beat": 0,
+     "action": "卧室月光亮起",
+     "sfx": null,
+     "gain": 0
+    },
+    {
+     "name": "bubble",
+     "beat": 4,
+     "action": "梦泡一个个升起",
+     "sfx": "wood_high",
+     "gain": 0.8
+    },
+    {
+     "name": "symbols",
+     "beat": 8,
+     "action": "钥匙、楼梯、怀表在梦泡里旋转",
+     "sfx": "tom",
+     "gain": 0.8
+    }
+   ]
+  },
+  {
+   "name": "slip",
+   "bars": 3,
+   "tag": "Slips",
+   "scene": "画框里一张嘴吐出一句话，其中一个词被划掉、换成另一个词，红笔圈出。",
+   "camera": "平移到口误画框。",
+   "captions": [
+    {
+     "at": 1,
+     "out": null,
+     "text": "一句口误|也可能泄露真实想法",
+     "note": "《日常生活的精神病理学》（1901），即“弗洛伊德式口误”"
+    }
+   ],
+   "cues": [
+    {
+     "name": "say",
+     "beat": 0,
+     "action": "话语气泡弹出",
+     "sfx": "rim",
+     "gain": 0.8
+    },
+    {
+     "name": "swap",
+     "beat": 4,
+     "action": "一个词被划掉换成另一个",
+     "sfx": "clap",
+     "gain": 0.8
+    }
+   ]
+  },
+  {
+   "name": "couch",
+   "bars": 3,
+   "tag": "Psychoanalysis",
+   "scene": "画框里一张铺着东方地毯的躺椅，旁边一把扶手椅，椅上放着笔记本；一缕话语从躺椅飘出。",
+   "camera": "平移到诊室画框。",
+   "captions": [
+    {
+     "at": 1,
+     "out": null,
+     "text": "躺在沙发上|想到什么说什么",
+     "note": "“自由联想”，精神分析的基本方法"
+    }
+   ],
+   "cues": [
+    {
+     "name": "couch",
+     "beat": 0,
+     "action": "躺椅与扶手椅显现",
+     "sfx": "tom",
+     "gain": 0.8
+    },
+    {
+     "name": "words",
+     "beat": 4,
+     "action": "一串话语从躺椅飘出",
+     "sfx": "wood_high",
+     "gain": 0.7
+    }
+   ]
+  },
+  {
+   "name": "critique",
+   "bars": 4,
+   "tag": "Critique",
+   "scene": "画框里一架天平：一端是厚厚的书，另一端是放大镜和实验烧瓶，天平来回摆动。",
+   "camera": "平移到天平画框。",
+   "captions": [
+    {
+     "at": 1,
+     "out": 8,
+     "text": "不少观点|很难用实验验证",
+     "note": "哲学家卡尔·波普尔等认为精神分析难以证伪"
+    },
+    {
+     "at": 8,
+     "out": null,
+     "text": "现代心理学|已修正了其中许多结论",
+     "note": null
+    }
+   ],
+   "cues": [
+    {
+     "name": "scale",
+     "beat": 0,
+     "action": "天平落下",
+     "sfx": "kick",
+     "gain": 0.8
+    },
+    {
+     "name": "swing",
+     "beat": 8,
+     "action": "天平摆动后停在中间",
+     "sfx": "tom",
+     "gain": 0.7
+    }
+   ]
+  },
+  {
+   "name": "legacy",
+   "bars": 2,
+   "tag": "Legacy",
+   "scene": "墙上一排小铜牌依次亮起：“无意识”“防御”“压抑”“自我”。",
+   "camera": "平移到铜牌墙。",
+   "captions": [
+    {
+     "at": 0,
+     "out": null,
+     "text": "但“无意识”“压抑”|早已成了日常用语",
+     "note": null
+    }
+   ],
+   "cues": [
+    {
+     "name": "plates",
+     "beat": 0,
+     "action": "铜牌依次亮起",
+     "sfx": "rim",
+     "gain": 0.8
+    }
+   ]
+  },
+  {
+   "name": "end",
+   "bars": 2,
+   "tag": "Freud",
+   "scene": "回到木门画框，门缓缓合上；画框下铭牌“认识你自己”。",
+   "camera": "平移回门框，最后一拍定格。",
+   "captions": [
+    {
+     "at": 0,
+     "out": null,
+     "text": "看见内心|才能更好地生活",
+     "note": null
+    }
+   ],
+   "cues": [
+    {
+     "name": "close",
+     "beat": 0,
+     "action": "门缓缓合上",
+     "sfx": "tom",
+     "gain": 0.8
+    },
+    {
+     "name": "final",
+     "beat": 8,
+     "action": "最后一拍：铭牌亮起，画面定格",
+     "sfx": "kick",
+     "gain": 1.0
+    }
+   ]
+  }
+ ]
+}

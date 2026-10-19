@@ -28,7 +28,25 @@ const capEl = el({ left: '0', width: `${W}px`, top: '1330px', textAlign: 'center
   color: INK.ink, lineHeight: '96px', textShadow: '0 0 14px rgba(246,238,222,0.95), 0 0 4px rgba(246,238,222,1)' });
 const noteEl = el({ left: '70px', width: `${W - 140}px`, top: '1540px', textAlign: 'center', font: '500 28px NotoSansSC',
   color: INK.ink2, lineHeight: '42px', textShadow: '0 0 8px rgba(246,238,222,1), 0 0 3px rgba(246,238,222,1)' });
-const richHTML = s => s.split('|').map(line => line.replace(/【(.*?)】/g, `<span style="color:${INK.red}">$1</span>`)).join('<br>');
+/** 主题：{ headFont, titleFont, capFont, ink, ink2, accent, halo, tagBg } 覆盖页眉、角标、字幕的样式。 */
+let ACCENT = INK.red;
+function applyTheme(th) {
+  const halo = th.halo || 'rgba(246,238,222,1)';
+  const sh = `0 0 10px ${halo}, 0 0 4px ${halo}`;
+  if (th.headFont) header.style.font = th.headFont;
+  if (th.titleFont) headTitle.style.font = th.titleFont;
+  if (th.capFont) capEl.style.font = th.capFont;
+  if (th.ink) { headTitle.style.color = th.ink; capEl.style.color = th.ink; }
+  if (th.ink2) { header.style.color = th.ink2; noteEl.style.color = th.ink2; }
+  if (th.accent) { ACCENT = th.accent; tagEl.style.color = th.accent; tagEl.style.borderColor = th.accent; }
+  if (th.tagBg) tagEl.style.background = th.tagBg;
+  if (th.tagFont) tagEl.style.font = th.tagFont;
+  if (th.tagRadius) tagEl.style.borderRadius = th.tagRadius;
+  if (th.letterSpacing) headTitle.style.letterSpacing = th.letterSpacing;
+  header.style.textShadow = sh; headTitle.style.textShadow = sh;
+  capEl.style.textShadow = `0 0 14px ${halo}, 0 0 4px ${halo}`; noteEl.style.textShadow = sh;
+}
+const richHTML = s => s.split('|').map(line => line.replace(/【(.*?)】/g, `<span style="color:${ACCENT}">$1</span>`)).join('<br>');
 
 function drawUI(t, si) {
   const sh = TL.shots[si];
@@ -105,7 +123,7 @@ function cardSprite() {
 }
 const NUM = ['一', '二', '三', '四'];
 function drawCard(g, t) {
-  TL.quiz.forEach((q, qi) => {
+  (TL.quiz || []).forEach((q, qi) => {
     const tc = cue(q.shot + '.card'), c3 = cue(q.shot + '.c3'), tr = cue(q.answer_shot + '.reveal');
     if (t < tc - 0.25 || t > tr + 1.7) return;
     const ku = easeOut(prog(t, tc - 0.25, 0.4)), ke = easeIn(prog(t, tr + 1.05, 0.55));
@@ -161,7 +179,7 @@ function drawCard(g, t) {
 }
 
 // ---------------------------------------------------------------- 每帧
-let ctx = null, PAPER = null, SCENES = {}, BACKDROP = null, OVERLAY = null;
+let ctx = null, PAPER = null, SCENES = {}, BACKDROP = null, OVERLAY = null, GROUND = null, PAPER_FN = null, VEIL = 'rgba(239,230,211,';
 function frame(t, si) {
   const g = ctx;
   g.setTransform(1, 0, 0, 1, 0, 0);
@@ -170,10 +188,13 @@ function frame(t, si) {
   const [sx, sy] = shakeAt(t);
   g.setTransform(1, 0, 0, 1, sx, sy);
   if (BACKDROP) BACKDROP(g, cx, t);
-  mountains(g, 'far', cx);
-  mist(g, 900, 260, t, cx, 0.3, 0.75, 3);
-  mountains(g, 'mid', cx);
-  mist(g, 1160, 300, t, cx, 0.55, 0.85, 7);
+  if (GROUND) GROUND(g, cx, t);
+  else {
+    mountains(g, 'far', cx);
+    mist(g, 900, 260, t, cx, 0.3, 0.75, 3);
+    mountains(g, 'mid', cx);
+    mist(g, 1160, 300, t, cx, 0.55, 0.85, 7);
+  }
   for (const s of TL.shots) {
     const ox = s.x - cx + W / 2;
     if (ox < -1200 || ox > W + 1200) continue;
@@ -181,14 +202,14 @@ function frame(t, si) {
     if (f) f(g, ox, t);
   }
   if (OVERLAY) OVERLAY(g, cx, t);
-  mist(g, 1330, 260, t, cx, 1.0, 0.55, 11);
+  if (!GROUND) mist(g, 1330, 260, t, cx, 1.0, 0.55, 11);
   const fade = g.createLinearGradient(0, 1250, 0, 1620);       // 字幕区淡去，让文字干净
-  fade.addColorStop(0, 'rgba(241,232,214,0)'); fade.addColorStop(1, 'rgba(241,232,214,0.85)');
+  fade.addColorStop(0, VEIL + '0)'); fade.addColorStop(1, VEIL + '0.85)');
   g.fillStyle = fade; g.fillRect(-40, 1250, W + 80, 700);
   drawCard(g, t);
   g.setTransform(1, 0, 0, 1, 0, 0);
   const veil = Math.max(1 - clamp01(t / 0.5), clamp01((t - (TL.end - 1.1)) / 1.0));
-  if (veil > 0) { g.fillStyle = `rgba(239,230,211,${veil})`; g.fillRect(0, 0, W, H); }
+  if (veil > 0) { g.fillStyle = `${VEIL}${veil})`; g.fillRect(0, 0, W, H); }
   drawUI(t, si);
 }
 
@@ -199,19 +220,23 @@ async function boot(sprites, fontSample) {
   KEYS = [[0, -160]];
   TL.shots.forEach((s, i) => { if (i) KEYS.push([s.t0 + 1.0, s.x - 40]); KEYS.push([s.t1 - 0.35, s.x + 40]); });
   KEYS.push([TL.end + 1, TL.shots[TL.shots.length - 1].x + 60]);
-  for (const f of ['66px MaShanZheng', '700 60px NotoSerifSC', '500 30px NotoSansSC', '700 30px NotoSansSC']) await document.fonts.load(f, fontSample);
+  for (const f of ['66px MaShanZheng', '700 60px NotoSerifSC', '900 60px NotoSerifSC', '500 30px NotoSansSC', '700 30px NotoSansSC']) await document.fonts.load(f, fontSample);
   const c = document.getElementById('c');
   ctx = c.getContext('2d');
-  PAPER = canvas(W, H); paintPaper(PAPER.getContext('2d'));
+  PAPER = canvas(W, H); (PAPER_FN || paintPaper)(PAPER.getContext('2d'));
   CARD = cardSprite();
   sprites();
-  warmMountains(-1200, TL.shots[TL.shots.length - 1].x + 1200);
+  if (!GROUND) warmMountains(-1200, TL.shots[TL.shots.length - 1].x + 1200);
   window.AC.ready = true;
 }
 
-/** 启动长卷：scenes 为 {镜头名: (g, ox, t) => void}，ox 是该镜头在屏幕上的中心 x。 */
-export function runScroll({ scenes, sprites, shakes = [], backdrop = null, overlay = null, fontSample = '一二三四' }) {
-  SCENES = scenes; SHAKES = shakes; BACKDROP = backdrop; OVERLAY = overlay;
+/** 启动长卷：scenes 为 {镜头名: (g, ox, t) => void}，ox 是该镜头在屏幕上的中心 x。
+ *  可选：ground(g, cx, t) 替换默认的远山云雾；paper(g) 替换宣纸底；theme 改页眉字幕的字体配色；veil 为淡入淡出底色（'rgba(r,g,b,'）。 */
+export function runScroll({ scenes, sprites, shakes = [], backdrop = null, overlay = null, fontSample = '一二三四',
+  ground = null, paper = null, theme = null, veil = null }) {
+  SCENES = scenes; SHAKES = shakes; BACKDROP = backdrop; OVERLAY = overlay; GROUND = ground; PAPER_FN = paper;
+  if (veil) VEIL = veil;
+  if (theme) applyTheme(theme);
   boot(sprites, fontSample).catch(e => { window.AC.error = String(e && e.stack || e); console.error(e); });
 }
 
