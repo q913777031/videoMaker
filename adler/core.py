@@ -221,6 +221,9 @@ class Episode:
     cover_t: float = 3.0
     notes: list = field(default_factory=list)     # 事实核查与表述说明（写入文档）
     accent2: str = K.GOLD
+    series: str = "阿德勒心理学"                # 系列名（左上角、封面、片尾）
+    series_count: int = 10
+    file_prefix: str = "阿德勒"                 # 成片文件名前缀
     total: float = 0.0
     events: list = field(default_factory=list)
 
@@ -520,7 +523,7 @@ def draw_header(c, ep: Episode, shot: Shot, T: float, g: G):
     a = clamp01((T - 0.3) / 0.6)
     if a <= 0:
         return
-    K.text(c, "阿德勒心理学 · 10讲", 72, 196, 30, "sans_medium", K.INK2, a, "left")
+    K.text(c, f"{ep.series} · {ep.series_count}讲", 72, 196, 30, "sans_medium", K.INK2, a, "left")
     K.rr(c, 72 + 48, 246, 96, 50, 25, ep.accent, a)
     K.text(c, f"{ep.no:02d}", 72 + 48, 246, 32, "black", K.PAPER, a)
     K.text(c, ep.concept, 72 + 112, 246, 34, "serif_black", K.INK, a, "left")
@@ -635,7 +638,7 @@ def end_shot(ep_refs: list[str], next_title: str | None, bars: int = 2) -> Shot:
                 size = min(56.0, 56 * 900 / max(1.0, K.text_w(ln, 56, "serif_black")))
                 K.text(c, ln, W / 2, 1200 + j * 78, size, "serif_black", g.acc, ap)
         else:
-            K.text(c, "阿德勒心理学 · 10讲 完", W / 2, 1180, 56, "serif_black", g.acc, ap)
+            K.text(c, f"{g.ep.series} · {g.ep.series_count}讲 完", W / 2, 1180, 56, "serif_black", g.acc, ap)
             K.text(c, "感谢观看", W / 2, 1260, 36, "sans_medium", K.INK2, ap)
 
     return Shot(bars, "", "参考资料", [], draw=draw, note="参考资料与下一讲预告", hits=[(0, "cymbal", 0.5, "片尾落版"),
@@ -845,7 +848,7 @@ def cover(ep: Episode, path: str):
     c.restore()
     K.rr(c, 72 + 70, 230, 140, 70, 35, ep.accent)
     K.text(c, f"{ep.no:02d}", 72 + 70, 230, 46, "black", K.PAPER)
-    K.text(c, "阿德勒心理学", 72 + 160, 230, 40, "sans_medium", K.INK2, 1, "left")
+    K.text(c, ep.series, 72 + 160, 230, 40, "sans_medium", K.INK2, 1, "left")
     lines = ep.cover_title.split("|")
     widest = max(K.text_w(gfx.plain(ln), 104, "serif_black") for ln in lines)
     size = min(104.0, 104 * 920 / widest)       # 长标题整体缩字号，保持手动断行
@@ -870,7 +873,7 @@ def produce(ep: Episode, out_dir: Path, video: bool = True, workers: int = 4) ->
     print(f"  ep{ep.no:02d}: {len(events)} 个音效，最大音画偏差 {worst:.2f} 帧，峰值 {np.max(np.abs(mix)):.3f}")
     if not video:
         return None
-    out = out_dir / f"阿德勒{ep.no:02d}_{ep.concept}.mp4"
+    out = out_dir / f"{ep.file_prefix}{ep.no:02d}_{ep.concept}.mp4"
     with tempfile.TemporaryDirectory() as tmp:
         wav = str(Path(tmp) / "mix.wav")
         sf.write(wav, mix, audio.SR)

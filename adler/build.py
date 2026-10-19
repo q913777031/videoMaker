@@ -59,7 +59,7 @@ def sheet(ep: core.Episode, path: Path, cols: int = 4):
 
 
 def _video(k: str, ep: core.Episode) -> Path:
-    return OUT / f"ep{k}" / f"阿德勒{ep.no:02d}_{ep.concept}.mp4"
+    return OUT / f"ep{k}" / f"{ep.file_prefix}{ep.no:02d}_{ep.concept}.mp4"
 
 
 def verify(keys: list[str]) -> bool:
