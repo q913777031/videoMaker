@@ -159,7 +159,8 @@ def finish(silent: Path, out_dir: Path, ep: Path):
     wav = out_dir / "mix.wav"
     audio.write_wav(str(wav), m) if hasattr(audio, "write_wav") else _write(wav, m)
     mp4 = out_dir / "一把伞的雪夜.mp4"
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(silent), "-i", str(wav), "-map", "0:v", "-map", "1:a", "-c:v", "copy",
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(silent), "-i", str(wav), "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-preset", "medium", "-crf", "18",
+                    "-pix_fmt", "yuv420p", "-color_range", "tv", "-movflags", "+faststart",
                     "-c:a", "aac", "-b:a", "192k", "-shortest", str(mp4)], check=True)
     wav.unlink()
     with open(out_dir / "cue_sheet.csv", "w", newline="", encoding="utf-8") as f:
