@@ -223,8 +223,8 @@ def _finale(ab):
 
 
 def episode(no: int, ab: str, shape: str, mid: list, refs: list, notes: list, hashtags: str, cover_title: str,
-            cover_sub: str, title: str | None = None, drop_text: str | None = None, cover_shot: int = 3,
-            cover_t: float = 5.6) -> Episode:
+            cover_sub: str, title: str | None = None, drop_text: str | None = None, cover_shot: int = 4,
+            cover_t: float = 4.6) -> Episode:
     """组装一期：mid 为第 7–9 镜（3 + 2 + 2 小节）；shape 为第 4 镜字幕（星座形状一句话）。"""
     s = X.sign(ab)
     name = X.NAMES[ab]
