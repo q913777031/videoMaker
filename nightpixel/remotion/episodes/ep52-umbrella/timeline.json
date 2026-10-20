@@ -1,0 +1,335 @@
+{
+ "fps": 30,
+ "end": 2670,
+ "cues": {
+  "s1": 3,
+  "chat_b1": 36,
+  "cap1": 52,
+  "chat_b2": 116,
+  "chat_b3": 179,
+  "typing": 211,
+  "s2": 259,
+  "card1_write": 275,
+  "cap2": 387,
+  "s3": 514,
+  "rider_in": 546,
+  "pass1": 610,
+  "pass1_end": 626,
+  "cap3b": 642,
+  "s4": 705,
+  "card2_write": 721,
+  "card2_mark": 785,
+  "card2_note": 817,
+  "card2_strike": 833,
+  "card2_redo": 865,
+  "card2_stamp": 913,
+  "cap4": 929,
+  "s5": 961,
+  "s6": 1248,
+  "swap": 1279,
+  "swap_cym": 1279,
+  "cap6": 1327,
+  "s7": 1423,
+  "s8": 1535,
+  "cap8": 1566,
+  "s9": 1790,
+  "cap9": 1822,
+  "s9b": 1917,
+  "s9c": 2045,
+  "s10": 2172,
+  "end_b1": 2204,
+  "end_b2": 2284,
+  "end_b3": 2363,
+  "cap10": 2427,
+  "s11": 2554
+ },
+ "relay": [
+  {
+   "at": 961,
+   "len": 63
+  },
+  {
+   "at": 1024,
+   "len": 64
+  },
+  {
+   "at": 1088,
+   "len": 48
+  },
+  {
+   "at": 1136,
+   "len": 48
+  },
+  {
+   "at": 1184,
+   "len": 32
+  },
+  {
+   "at": 1216,
+   "len": 32
+  }
+ ],
+ "sfx": [
+  {
+   "t": 1.1842,
+   "frame": 36,
+   "beat": 2,
+   "bar_pos": 2,
+   "sfx": "wood_high",
+   "gain": 0.9,
+   "note": "气泡：门口有把旧伞"
+  },
+  {
+   "t": 3.8545,
+   "frame": 116,
+   "beat": 7,
+   "bar_pos": 3,
+   "sfx": "wood_high",
+   "gain": 0.8,
+   "note": "气泡：用完放哪"
+  },
+  {
+   "t": 5.9791,
+   "frame": 179,
+   "beat": 11,
+   "bar_pos": 3,
+   "sfx": "wood_high",
+   "gain": 0.8,
+   "note": "气泡：放回来就行"
+  },
+  {
+   "t": 8.6262,
+   "frame": 259,
+   "beat": 16,
+   "bar_pos": 0,
+   "sfx": "tom",
+   "gain": 0.6,
+   "note": "信笺糊化进入"
+  },
+  {
+   "t": 17.1363,
+   "frame": 514,
+   "beat": 32,
+   "bar_pos": 0,
+   "sfx": "kick_light",
+   "gain": 1.0,
+   "note": "音乐 drop：硬切到雪夜街景"
+  },
+  {
+   "t": 20.8631,
+   "frame": 626,
+   "beat": 39,
+   "bar_pos": 3,
+   "sfx": "wood_high",
+   "gain": 0.9,
+   "note": "伞递到骑手手里"
+  },
+  {
+   "t": 23.5102,
+   "frame": 705,
+   "beat": 44,
+   "bar_pos": 0,
+   "sfx": "wood_low",
+   "gain": 0.8,
+   "note": "信笺糊化进入"
+  },
+  {
+   "t": 26.1805,
+   "frame": 785,
+   "beat": 49,
+   "bar_pos": 1,
+   "sfx": "rim",
+   "gain": 0.8,
+   "note": "红圈：明早就还"
+  },
+  {
+   "t": 27.237,
+   "frame": 817,
+   "beat": 51,
+   "bar_pos": 3,
+   "sfx": "wood_low",
+   "gain": 0.7,
+   "note": "红字批注"
+  },
+  {
+   "t": 27.7595,
+   "frame": 833,
+   "beat": 52,
+   "bar_pos": 0,
+   "sfx": "rim",
+   "gain": 0.7,
+   "note": "划掉"
+  },
+  {
+   "t": 30.4298,
+   "frame": 913,
+   "beat": 57,
+   "bar_pos": 1,
+   "sfx": "clap",
+   "gain": 0.9,
+   "note": "通过章：接力"
+  },
+  {
+   "t": 32.0203,
+   "frame": 961,
+   "beat": 60,
+   "bar_pos": 0,
+   "sfx": "rim",
+   "gain": 0.8,
+   "note": "接力硬切 1"
+  },
+  {
+   "t": 34.1449,
+   "frame": 1024,
+   "beat": 64,
+   "bar_pos": 0,
+   "sfx": "shaker",
+   "gain": 0.8,
+   "note": "接力硬切 2"
+  },
+  {
+   "t": 36.2696,
+   "frame": 1088,
+   "beat": 68,
+   "bar_pos": 0,
+   "sfx": "shaker",
+   "gain": 0.8,
+   "note": "接力硬切 3"
+  },
+  {
+   "t": 37.8717,
+   "frame": 1136,
+   "beat": 71,
+   "bar_pos": 3,
+   "sfx": "shaker",
+   "gain": 0.8,
+   "note": "接力硬切 4"
+  },
+  {
+   "t": 39.4623,
+   "frame": 1184,
+   "beat": 74,
+   "bar_pos": 2,
+   "sfx": "shaker",
+   "gain": 0.8,
+   "note": "接力硬切 5"
+  },
+  {
+   "t": 40.5188,
+   "frame": 1216,
+   "beat": 76,
+   "bar_pos": 0,
+   "sfx": "shaker",
+   "gain": 0.8,
+   "note": "接力硬切 6"
+  },
+  {
+   "t": 42.6434,
+   "frame": 1279,
+   "beat": 80,
+   "bar_pos": 0,
+   "sfx": "kick_light",
+   "gain": 1.0,
+   "note": "高潮：雪落改字 还→传"
+  },
+  {
+   "t": 42.6434,
+   "frame": 1279,
+   "beat": 80,
+   "bar_pos": 0,
+   "sfx": "cymbal",
+   "gain": 0.8,
+   "note": "高潮吊镲"
+  },
+  {
+   "t": 47.4384,
+   "frame": 1423,
+   "beat": 89,
+   "bar_pos": 1,
+   "sfx": "tom",
+   "gain": 0.5,
+   "note": "街景远景"
+  },
+  {
+   "t": 51.1536,
+   "frame": 1535,
+   "beat": 96,
+   "bar_pos": 0,
+   "sfx": "tom",
+   "gain": 0.7,
+   "note": "暖光店里"
+  },
+  {
+   "t": 59.6521,
+   "frame": 1790,
+   "beat": 112,
+   "bar_pos": 0,
+   "sfx": "wood_low",
+   "gain": 0.8,
+   "note": "卡的背面 1"
+  },
+  {
+   "t": 63.9013,
+   "frame": 1917,
+   "beat": 120,
+   "bar_pos": 0,
+   "sfx": "wood_low",
+   "gain": 0.7,
+   "note": "卡的背面 2"
+  },
+  {
+   "t": 68.1506,
+   "frame": 2045,
+   "beat": 128,
+   "bar_pos": 0,
+   "sfx": "wood_low",
+   "gain": 0.7,
+   "note": "卡的背面 3"
+  },
+  {
+   "t": 72.4114,
+   "frame": 2172,
+   "beat": 136,
+   "bar_pos": 0,
+   "sfx": "tom",
+   "gain": 0.6,
+   "note": "收尾聊天窗"
+  },
+  {
+   "t": 73.4679,
+   "frame": 2204,
+   "beat": 138,
+   "bar_pos": 2,
+   "sfx": "wood_high",
+   "gain": 0.8,
+   "note": "气泡：那把伞还没回来"
+  },
+  {
+   "t": 76.1266,
+   "frame": 2284,
+   "beat": 143,
+   "bar_pos": 3,
+   "sfx": "wood_high",
+   "gain": 0.8,
+   "note": "气泡：在我这，雪还没停"
+  },
+  {
+   "t": 78.7737,
+   "frame": 2363,
+   "beat": 148,
+   "bar_pos": 0,
+   "sfx": "wood_high",
+   "gain": 0.9,
+   "note": "气泡：那就别还了"
+  },
+  {
+   "t": 85.1476,
+   "frame": 2554,
+   "beat": 160,
+   "bar_pos": 0,
+   "sfx": "cymbal",
+   "gain": 0.5,
+   "note": "片尾题字"
+  }
+ ]
+}
