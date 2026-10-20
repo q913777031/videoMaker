@@ -30,7 +30,7 @@ OUT = ROOT / "out" / "xingzuo"
 MODS = {
     "01": "ep01_aries", "02": "ep02_taurus", "03": "ep03_gemini", "04": "ep04_cancer", "05": "ep05_leo",
     "06": "ep06_virgo", "07": "ep07_libra", "08": "ep08_scorpius", "09": "ep09_sagittarius", "10": "ep10_capricornus",
-    "11": "ep11_aquarius", "12": "ep12_pisces",
+    "11": "ep11_aquarius", "12": "ep12_pisces", "13": "ep13_ophiuchus",
 }
 
 

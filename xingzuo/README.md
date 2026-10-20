@@ -6,7 +6,7 @@
 ```bash
 python3 -m xingzuo.prep_data <d3-celestial/data 目录>   # 只在更新星表时运行，生成 data/zodiac.json
 python3 -m xingzuo.build 05 --sheet                      # 逐镜联系表
-python3 -m xingzuo.build                                 # 渲染全部 12 期到 out/xingzuo/epXX/
+python3 -m xingzuo.build                                 # 渲染全部 12 期 + 番外蛇夫座（第 13 期）到 out/xingzuo/epXX/
 python3 -m xingzuo.build --verify                        # 核验
 python3 -m xingzuo.build --publish                       # 复制到 videos/xingzuo/
 ```

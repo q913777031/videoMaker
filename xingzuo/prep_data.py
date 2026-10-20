@@ -70,7 +70,10 @@ def best_evening(ra_deg: float) -> str:
 
 
 def main(src: Path):
-    lines = {f["id"]: f["geometry"]["coordinates"] for f in json.load(open(src / "constellations.lines.json"))["features"]}
+    feats = json.load(open(src / "constellations.lines.json"))["features"]
+    lines = {f["id"]: f["geometry"]["coordinates"] for f in feats}
+    # 巨蛇座被蛇夫座隔成蛇头、蛇尾两块，星表里是两个同名要素（蛇夫座番外用）
+    serpens = [f["geometry"]["coordinates"] for f in feats if f["id"] == "Ser"]
     stars = json.load(open(src / "stars.6.json"))["features"]
     names = json.load(open(src / "starnames.json"))
     mag = {f["id"]: f["properties"]["mag"] for f in stars}
@@ -91,7 +94,8 @@ def main(src: Path):
                else (b - a).days + 1 + 365) for c, a, b in spans}
 
     out = {"source": "d3-celestial (BSD-3-Clause); IAU boundaries via skyfield; Sun: Meeus low-precision, "
-                     f"{YEAR} Beijing noon", "sun": sun, "order": ECLIPTIC, "signs": {}}
+                     f"{YEAR} Beijing noon", "sun": sun, "order": ECLIPTIC, "signs": {},
+           "serpens": serpens}
     for ab in ECLIPTIC:
         segs = lines[ab]
         pts = [p for s in segs for p in s]
