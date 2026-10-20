@@ -108,8 +108,8 @@ def ideal_gap(c, g, el_t, d):
     K.figure(c, -dx, 0, s, "stand", K.HERO, K.SKIN, 1, 1, d.get("mood", "calm"), "short")
     K.figure(c, dx, 0, s * 1.05, "proud", K.GOLD, K.mix(K.GOLD, K.PAPER, 0.5), 0.45, -1, "smile", "short")
     if d.get("labels", True):
-        K.text(c, "真实自我", -dx, 70, 32, "serif_black", K.HERO)
-        K.text(c, "理想自我", dx, 70, 32, "serif_black", K.mix(K.GOLD, K.DARK, 0.3))
+        K.text(c, "真实自我", -dx, -s * 1.24, 32, "serif_black", K.HERO)
+        K.text(c, "理想自我", dx, -s * 1.28, 32, "serif_black", K.mix(K.GOLD, K.DARK, 0.3))
 
 
 def tag_heart(c, x, y, s, cond="考第一", alpha=1.0, swing=0.0):
