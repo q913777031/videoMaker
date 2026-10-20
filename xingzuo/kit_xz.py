@@ -146,9 +146,13 @@ def sky_card(c, x, y, w, h, ab, p=1.0, t=0.0, alpha=1.0, glow=None, glow_k=0.0, 
                 lx = px + (36 if px < w * 0.15 else -36)
                 al = "left" if px < w * 0.15 else "right"
                 ly = py - 20 - 28 * (len(lines) - 1) if py > -h * 0.3 else py + 60
+                tw = max(K.text_w(ln, 44 if j == 0 else 32, "serif_black" if j == 0 else "sans_medium")
+                         for j, ln in enumerate(lines))
+                bx = lx + tw / 2 if al == "left" else lx - tw / 2
+                K.rr(c, bx, ly + 28 * (len(lines) - 1), tw + 36, 56 * len(lines) + 20, 18, SKY, 0.82 * alpha * label_k)
                 for j, ln in enumerate(lines):
                     K.text(c, ln, lx, ly + j * 56, 44 if j == 0 else 32, "serif_black" if j == 0 else "sans_medium",
-                           "#FFE7A8" if j == 0 else FAINT, alpha * label_k, al)
+                           "#FFE7A8" if j == 0 else "#AEB9D3", alpha * label_k, al)
         if extra:
             extra(c, P)
         c.restore()
