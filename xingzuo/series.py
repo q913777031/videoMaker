@@ -32,6 +32,7 @@ ACCENTS = {"Ari": "#C8553D", "Tau": "#8C6A3F", "Gem": "#3F7FA6", "Cnc": "#4C8C88
 STAR_ZH = {"Sgr": "箕宿三"}
 COMMON_REFS = ["d3-celestial 星表（Hipparcos / 耶鲁亮星表）；IAU 星座边界（Roman 1987）",
                "Hartmann, P., Reuter, M., & Nyborg, H. (2006). Personality and Individual Differences, 40(7), 1349–1362."]
+END_REFS = ["d3-celestial 星表；IAU 星座边界；Hartmann 等（2006）"]     # 片尾卡用的简写，完整引用写入文档
 NEXT = {ab: f"{i + 2:02d} {X.NAMES[ORDER[i + 1]]}" for i, ab in enumerate(ORDER[:-1])}
 
 
@@ -287,7 +288,7 @@ def episode(no: int, ab: str, shape: str, mid: list, refs: list, notes: list, ha
         Shot(2, "星星是真的；|性格，由你自己写。", "天文观测", [
             Custom(_finale(ab), x=540, y=800, at=0, enter="pop", sfx="clap", note="星图收束"),
         ], note=f"{name}星图卡居中，最亮星微微发光"),
-        end_shot(refs + COMMON_REFS, NEXT.get(ab) and f"{NEXT[ab]}：天上到底长什么样？"),
+        end_shot(refs + END_REFS, NEXT.get(ab) and f"{NEXT[ab]}：天上到底长什么样？"),
     ]
     notes = [
         f"占星日期取常见说法 {X.mmdd(a0)}–{X.mmdd(a1)}（不同来源前后差 1 天）。按 IAU 星座边界计算（2026 年、北京时间正午），这段时间太阳实际在：{acts}。"
