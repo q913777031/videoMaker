@@ -1,4 +1,4 @@
-"""打击乐音效合成：低音鼓、军鼓边击、木块、沙锤、框鼓、低音通鼓、邦戈鼓、拍手、轻柔吊镲；
+"""打击乐音效合成：低音鼓、军鼓边击、木块、沙锤、框鼓、低音通鼓、邦戈鼓、拍手、轻柔吊镲、气泡弹出声、亮音叮；
 以及中国打击乐：堂鼓、大鼓、大锣、小锣、铙钹、梆子、木鱼、编钟。
 
 设计取向：
@@ -136,6 +136,23 @@ def cymbal(dur: float = 2.6) -> np.ndarray:
     return _peak(_fade(y, 0.0, 0.3), 0.35)
 
 
+def pop() -> np.ndarray:
+    """气泡弹出声：900→420 Hz 快速下滑正弦 + 4 kHz 极短咔嗒，用于文字逐个弹出（多巴胺式小奖励）。"""
+    t = _t(0.12)
+    f = 420 + 520 * np.exp(-t * 60)
+    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.035)
+    click = bandpass(_noise(len(t), 121), 2500, 6500) * np.exp(-t / 0.002) * 0.5
+    return _peak(_fade(body + click, 0.0, 0.02), 0.7)
+
+
+def ding() -> np.ndarray:
+    """亮音叮：钢片琴式 1.57 kHz 基音 + 非谐振泛音，尾音约 0.6 秒，用于关键词高亮与数字落定。"""
+    t = _t(0.7)
+    y = _modes(t, (1568, 3920, 5270), (1.0, 0.35, 0.12), (0.22, 0.08, 0.04), 13)
+    y += bandpass(_noise(len(t), 122), 3000, 8000) * np.exp(-t / 0.003) * 0.3
+    return _peak(_fade(lowpass(y, 9000), 0.0, 0.15), 0.6)
+
+
 # ---------------------------------------------------------------- 中国打击乐
 
 def tanggu() -> np.ndarray:
@@ -242,7 +259,7 @@ def sound(name: str) -> np.ndarray:
         "frame": frame_drum, "tom": low_tom, "bongo_high": lambda: bongo("high"),
         "bongo_low": lambda: bongo("low"), "clap": clap, "cymbal": cymbal,
         "tanggu": tanggu, "dagu": dagu, "daluo": daluo, "xiaoluo": xiaoluo, "naobo": naobo,
-        "bangzi": bangzi, "muyu": muyu, "bianzhong": bianzhong,
+        "bangzi": bangzi, "muyu": muyu, "bianzhong": bianzhong, "pop": pop, "ding": ding,
     }
     return table[name]()
 
@@ -253,7 +270,7 @@ TIMBRES = {
     "tom": "低音通鼓", "bongo_high": "邦戈鼓（高）", "bongo_low": "邦戈鼓（低）", "clap": "拍手",
     "cymbal": "轻柔吊镲",
     "tanggu": "堂鼓", "dagu": "大鼓", "daluo": "大锣", "xiaoluo": "小锣", "naobo": "铙钹", "bangzi": "梆子",
-    "muyu": "木鱼", "bianzhong": "编钟",
+    "muyu": "木鱼", "bianzhong": "编钟", "pop": "气泡弹出声", "ding": "亮音叮",
 }
 
 

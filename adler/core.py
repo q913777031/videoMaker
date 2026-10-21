@@ -27,6 +27,7 @@ from scipy import signal
 from engine import audio, bgm, gfx, perc
 from engine.gfx import clamp01, ease_in, ease_in_out, ease_out, ease_out_back, lerp
 
+from . import fx
 from . import kit as K
 
 FPS = 30
@@ -65,6 +66,7 @@ DET = _detect()
 BEATS = DET["beats"]
 SECTIONS = DET["sections"]
 N_BEATS = len(BEATS)
+_BEAT_T = np.array([b["t"] for b in BEATS])
 LAST_BAR = (N_BEATS - 1) // 4          # 最后一个完整小节线（原曲最后一击）
 MUSIC_END = BEATS[LAST_BAR * 4]["t"] + 0.3
 END = MUSIC_END + 2.9                  # 原曲在 90 秒处硬截断，之后接约 3 秒混响尾音
@@ -114,6 +116,7 @@ class El:
             b, d = kf[0], kf[1]
             if d.get("sfx"):
                 out.append((b, d["sfx"], d.get("gain", 1.0), d.get("note", f"{self.kind} 动作")))
+        out.extend(self.props.get("extra_hits", ()))
         return out
 
 
@@ -173,6 +176,63 @@ def Custom(fn, **kw):
     return _el("custom", fn=fn, **kw)
 
 
+# ---------------------------------------------------------------- 光效与动效元素（见 adler/fx.py）
+
+def Pops(words, x, y, size=78, at=0, step=1, sfx="pop", hi_sfx="ding", gain=0.9, layout="row", gap=26,
+         maxw=900, font="serif_black", sparks=True, **kw):
+    """文字逐个弹出：words 为“词 词|【高亮词】”（空格分词、| 换行、词内【】拆成独立高亮词）或列表，第 i 个词在 at + i*step 拍弹出（过冲回弹 + 星光）。
+
+    整数拍上的词各配一个音效（普通词 sfx、高亮词 hi_sfx）；step 为小数时落在半拍上的词不配音效（音效只放在实测拍点）。
+    高亮词为强调色纸片，弹出时额外有放射线与星光。
+    """
+    ws, breaks = fx.parse_words(words)
+    beats, k = [], -1
+    for w, _ in ws:
+        if not (fx._punct(w) and beats):      # 纯标点跟上一个词同拍出现，不占拍、不配音效
+            k += 1
+        beats.append(at + k * step)
+    hits = []
+    for i, ((w, h), b) in enumerate(zip(ws, beats)):
+        name = hi_sfx if h else sfx
+        if i and beats[i - 1] == b:
+            continue
+        if name and abs(b - round(b)) < 1e-9:
+            hits.append((b, name, gain, f"弹出：{w}"))
+    kw.setdefault("enter", "none")
+    return _el("pops", at=at, x=x, y=y, words=ws, beats=beats, size=size, layout=layout, gap=gap, maxw=maxw,
+               font=font, sparks=sparks, breaks=breaks, extra_hits=hits, **kw)
+
+
+def Glow(x, y, r=420, at=0, color=None, alpha=0.32, pulse=0.5, **kw):
+    """随节拍呼吸的径向光晕（放在主体元素之前，作为背光）；color 默认为第二强调色。"""
+    kw.setdefault("enter", "fade")
+    kw.setdefault("dur", 0.5)
+    return _el("glow", at=at, x=x, y=y, r=r, color=color, glow_alpha=alpha, pulse=pulse, **kw)
+
+
+def Rays(x, y, r=640, at=0, color=None, alpha=0.22, n=14, spin=10.0, **kw):
+    """旋转光束（放在主体元素之前）；随强拍轻微增亮。"""
+    kw.setdefault("enter", "grow")
+    kw.setdefault("dur", 0.5)
+    return _el("rays", at=at, x=x, y=y, r=r, color=color, ray_alpha=alpha, n=n, spin=spin, **kw)
+
+
+def Spark(x, y, at=0, n=18, reach=300, size=20, colors=None, sfx=None, **kw):
+    """星光粒子爆散（拍点即爆开，0.9 秒内消失）。"""
+    kw.setdefault("enter", "none")
+    return _el("spark", at=at, x=x, y=y, n=n, reach=reach, size=size, colors=colors, sfx=sfx, **kw)
+
+
+def Counter(v0, v1, x, y, size=180, at=0, land=4, fmt="{:.0f}", suffix="", sfx="ding", gain=0.9, color=None,
+            sub=None, **kw):
+    """滚动数字：第 at 拍开始滚动，第 land 拍（整数拍）落定在 v1，落定时放音效、放射线与星光。"""
+    hits = [(land, sfx, gain, f"数字落定：{fmt.format(v1)}{suffix}")] if sfx else []
+    kw.setdefault("enter", "fade")
+    kw.setdefault("dur", 0.2)
+    return _el("counter", at=at, x=x, y=y, v0=v0, v1=v1, size=size, land=land, fmt=fmt, suffix=suffix, color=color,
+               sub=sub, extra_hits=hits, **kw)
+
+
 # 入场方式：start 型从该拍开始运动；land 型在该拍落定（撞击帧 = 拍点）
 START_MODES = {"pop", "rise", "fade", "grow", "draw", "none", "unfold", "slam"}
 LAND_MODES = {"drop", "slide_l", "slide_r", "slide_u"}
@@ -196,6 +256,9 @@ class Shot:
     cut: bool = False                   # 与上一镜硬切（上一镜不做退场），用于人物位置连续的镜头
     hits: list = field(default_factory=list)   # 额外音效：(拍, 音色, 增益, 说明)
     research: bool = False
+    punch: float = 0.006                # 强拍推镜脉冲幅度（0.006 为原有力度，钩子/高潮镜头可加到 0.02–0.035）
+    flashes: list = field(default_factory=list)   # 闪白拍：[拍] 或 [(拍, 峰值)]，撞击帧最亮
+    shake: list = field(default_factory=list)     # 镜头抖动拍：[拍] 或 [(拍, 幅度像素)]
     # 由 Episode.build 填充
     b0: int = 0
     t0: float = 0.0
@@ -290,6 +353,17 @@ class G:
         """从第 k0 拍到第 k1 拍的进度。"""
         a, b = self.b(k0), self.b(k1)
         return ease(clamp01((self.t - a) / max(1e-6, b - a)))
+
+    def pulse(self, decay: float = 6.0, downbeat: bool = False) -> float:
+        """节拍脉冲：最近一个实测拍（downbeat=True 时只看强拍）处为该拍重音值，之后按 exp(-decay·dt) 衰减。"""
+        T = self.shot.t0 + self.t
+        i = max(0, min(N_BEATS - 1, int(np.searchsorted(_BEAT_T, T, side="right")) - 1))
+        while downbeat and i > 0 and BEATS[i]["bar_pos"] != 0:
+            i -= 1
+        b = BEATS[i]
+        if T < b["t"] or (downbeat and b["bar_pos"] != 0):
+            return 0.0
+        return accent(b) * math.exp(-(T - b["t"]) * decay)
 
     @property
     def exit(self) -> float:
@@ -418,12 +492,28 @@ def draw_el(c, el: El, g: G):
             K.pill(c, 0, 0, d["text"], d.get("size", 34), d.get("fill", g.acc), d.get("color", K.PAPER), alpha,
                    d.get("font", "sans_medium"))
     elif kind == "big":
-        with K.at(c, x, y, rot, sc):
-            K.text(c, d["text"], 0, 0, d.get("size", 150), d.get("font", "serif_black"), d.get("color", g.acc), alpha,
-                   shadow=(6, 10, 10, K.SHADOW) if d.get("shadow", True) else None)
-            sub = d.get("sub")
-            if sub:
-                K.text(c, sub, 0, d.get("size", 150) * 0.78, d.get("sub_size", 40), "sans_medium", K.INK2, alpha)
+        size = d.get("size", 150)
+        dt = g.since(el.at)
+        if d.get("rays"):
+            fx.rays(c, x, y, size * 4.2, g.acc2, g.t, 16, (0.2 + 0.12 * g.pulse(5, True)) * alpha * clamp01(dt / 0.3))
+        if d.get("glow"):
+            fx.glow(c, x, y, size * 2.6, g.acc2, (0.3 + 0.15 * g.pulse(5)) * alpha)
+
+        def _big():
+            with K.at(c, x, y, rot, sc):
+                K.text(c, d["text"], 0, 0, size, d.get("font", "serif_black"), d.get("color", g.acc), alpha,
+                       shadow=(6, 10, 10, K.SHADOW) if d.get("shadow", True) else None)
+                sub = d.get("sub")
+                if sub:
+                    K.text(c, sub, 0, size * 0.78, d.get("sub_size", 40), "sans_medium", K.INK2, alpha)
+
+        if d.get("shine"):
+            w = K.text_w(d["text"], size, d.get("font", "serif_black")) * 1.5 + 80
+            fx.shine(c, skia.Rect.MakeXYWH(x - w / 2, y - size * 1.2, w, size * 2.4), clamp01((dt - 0.25) / 0.6), _big)
+        else:
+            _big()
+        if d.get("spark") and 0 <= dt <= 1:
+            fx.sparks(c, x, y, dt, [g.acc2, g.acc, K.PAPER], 20, 9, size * 2.4, size * 0.16)
         if d.get("burst", True) and 0 <= g.since(el.at) <= 0.4:
             c.save()
             c.clipRect(skia.Rect.MakeLTRB(0, 330, W, 1270))     # 放射线不进入页眉与字幕区
@@ -437,6 +527,65 @@ def draw_el(c, el: El, g: G):
         with K.at(c, x, y, rot, sc):
             with K.fade(c, alpha):
                 d["fn"](c, g, el_t, d)
+    elif kind == "glow":
+        fx.glow(c, x, y, d["r"] * sc, d.get("color") or g.acc2, d["glow_alpha"] * alpha * (1 + d["pulse"] * g.pulse(5)))
+    elif kind == "rays":
+        fx.rays(c, x, y, d["r"] * sc, d.get("color") or g.acc2, g.t, d["n"], d["ray_alpha"] * alpha * (1 + 0.6 * g.pulse(5, True)),
+                d["spin"])
+    elif kind == "spark":
+        fx.sparks(c, x, y, el_t, d.get("colors") or [g.acc2, g.acc, K.PAPER], d["n"], int(x + y) % 97, d["reach"], d["size"])
+    elif kind == "pops":
+        _draw_pops(c, d, g, x, y, alpha)
+    elif kind == "counter":
+        _draw_counter(c, el, d, g, x, y, alpha)
+
+
+def _draw_pops(c, d, g: G, x, y, alpha):
+    ws, size, font = d["words"], d["size"], d["font"]
+    pos = fx.layout_words(ws, size, font, d["layout"], d["gap"], d["maxw"], d.get("breaks", ()))
+    bounce = 1 + 0.035 * g.pulse(7)
+    for (w, hi), (dx, dy), b in zip(ws, pos, d["beats"]):
+        dt = g.since(b)
+        st = fx.word_pop(dt)
+        if st is None:
+            continue
+        a, s_, r_ = st
+        px, py = x + dx, y + dy
+        if hi and d["sparks"]:
+            fx.glow(c, px, py, size * 1.9, g.acc2, 0.35 * alpha * clamp01(dt / 0.15) * (0.7 + 0.5 * g.pulse(5)))
+        with K.at(c, px, py, r_ if hi else -r_ * 0.5, s_ * bounce):
+            fx.draw_word(c, w, 0, 0, size, font, d.get("color", K.INK), d.get("hi_fill", g.acc), K.PAPER, a * alpha, hi)
+        if d["sparks"]:
+            if hi:
+                c.save()
+                c.clipRect(skia.Rect.MakeLTRB(0, 330, W, 1270))
+                K.burst(c, px, py, dt, g.acc2, size * 0.9, size * 1.9, 10, 7)
+                c.restore()
+                fx.sparks(c, px, py, dt, [g.acc2, g.acc, K.PAPER], 12, int(px) % 31, size * 2.2, size * 0.2)
+            else:
+                fx.sparks(c, px, py - size * 0.4, dt, [g.acc2, K.PAPER], 6, int(px) % 29, size * 1.1, size * 0.13, dur=0.5)
+
+
+def _draw_counter(c, el: El, d, g: G, x, y, alpha):
+    t_land = g.b(d["land"]) - g.b(el.at)
+    k = clamp01(g.since(el.at) / max(1e-6, t_land))
+    v = fx.counter_value(d["v0"], d["v1"], k)
+    dt = g.since(d["land"])
+    sc = 1 + (0.22 * (1 - ease_out(clamp01(dt / 0.25))) if dt >= 0 else 0.03 * math.sin(g.t * 40))
+    col = d.get("color") or g.acc
+    size = d["size"]
+    if dt >= 0:
+        fx.glow(c, x, y, size * 2.2, g.acc2, (0.32 + 0.12 * g.pulse(5)) * alpha)
+    with K.at(c, x, y, 0, sc):
+        K.text(c, d["fmt"].format(v) + d["suffix"], 0, 0, size, "black", col, alpha, shadow=(5, 9, 10, K.SHADOW))
+        if d.get("sub"):
+            K.text(c, d["sub"], 0, size * 0.85, size * 0.24, "sans_medium", K.INK2, alpha)
+    if 0 <= dt <= 1:
+        c.save()
+        c.clipRect(skia.Rect.MakeLTRB(0, 330, W, 1270))
+        K.burst(c, x, y, dt, g.acc2, size * 0.9, size * 2.0, 12, 9)
+        c.restore()
+        fx.sparks(c, x, y, dt, [g.acc2, g.acc, K.PAPER], 18, 7, size * 2.2, size * 0.13)
 
 
 # ---------------------------------------------------------------- 背景、字幕与界面
@@ -562,8 +711,12 @@ def _draw_shot(c, ep: Episode, k: int, t: float):
     if 0 <= gi < N_BEATS:
         b = BEATS[gi]
         if b["bar_pos"] == 0:
-            z *= 1 + 0.006 * accent(b) * math.exp(-(t - (b["t"] - s.t0)) * 6)
+            z *= 1 + s.punch * accent(b) * math.exp(-(t - (b["t"] - s.t0)) * 6)
     c.save()
+    for it in s.shake:
+        kb, amp = it if isinstance(it, tuple) else (it, 14.0)
+        dx, dy = fx.shake_offset(g.since(kb), amp, seed=kb)
+        c.translate(dx, dy)
     c.translate(*s.focus)
     c.scale(z, z)
     c.translate(-s.focus[0], -s.focus[1])
@@ -596,6 +749,9 @@ def draw_frame(c, ep: Episode, T: float, caption=True, ui=True):
     k = ep.shot_at(T)
     s = ep.shots[k]
     g = _draw_shot(c, ep, k, T - s.t0)
+    for it in s.flashes:
+        kb, pk = it if isinstance(it, tuple) else (it, 0.55)
+        fx.flash(c, fx.flash_alpha(g.since(kb), pk), K.PAPER)
     if caption:
         draw_caption(c, ep, s, g)
     if ui:
@@ -691,7 +847,8 @@ def render(ep: Episode, wav: str, out: str, workers: int = 4):
 # ---------------------------------------------------------------- 音频
 
 SFX_LEVEL = {"kick": 0.5, "kick_light": 0.5, "rim": 0.34, "wood_high": 0.3, "wood_low": 0.3, "shaker": 0.24,
-             "frame": 0.55, "tom": 0.48, "bongo_high": 0.34, "bongo_low": 0.36, "clap": 0.34, "cymbal": 0.3}
+             "frame": 0.55, "tom": 0.48, "bongo_high": 0.34, "bongo_low": 0.36, "clap": 0.34, "cymbal": 0.3,
+             "pop": 0.3, "ding": 0.26}
 DUCK_DEPTH = {"kick": 0.22, "kick_light": 0.18, "rim": 0.12, "frame": 0.22, "tom": 0.18, "clap": 0.12, "cymbal": 0.08}
 
 
@@ -828,7 +985,8 @@ def write_docs(ep: Episode, out_dir: Path, events: list[dict]):
              f"- 时长：{ep.total:.1f} 秒（1080×1920，30fps，配乐 music/bgm.m4a，镜头边界与音效全部落在实测拍点上）", "",
              "## 逐屏文案", "", "| # | 时间（分:秒:帧） | 角标 | 屏幕文字 | 画面 |", "|---|------|------|----------|------|"]
     for i, s in enumerate(ep.shots):
-        txt = gfx.plain(s.text).replace("|", "／") if s.text else "（参考资料）"
+        pops = " ".join(w for el in s.els if el.kind == "pops" for w, _ in el.props["words"])
+        txt = gfx.plain(s.text).replace("|", "／") if s.text else f"（弹字）{pops}" if pops else "（参考资料）"
         lines.append(f"| {i + 1} | {tc(s.t0)}–{tc(s.t1)} | {s.tag} | {txt} | {s.note} |")
     lines += ["", "## 参考资料", ""] + [f"- {r}" for r in ep.refs]
     if ep.notes:
