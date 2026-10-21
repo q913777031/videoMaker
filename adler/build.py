@@ -7,7 +7,7 @@
     python3 -m adler.build 01 --sheet         # 导出逐镜联系表（每镜头取画面完整时刻），用于检查
     python3 -m adler.build 01 --still 17.5    # 导出单帧
     python3 -m adler.build --verify           # 核验已渲染成片（时长、编码、响度、真峰值、音画偏差），写 out/adler/核验.md
-    python3 -m adler.build --publish          # 把成片、封面、卡点表、文案与出处复制到 videos/adler/
+    python3 -m adler.build --publish          # 交付成片、封面、标题与话题到 videos/adler/（多讲另出合集图与 1080×1080 封面）
 输出目录：out/adler/epXX/
 """
 
@@ -101,17 +101,104 @@ def verify(keys: list[str]) -> bool:
     return ok_all
 
 
+BRAND = "Vibe知识大赏"              # 发布标题统一为「Vibe知识大赏｜片名」
+
+
 def publish(keys: list[str]):
-    """复制交付物到 videos/adler/XX_概念/。"""
+    """交付到 videos/<PKG>/XX_概念/：只放成片、封面与“标题与话题.txt”（卡点表与出处留在 out/ 内部核验用）。
+    系列多于 1 讲且本次交付全部讲时，另出系列合集图与 1080×1080 横屏封面。"""
+    eps = []
     for k in keys:
         ep = load(k)
+        eps.append((k, ep))
         src = OUT / f"ep{k}"
         dst = ROOT / "videos" / PKG / f"{k}_{ep.concept}"
-        dst.mkdir(parents=True, exist_ok=True)
+        if dst.exists():
+            shutil.rmtree(dst)
+        dst.mkdir(parents=True)
         shutil.copy2(_video(k, ep), dst / _video(k, ep).name)
-        for name in ("cover.png", "cue_sheet.csv", "文案与出处.md"):
-            shutil.copy2(src / name, dst / name)
+        shutil.copy2(src / "cover.png", dst / "cover.png")
+        (dst / "标题与话题.txt").write_text(f"{BRAND}｜{ep.title}\n{ep.hashtags}\n", encoding="utf-8")
         print(dst)
+    if len(MODS) > 1 and set(keys) == set(MODS):
+        d = ROOT / "videos" / PKG
+        collage(eps, d / "合集.png")
+        square_cover(eps, d / "横屏封面_1080x1080.png")
+        print(d / "合集.png")
+        print(d / "横屏封面_1080x1080.png")
+
+
+def _surface(w: int, h: int):
+    return skia.Surface.MakeRaster(skia.ImageInfo.Make(w, h, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType))
+
+
+def _paper(c, ep, w, h):
+    bg = core.bg_image(ep.accent)
+    c.drawImageRect(bg, skia.Rect.MakeXYWH(0, (core.H - core.W * h / w) / 2, core.W, core.W * h / w),
+                    skia.Rect.MakeWH(w, h), skia.SamplingOptions(skia.FilterMode.kLinear))
+
+
+def collage(eps, path: Path, cols: int = 4):
+    """系列合集图：顶部系列名，下方按讲排列各讲封面（每张带期号与片名）。"""
+    from . import kit as K
+
+    tw, th, gap, head = 300, 533, 36, 300
+    rows = (len(eps) + cols - 1) // cols
+    W = cols * tw + (cols + 1) * gap
+    H = head + rows * (th + 120) + gap
+    surf = _surface(W, H)
+    c = surf.getCanvas()
+    _paper(c, eps[0][1], W, H)
+    K.text(c, BRAND, W / 2, 90, 40, "sans_medium", K.INK2)
+    K.text(c, f"{core.SERIES['name']} · {core.SERIES['count']}", W / 2, 170, 86, "serif_black", eps[0][1].accent)
+    if core.SERIES.get("tagline"):
+        K.text(c, core.SERIES["tagline"], W / 2, 250, 40, "sans_medium", K.INK)
+    for i, (k, ep) in enumerate(eps):
+        x = gap + (i % cols) * (tw + gap)
+        y = head + (i // cols) * (th + 120)
+        img = skia.Image.open(str(OUT / f"ep{k}" / "cover.png"))
+        K.card(c, x + tw / 2, y + th / 2, tw, th, K.PAPER, 1, r=18)
+        c.save()
+        c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y, tw, th), 18, 18), doAntiAlias=True)
+        c.drawImageRect(img, skia.Rect.MakeXYWH(x, y, tw, th), skia.SamplingOptions(skia.FilterMode.kLinear))
+        c.restore()
+        K.rr(c, x + 44, y + th + 46, 72, 44, 22, ep.accent)
+        K.text(c, f"{ep.no:02d}", x + 44, y + th + 46, 28, "black", K.PAPER)
+        K.text(c, ep.concept, x + 92, y + th + 46, 36, "serif_black", K.INK, 1, "left")
+        lines = K.wrap_lines(ep.title, 24, tw - 10, "sans_medium")[:2]
+        for j, ln in enumerate(lines):
+            K.text(c, ln, x, y + th + 92 + j * 30, 24, "sans_medium", K.INK2, 1, "left")
+    surf.makeImageSnapshot().save(str(path), skia.kPNG)
+
+
+def square_cover(eps, path: Path):
+    """系列横屏封面（1080×1080）：光束 + 系列名 + 一句话卖点 + 各讲概念纸片。"""
+    from . import fx
+    from . import kit as K
+
+    S = 1080
+    surf = _surface(S, S)
+    c = surf.getCanvas()
+    acc = eps[0][1].accent
+    _paper(c, eps[0][1], S, S)
+    fx.rays(c, S / 2, 380, 900, K.GOLD, 0, 18, 0.2)
+    fx.glow(c, S / 2, 380, 520, K.GOLD, 0.35)
+    K.text(c, BRAND, S / 2, 120, 40, "sans_medium", K.INK2)
+    K.text(c, core.SERIES["name"], S / 2, 340, 230, "serif_black", acc, shadow=(8, 12, 12, K.SHADOW))
+    sub = core.SERIES.get("tagline") or core.SERIES["count"]
+    K.text(c, f"{sub} · {core.SERIES['count']}", S / 2, 540, 50, "serif_black", K.INK)
+    n = len(eps)
+    cols = 4 if n > 4 else n
+    rows = (n + cols - 1) // cols
+    pw, ph, gx, gy = 220, 96, 24, 26
+    x0 = S / 2 - (cols * pw + (cols - 1) * gx) / 2 + pw / 2
+    y0 = 700 + (2 - rows) * (ph + gy) / 2
+    for i, (k, ep) in enumerate(eps):
+        x = x0 + (i % cols) * (pw + gx)
+        y = y0 + (i // cols) * (ph + gy)
+        K.card(c, x, y, pw, ph, ep.accent, 1, r=24, rot=(-2, 1.5, -1, 2)[i % 4])
+        K.text(c, f"{ep.no:02d} {ep.concept}", x, y, 36, "serif_black", K.PAPER)
+    surf.makeImageSnapshot().save(str(path), skia.kPNG)
 
 
 def main():
