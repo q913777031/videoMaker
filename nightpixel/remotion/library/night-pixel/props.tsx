@@ -184,7 +184,7 @@ const DraftLine: React.FC<{f: number; d: Draft; size: number; alpha: number; ali
           if (i > shown) return null;
           const a = i < shown ? 1 : n - shown;
           const isSwap = swap && i === swap.index;
-          const ch = isSwap && f >= swap.at ? swap.to : c;
+          const ch = isSwap && f >= swap.at ? swap.to : c === ' ' ? '\u00a0' : c;
           const mark = d.marks?.includes(i) ? clamp01((f - (d.markAt ?? 0) - d.marks.indexOf(i) * 6) / 8) : 0;
           return (
             <span key={i} style={{position: 'relative', display: 'inline-block', opacity: a}}>
@@ -376,6 +376,72 @@ export const PixelUmbrella: React.FC<{x: number; y: number; u?: number; color?: 
   return (
     <div style={{position: 'absolute', left: x - 10 * u, top: y - 22 * u, width: 20 * u, height: 22 * u, transform: `rotate(${tilt}deg)`, transformOrigin: '50% 100%', ...(glow > 0 ? bloom(color, 18 * glow, glow * 0.6) : {})}}>
       <svg viewBox="0 -2 20 22" width={20 * u} height={22 * u} shapeRendering="crispEdges">
+        {px}
+      </svg>
+    </div>
+  );
+};
+
+/**
+ * 像素小道具：book 书、house 小房子、trophy 奖杯、tablet 刻字石板、star 星星。
+ * (x, y) 是道具底边中点，u 是像素格大小；glow 给一圈同色柔光（“比人活得久的东西”在暗场里发亮）。
+ */
+export const PixelProp: React.FC<{kind: 'book' | 'house' | 'trophy' | 'tablet' | 'star'; x: number; y: number; u?: number; glow?: number}> = ({kind, x, y, u = 8, glow = 0.6}) => {
+  const W = 14;
+  const H = 14;
+  const px: React.ReactNode[] = [];
+  const r = (k: string, rx: number, ry: number, w: number, h: number, fill: string, o = 1) => px.push(<rect key={k} x={rx} y={ry} width={w} height={h} fill={fill} opacity={o} />);
+  let col = NP.warm;
+  if (kind === 'book') {
+    col = '#d98c6a';
+    r('l', 1, 4, 6, 9, '#d98c6a');
+    r('r', 7, 4, 6, 9, '#c57a5a');
+    r('pl', 2, 5, 4, 7, NP.paper);
+    r('pr', 8, 5, 4, 7, NP.paper);
+    [6, 8, 10].forEach((yy, i) => {
+      r(`t${i}`, 3, yy, 3, 1, NP.inkSoft, 0.6);
+      r(`u${i}`, 9, yy, 2, 1, NP.inkSoft, 0.6);
+    });
+  } else if (kind === 'house') {
+    col = '#e4c988';
+    [
+      [6, 1, 2],
+      [5, 2, 4],
+      [4, 3, 6],
+      [3, 4, 8],
+      [2, 5, 10],
+    ].forEach(([rx, ry, w], i) => r(`roof${i}`, rx, ry, w, 1, '#a8463d'));
+    r('wall', 3, 6, 8, 7, '#d8ccb1');
+    r('door', 6, 9, 2, 4, NP.wood);
+    r('win', 4, 7, 2, 2, NP.warm);
+    r('win2', 8, 7, 2, 2, NP.warm);
+  } else if (kind === 'trophy') {
+    col = '#e3b34a';
+    r('cup', 3, 2, 8, 5, '#e3b34a');
+    r('cup2', 4, 7, 6, 1, '#e3b34a');
+    r('hl', 1, 3, 2, 2, '#c99a3a');
+    r('hr', 11, 3, 2, 2, '#c99a3a');
+    r('stem', 6, 8, 2, 3, '#c99a3a');
+    r('base', 4, 11, 6, 2, NP.wood);
+    r('shine', 4, 3, 1, 3, '#fff2c8', 0.8);
+  } else if (kind === 'tablet') {
+    col = '#cfd3dc';
+    r('top', 4, 1, 6, 1, '#b9bec9');
+    r('body', 3, 2, 8, 11, '#b9bec9');
+    [4, 6, 8, 10].forEach((yy, i) => r(`line${i}`, 5, yy, 4 - (i % 2), 1, '#6b7080'));
+  } else {
+    col = '#f3e3a0';
+    r('v', 6, 1, 2, 12, '#f3e3a0');
+    r('h', 1, 6, 12, 2, '#f3e3a0');
+    r('c', 4, 4, 6, 6, '#f3e3a0');
+    r('d', 3, 3, 1, 1, '#f3e3a0', 0.6);
+    r('d2', 10, 3, 1, 1, '#f3e3a0', 0.6);
+    r('d3', 3, 10, 1, 1, '#f3e3a0', 0.6);
+    r('d4', 10, 10, 1, 1, '#f3e3a0', 0.6);
+  }
+  return (
+    <div style={{position: 'absolute', left: x - (W * u) / 2, top: y - H * u, width: W * u, height: H * u, ...(glow > 0 ? bloom(col, 30 * glow, glow * 0.7) : {})}}>
+      <svg viewBox={`0 0 ${W} ${H}`} width={W * u} height={H * u} shapeRendering="crispEdges">
         {px}
       </svg>
     </div>
