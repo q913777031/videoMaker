@@ -44,13 +44,18 @@ def main(no: int, out: Path):
         gfx.draw_rich(c, ln, 72, 215 + i * size * 1.3, size, "serif_black", K.INK, ep.accent, 1.0, "left")
     if no == 1:
         visual_01(c, ep)
+    elif no == 2:
+        T.chart(c, 560, 680, 760, 380, [(lambda u: T.bump(u, 1.0, 0.2, 2.6, 0.18), T.SPIKE, 1, 10, "尖峰")],
+                1, (0.0, 0.55))
+        K.text(c, "正常起伏范围", 900, 840, 28, "sans_medium", T.FLAT, 1, "right")
     else:
-        with K.at(c, 0, 0, 0, 1):
-            c.save()
-            c.translate(540, 700)
-            c.scale(2.6, 2.6)
-            illustration(c, no, 0, 0, 220, 150)
-            c.restore()
+        with K.paper(c, 1, 0.9):
+            K.rr(c, 540, 690, 900, 500, 36, K.tint(ep.accent, 0.84))
+        c.save()
+        c.translate(530, 690)
+        c.scale(3.2, 3.2)
+        illustration(c, no, 0, 0, 220, 150)
+        c.restore()
     K.seg(c, 72, 990, 200, 990, ep.accent, 6)
     K.text(c, f"{ep.cover_sub}　·　{ep.title}", 220, 990, 30, "sans_medium", K.INK2, 1, "left")
     out.parent.mkdir(parents=True, exist_ok=True)
