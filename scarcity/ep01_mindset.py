@@ -5,6 +5,8 @@
 
 import math
 
+import skia
+
 from adler import fx
 from adler import kit as K
 from adler.core import Big, Bubble, Counter, Custom, Fig, Glow, Icon, Label, Pops, Rays, Shot, Spark, end_shot
@@ -35,34 +37,6 @@ def _item(c, name, x, y, s, alpha=1.0):
         charger(c, x, y, s, alpha)
     else:
         K.icon(c, name, x, y, s, K.INK2 if name != "key" else K.GOLD, alpha, 0.6, 0, 1, 1, K.GOLD)
-
-
-def _forgot(c, g, t, d):
-    """落下的东西：items [(名, x, y, 出现拍)] 依次弹出，再在 +1 拍盖上红叉。"""
-    for name, x, y, b in d["items"]:
-        st = fx.word_pop(g.since(b))
-        if st is None:
-            continue
-        a, s_, r_ = st
-        with K.at(c, x, y, r_, s_):
-            _item(c, name, 0, 0, d.get("s", 170), a)
-        k = clamp01(g.since(b + 1) / 0.25)
-        if k > 0:
-            with K.at(c, x + 60, y - 60, 0, 0.4 + 0.6 * ease_out(k)):
-                K.icon(c, "cross", 0, 0, 90, K.RED, k, 0.5)
-
-
-def _table(c, g, t, d):
-    """桌上的钥匙和工牌：人冲走后，第 10 拍钥匙发光、被红圈圈出。"""
-    K.rr(c, 0, 40, 300, 22, 8, "#B98A55")
-    K.seg(c, -120, 50, -120, 200, "#94693C", 14)
-    K.seg(c, 120, 50, 120, 200, "#94693C", 14)
-    k = clamp01(g.since(10) / 0.3)
-    if k > 0:
-        fx.glow(c, -50, -10, 140, K.RED, 0.35 * k + 0.15 * g.pulse(6))
-        K.ring(c, -50, -10, 80 * (1.4 - 0.4 * ease_out(k)), K.RED, 8, k)
-    K.icon(c, "key", -50, -10, 90, K.GOLD, 1, 0.6, 30, 1, 1, K.GOLD)
-    A.badge(c, 70, -20, 80, ACC)
 
 
 def _flash_words(c, g, t, d):
@@ -108,33 +82,150 @@ def _door_hooks(c, g, t, d):
             K.icon(c, "check", 0, 0, 120, K.GREEN, k, 0.5)
 
 
+# ---------------------------------------------------------------- 开场互动小游戏：3 秒倒计时，桌上带走哪些？
+
+def _wallet(c, x, y, s, a=1.0):
+    K.rr(c, x, y, s, s * 0.7, s * 0.12, "#8C5A3C", a)
+    K.rr(c, x + s * 0.3, y, s * 0.4, s * 0.3, s * 0.08, "#6E4329", a)
+    K.dot(c, x + s * 0.35, y, s * 0.05, K.GOLD, a)
+
+
+def _headphones(c, x, y, s, a=1.0):
+    p = skia.Path()
+    p.addArc(skia.Rect.MakeXYWH(x - s * 0.45, y - s * 0.5, s * 0.9, s * 0.9), 180, 180)
+    c.drawPath(p, K.paint(K.INK, a, stroke=s * 0.08))
+    for dx in (-0.45, 0.45):
+        K.rr(c, x + dx * s, y + s * 0.02, s * 0.2, s * 0.34, s * 0.08, K.DARK, a)
+
+
+def _cup(c, x, y, s, a=1.0):
+    K.poly(c, [(x - s * 0.32, y - s * 0.4), (x + s * 0.32, y - s * 0.4), (x + s * 0.24, y + s * 0.4), (x - s * 0.24, y + s * 0.4)],
+           "#F1E3C4", a)
+    K.rr(c, x, y - s * 0.45, s * 0.74, s * 0.12, s * 0.05, "#5E4636", a)
+    K.rr(c, x, y, s * 0.6, s * 0.18, s * 0.04, ACC, a)
+
+
+def _lunchbox(c, x, y, s, a=1.0):
+    K.rr(c, x, y + s * 0.05, s * 1.0, s * 0.5, s * 0.1, "#7FA34A", a)
+    K.rr(c, x, y - s * 0.22, s * 1.04, s * 0.14, s * 0.06, "#5E8C3A", a)
+
+
+def _umbrella(c, x, y, s, a=1.0):
+    with K.at(c, x, y, -70):
+        p = skia.Path()
+        p.addArc(skia.Rect.MakeXYWH(-s * 0.5, -s * 0.45, s, s * 0.9), 180, 180)
+        p.close()
+        c.drawPath(p, K.paint("#5E8FA8", a))
+        K.seg(c, 0, 0, 0, s * 0.5, K.INK, s * 0.05, a)
+
+
+DESK = [  # (名称, x, y, 尺寸, 被拿走的拍)：x/y 相对桌面中心；工牌小、先画、半藏在杯子后面，不被拿走
+    ("badge", 140, 60, 54, None), ("phone", -330, -70, 120, 8), ("key", -170, -40, 90, 9), ("wallet", -10, -45, 120, 10),
+    ("headphones", 170, -60, 120, 11), ("umbrella", 330, -50, 150, 12), ("lunchbox", -250, 70, 120, 13),
+    ("cup", 100, 60, 120, 14),
+]
+
+
+def _desk_item(c, name, x, y, s, a=1.0):
+    if name == "wallet":
+        _wallet(c, x, y, s, a)
+    elif name == "headphones":
+        _headphones(c, x, y, s, a)
+    elif name == "cup":
+        _cup(c, x, y, s, a)
+    elif name == "lunchbox":
+        _lunchbox(c, x, y, s, a)
+    elif name == "umbrella":
+        _umbrella(c, x, y, s, a)
+    elif name == "badge":
+        A.badge(c, x, y, s, ACC, a)
+    else:
+        K.icon(c, name, x, y, s, K.INK2 if name != "key" else K.GOLD, a, 0.6, 0, 1, 1, K.GOLD)
+
+
+def _desk(c, g, t, d):
+    """桌面：mode=show 时物品依次落到桌上；take 时“时间到”后逐个飞走，只剩工牌；
+    focus 时只剩工牌，聚光放大并画问号圈。"""
+    mode = d["mode"]
+    c.save()
+    c.scale(1.15, 1.15)
+    K.rr(c, 0, 150, 900, 28, 10, "#B98A55")
+    K.rr(c, 0, 0, 900, 300, 26, "#E7D3B0")
+    K.rr_stroke(c, 0, 0, 900, 300, 26, "#C9A46A", 6)
+    for i, (name, x, y, s, take) in enumerate(DESK):
+        if mode == "focus" and name != "badge":
+            continue
+        dx = dy = 0.0
+        a = 1.0
+        sc = 1.0
+        if mode == "show":
+            k = clamp01(g.since(1 + i * 0.7) / 0.3)
+            if k <= 0:
+                continue
+            dy = -(1 - ease_out(k)) * 300
+            a = k
+        elif mode == "take" and take is not None:
+            k = clamp01(g.since(take) / 0.45)
+            if k >= 1:
+                continue
+            dy = -ease_in(k) * 700
+            dx = (x / 300) * ease_in(k) * 200
+            a = 1 - k
+        if mode == "focus":
+            k = ease_out(clamp01(g.since(0) / 0.6))
+            fx.glow(c, x, y, 160 + 120 * k, K.GOLD, 0.35 + 0.2 * g.pulse(5))
+            sc = 1 + 1.6 * k
+            dx, dy = -x * k, (-y - 30) * k
+        with K.at(c, x + dx, y + dy, 0, sc):
+            _desk_item(c, name, 0, 0, s, a)
+    if mode == "focus":
+        k = clamp01(g.since(2) / 0.4)
+        if k > 0:
+            K.ring(c, 0, -30, 150 * (1.3 - 0.3 * ease_out(k)), K.RED, 8, k)
+    c.restore()
+
+
+def _countdown(c, g, t, d):
+    """倒计时：3、2、1 各占 2 拍（约 3 秒），外圈随真实时间收缩；第 6 拍“时间到！”。"""
+    b_end = 6
+    if g.since(b_end) >= 0:
+        dt = g.since(b_end)
+        sc = 1 + 0.5 * (1 - ease_out(clamp01(dt / 0.2)))
+        with K.at(c, 0, 0, -4, sc):
+            K.rr(c, 0, 0, 440, 140, 70, K.RED)
+            K.text(c, "时间到！", 0, 0, 80, "serif_black", K.PAPER)
+        return
+    n = 3 - int(max(0, min(2, g.since(0) // max(1e-6, g.b(2) - g.b(0)))))
+    k = clamp01(g.since(0) / max(1e-6, g.b(b_end) - g.b(0)))
+    K.dot(c, 0, 0, 92, K.PAPER)
+    K.ring(c, 0, 0, 92, K.LINE, 14)
+    K.ring(c, 0, 0, 92, K.RED if n == 1 else ACC, 14, 1, 1 - k)
+    beat_dt = g.since(2 * (3 - n))
+    sc = 1 + 0.35 * (1 - ease_out(clamp01(beat_dt / 0.18)))
+    with K.at(c, 0, 0, 0, sc):
+        K.text(c, str(n), 0, 0, 120, "black", K.RED if n == 1 else K.INK)
+
+
 def build():
     shots = [
-        # 0–4 秒：问题逐词砸出，随后三件“落下的东西”弹出
-        Shot(2, "", "灵魂拷问", [
-            Glow(540, 700, 520, at=0, alpha=0.3),
-            Pops("一着急|就 【丢三落四】？", 540, 700, 108, at=0, step=1),
-            Custom(_forgot, x=0, y=0, at=0, enter="none", s=120,
-                   items=[("key", 250, 1000, 3), ("badge", 540, 1040, 4), ("charger", 830, 1000, 5)]),
-        ], hits=[(3, "wood_high", 0.8, "钥匙"), (4, "wood_high", 0.8, "工牌"), (5, "wood_high", 0.8, "充电器")],
-            punch=0.025, flashes=[0], note="钩子：问题逐词弹出，三件东西弹出并被打叉"),
-        Shot(2, "你是不是也这样？|看完教你两招", "先说结论", [
-            Fig(540, GROUND, 330, at=0, pose="shrug", mood="surprised", hair="bun", color=K.OTHER2),
-            Icon("question", 760, 520, 110, color=K.RED, at=2, sfx="rim"),
-            Spark(760, 520, at=2),
-            Icon("bulb", 320, 520, 110, color=K.GOLD, at=5, sfx="ding"),
-            Spark(320, 520, at=5),
-        ], draw=A.ground, text_beat=0, note="问号与灯泡：先共鸣，再许诺方法"),
-        # 情境：时钟逐分钟跳，人冲向门口，桌上钥匙亮起，关门一震
-        Shot(4, "8点52，快迟到了|抓起包就冲出门", "情境演绎", [
-            Custom(A.clock_digital, x=540, y=440, at=0, enter="pop", t0=8 * 60 + 50, t1=8 * 60 + 58, b0=0, w=340, h=130),
-            Custom(_table, x=200, y=GROUND - 200, at=0, enter="none"),
-            Fig(330, GROUND, 300, at=0, pose="stand", mood="worried", hair="bun", color=K.OTHER2,
-                moves=[(2, dict(x=800, dur=2.6, pose="push", sfx="wood_low"))]),
-            Icon("door", 940, 920, 300, color=ACC, at=0, enter="none"),
-            Label("钥匙还在桌上！", 230, 640, 40, at=10, fill=K.RED, sfx="rim"),
-        ], draw=A.ground, hits=[(0, "wood_high", 0.6, "时钟"), (6, "wood_high", 0.6, "时钟变红"), (13, "kick", 0.8, "关门")],
-            shake=[(13, 12.0)], flashes=[(13, 0.35)], note="冲出门，钥匙落在桌上"),
+        # 0–4 秒：互动小游戏开场——你要迟到了，出门带什么？桌上物品依次落下
+        Shot(2, "", "互动小游戏", [
+            Pops("你 要 迟到 了！|出门 带 【什么】？", 540, 560, 92, at=0, step=1),
+            Custom(_desk, x=540, y=1000, at=0, enter="none", mode="show"),
+        ], hits=[(0, "kick", 0.7, "开场")], punch=0.025, flashes=[0], note="钩子：抛出问题，桌上东西依次落下"),
+        # 4–13 秒：倒计时 3 秒，时间到！东西被一件件拿走，只剩一个不起眼的小工牌
+        Shot(4, "倒计时3秒|记住你要带走的东西", "互动小游戏", [
+            Custom(_countdown, x=540, y=560, at=0, enter="none"),
+            Custom(_desk, x=540, y=1000, at=0, enter="none", mode="take"),
+        ], hits=[(0, "wood_high", 0.9, "3"), (2, "wood_high", 0.9, "2"), (4, "rim", 1.0, "1"), (6, "kick", 0.9, "时间到"),
+                 (8, "shaker", 0.7, "拿走手机"), (10, "shaker", 0.7, "拿走钱包"), (12, "shaker", 0.7, "拿走雨伞"),
+                 (14, "shaker", 0.7, "拿走水杯")], flashes=[6], shake=[(6, 12.0)], punch=0.025,
+            note="倒计时、时间到、物品逐个飞走"),
+        # 13–17 秒：聚光到工牌——你带了吗？
+        Shot(2, "漏了的别慌|看完教你两招", "互动小游戏", [
+            Custom(_desk, x=540, y=1000, at=0, enter="none", mode="focus"),
+            Pops("工牌 你 【带了吗】？", 540, 560, 96, at=1, step=1),
+        ], hits=[(0, "ding", 0.8, "聚光工牌")], text_beat=0, note="只剩工牌，放大追问"),
         Shot(4, "缺什么|脑子就被什么【占满】", "原书 · 核心概念", [
             Big("稀缺心态", 540, 600, 170, at=0, sfx="kick", sub="Scarcity Mindset", rays=True, glow=True, shine=True,
                 spark=True, note="概念落版（音乐 drop）"),
@@ -149,11 +240,13 @@ def build():
             Custom(lambda c, g, t, d: charger(c, 0, 0, 150), x=250, y=1040, at=0, enter="none"),
             Icon("water", 830, 1040, 120, color=K.INK2, at=0, enter="none"),
             Custom(A.tunnel, x=540, y=780, at=0, enter="fade", r0=900, r=220, close=1.6),
-            Icon("cross", 250, 540, 150, color=K.RED, at=4, sfx="rim"), Spark(250, 540, at=4, colors=[K.RED, K.GOLD]),
-            Icon("cross", 830, 540, 150, color=K.RED, at=6, sfx="rim"), Spark(830, 540, at=6, colors=[K.RED, K.GOLD]),
-            Icon("cross", 250, 1040, 150, color=K.RED, at=8, sfx="rim"), Spark(250, 1040, at=8, colors=[K.RED, K.GOLD]),
-            Icon("cross", 830, 1040, 150, color=K.RED, at=10, sfx="rim"), Spark(830, 1040, at=10, colors=[K.RED, K.GOLD]),
-            Label("全漏了", 540, 1000, 48, at=13, fill=K.RED, sfx="kick"),
+            Icon("cross", 325, 465, 90, color=K.RED, at=4, sfx="rim"), Spark(250, 540, at=4, colors=[K.RED, K.GOLD]),
+            Icon("cross", 905, 465, 90, color=K.RED, at=6, sfx="rim"), Spark(830, 540, at=6, colors=[K.RED, K.GOLD]),
+            Icon("cross", 325, 965, 90, color=K.RED, at=8, sfx="rim"), Spark(250, 1040, at=8, colors=[K.RED, K.GOLD]),
+            Icon("cross", 905, 965, 90, color=K.RED, at=10, sfx="rim"), Spark(830, 1040, at=10, colors=[K.RED, K.GOLD]),
+            Label("钥匙", 250, 650, 40, at=4, fill=K.RED), Label("工牌", 830, 650, 40, at=6, fill=K.RED),
+            Label("充电器", 250, 1150, 40, at=8, fill=K.RED), Label("水杯", 830, 1150, 40, at=10, fill=K.RED),
+            Label("全漏了", 540, 1150, 52, at=13, fill=K.RED, sfx="kick"),
         ], hits=[(0, "tom", 0.7, "隧道收窄")], shake=[(13, 10.0)], note="隧道视野：外面的东西一个个被漏掉"),
         # 机制 2：带宽被一块块占满，最后冒出“钥匙？”
         Shot(4, "脑子的带宽被占满|就没空记钥匙了", "机制示意", [
