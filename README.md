@@ -229,32 +229,29 @@ python3 -m nutrition.build --publish    # 交付到 videos/nutrition/
   Rothman 2011 大猩猩、Martínez Steele 2018、Hall 2019 等）；相关性研究、补偿不完全、动物实验外推等局限列为「常见质疑」。
   每讲注明「不构成饮食或医疗建议」。
 
-## 读书科普系列：《稀缺》4 讲（光效 + 钩子版）
+## 读书科普系列：《稀缺》8 讲（光效 + 钩子 + 上班族日常版）
 
 ```bash
-python3 -m scarcity.build              # 渲染全部 4 讲到 out/scarcity/epXX/
+python3 -m scarcity.build              # 渲染全部 8 讲到 out/scarcity/epXX/
 python3 -m scarcity.build 02 --sheet   # 逐镜联系表
 python3 -m scarcity.build --verify     # 核验成片
-python3 -m scarcity.build --publish    # 交付到 videos/scarcity/
+python3 -m scarcity.build --publish    # 交付到 videos/scarcity/（成片、封面、标题与话题；合集图与 1080×1080 封面）
 ```
 
-依据穆来纳森、沙菲尔《稀缺：我们是如何陷入贫穷与忙碌的》（Scarcity, 2013）。复用阿德勒纸片引擎，并首次全面使用新增的光效层
-`adler/fx.py`：`Pops` 文字逐个弹出（每词一声气泡音，高亮词“叮”+ 放射线 + 星光）、`Big` 的旋转光束 / 光晕 / 扫光 / 星光、
-`Glow` 节拍呼吸背光、`Rays` 光束、`Spark` 星光粒子、`Counter` 滚动数字，以及镜头级 `punch`（推镜脉冲）、`flashes`（闪白）、`shake`（抖动）。
-新增音色 `pop`、`ding` 在 `engine/perc.py`。新效果默认关闭，旧系列输出逐字节不变。
+依据穆来纳森、沙菲尔《稀缺：我们是如何陷入贫穷与忙碌的》（Scarcity, 2013），按原书章节拆成 8 讲。每讲用 20–40 岁上班族的日常场景开场，
+第 2 镜一句话点明主题，drop 处概念落版。复用阿德勒纸片引擎与光效层 `adler/fx.py`（`Pops` 文字逐个弹出、`Big` 光束/扫光/星光、
+`Glow`、`Rays`、`Spark`、`Counter`，镜头级 `punch` / `flashes` / `shake`），新增音色 `pop`、`ding`。制作规则见 `.claude/skills/paper-explainer-video/SKILL.md`。
 
-每讲按留存骨架排布：0 秒逐词弹出的反常识问题钩子 → 4 秒开放回路 → 17.14 秒音乐 drop 概念落版（光束 + 扫光 + 闪白 + 抖动）→
-约 45 秒二次钩子 → 研究证据（数字滚动落定）→ 质疑与边界 → 回报 / 下一讲预告。制作流程与规则见 `.claude/skills/paper-explainer-video/SKILL.md`。
-
-| 讲 | 概念 | 片名 |
-|----|------|------|
-| 01 | 带宽税 | 穷，会让人变笨吗？ |
-| 02 | 管窥 | 为什么越忙越乱？ |
-| 03 | 稀缺陷阱 | 为什么帮人还清债，没多久又欠了？ |
-| 04 | 余闲 | 为什么留白反而更高效？ |
-
-- 研究证据：Mani 等 2013（购物中心实验、464 位印度甘蔗农）、Shah 等 2012（游戏实验）、Karlan 等 2019（金奈商贩还债实验）、
-  St. John's 医院空出手术室案例；质疑：Carvalho 等 2016 发薪日研究未发现认知差异、Shah 2012 一项实验未能复现（Camerer 等 2018）。
+| 讲 | 概念 | 片名 | 开场情境 / 研究 |
+|----|------|------|------|
+| 01 | 稀缺心态 | 为什么一着急，就丢三落四？ | 快迟到忘带工牌 / Radel 2012 饥饿与食物词 |
+| 02 | 专注红利 | 为什么deadline前一晚，效率最高？ | 最后一晚写完 PPT / Shah 2012 |
+| 03 | 管窥 | 为什么一忙起来，连妈妈的消息都忘了回？ | 未读消息 / 明尼苏达饥饿实验 |
+| 04 | 带宽税 | 为什么一有心事，就容易犯低级错误？ | 月底还款走神 / Mani 2013、Carvalho 2016 |
+| 05 | 借未来 | 为什么越缺，越想“先借一下”？ | 分期消费 / Shah 2012 |
+| 06 | 稀缺陷阱 | 为什么总在“救火”，永远忙不完？ | 日程被补救任务填满 / Karlan 2019 |
+| 07 | 余闲 | 为什么日程排满，一点意外就崩？ | 临时会议打乱日程 / St. John's 医院 |
+| 08 | 跳出稀缺 | 别靠意志力，靠设计 | 待办漏项 / Karlan 2016 提醒、Shah 2015 |
 
 ## 夜色像素风：《我们为什么假装不会死》
 
