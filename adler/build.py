@@ -145,7 +145,7 @@ def collage(eps, path: Path, cols: int = 4):
     tw, th, gap, head = 300, 533, 36, 300
     rows = (len(eps) + cols - 1) // cols
     W = cols * tw + (cols + 1) * gap
-    H = head + rows * (th + 120) + gap
+    H = head + rows * (th + 160) + gap
     surf = _surface(W, H)
     c = surf.getCanvas()
     _paper(c, eps[0][1], W, H)
@@ -155,7 +155,7 @@ def collage(eps, path: Path, cols: int = 4):
         K.text(c, core.SERIES["tagline"], W / 2, 250, 40, "sans_medium", K.INK)
     for i, (k, ep) in enumerate(eps):
         x = gap + (i % cols) * (tw + gap)
-        y = head + (i // cols) * (th + 120)
+        y = head + (i // cols) * (th + 160)
         img = skia.Image.open(str(OUT / f"ep{k}" / "cover.png"))
         K.card(c, x + tw / 2, y + th / 2, tw, th, K.PAPER, 1, r=18)
         c.save()
