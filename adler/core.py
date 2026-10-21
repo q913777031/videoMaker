@@ -1034,7 +1034,7 @@ def cover_landscape(ep: Episode, path: str, w: int = 1440, h: int = 1080):
     c.drawImageRect(bg_image(ep.accent), skia.Rect.MakeXYWH(0, (H - W * h / w) / 2, W, W * h / w), skia.Rect.MakeWH(w, h),
                     skia.SamplingOptions(skia.FilterMode.kLinear))
     from . import fx
-    pw, ph = 620, 620 * 780 / W
+    pw, ph = 620, 620 * 840 / W
     px, py = w - 60 - pw / 2, h / 2 + 10
     fx.rays(c, px, py, 760, ep.accent2, 0, 16, 0.22)
     fx.glow(c, px, py, 520, ep.accent2, 0.35)
@@ -1042,7 +1042,7 @@ def cover_landscape(ep: Episode, path: str, w: int = 1440, h: int = 1080):
         K.card(c, 0, 0, pw + 24, ph + 24, K.PAPER, 1, r=28)
         c.save()
         c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), 20, 20), doAntiAlias=True)
-        c.drawImageRect(stage, skia.Rect.MakeXYWH(0, 410, W, 780), skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph),
+        c.drawImageRect(stage, skia.Rect.MakeXYWH(0, 350, W, 840), skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph),
                         skia.SamplingOptions(skia.FilterMode.kLinear))
         c.restore()
     x0 = 80
