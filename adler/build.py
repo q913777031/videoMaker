@@ -138,41 +138,67 @@ def _paper(c, ep, w, h):
                     skia.Rect.MakeWH(w, h), skia.SamplingOptions(skia.FilterMode.kLinear))
 
 
-def collage(eps, path: Path, cols: int = 4):
-    """系列合集图：顶部系列名，下方按讲排列各讲封面（每张带期号与片名）。"""
+MAX_IMG_BYTES = 5 * 1024 * 1024       # 系列图片（合集图、方形封面）上限 5MB
+
+
+def _save_capped(img: skia.Image, path: Path):
+    """存 PNG；超过 5MB 时降为 256 色调色板 PNG（仍超则逐步减色），保证不超过上限。"""
+    img.save(str(path), skia.kPNG)
+    if path.stat().st_size <= MAX_IMG_BYTES:
+        return
+    from PIL import Image
+
+    src = Image.open(path).convert("RGB")
+    for colors in (256, 192, 128, 64):
+        src.quantize(colors=colors, method=Image.Quantize.MEDIANCUT).save(path, optimize=True)
+        if path.stat().st_size <= MAX_IMG_BYTES:
+            return
+    raise RuntimeError(f"{path} 仍超过 5MB")
+
+
+def collage(eps, path: Path):
+    """系列合集图（1080×1080，≤5MB）：顶部系列名与卖点，下方网格排列各讲封面（每张下方标期号与概念）。"""
     from . import kit as K
 
-    tw, th, gap, head = 300, 533, 36, 300
-    rows = (len(eps) + cols - 1) // cols
-    W = cols * tw + (cols + 1) * gap
-    H = head + rows * (th + 160) + gap
-    surf = _surface(W, H)
+    S, head, gap, lab = 1080, 230, 18, 52
+    n = len(eps)
+    best = None
+    for cols in range(2, n + 1):                 # 选能让封面最大的列数
+        rows = (n + cols - 1) // cols
+        tw = min((S - (cols + 1) * gap) / cols, ((S - head - gap) / rows - lab - gap) * 9 / 16)
+        if best is None or tw > best[0]:
+            best = (tw, cols, rows)
+    tw, cols, rows = best
+    th = tw * 16 / 9
+    surf = _surface(S, S)
     c = surf.getCanvas()
-    _paper(c, eps[0][1], W, H)
-    K.text(c, BRAND, W / 2, 90, 40, "sans_medium", K.INK2)
-    K.text(c, f"{core.SERIES['name']} · {core.SERIES['count']}", W / 2, 170, 86, "serif_black", eps[0][1].accent)
+    _paper(c, eps[0][1], S, S)
+    K.text(c, BRAND, S / 2, 58, 34, "sans_medium", K.INK2)
+    title = f"{core.SERIES['name']} · {core.SERIES['count']}"
+    K.text(c, title, S / 2, 128, min(80.0, 80 * 960 / K.text_w(title, 80, "serif_black")), "serif_black", eps[0][1].accent)
     if core.SERIES.get("tagline"):
-        K.text(c, core.SERIES["tagline"], W / 2, 250, 40, "sans_medium", K.INK)
+        K.text(c, core.SERIES["tagline"], S / 2, 194, 36, "sans_medium", K.INK)
+    grid_h = rows * (th + lab + gap) - gap
+    y0 = head + (S - head - grid_h) / 2
     for i, (k, ep) in enumerate(eps):
-        x = gap + (i % cols) * (tw + gap)
-        y = head + (i // cols) * (th + 160)
+        r, j = divmod(i, cols)
+        in_row = min(cols, n - r * cols)
+        x = S / 2 - (in_row * tw + (in_row - 1) * gap) / 2 + j * (tw + gap)
+        y = y0 + r * (th + lab + gap)
         img = skia.Image.open(str(OUT / f"ep{k}" / "cover.png"))
-        K.card(c, x + tw / 2, y + th / 2, tw, th, K.PAPER, 1, r=18)
+        K.card(c, x + tw / 2, y + th / 2, tw, th, K.PAPER, 1, r=12)
         c.save()
-        c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y, tw, th), 18, 18), doAntiAlias=True)
+        c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y, tw, th), 12, 12), doAntiAlias=True)
         c.drawImageRect(img, skia.Rect.MakeXYWH(x, y, tw, th), skia.SamplingOptions(skia.FilterMode.kLinear))
         c.restore()
-        K.rr(c, x + 44, y + th + 46, 72, 44, 22, ep.accent)
-        K.text(c, f"{ep.no:02d}", x + 44, y + th + 46, 28, "black", K.PAPER)
-        K.text(c, ep.concept, x + 92, y + th + 46, 36, "serif_black", K.INK, 1, "left")
-        lines = K.wrap_lines(ep.title, 24, tw - 10, "sans_medium")[:2]
-        for j, ln in enumerate(lines):
-            K.text(c, ln, x, y + th + 92 + j * 30, 24, "sans_medium", K.INK2, 1, "left")
-    surf.makeImageSnapshot().save(str(path), skia.kPNG)
+        label = f"{ep.no:02d} {ep.concept}"
+        size = min(30.0, 30 * (tw - 8) / K.text_w(label, 30, "serif_black"))
+        K.text(c, label, x + tw / 2, y + th + lab / 2 + 2, size, "serif_black", K.INK)
+    _save_capped(surf.makeImageSnapshot(), path)
 
 
 def square_cover(eps, path: Path):
-    """系列横屏封面（1080×1080）：光束 + 系列名 + 一句话卖点 + 各讲概念纸片。"""
+    """系列横屏封面（1080×1080，≤5MB）：光束 + 系列名 + 一句话卖点 + 各讲概念纸片。"""
     from . import fx
     from . import kit as K
 
@@ -206,7 +232,7 @@ def square_cover(eps, path: Path):
         label = f"{ep.no:02d} {ep.concept}"
         K.card(c, x, y, pw, ph, ep.accent, 1, r=24, rot=(-2, 1.5, -1, 2)[i % 4])
         K.text(c, label, x, y, min(36.0, 36 * (pw - 30) / K.text_w(label, 36, "serif_black")), "serif_black", K.PAPER)
-    surf.makeImageSnapshot().save(str(path), skia.kPNG)
+    _save_capped(surf.makeImageSnapshot(), path)
 
 
 def main():
