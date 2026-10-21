@@ -286,6 +286,7 @@ class Episode:
     cover_sub: str = ""
     cover_shot: int = 4
     cover_t: float = 3.0
+    land_shot: int = 2          # 4:3 横屏封面右侧取景的镜头（默认第 3 镜“情境演绎”）
     notes: list = field(default_factory=list)     # 事实核查与表述说明（写入文档）
     accent2: str = K.GOLD
     total: float = 0.0
@@ -1016,6 +1017,52 @@ def cover(ep: Episode, path: str):
         gfx.draw_rich(c, ln, W / 2, y, size, "serif_black", K.INK, ep.accent, 1.0)
     if ep.cover_sub:
         K.text(c, ep.cover_sub, W / 2, 1450 + len(lines) * 70 + 70, 44, "sans_medium", K.INK2)
+    surf.makeImageSnapshot().save(path, skia.kPNG)
+
+
+def cover_landscape(ep: Episode, path: str, w: int = 1440, h: int = 1080):
+    """4:3 横屏封面：左侧系列期号、片名大字（【】高亮）与概念，右侧为情境镜头的舞台画面（不含字幕与界面），背后光束。"""
+    shot = ep.shots[ep.land_shot]
+    frame = skia.Surface.MakeRaster(skia.ImageInfo.Make(W, H, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType))
+    fc = frame.getCanvas()
+    fc.drawImage(bg_image(ep.accent), 0, 0)
+    _draw_shot(fc, ep, ep.land_shot, max(0.5, shot.t1 - shot.t0 - EXIT - 0.15))
+    stage = frame.makeImageSnapshot()
+
+    surf = skia.Surface.MakeRaster(skia.ImageInfo.Make(w, h, skia.kRGBA_8888_ColorType, skia.kPremul_AlphaType))
+    c = surf.getCanvas()
+    c.drawImageRect(bg_image(ep.accent), skia.Rect.MakeXYWH(0, (H - W * h / w) / 2, W, W * h / w), skia.Rect.MakeWH(w, h),
+                    skia.SamplingOptions(skia.FilterMode.kLinear))
+    from . import fx
+    pw, ph = 620, 620 * 780 / W
+    px, py = w - 60 - pw / 2, h / 2 + 10
+    fx.rays(c, px, py, 760, ep.accent2, 0, 16, 0.22)
+    fx.glow(c, px, py, 520, ep.accent2, 0.35)
+    with K.at(c, px, py, 2.5):
+        K.card(c, 0, 0, pw + 24, ph + 24, K.PAPER, 1, r=28)
+        c.save()
+        c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), 20, 20), doAntiAlias=True)
+        c.drawImageRect(stage, skia.Rect.MakeXYWH(0, 410, W, 780), skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph),
+                        skia.SamplingOptions(skia.FilterMode.kLinear))
+        c.restore()
+    x0 = 80
+    K.rr(c, x0 + 60, 150, 120, 64, 32, ep.accent)
+    K.text(c, f"{ep.no:02d}", x0 + 60, 150, 42, "black", K.PAPER)
+    K.text(c, f"{SERIES['name']} · {SERIES['count']}", x0 + 140, 150, 40, "sans_medium", K.INK2, 1, "left")
+    lines = ep.cover_title.split("|")
+    maxw = w - pw - 60 - 2 * x0 + 20
+    widest = max(K.text_w(gfx.plain(ln), 120, "serif_black") for ln in lines)
+    size = min(120.0, 120 * maxw / widest)
+    y = h / 2 - (len(lines) - 1) * size * 0.68 - 20
+    for i, ln in enumerate(lines):
+        gfx.draw_rich(c, ln, x0, y + i * size * 1.36, size, "serif_black", K.INK, ep.accent, 1.0, "left",
+                      shadow=(4, 7, 8, K.SHADOW))
+    yb = y + (len(lines) - 1) * size * 1.36 + size * 0.9 + 40
+    label = ep.concept
+    lw = K.text_w(label, 44, "serif_black") + 60
+    K.rr(c, x0 + lw / 2, yb, lw, 76, 38, ep.accent)
+    K.text(c, label, x0 + lw / 2, yb, 44, "serif_black", K.PAPER)
+    K.text(c, "Vibe知识大赏", x0, h - 90, 36, "sans_medium", K.INK2, 1, "left")
     surf.makeImageSnapshot().save(path, skia.kPNG)
 
 
