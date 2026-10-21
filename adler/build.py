@@ -184,20 +184,28 @@ def square_cover(eps, path: Path):
     fx.rays(c, S / 2, 380, 900, K.GOLD, 0, 18, 0.2)
     fx.glow(c, S / 2, 380, 520, K.GOLD, 0.35)
     K.text(c, BRAND, S / 2, 120, 40, "sans_medium", K.INK2)
-    K.text(c, core.SERIES["name"], S / 2, 340, 230, "serif_black", acc, shadow=(8, 12, 12, K.SHADOW))
+    name = core.SERIES["name"]
+    ts = min(230.0, 230 * 900 / K.text_w(name, 230, "serif_black"))
+    K.text(c, name, S / 2, 330, ts, "serif_black", acc, shadow=(8, 12, 12, K.SHADOW))
     sub = core.SERIES.get("tagline") or core.SERIES["count"]
-    K.text(c, f"{sub} · {core.SERIES['count']}", S / 2, 540, 50, "serif_black", K.INK)
+    line = f"{sub} · {core.SERIES['count']}"
+    K.text(c, line, S / 2, 520, min(50.0, 50 * 940 / K.text_w(line, 50, "serif_black")), "serif_black", K.INK)
     n = len(eps)
     cols = 4 if n > 4 else n
     rows = (n + cols - 1) // cols
-    pw, ph, gx, gy = 220, 96, 24, 26
-    x0 = S / 2 - (cols * pw + (cols - 1) * gx) / 2 + pw / 2
-    y0 = 700 + (2 - rows) * (ph + gy) / 2
+    pw, gx = 225, 20
+    ph = 96 if rows <= 2 else 84
+    gy = 26 if rows <= 2 else 18
+    top, bottom = 600, 1040
+    y0 = (top + bottom) / 2 - (rows * ph + (rows - 1) * gy) / 2 + ph / 2
     for i, (k, ep) in enumerate(eps):
-        x = x0 + (i % cols) * (pw + gx)
-        y = y0 + (i // cols) * (ph + gy)
+        r, j = divmod(i, cols)
+        in_row = min(cols, n - r * cols)
+        x = S / 2 - (in_row * pw + (in_row - 1) * gx) / 2 + pw / 2 + j * (pw + gx)
+        y = y0 + r * (ph + gy)
+        label = f"{ep.no:02d} {ep.concept}"
         K.card(c, x, y, pw, ph, ep.accent, 1, r=24, rot=(-2, 1.5, -1, 2)[i % 4])
-        K.text(c, f"{ep.no:02d} {ep.concept}", x, y, 36, "serif_black", K.PAPER)
+        K.text(c, label, x, y, min(36.0, 36 * (pw - 30) / K.text_w(label, 36, "serif_black")), "serif_black", K.PAPER)
     surf.makeImageSnapshot().save(str(path), skia.kPNG)
 
 
