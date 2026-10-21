@@ -186,10 +186,16 @@ def Pops(words, x, y, size=78, at=0, step=1, sfx="pop", hi_sfx="ding", gain=0.9,
     高亮词为强调色纸片，弹出时额外有放射线与星光。
     """
     ws, breaks = fx.parse_words(words)
-    beats = [at + i * step for i in range(len(ws))]
+    beats, k = [], -1
+    for w, _ in ws:
+        if not (fx._punct(w) and beats):      # 纯标点跟上一个词同拍出现，不占拍、不配音效
+            k += 1
+        beats.append(at + k * step)
     hits = []
-    for (w, h), b in zip(ws, beats):
+    for i, ((w, h), b) in enumerate(zip(ws, beats)):
         name = hi_sfx if h else sfx
+        if i and beats[i - 1] == b:
+            continue
         if name and abs(b - round(b)) < 1e-9:
             hits.append((b, name, gain, f"弹出：{w}"))
     kw.setdefault("enter", "none")

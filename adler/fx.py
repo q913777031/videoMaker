@@ -150,7 +150,7 @@ def layout_words(words: list[tuple[str, bool]], size, font, layout, gap, maxw, b
     lines, cur, cw = [], [], 0.0
     for i, (w, h) in enumerate(boxes):
         add = w + (gap if cur else 0)
-        if cur and (cw + add > maxw or i in breaks):
+        if cur and (cw + add > maxw or i in breaks) and not (i not in breaks and _punct(words[i][0])):
             lines.append((cur, cw))
             cur, cw = [], 0.0
             add = w
@@ -167,6 +167,11 @@ def layout_words(words: list[tuple[str, bool]], size, font, layout, gap, maxw, b
             out[i] = (x + boxes[i][0] / 2, y0 + li * lh)
             x += boxes[i][0] + gap
     return out
+
+
+def _punct(w: str) -> bool:
+    """纯标点的词（如单独的“？”）不单独换行，跟在上一个词后面。"""
+    return bool(w) and all(ch in "？?！!，,。.、…：:" for ch in w)
 
 
 def parse_words(words) -> tuple[list[tuple[str, bool]], set]:
