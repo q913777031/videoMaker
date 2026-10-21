@@ -10,6 +10,8 @@
 from adler import build as B
 from adler import core
 
+core.RULES.update(core.LEGACY)       # 旧系列：保持 2026-10 之前的慢节奏规则，成片不变
+
 core.SERIES.update(name="马斯洛心理学", count="10讲", prefix="马斯洛")
 B.PKG = "maslow"
 B.OUT = B.ROOT / "out" / "maslow"

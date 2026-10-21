@@ -10,6 +10,8 @@
 from adler import build as B
 from adler import core
 
+core.RULES.update(core.LEGACY)       # 旧系列：保持 2026-10 之前的慢节奏规则，成片不变
+
 core.SERIES.update(name="荣格心理学", count="10讲", prefix="荣格")
 B.PKG = "jung"
 B.OUT = B.ROOT / "out" / "jung"

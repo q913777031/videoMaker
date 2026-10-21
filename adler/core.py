@@ -47,6 +47,15 @@ SECTION_BARS = (8, 20, 24, 34, 38, 40)   # 原曲段落边界（小节），镜�
 # 系列标识（页眉、片尾、封面、文件名）；其他系列复用本引擎时覆盖这些值
 SERIES = {"name": "阿德勒心理学", "count": "10讲", "prefix": "阿德勒"}
 
+# 快节奏规则（新纸片视频默认启用，见 CLAUDE.md「纸片视频节奏」）：
+# - max_shot：除片尾外每个镜头不超过 3 秒（即 1 小节），超出直接报错；
+# - hard_cut：镜头之间硬切，不做退场淡出；cut_zoom：每次切镜在撞击帧推镜，随后 0.3 秒回落；
+# - min_beats：每个镜头至少在这么多个不同的拍点上有画面事件（入场 / 动作 / 弹字 / 音效），动画为主；
+# - cap_max：一条字幕（含跨镜延续）最多这么多汉字，文字为辅；字幕可用 Shot(keep=True) 跨镜延续。
+RULES = {"max_shot": 3.0, "hard_cut": True, "cut_zoom": 0.05, "min_beats": 2, "cap_max": 10}
+# 2026-10 之前的旧系列（阿德勒 / 荣格 / 马斯洛 / 罗杰斯 / 营养 / 稀缺 / 人类简史 / 亲密关系）用此值保持原样
+LEGACY = {"max_shot": None, "hard_cut": False, "cut_zoom": 0.0, "min_beats": 0, "cap_max": None}
+
 # ---------------------------------------------------------------- 实测拍点
 
 def _detect() -> dict:
@@ -259,6 +268,8 @@ class Shot:
     punch: float = 0.006                # 强拍推镜脉冲幅度（0.006 为原有力度，钩子/高潮镜头可加到 0.02–0.035）
     flashes: list = field(default_factory=list)   # 闪白拍：[拍] 或 [(拍, 峰值)]，撞击帧最亮
     shake: list = field(default_factory=list)     # 镜头抖动拍：[拍] 或 [(拍, 幅度像素)]
+    keep: bool = False                  # 延续上一镜的字幕（字幕不重新入场），画面照常切换
+    cap_src: int = -1                   # 由 Episode.build 填充：字幕来源镜头序号
     # 由 Episode.build 填充
     b0: int = 0
     t0: float = 0.0
@@ -301,6 +312,11 @@ class Episode:
         if b != LAST_BAR * 4:
             raise ValueError(f"ep{self.no:02d}: shots cover {b // 4} bars, music has {LAST_BAR}")
         self.shots[-1].t1 = END
+        for i, s in enumerate(self.shots):
+            s.cap_src = self.shots[i - 1].cap_src if s.keep and i else i
+            lim = RULES["max_shot"]
+            if lim and i < len(self.shots) - 1 and s.t1 - s.t0 > lim + 1e-6:
+                raise ValueError(f"ep{self.no:02d} shot {i + 1}: {s.t1 - s.t0:.2f}s > {lim}s（每个画面不超过 {lim} 秒）")
         for k, s in enumerate(self.shots):
             for el in s.els:
                 if el.enter in LAND_MODES and bt(s.b0 + el.at) - el.dur < s.t0 - 1e-6:
@@ -368,6 +384,8 @@ class G:
     @property
     def exit(self) -> float:
         """镜头末尾退场进度 0→1。"""
+        if RULES["hard_cut"]:
+            return 0.0
         nxt = self.ep.shots.index(self.shot) + 1
         if nxt < len(self.ep.shots) and self.ep.shots[nxt].cut:
             return 0.0
@@ -632,29 +650,37 @@ def tag_color(tag: str, ep: Episode) -> str:
     return ep.accent
 
 
+def _cap_head(ep: Episode, shot: Shot) -> Shot:
+    return ep.shots[shot.cap_src] if shot.cap_src >= 0 else shot
+
+
 def _caption_lines(shot: Shot) -> list[str]:
     return K.wrap_lines(shot.text, CAP_SIZE if not shot.big else 92, CAP_MAXW, "serif")
 
 
 def draw_caption(c, ep: Episode, shot: Shot, g: G):
-    if not shot.text:
+    head = _cap_head(ep, shot)
+    if not head.text:
         return
-    t_in = g.b(shot.text_beat)
+    t_in = bt(head.b0 + head.text_beat) - shot.t0
     if g.t < t_in:
         return
-    big = shot.big
+    big = head.big
     size = 92 if big else CAP_SIZE
-    lines = _caption_lines(shot)
+    lines = _caption_lines(head)
     n = len(lines)
     gap = size * 1.5
     y0 = (STAGE_CY if big else CAP_Y) - (n - 1) * gap / 2
-    out = 1 - g.exit
+    i_shot = ep.shots.index(shot)
+    held = i_shot + 1 < len(ep.shots) and ep.shots[i_shot + 1].keep
+    ex = 0.0 if held else g.exit
+    out = 1 - ex
     for i, ln in enumerate(lines):
         k = clamp01((g.t - t_in - i * 0.1) / 0.4)
         if k <= 0:
             continue
         a = clamp01(k * 2) * out
-        dy = (1 - ease_out(k)) * 34 + g.exit * 18
+        dy = (1 - ease_out(k)) * 34 + ex * 18
         y = y0 + i * gap + dy
         segs = gfx.parse_marks(ln)
         total = sum(K.text_w(s, size, "serif") for s, _ in segs)
@@ -706,6 +732,8 @@ def _draw_shot(c, ep: Episode, k: int, t: float):
     g = G(c, ep, s, t)
     dur = s.t1 - s.t0
     z = lerp(s.cam[0], s.cam[1], ease_in_out(clamp01(t / dur)))
+    if RULES["cut_zoom"] and k > 0:
+        z *= 1 + RULES["cut_zoom"] * math.exp(-t * 10)
     # 每个实测强拍处的轻微推镜脉冲
     gi = s.b0 + int(max(0, math.floor(_beat_index_local(g))))
     if 0 <= gi < N_BEATS:
@@ -943,18 +971,42 @@ def han(s: str) -> int:
     return len(_HAN.findall(s))
 
 
+def _shot_beats(s: Shot) -> set:
+    """镜头内有画面事件的拍点集合（元素入场、关键帧动作、弹字、音效）。"""
+    out = {round(b, 3) for b, *_ in s.all_hits()}
+    for el in s.els:
+        out.add(round(el.at, 3))
+        out.update(round(m[0], 3) for m in el.moves)
+        out.update(round(b, 3) for b in el.props.get("beats", ()))
+    return out
+
+
 def read_check(ep: Episode) -> list[str]:
-    """字幕阅读窗检查：稳定显示时长 ≥ max(2, 汉字/4.5)，含数字或英文另加 1 秒，研究卡至少 4.5 秒。"""
+    """字幕阅读窗与节奏检查。
+
+    旧规则：稳定显示时长 ≥ max(2, 汉字/4.5)，含数字或英文另加 1 秒，研究卡至少 4.5 秒。
+    快节奏规则（RULES["max_shot"] 启用时）：短字幕按 max(1.5, 汉字/5)，含数字或英文另加 0.5 秒；字幕可 keep 跨镜，
+    按整组镜头计时；另检查每镜画面事件拍数（min_beats）与单条字幕字数（cap_max）。
+    """
     warns = []
+    fast = bool(RULES["max_shot"])
     for i, s in enumerate(ep.shots):
-        if not s.text:
+        if RULES["min_beats"] and len(_shot_beats(s)) < RULES["min_beats"]:
+            warns.append(f"镜头{i + 1}：只有 {len(_shot_beats(s))} 个拍点有画面事件（至少 {RULES['min_beats']}）")
+        if not s.text or s.keep:
             continue
+        j = i
+        while j + 1 < len(ep.shots) and ep.shots[j + 1].keep:
+            j += 1
         g = G(None, ep, s, 0)
-        stable = (s.t1 - s.t0 - EXIT) - (g.b(s.text_beat) + 0.4 + 0.1 * (len(_caption_lines(s)) - 1))
+        ex = 0.0 if RULES["hard_cut"] else EXIT
+        stable = (ep.shots[j].t1 - s.t0 - ex) - (g.b(s.text_beat) + 0.4 + 0.1 * (len(_caption_lines(s)) - 1))
         n = han(gfx.plain(s.text))
-        need = max(2.0, n / 4.5)
+        if RULES["cap_max"] and n > RULES["cap_max"]:
+            warns.append(f"镜头{i + 1}：字幕 {n} 字（上限 {RULES['cap_max']}，文字为辅）")
+        need = max(1.5, n / 5) if fast else max(2.0, n / 4.5)
         if re.search(r"[0-9A-Za-z]", s.text):
-            need += 1.0
+            need += 0.5 if fast else 1.0
         if s.research:
             need = max(need, 4.5)
         lines = _caption_lines(s)
@@ -986,7 +1038,7 @@ def write_docs(ep: Episode, out_dir: Path, events: list[dict]):
              "## 逐屏文案", "", "| # | 时间（分:秒:帧） | 角标 | 屏幕文字 | 画面 |", "|---|------|------|----------|------|"]
     for i, s in enumerate(ep.shots):
         pops = " ".join(w for el in s.els if el.kind == "pops" for w, _ in el.props["words"])
-        txt = gfx.plain(s.text).replace("|", "／") if s.text else f"（弹字）{pops}" if pops else "（参考资料）"
+        txt = "（字幕延续上一镜）" if s.keep else gfx.plain(s.text).replace("|", "／") if s.text else f"（弹字）{pops}" if pops else "（参考资料）"
         lines.append(f"| {i + 1} | {tc(s.t0)}–{tc(s.t1)} | {s.tag} | {txt} | {s.note} |")
     lines += ["", "## 参考资料", ""] + [f"- {r}" for r in ep.refs]
     if ep.notes:

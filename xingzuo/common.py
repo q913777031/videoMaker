@@ -1,14 +1,15 @@
-"""《十二星座》系列共用：十二星座表、留存骨架的镜头模板与 Episode 构造。
+"""《十二星座》系列共用：十二星座表、快节奏镜头模板与 Episode 构造。
 
-每讲镜头小节数固定为 2,2,4 | 4,4,4 | 4,4,4,2 | 2,2,2,2（共 42 小节）：
-钩子 → 先说结论 → 日常情境 → drop 星座落版 → 性格高光 → 金句 → 二次钩子 → 加分项×3 → 误解重击 → 真相 → 互动 → 片尾。
+快节奏规则（adler.core.RULES）：每镜 1 小节（≈2.1 秒，≤3 秒），42 镜，硬切 + 切镜推镜；动画为主、字幕为辅（≤10 字，可 keep 跨镜）。
+段落：钩子 0–1 → 点题 2–3 → 情境 4–7 → drop 8 → 第一宫 9–11 → 行动力 12–15 → 铺垫 16–19 → 二次钩子 20 →
+加分项 21–31 → 误解与翻转 32–37 → 互动 38–40 → 片尾 41。
 星座性格是大众文化里的常见印象，整个系列为娱乐向，不作任何科学结论；每讲 notes 里写明。
 """
 
 from dataclasses import dataclass
 
 from adler import kit as K
-from adler.core import END, Big, Custom, Episode, Fig, G, Glow, Pops, Rays, Shot, Spark, W
+from adler.core import Big, Custom, Episode, G, Glow, Pops, Shot, Spark, W
 
 from . import art as A
 
@@ -45,60 +46,29 @@ def sign(key: str) -> Sign:
     return next(s for s in SIGNS if s.key == key)
 
 
-def hook(words, tag, size=100):
-    """0–4 秒钩子：问题逐词弹出 + 闪白；tag 写成“白羊座请进”，让目标观众一眼看到自己。"""
-    return Shot(2, "", tag, [Glow(540, 760, 520, at=0, alpha=0.3), Pops(words, 540, 760, size, at=0, step=1)],
-                punch=0.025, flashes=[0], note="钩子：问题逐词弹出")
+def S(text, tag, els, keep=False, **kw):
+    """快节奏镜头：1 小节（≈2.1 秒），字幕在第 0 拍出现；keep=True 时延续上一镜字幕。"""
+    kw.setdefault("text_beat", 0)
+    return Shot(1, text, tag, els, keep=keep, **kw)
 
 
-def loop(text, pose="proud", mood="happy", **fig):
-    """4–8 秒：一句话点明主题、先夸为敬，并留悬念；火苗在第 1 拍弹出。"""
-    fig.setdefault("hair", "short")
-    return Shot(2, text, "先说结论", [Fig(540, A.GROUND_Y, 330, at=0, pose=pose, mood=mood, **fig),
-                                     Custom(A.flame, x=770, y=560, at=1, enter="pop", s=170, sfx="rim"),
-                                     Spark(770, 560, at=1)], draw=A.ground, text_beat=0, note="一句话点题")
+def drop(s: Sign, mascot=None, size=190):
+    """音乐 drop（第 8 小节）：星座名砸下（光束 + 光晕 + 扫光 + 星光 + 闪白 + 抖动），第 2 拍吉祥物弹出。"""
+    top = Custom(mascot, x=540, y=480, at=2, enter="pop", s=150, sfx="ding", glow=True) if mascot else \
+        Custom(A.glyph, x=540, y=480, at=2, enter="pop", sign=s.key, s=150, sfx="ding")
+    return S("", "黄道第一宫" if s.no == 1 else f"黄道第{s.no}宫",
+             [Big(s.name, 540, 800, size, at=0, sfx="kick", sub=f"{s.en} · {s.dates}", rays=True, glow=True,
+                  shine=True, spark=True, note="星座落版（音乐 drop）"), top, Spark(540, 480, at=2)],
+             punch=0.035, flashes=[0], shake=[0], note="drop 处星座名砸下")
 
 
-def drop(s: Sign, text, mascot=None, size=190):
-    """17.14 秒音乐 drop：星座名砸下（光束 + 光晕 + 扫光 + 星光 + 闪白 + 抖动），第 2 拍吉祥物弹出。"""
-    top = Custom(mascot, x=540, y=470, at=2, enter="pop", s=150, sfx="ding", glow=True) if mascot else \
-        Custom(A.glyph, x=540, y=470, at=2, enter="pop", sign=s.key, s=150, sfx="ding")
-    return Shot(4, text, "黄道第一宫" if s.no == 1 else f"黄道第{s.no}宫",
-                [Big(s.name, 540, 790, size, at=0, sfx="kick", sub=f"{s.en} · {s.dates}", rays=True, glow=True,
-                     shine=True, spark=True, note="星座落版（音乐 drop）"), top, Spark(540, 470, at=2)],
-                punch=0.035, flashes=[0], shake=[0], note="drop 处星座名砸下")
+def pops(words, tag="一句话", size=104, flash=None, extra=(), **kw):
+    """纯弹字镜头（字幕留空）：每拍一个词。"""
+    return S("", tag, [Glow(540, 780, 560, at=0, alpha=0.26), Pops(words, 540, 780, size, at=0, step=1)] + list(extra),
+             punch=0.02, flashes=[flash] if flash is not None else [], note="弹字", **kw)
 
 
-def line(words, size=96, flash=6, gap=26):
-    """金句：纯逐词弹出，字幕留空。"""
-    return Shot(4, "", "一句话", [Glow(540, 780, 560, at=0, alpha=0.26), Pops(words, 540, 780, size, at=0, step=1, gap=gap)],
-                punch=0.02, flashes=[flash], note="金句逐词弹出")
-
-
-def hook2(text, n, sub, tag="重点来了"):
-    """≈45 秒二次钩子：一个数字砸下（“还有 N 个隐藏加分项”）。"""
-    return Shot(4, text, tag, [Big(str(n), 540, 720, 230, at=0, sfx="kick", sub=sub, sub_size=48, rays=True, glow=True,
-                                   shine=True, spark=True, note="二次钩子：数字砸下")],
-                punch=0.03, flashes=[0], shake=[0], note="二次钩子")
-
-
-def slam(word, text, tag="常见误解", size=170):
-    """2 小节重击：一个词砸下。"""
-    return Shot(2, text, tag, [Big(word, 540, 760, size, at=0, sfx="kick", glow=True)], text_beat=0, punch=0.03,
-                shake=[0], note=f"{word}砸下")
-
-
-def cta(text, tag="互动", pose="cheer", mascot=None, **fig):
-    """回报：请观众转发 / 认领；欢呼人物 + 光束 + 拍手。"""
-    fig.setdefault("hair", "short")
-    els = [Rays(540, 760, 520, at=0, alpha=0.18), Fig(440, A.GROUND_Y, 330, at=0, pose=pose, mood="happy", **fig),
-           Spark(440, 560, at=1, sfx="clap")]
-    if mascot:
-        els.append(Custom(mascot, x=760, y=640, at=2, enter="pop", s=150, sfx="pop"))
-    return Shot(2, text, tag, els, draw=A.ground, text_beat=0, punch=0.02, note="回报：转发与认领")
-
-
-def outro(s: Sign, next_s: Sign | None, next_title: str, cta_text: str, mascot=None, bars: int = 2) -> Shot:
+def outro(s: Sign, next_s: Sign | None, next_title: str, cta_text: str, mascot=None, bars: int = 1) -> Shot:
     """片尾：星群亮起 + 吉祥物 + 评论区互动 + 下一讲预告；最后一击落在原曲最后一个强拍。"""
 
     def draw(g: G):
@@ -111,8 +81,8 @@ def outro(s: Sign, next_s: Sign | None, next_title: str, cta_text: str, mascot=N
                 A.glyph(c, g, g.since(0), {"sign": s.key, "s": 170})
         lines = cta_text.split("|")
         for i, ln in enumerate(lines):
-            K.text(c, ln, W / 2, 830 + i * 76, 54, "serif_black", K.INK, g.p(1 + i, 0.4))
-        ap = g.p(4, 0.5)
+            K.text(c, ln, W / 2, 830 + i * 76, 54, "serif_black", K.INK, g.p(0.5 * (1 + i), 0.4))
+        ap = g.p(2, 0.5)
         if next_s:
             K.text(c, "下一讲", W / 2, 1090, 34, "sans_medium", K.INK3, ap)
             K.text(c, f"{next_s.no:02d} {next_s.name} · {next_s.dates}", W / 2, 1160, 48, "serif_black", g.acc, ap)
@@ -132,7 +102,5 @@ def outro(s: Sign, next_s: Sign | None, next_title: str, cta_text: str, mascot=N
 def episode(s: Sign, title, acc, shots, cover_title, notes, tags="") -> Episode:
     return Episode(s.no, s.key, s.name, title, acc, shots, refs=[], publish_title=f"Vibe知识大赏｜{title}",
                    hashtags=f"#{s.name} {TAGS} {tags}".strip(), cover_title=cover_title,
-                   cover_sub=f"{s.name} · {s.dates}", cover_shot=3, cover_t=1.6, notes=notes).build()
+                   cover_sub=f"{s.name} · {s.dates}", cover_shot=8, cover_t=1.5, notes=notes).build()
 
-
-_ = END

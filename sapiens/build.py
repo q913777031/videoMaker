@@ -10,6 +10,8 @@
 from adler import build as B
 from adler import core
 
+core.RULES.update(core.LEGACY)       # 旧系列：保持 2026-10 之前的慢节奏规则，成片不变
+
 core.SERIES.update(name="人类简史", count="10讲", prefix="人类简史", tagline="你今天的烦恼，七万年前就埋下了")
 B.PKG = "sapiens"
 B.OUT = B.ROOT / "out" / "sapiens"
