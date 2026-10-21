@@ -229,6 +229,33 @@ python3 -m nutrition.build --publish    # 交付到 videos/nutrition/
   Rothman 2011 大猩猩、Martínez Steele 2018、Hall 2019 等）；相关性研究、补偿不完全、动物实验外推等局限列为「常见质疑」。
   每讲注明「不构成饮食或医疗建议」。
 
+## 读书科普系列：《稀缺》4 讲（光效 + 钩子版）
+
+```bash
+python3 -m scarcity.build              # 渲染全部 4 讲到 out/scarcity/epXX/
+python3 -m scarcity.build 02 --sheet   # 逐镜联系表
+python3 -m scarcity.build --verify     # 核验成片
+python3 -m scarcity.build --publish    # 交付到 videos/scarcity/
+```
+
+依据穆来纳森、沙菲尔《稀缺：我们是如何陷入贫穷与忙碌的》（Scarcity, 2013）。复用阿德勒纸片引擎，并首次全面使用新增的光效层
+`adler/fx.py`：`Pops` 文字逐个弹出（每词一声气泡音，高亮词“叮”+ 放射线 + 星光）、`Big` 的旋转光束 / 光晕 / 扫光 / 星光、
+`Glow` 节拍呼吸背光、`Rays` 光束、`Spark` 星光粒子、`Counter` 滚动数字，以及镜头级 `punch`（推镜脉冲）、`flashes`（闪白）、`shake`（抖动）。
+新增音色 `pop`、`ding` 在 `engine/perc.py`。新效果默认关闭，旧系列输出逐字节不变。
+
+每讲按留存骨架排布：0 秒逐词弹出的反常识问题钩子 → 4 秒开放回路 → 17.14 秒音乐 drop 概念落版（光束 + 扫光 + 闪白 + 抖动）→
+约 45 秒二次钩子 → 研究证据（数字滚动落定）→ 质疑与边界 → 回报 / 下一讲预告。制作流程与规则见 `.claude/skills/paper-explainer-video/SKILL.md`。
+
+| 讲 | 概念 | 片名 |
+|----|------|------|
+| 01 | 带宽税 | 穷，会让人变笨吗？ |
+| 02 | 管窥 | 为什么越忙越乱？ |
+| 03 | 稀缺陷阱 | 为什么帮人还清债，没多久又欠了？ |
+| 04 | 余闲 | 为什么留白反而更高效？ |
+
+- 研究证据：Mani 等 2013（购物中心实验、464 位印度甘蔗农）、Shah 等 2012（游戏实验）、Karlan 等 2019（金奈商贩还债实验）、
+  St. John's 医院空出手术室案例；质疑：Carvalho 等 2016 发薪日研究未发现认知差异、Shah 2012 一项实验未能复现（Camerer 等 2018）。
+
 ## 夜色像素风：《我们为什么假装不会死》
 
 依据欧内斯特·贝克尔《拒斥死亡》（1973）：聊天窗「深夜树洞」开场 → 信笺写下书的主张 → drop 硬切到「办法一：不去想」→ 红笔批改「我不怕死」→

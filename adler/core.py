@@ -979,7 +979,8 @@ def write_docs(ep: Episode, out_dir: Path, events: list[dict]):
              f"- 时长：{ep.total:.1f} 秒（1080×1920，30fps，配乐 music/bgm.m4a，镜头边界与音效全部落在实测拍点上）", "",
              "## 逐屏文案", "", "| # | 时间（分:秒:帧） | 角标 | 屏幕文字 | 画面 |", "|---|------|------|----------|------|"]
     for i, s in enumerate(ep.shots):
-        txt = gfx.plain(s.text).replace("|", "／") if s.text else "（参考资料）"
+        pops = " ".join(w for el in s.els if el.kind == "pops" for w, _ in el.props["words"])
+        txt = gfx.plain(s.text).replace("|", "／") if s.text else f"（弹字）{pops}" if pops else "（参考资料）"
         lines.append(f"| {i + 1} | {tc(s.t0)}–{tc(s.t1)} | {s.tag} | {txt} | {s.note} |")
     lines += ["", "## 参考资料", ""] + [f"- {r}" for r in ep.refs]
     if ep.notes:
