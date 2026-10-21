@@ -182,6 +182,9 @@ def checklist(c, g, el_t, d):
             K.rr_stroke(c, w / 2 - 80, y, 62, 62, 12, K.LINE, 5)
             continue
         a, s_, _ = st
+        fl = 1 - clamp01(g.since(b0 + i * step) / 0.6)
+        if fl > 0:
+            K.rr(c, 0, y, w - 30, rh - 10, 16, K.GREEN if ok else K.RED, 0.35 * fl)
         with K.at(c, w / 2 - 80, y, 0, s_):
             K.icon(c, "check" if ok else "cross", 0, 0, 80, K.GREEN if ok else K.RED, a, 0.4, 0, 1, 1, g.acc2)
 
@@ -202,6 +205,9 @@ def phone_chat(c, g, el_t, d):
         a, s_, _ = st
         tw = min(w - 80, K.text_w(txt, 42, "sans_medium") + 50)
         y = -h / 2 + 190 + i * 126
+        fl = 1 - clamp01(g.since(b) / 0.6)
+        if fl > 0:
+            K.rr(c, 0, y, w - 40, 104, 30, g.acc, 0.35 * fl)
         with K.at(c, -w / 2 + 40 + tw / 2, y, 0, s_):
             K.rr(c, 0, 0, tw, 88, 28, "#E9E2D6", a)
             K.text(c, txt, 0, 0, 42, "sans_medium", K.INK, a)

@@ -289,6 +289,7 @@ class Episode:
     land_shot: int = 2          # 4:3 横屏封面右侧取景的镜头（默认第 3 镜“情境演绎”）
     notes: list = field(default_factory=list)     # 事实核查与表述说明（写入文档）
     accent2: str = K.GOLD
+    beat_punch: float = 0.0     # >0 时：每个音效拍与每个强拍都轻推镜头（幅度，如 0.02），保证画面每 2 秒左右整体有动作
     total: float = 0.0
     events: list = field(default_factory=list)
 
@@ -713,6 +714,16 @@ def _draw_shot(c, ep: Episode, k: int, t: float):
         b = BEATS[gi]
         if b["bar_pos"] == 0:
             z *= 1 + s.punch * accent(b) * math.exp(-(t - (b["t"] - s.t0)) * 6)
+    if ep.beat_punch > 0:
+        T = s.t0 + t
+        last = None
+        for beat, sfx, _, _ in s.all_hits():
+            if sfx and bt(s.b0 + beat) <= T and (last is None or bt(s.b0 + beat) > last):
+                last = bt(s.b0 + beat)
+        if 0 <= gi < N_BEATS and BEATS[gi]["bar_pos"] == 0 and (last is None or BEATS[gi]["t"] > last):
+            last = BEATS[gi]["t"]
+        if last is not None:
+            z *= 1 + ep.beat_punch * math.exp(-(T - last) * 7)
     c.save()
     for it in s.shake:
         kb, amp = it if isinstance(it, tuple) else (it, 14.0)

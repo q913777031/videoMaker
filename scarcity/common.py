@@ -11,7 +11,7 @@ def episode(no, key, concept, title, acc, shots, refs, cover_title, notes, tags=
     """统一发布标题（Vibe知识大赏｜片名）、话题与封面取景（drop 镜头）。"""
     return Episode(no, key, concept, title, acc, shots, refs=refs, publish_title=f"{BRAND}｜{title}",
                    hashtags=f"{TAGS} {tags}".strip(), cover_title=cover_title, cover_sub=f"稀缺 · {concept}",
-                   cover_shot=3, cover_t=1.6, notes=notes, land_shot=land_shot).build()
+                   cover_shot=3, cover_t=1.6, notes=notes, land_shot=land_shot, beat_punch=0.022).build()
 
 
 # ---------------------------------------------------------------- 重做版留存骨架的固定镜头（见 ep01_mindset.py）

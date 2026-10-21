@@ -49,7 +49,9 @@ def build():
         Shot(4, "资源少的玩家|借得更多、总分更低", "研究证据 · Shah 等 2012", [
             Icon("chain", 380, 760, 180, color=K.RED, at=0, sfx="rim"),
             Icon("cross", 720, 760, 150, color=K.RED, at=3, sfx="rim"),
+            Label("+ 利息", 380, 560, 50, at=5, fill=K.RED, sfx="wood_high"),
             Label("借得越多，越亏", 540, 1040, 46, at=8, fill=K.RED, sfx="rim"),
+            Icon("cross", 380, 560, 90, color=K.RED, at=12, sfx="rim"),
         ], research=True, note="借得越多越亏"),
         Shot(4, "借来的越多|下一轮就越缺", "机制示意", [
             Custom(A.cycle, x=540, y=780, at=0, enter="none", labels=["缺", "借", "更缺"], R=250, b0=0, step=2, hi=2,

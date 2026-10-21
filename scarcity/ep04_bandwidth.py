@@ -51,12 +51,16 @@ def build():
             Icon("puzzle", 380, 760, 190, color=ACC, at=0, sfx="wood_low"),
             Icon("cross", 720, 760, 150, color=K.RED, at=3, sfx="rim"),
             Spark(720, 760, at=3, colors=[K.RED, K.INK2]),
+            Icon("bulb", 540, 520, 110, color=K.INK3, at=5, sfx="wood_high"),
             Label("带宽被占了", 540, 1040, 46, at=8, fill=K.RED, sfx="rim"),
+            Spark(540, 1040, at=12, sfx="wood_low", colors=[K.RED, K.GOLD]),
         ], research=True, note="成绩下降"),
         Shot(4, "同一批农民|收获前比收获后考得差", "研究证据 · Mani 等 2013", [
             Counter(0, 464, 540, 600, 200, at=0, land=4, sub="位印度甘蔗农"),
             Icon("sprout", 360, 960, 120, color=K.GREEN, at=6, sfx="wood_high"),
             Label("收获后：成绩回升", 600, 960, 42, at=10, fill=K.GREEN, sfx="ding"),
+            Label("收获前：手头紧", 600, 1120, 42, at=7, fill=K.RED, sfx="wood_low"),
+            Spark(600, 960, at=13, sfx="wood_high"),
         ], research=True, note="数字落定 464"),
         slam("交税", "不是 笨|是 【交税】", "缺钱时|大脑在加班"),
         Shot(4, "第一招：心烦时|别做重要决定", "小方法", [

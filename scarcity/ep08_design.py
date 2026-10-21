@@ -55,7 +55,9 @@ def build():
             Icon("target", 540, 740, 240, color=ACC, at=0, sfx="wood_low"),
             Icon("check", 720, 580, 110, color=K.GREEN, at=4, sfx="rim"),
             Spark(720, 580, at=4),
+            Icon("phone", 340, 580, 110, color=K.INK2, at=6, sfx="wood_high"),
             Label("提到目标的提醒最有效", 540, 1030, 42, at=9, fill=ACC, sfx="ding"),
+            Spark(540, 740, at=12, sfx="wood_low"),
         ], research=True, note="达成储蓄目标"),
         Shot(4, "缺钱的人更会算：|同一瓶酒不因店贵多付", "研究证据 · Shah 等 2015", [
             Card("同一瓶啤酒", 540, 540, 48, at=0, sfx="wood_low"),

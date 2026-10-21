@@ -59,6 +59,8 @@ def build():
                                  (12, "ding", 0.9, "完成")], note="进度条一路冲到 100%"),
         Shot(4, "杂念被挤出去|只剩眼前这件事", "机制示意", [
             Icon("target", 540, 780, 220, color=ACC, at=0, sfx="wood_low"),
+            Icon("phone", 150, 450, 110, color=K.INK2, at=1), Icon("friends", 930, 450, 110, color=K.INK2, at=3),
+            Icon("cloud", 150, 1110, 110, color=K.INK2, at=5), Icon("gift", 930, 1110, 110, color=K.INK2, at=7),
             Arrow((180, 480), (430, 690), at=2, color=K.INK2, sfx="wood_high"),
             Arrow((900, 480), (650, 690), at=4, color=K.INK2, sfx="wood_high"),
             Arrow((180, 1080), (430, 870), at=6, color=K.INK2, sfx="wood_high"),
@@ -75,6 +77,8 @@ def build():
         ], draw=A.ground, research=True, punch=0.02, flashes=[4], note="二次钩子：游戏实验"),
         Shot(4, "机会少的玩家|每一次都瞄得更准", "研究证据 · Shah 等 2012", [
             Custom(_darts, x=600, y=780, at=0, enter="none"),
+            Spark(618, 780, at=0), Spark(618, 780, at=3), Spark(618, 780, at=6), Spark(618, 780, at=9),
+            Label("4 / 4 命中", 600, 1080, 48, at=12, fill=K.GREEN, sfx="ding"),
         ], hits=[(0, "rim", 0.8, "命中"), (3, "rim", 0.8, "命中"), (6, "rim", 0.8, "命中"), (9, "ding", 0.9, "命中")],
             research=True, note="飞镖接连命中"),
         Shot(4, "缺，反而逼出了效率|这就是专注红利", "原书 · 大意", [
