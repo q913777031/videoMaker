@@ -91,7 +91,8 @@ def publish(keys: list[str]):
 
 def main():
     args = sys.argv[1:]
-    keys = [a for a in args if a in MODS] or list(MODS)
+    skip = {args.index("--still") + 1} if "--still" in args else set()     # --still 后面的时间不是期号
+    keys = [a for i, a in enumerate(args) if a in MODS and i not in skip] or list(MODS)
     if "--verify" in args:
         sys.exit(0 if verify(keys) else 1)
     if "--publish" in args:
