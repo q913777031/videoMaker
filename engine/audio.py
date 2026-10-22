@@ -5,6 +5,7 @@
 
 import functools
 import hashlib
+import json
 import math
 from pathlib import Path
 
@@ -126,11 +127,16 @@ class Narrator:
     """
 
     def __init__(self, voice: str = "zv_yunxi"):
-        import sherpa_onnx
-
         self._prompt = None
         self._prompt_text = PROMPT_TEXT
+        self._cosy: Path | None = None
         own = VOICE_DIR / voice
+        if (own / "cosy.json").is_file():
+            self._cosy = cosy_dir(voice)
+            self._key = f"cosy|{self._cosy.name}"
+            return
+        import sherpa_onnx
+
         if voice in ZIPVOICE or (own / "prompt.wav").is_file():
             d = str(MODEL_ROOT / ZV_DIR) + "/"
             if not Path(d + "decoder.int8.onnx").is_file():
@@ -178,6 +184,11 @@ class Narrator:
         path = CACHE_DIR / f"{key}.npy"
         if path.exists():
             return np.load(path)
+        if self._cosy is not None:
+            x = _trim(_cosy_line(self._cosy, text, speed))
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            np.save(path, x)
+            return x
         if self._prompt is not None:
             a = self._tts.generate(text, self._prompt_text, self._prompt, 24000, speed, 4)
         else:
@@ -190,6 +201,42 @@ class Narrator:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         np.save(path, x)
         return x
+
+
+def cosy_dir(voice: str) -> Path:
+    """CosyVoice 预合成旁白目录：按 (录音, 逐字稿, 语气前缀) 区分，换录音或前缀后自动失效。"""
+    own = VOICE_DIR / voice
+    cfg = (own / "cosy.json").read_text(encoding="utf-8")
+    raw = (own / "prompt.wav").read_bytes() + (own / "prompt.txt").read_bytes() + cfg.encode()
+    return ROOT / ".cache" / "tts_cosy" / voice / hashlib.sha1(raw).hexdigest()[:12]
+
+
+def cosy_key(text: str) -> str:
+    return hashlib.sha1(text.encode()).hexdigest()[:16]
+
+
+def _cosy_line(root: Path, text: str, speed: float) -> np.ndarray:
+    """读取已挑选的候选句，按挑选时算好的半音数统一音高、按 speed 变速（保持音色共振峰）。
+
+    句子未预合成时抛 FileNotFoundError，提示先运行对应系列的旁白合成脚本。
+    """
+    import subprocess
+    import tempfile
+
+    import soundfile as sf
+
+    meta_path = root / "meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    item = meta.get(cosy_key(text))
+    if item is None:
+        raise FileNotFoundError(f"CosyVoice line not synthesized (run python3 -m chuanxilu.voice <ep>): {text}")
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "x.wav"
+        af = f"rubberband=tempo={speed:.4f}:pitch={2 ** (item['shift'] / 12):.6f}:formant=preserved:pitchq=quality"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(root / "raw" / item["file"]), "-af", af,
+                        "-ac", "1", "-ar", str(SR), str(out)], check=True)
+        x, _ = sf.read(out, dtype="float64")
+    return x
 
 
 def _trim(x: np.ndarray, thr_db: float = -38.0) -> np.ndarray:
