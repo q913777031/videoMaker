@@ -12,7 +12,8 @@ description: 用阿德勒纸片风引擎（adler/core.py + adler/fx.py）制作�
 
 - 每镜 1 小节（≈2.1 秒，≤3 秒），42 镜；硬切 + 切镜推镜（`RULES` 默认启用，不要用 `LEGACY`）。
 - 动画为主：每镜 ≥2 个拍点有画面事件；文字为辅：字幕 ≤10 字，长句用纯弹字镜头或 `keep=True` 跨镜。
-- 模板见 `xingzuo/common.py`（`S`、`drop`、`pops`、`outro`），范例 `xingzuo/ep01_aries.py`。
+- 模板见 `xingzuo/common.py`（`S`、`drop`、`pops`、`outro`），手写范例 `xingzuo/ep01_aries.py`；
+  同结构多讲系列可照 `xingzuo/story.py`（通用 42 镜模板）+ `xingzuo/specs.py`（每讲一份文案表）批量生成。
 
 ## 1. 工作流
 

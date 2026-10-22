@@ -93,7 +93,7 @@ def outro(s: Sign, next_s: Sign | None, next_title: str, cta_text: str, mascot=N
 
     def under(g: G):
         with K.at(g.c, 540, 470):
-            A.constellation(g.c, g, g.t, {"b0": 0, "step": 1, "scale": 0.75})
+            A.constellation(g.c, g, g.t, {"b0": 0, "step": 1, "scale": 0.75, "sign": s.key})
 
     return Shot(bars, "", "下一讲", [], draw=under, over=draw, note="片尾：星群、互动与下一讲预告",
                 hits=[(0, "cymbal", 0.5, "片尾落版"), (4 * bars, "kick", 0.55, "原曲最后一击")])
