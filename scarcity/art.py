@@ -369,7 +369,7 @@ def choice(c, g, el_t, d):
         with K.at(c, x, 0, 0, sc):
             K.card(c, 0, 0, 380, 420, col, a, r=36)
             K.text(c, title, 0, -100, 60, "serif_black", K.PAPER, a)
-            K.text(c, amount, 0, 50, 110, "black", K.PAPER, a)
+            K.text(c, amount, 0, 50, min(110.0, 110 * 330 / max(1.0, K.text_w(amount, 110, "black"))), "black", K.PAPER, a)
 
 
 def find_grid(c, g, el_t, d):

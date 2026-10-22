@@ -206,3 +206,70 @@ def two_lines(c, g, el_t, d):
         if k > 0.05:
             K.text(c, name, -w / 2 + k * w - 10, h / 2 - (0.12 + off + 0.7 * k ** 1.3) * h - 46, 38, "serif_black", col,
                    1, "right")
+
+
+# ---------------------------------------------------------------- 重做版：互动小游戏元件
+
+from scarcity.art import choice, countdown, memo, toasts  # noqa: E402,F401
+
+
+def pick_cards(c, g, el_t, d):
+    """选卡片：cards [(图标, 文字, 是否正确)] 两行排开，b0 起每半拍弹出一张；reveal 拍起正确的发光打勾，其余变暗。"""
+    cards = d["cards"]
+    cols = d.get("cols", 3)
+    w, h, gx, gy = 280, 250, 30, 40
+    rows = (len(cards) + cols - 1) // cols
+    rev = g.since(d.get("reveal", 99))
+    for i, (ic, txt, ok) in enumerate(cards):
+        r, j = divmod(i, cols)
+        x = (j - (cols - 1) / 2) * (w + gx)
+        y = (r - (rows - 1) / 2) * (h + gy)
+        st = fx.word_pop(g.since(d.get("b0", 0) + i * 0.5))
+        if st is None:
+            continue
+        a, s_, _ = st
+        if rev >= 0:
+            k = clamp01(rev / 0.3)
+            if ok:
+                fx.glow(c, x, y, 220, K.GOLD, 0.35 * k + 0.15 * g.pulse(5))
+                s_ *= 1 + 0.08 * k
+            else:
+                a *= 1 - 0.6 * k
+        with K.at(c, x, y, 0, s_):
+            K.card(c, 0, 0, w, h, K.PAPER, a, r=26)
+            K.icon(c, ic, 0, -30, 110, g.acc if ok else K.INK2, a, 0.5, 0, 1, 1, K.GOLD)
+            K.text(c, txt, 0, 80, 44, "serif_black", K.INK, a)
+        if rev >= 0 and ok:
+            k = clamp01(rev / 0.3)
+            with K.at(c, x + w / 2 - 30, y - h / 2 + 30, 0, 0.5 + 0.5 * ease_out(k)):
+                K.icon(c, "check", 0, 0, 80, K.GREEN, k, 0.5)
+
+
+def day_clock(c, g, el_t, d):
+    """把人类史压缩成一天：表盘 0–24 时；marks [(时刻小时, 标签, 出现拍)] 依次在表盘上点亮并标注，指针扫到最新标记。"""
+    R = d.get("R", 300)
+    K.dot(c, 0, 0, R, K.PAPER)
+    K.ring(c, 0, 0, R, K.INK, 10)
+    for hh in range(24):
+        ang = math.radians(hh / 24 * 360 - 90)
+        r0 = R * (0.86 if hh % 6 else 0.78)
+        K.seg(c, r0 * math.cos(ang), r0 * math.sin(ang), R * 0.95 * math.cos(ang), R * 0.95 * math.sin(ang), K.INK2,
+              4 if hh % 6 else 8)
+    for hh, lab in ((0, "0点"), (6, "6点"), (12, "12点"), (18, "18点")):
+        ang = math.radians(hh / 24 * 360 - 90)
+        K.text(c, lab, R * 0.62 * math.cos(ang), R * 0.62 * math.sin(ang), 34, "sans_medium", K.INK3)
+    hand = 0.0
+    for hh, lab, b in d.get("marks", []):
+        k = clamp01(g.since(b) / 0.5)
+        if k <= 0:
+            continue
+        hand = hh * ease_out(k) if hand == 0 else hand + (hh - hand) * ease_out(k)
+        ang = math.radians(hh / 24 * 360 - 90)
+        x, y = R * math.cos(ang), R * math.sin(ang)
+        K.dot(c, x, y, 18, K.RED)
+        lx, ly = (R + 120) * math.cos(ang), (R + 70) * math.sin(ang)
+        with K.at(c, lx, ly, 0, 0.6 + 0.4 * ease_out(k)):
+            K.pill(c, 0, 0, lab, 36, g.acc, K.PAPER, k)
+    ang = math.radians(hand / 24 * 360 - 90)
+    K.seg(c, 0, 0, R * 0.8 * math.cos(ang), R * 0.8 * math.sin(ang), K.RED, 12)
+    K.dot(c, 0, 0, 20, K.RED)

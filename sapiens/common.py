@@ -60,7 +60,17 @@ def tip(text, tag="小练习", pose="cheer", **fig):
                                Spark(540, 560, at=1, sfx="clap")], draw=ground, text_beat=0, punch=0.02, note="回报")
 
 
-def episode(no, key, concept, title, acc, shots, refs, cover_title, notes, tags="") -> Episode:
+def episode(no, key, concept, title, acc, shots, refs, cover_title, notes, tags="", land_shot=2, beat_punch=0.0) -> Episode:
     return Episode(no, key, concept, title, acc, shots, refs=refs, publish_title=f"Vibe知识大赏｜{title}",
                    hashtags=f"{TAGS} {tags}".strip(), cover_title=cover_title, cover_sub=f"人类简史 · {concept}",
-                   cover_shot=3, cover_t=1.6, notes=notes).build()
+                   cover_shot=3, cover_t=1.6, notes=notes, land_shot=land_shot, beat_punch=beat_punch).build()
+
+
+# 重做版骨架镜头（与《稀缺》重做版相同）：互动提问 · 倒计时游戏 · 揭晓 | drop · 机制 · 机制 | 证据×3 · 重击 | 第一招 · 第二招 · 片尾
+from scarcity.common import ask, slam as slam2, tip2  # noqa: E402,F401
+from scarcity.common import drop as drop2  # noqa: E402,F401
+
+
+def redo(no, key, concept, title, acc, shots, refs, cover_title, notes, tags="") -> Episode:
+    """重做版：开启节拍推镜，横屏封面取第 3 镜（游戏揭晓）。"""
+    return episode(no, key, concept, title, acc, shots, refs, cover_title, notes, tags, land_shot=2, beat_punch=0.022)
