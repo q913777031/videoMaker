@@ -14,7 +14,7 @@ import numpy as np
 import skia
 import soundfile as sf
 
-from . import audio, bgm, gfx
+from . import audio, bgm, gfx, perc
 from .gfx import H, W
 
 FPS = 30
@@ -79,6 +79,15 @@ EVENT_FX = {
     "type": {"sfx": ("type", 0.35)},
     "riser": {"sfx": ("riser", 0.7)},
     "flash": {"flash": 0.25},
+    # 中国打击乐（engine/perc.py 合成）：按起音峰值提前放置，峰值落在事件时刻
+    "dagu": {"perc": ("dagu", 0.75), "shake": (0.3, 14), "punch": 0.04},
+    "tanggu": {"perc": ("tanggu", 0.7), "punch": 0.025},
+    "daluo": {"perc": ("daluo", 0.5), "shake": (0.25, 10), "punch": 0.03},
+    "xiaoluo": {"perc": ("xiaoluo", 0.4)},
+    "naobo": {"perc": ("naobo", 0.35)},
+    "bangzi": {"perc": ("bangzi", 0.45)},
+    "muyu": {"perc": ("muyu", 0.45)},
+    "bianzhong": {"perc": ("bianzhong", 0.4)},
     "shake": {"shake": (0.3, 16)},
 }
 
@@ -105,8 +114,9 @@ class Ctx:
         return gfx.prog(self.t, self.cue(i) + off, dur)
 
 
-ACCENT_STRONG = ("boom", "impact")
-ACCENT_SOFT = ("glitch", "crack", "pop", "pop2", "ding", "down", "buzz", "heart")
+ACCENT_STRONG = ("boom", "impact", "dagu", "tanggu", "daluo")
+ACCENT_SOFT = ("glitch", "crack", "pop", "pop2", "ding", "down", "buzz", "heart", "xiaoluo", "naobo", "bangzi", "muyu",
+               "bianzhong")
 
 
 def _accent(s: Scene, i: int, dur: float) -> tuple[float, bool]:
@@ -229,6 +239,11 @@ class Video:
                     else:
                         clip = audio.sfx(name)
                     audio.place(sfx_track, audio.pan(clip, 0), gt, gain * ev.gain)
+                if "perc" in fx:
+                    name, gain = fx["perc"]
+                    clip = perc.sound(name)
+                    lead = float(np.argmax(np.abs(clip[: int(0.05 * audio.SR)]))) / audio.SR
+                    audio.place(sfx_track, audio.pan(clip, 0), gt - lead, gain * ev.gain)
         if not with_audio:
             return
         music = self._automate(sync.track(self.total + 1))

@@ -1,4 +1,4 @@
-"""本人克隆声旁白：CosyVoice 3 每句多候选合成 → 语音识别回写校验 → 选语调起伏最大的正确候选 → 统一音高。
+"""本人克隆声旁白：CosyVoice 3 每句合成（念错的句子换种子重合成，最多 3 个候选） → 语音识别回写校验 → 选语调起伏最大的正确候选 → 统一音高。
 
 python3 -m chuanxilu.voice ep01        # 合成并挑选，结果供 engine.audio.Narrator(VOICE) 读取
 python3 -m chuanxilu.voice ep01 --report   # 只打印挑选结果
@@ -25,7 +25,7 @@ from . import script
 VOICE = "me_new"
 INSTRUCT = ("You are a helpful assistant. 请用积极、充满好奇和热情的语气，语调起伏明显，"
             "像在给好朋友讲一个精彩的发现。<|endofprompt|>")
-SEEDS, EXTRA_SEED = (11, 22), 33
+SEEDS, RETRY_SEEDS = (11,), (22, 33)
 # 多音字：CosyVoice 3 支持用 [声母][韵母] 指定读音
 PRON = {"种根": "[zh][òng]根", "种下": "[zh][òng]下"}
 COSY_PYTHON = os.environ.get("COSY_PYTHON", "/home/user/tts_eval/cv/bin/python")
@@ -121,8 +121,9 @@ def run(ep: str, report_only: bool = False):
         return rows
 
     synth(jobs, SEEDS)
-    retry = [j for j in jobs if not any(r["cer"] == 0 for _, r in score(j))]
-    synth(retry, (EXTRA_SEED,))
+    for seed in RETRY_SEEDS:
+        retry = [j for j in jobs if not any(r["cer"] == 0 for _, r in score(j))]
+        synth(retry, (seed,))
     ref = float(np.median(_f0(_load16k(vd / "prompt.wav"), 16000)))
     bad = []
     for j in jobs:
