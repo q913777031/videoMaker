@@ -182,6 +182,9 @@ def checklist(c, g, el_t, d):
             K.rr_stroke(c, w / 2 - 80, y, 62, 62, 12, K.LINE, 5)
             continue
         a, s_, _ = st
+        fl = 1 - clamp01(g.since(b0 + i * step) / 0.6)
+        if fl > 0:
+            K.rr(c, 0, y, w - 30, rh - 10, 16, K.GREEN if ok else K.RED, 0.35 * fl)
         with K.at(c, w / 2 - 80, y, 0, s_):
             K.icon(c, "check" if ok else "cross", 0, 0, 80, K.GREEN if ok else K.RED, a, 0.4, 0, 1, 1, g.acc2)
 
@@ -202,6 +205,9 @@ def phone_chat(c, g, el_t, d):
         a, s_, _ = st
         tw = min(w - 80, K.text_w(txt, 42, "sans_medium") + 50)
         y = -h / 2 + 190 + i * 126
+        fl = 1 - clamp01(g.since(b) / 0.6)
+        if fl > 0:
+            K.rr(c, 0, y, w - 40, 104, 30, g.acc, 0.35 * fl)
         with K.at(c, -w / 2 + 40 + tw / 2, y, 0, s_):
             K.rr(c, 0, 0, tw, 88, 28, "#E9E2D6", a)
             K.text(c, txt, 0, 0, 42, "sans_medium", K.INK, a)
@@ -242,3 +248,175 @@ def calendar(c, g, el_t, d):
         a, s_, _ = st
         with K.at(c, x0 + col * cw + cw / 2, y0 + (row + span / 2) * ch, 0, s_):
             K.rr(c, 0, 0, cw - 12, span * ch - 10, 12, color, a)
+
+
+# ---------------------------------------------------------------- 开场互动小游戏通用元件
+
+def countdown(c, g, el_t, d):
+    """倒计时：从 n 数到 1，每个数占 step 拍，外圈随真实时间收缩；结束拍弹出 end_text 红牌。"""
+    n0, step = d.get("n", 3), d.get("step", 2)
+    b0 = d.get("b0", 0)
+    b_end = b0 + n0 * step
+    if g.since(b_end) >= 0:
+        dt = g.since(b_end)
+        sc = 1 + 0.5 * (1 - ease_out(clamp01(dt / 0.2)))
+        txt = d.get("end_text", "时间到！")
+        w = K.text_w(txt, 80, "serif_black") + 120
+        with K.at(c, 0, 0, -4, sc):
+            K.rr(c, 0, 0, w, 140, 70, K.RED)
+            K.text(c, txt, 0, 0, 80, "serif_black", K.PAPER)
+        return
+    if g.since(b0) < 0:
+        return
+    span = max(1e-6, g.b(b0 + step) - g.b(b0))
+    n = n0 - int(max(0, min(n0 - 1, g.since(b0) // span)))
+    k = clamp01(g.since(b0) / max(1e-6, g.b(b_end) - g.b(b0)))
+    r = d.get("r", 92)
+    K.dot(c, 0, 0, r, K.PAPER)
+    K.ring(c, 0, 0, r, K.LINE, 14)
+    K.ring(c, 0, 0, r, K.RED if n == 1 else g.acc, 14, 1, 1 - k)
+    sc = 1 + 0.35 * (1 - ease_out(clamp01(g.since(b0 + (n0 - n) * step) / 0.18)))
+    with K.at(c, 0, 0, 0, sc):
+        K.text(c, str(n), 0, 0, r * 1.3, "black", K.RED if n == 1 else K.INK)
+
+
+def flame(c, x, y, s, t=0.0, alpha=1.0):
+    """小火苗：两层水滴形，随时间抖动。"""
+    wob = 1 + 0.08 * math.sin(t * 14 + x)
+    for col, k in (("#E8622C", 1.0), ("#F6C14B", 0.55)):
+        h = s * k * wob
+        p = skia.Path()
+        p.moveTo(x, y - h)
+        p.cubicTo(x + h * 0.55, y - h * 0.4, x + h * 0.5, y + h * 0.35, x, y + h * 0.4)
+        p.cubicTo(x - h * 0.5, y + h * 0.35, x - h * 0.55, y - h * 0.4, x, y - h)
+        c.drawPath(p, K.paint(col, alpha))
+
+
+def fires(c, g, el_t, d):
+    """火苗依次在 spots [(x, y, 出现拍)] 冒出；右上角计数随之增加。"""
+    n = 0
+    for x, y, b in d["spots"]:
+        k = clamp01(g.since(b) / 0.25)
+        if k <= 0:
+            continue
+        n += 1
+        flame(c, x, y, 60 * (0.4 + 0.6 * ease_out(k)), g.t)
+    if d.get("count", True):
+        K.rr(c, 330, -330, 170, 90, 45, K.RED)
+        K.text(c, f"×{n}", 330, -330, 56, "black", K.PAPER)
+
+
+def toasts(c, g, el_t, d):
+    """屏幕边缘的通知小卡：items [(拍, x, y, 文字)] 弹出后 hold 拍内保持，然后淡出。"""
+    hold = d.get("hold", 3)
+    for b, x, y, txt in d["items"]:
+        st = fx.word_pop(g.since(b))
+        if st is None:
+            continue
+        a, s_, _ = st
+        a *= 1 - clamp01((g.since(b + hold)) / 0.3)
+        if a <= 0:
+            continue
+        w = K.text_w(txt, 34, "sans_medium") + 50
+        with K.at(c, x, y, 0, s_):
+            K.card(c, 0, 0, w, 76, K.PAPER, a, r=20)
+            K.dot(c, -w / 2 + 26, 0, 10, K.RED, a)
+            K.text(c, txt, 6, 0, 34, "sans_medium", K.INK, a)
+
+
+def digits(c, g, el_t, d):
+    """记忆数字：seq 逐个弹出（b0 起每拍一个），hide 拍起用灰块盖住，reveal 拍起第 ask 位亮出答案。"""
+    seq = d["seq"]
+    b0, hide = d.get("b0", 0), d.get("hide", 99)
+    w = 120
+    x0 = -(len(seq) - 1) * w / 2
+    for i, ch in enumerate(seq):
+        x = x0 + i * w
+        st = fx.word_pop(g.since(b0 + i * d.get("step", 0.5)))
+        if st is None:
+            continue
+        a, s_, _ = st
+        covered = g.since(hide) >= 0
+        with K.at(c, x, 0, 0, s_):
+            K.card(c, 0, 0, 100, 130, K.PAPER, a, r=16)
+            if covered:
+                ask = i == d.get("ask", -1)
+                K.rr(c, 0, 0, 84, 112, 12, g.acc if ask else K.INK3, a)
+                if ask and g.since(d.get("reveal", 99)) >= 0:
+                    K.text(c, ch, 0, 0, 80, "black", K.PAPER, a)
+                elif ask:
+                    K.text(c, "?", 0, 0, 80, "black", K.PAPER, a)
+            else:
+                K.text(c, ch, 0, 0, 80, "black", K.INK, a)
+
+
+def choice(c, g, el_t, d):
+    """二选一卡片：left/right = (标题, 金额)；pick 拍起选中的一侧（pick_side）放大发光，另一侧变暗。"""
+    side = d.get("pick_side", 0)
+    picked = g.since(d.get("pick", 99)) >= 0
+    for j, (title, amount, col) in enumerate((d["left"], d["right"])):
+        x = (j - 0.5) * 440
+        st = fx.word_pop(g.since(d.get("b0", 0) + j))
+        if st is None:
+            continue
+        a, s_, _ = st
+        sc = s_
+        if picked:
+            sc *= 1.12 if j == side else 0.9
+            a *= 1 if j == side else 0.45
+            if j == side:
+                fx.glow(c, x, 0, 300, K.GOLD, 0.35 + 0.2 * g.pulse(5))
+        with K.at(c, x, 0, 0, sc):
+            K.card(c, 0, 0, 380, 420, col, a, r=36)
+            K.text(c, title, 0, -100, 60, "serif_black", K.PAPER, a)
+            K.text(c, amount, 0, 50, 110, "black", K.PAPER, a)
+
+
+def find_grid(c, g, el_t, d):
+    """找东西：cols×rows 个灰色闹钟里藏一个红色闹钟（target），角落有一个蛋糕（odd）；
+    found 拍起红闹钟被圈出，odd_at 拍起蛋糕被圈出。"""
+    cols, rows = d.get("cols", 5), d.get("rows", 4)
+    gap = 150
+    tx, ty = d.get("target", (3, 2))
+    ox, oy = d.get("odd", (0, 3))
+    for r in range(rows):
+        for col in range(cols):
+            x = (col - (cols - 1) / 2) * gap
+            y = (r - (rows - 1) / 2) * gap
+            k = clamp01(g.since(d.get("b0", 0) + 0.25 * (r * cols + col) / cols) / 0.25)
+            if k <= 0:
+                continue
+            if (col, r) == (ox, oy):
+                K.icon(c, "gift", x, y, 100, K.INK3, k, 0.5, 0, 1, 1, K.INK3)
+            else:
+                K.icon(c, "clock", x, y, 100, K.RED if (col, r) == (tx, ty) else K.INK3, k, 0.5, 8 * math.sin(col + r), 1, 1,
+                       K.GOLD)
+    for (cx, cy), key in (((tx, ty), "found"), ((ox, oy), "odd_at")):
+        k = clamp01(g.since(d.get(key, 99)) / 0.3)
+        if k > 0:
+            x = (cx - (cols - 1) / 2) * gap
+            y = (cy - (rows - 1) / 2) * gap
+            K.ring(c, x, y, 80 * (1.4 - 0.4 * ease_out(k)), K.GREEN if key == "found" else K.RED, 8, k)
+
+
+def memo(c, g, el_t, d):
+    """待办便签：items 逐行出现（b0 起每拍一行）；cover 拍起整张被翻面盖住，只露出标题与“第 ask 件是？”。"""
+    items = d["items"]
+    w, rh = 600, 92
+    h = rh * len(items) + 140
+    covered = g.since(d.get("cover", 99)) >= 0
+    K.card(c, 0, 0, w, h, "#FFF3B0", 1, r=20)
+    K.text(c, d.get("title", "今天要做"), 0, -h / 2 + 60, 50, "serif_black", K.INK)
+    if covered:
+        k = clamp01(g.since(d["cover"]) / 0.3)
+        K.rr(c, 0, 40, w - 60, h - 160, 16, g.acc, k)
+        K.text(c, d.get("ask_text", "第 3 件是？"), 0, 40, 70, "serif_black", K.PAPER, k)
+        return
+    for i, txt in enumerate(items):
+        st = fx.word_pop(g.since(d.get("b0", 0) + i))
+        if st is None:
+            continue
+        a, s_, _ = st
+        y = -h / 2 + 140 + i * rh
+        with K.at(c, -w / 2 + 60, y, 0, s_):
+            K.text(c, f"{i + 1}. {txt}", 0, 0, 46, "serif", K.INK, a, "left")

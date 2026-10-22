@@ -17,7 +17,7 @@ description: 用阿德勒纸片风引擎（adler/core.py + adler/fx.py）制作�
 4. **检查**：`python3 -m <pkg>.build NN --sheet`（逐镜联系表 + 阅读窗警告），`--still 秒数` 看单帧细节。逐张看图，修正遮挡、溢出、字幕压画面。
 5. **渲染**：`python3 -m <pkg>.build`（后台运行，单期约 3–5 分钟）。
 6. **核验与交付**：`--verify`（时长、编码、响度 -14 LUFS、真峰值、音画偏差 ≤1 帧）→ `--publish` → 更新 README → 提交推送 → 打包 zip 发给用户。
-   交付格式（CLAUDE.md 强制）：每讲只有成片、`cover.png`、`标题与话题.txt`（`Vibe知识大赏｜片名` + 话题）；多讲系列另有 `合集.png` 与 `横屏封面_1080x1080.png`，`--publish` 自动生成。
+   交付格式（CLAUDE.md 强制）：每讲只有成片、`cover.png`、`标题与话题.txt`（`Vibe知识大赏｜片名` + 话题）；多讲系列另有 `合集.png` 与 `横屏封面_1080x1080.png`（均为 1080×1080、≤5MB），`--publish` 自动生成。
 
 ## 1.5 选题与表达：亲和、主题清晰
 
