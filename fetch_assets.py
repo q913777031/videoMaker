@@ -143,9 +143,22 @@ def fetch_model(failed: list[str]):
             failed.append(f"model: vocos_24khz ({ex})")
 
 
+def fetch_hanzi(failed: list[str]):
+    """逐笔书法笔画数据（Make Me a Hanzi，Arphic Public License），《传习录》系列使用。"""
+    dst = ROOT / "assets" / "hanzi" / "graphics.txt"
+    if dst.exists():
+        return
+    try:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(get("https://raw.githubusercontent.com/skishore/makemeahanzi/master/graphics.txt"))
+    except Exception as ex:
+        failed.append(f"hanzi: {ex}")
+
+
 def main():
     failed: list[str] = []
     fetch_fonts(failed)
+    fetch_hanzi(failed)
     fetch_emoji(failed)
     fetch_model(failed)
     if failed:

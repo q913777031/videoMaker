@@ -93,6 +93,25 @@ python3 -m duanwu.build            # 端午节 → out/duanwu/
 《清明上河图》画汴京、寒食上墓编入五礼、2008 年成为法定假日。端午：端是开头午同五、恶月驱邪、屈原传说与龙舟粽子、
 文秀《端午》、艾草菖蒲、角黍、2009 年列入人类非遗。成片、封面、文案与出处在 `videos/<节日拼音>/`。
 
+## 中国风读书系列：《传习录》（本人克隆声旁白 + 水墨逐笔书法）
+
+```bash
+chuanxilu/setup_cosyvoice.sh                 # 一次性：CosyVoice 3 独立环境 + 语音识别模型（需放行 huggingface.co 等）
+python3 -m chuanxilu.voice ep01              # 旁白：本人录音（voices/me_new/，不入库）零样本克隆，拼音回写校验，念错换种子重合成
+python3 -m chuanxilu.build ep01 --sheet      # 估算排时的逐镜联系表（不需旁白）
+python3 -m chuanxilu.build ep01              # 成片 → out/chuanxilu/ep01/
+```
+
+1080×1920、30fps，每讲 4–6 分钟。文案先行：`chuanxilu/文案/epNN.md` 每句行尾带节奏标注（〔快｜慢｜留白0.8〕），直接驱动合成语速与停顿；
+写作规范见项目 skill `chuanxilu-copywriting`，出处核查见 `chuanxilu/事实核查.md`。
+画面为宣纸水墨：Make Me a Hanzi 笔顺数据驱动的逐笔书法（`hanzi.py`）、远山云雾、朱砂印、竖排原文卡、古今双线人物（`ink.py` / `art.py`）；
+排时与卡点沿用 `engine/timeline.py`（配乐 `music/bgm.m4a`，drop 落在开场标题），打击乐为 `engine/perc.py` 的堂鼓、大鼓、大锣、梆子、木鱼、编钟。
+成片、封面、标题与话题在 `videos/chuanxilu/`。
+
+| 讲 | 概念 | 片名 |
+|----|------|------|
+| 01 | 心即理 | 道理都懂，为什么还是过不好？ |
+
 ## 西方心理学风格科普：《弗洛伊德：你没发现的那部分自己》
 
 ```bash
@@ -500,3 +519,5 @@ python3 logic/logic_short.py out/logic_short.mp4
 - [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans)、[Noto Sans / Serif CJK](https://github.com/notofonts/noto-cjk)、[马善政毛笔楷书 Ma Shan Zheng](https://github.com/googlefonts/mashanzheng)：SIL Open Font License 1.1
 - [three.js](https://github.com/mrdoob/three.js)：MIT License
 - [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)：Apache 2.0，通过 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 运行
+- 逐笔书法笔画数据：[Make Me a Hanzi](https://github.com/skishore/makemeahanzi) `graphics.txt`（Arphic Public License，源自 Arphic PL KaitiM GB / UKai），由 `fetch_assets.py` 下载到 `assets/hanzi/`，不入库
+- [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) / Fun-CosyVoice3-0.5B：Apache 2.0（《传习录》系列旁白，仅克隆作者本人录音）
