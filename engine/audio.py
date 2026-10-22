@@ -29,6 +29,8 @@ VOICES = {
 ZV_DIR = "sherpa-onnx-zipvoice-distill-int8-zh-en-emilia"
 ZIPVOICE = {"zv_yunxi": "zm_yunxi", "zv_009": "zm_009", "zv_001": "zf_001"}
 PROMPT_TEXT = "其实每个人都可以重新开始，换一种方式，去过自己真正想要的生活。"
+# 本人声音：voices/<音色名>/prompt.wav（任意采样率）+ prompt.txt（录音逐字稿），由 ZipVoice 零样本克隆；录音不入库
+VOICE_DIR = ROOT / "voices"
 
 
 # ---------------------------------------------------------------- 基础工具
@@ -127,7 +129,9 @@ class Narrator:
         import sherpa_onnx
 
         self._prompt = None
-        if voice in ZIPVOICE:
+        self._prompt_text = PROMPT_TEXT
+        own = VOICE_DIR / voice
+        if voice in ZIPVOICE or (own / "prompt.wav").is_file():
             d = str(MODEL_ROOT / ZV_DIR) + "/"
             if not Path(d + "decoder.int8.onnx").is_file():
                 raise FileNotFoundError(f"TTS model not found: {d}decoder.int8.onnx")
@@ -136,9 +140,23 @@ class Narrator:
                 vocoder=str(MODEL_ROOT / "vocos_24khz.onnx"), data_dir=d + "espeak-ng-data", lexicon=d + "lexicon.txt")
             self._tts = sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(
                 model=sherpa_onnx.OfflineTtsModelConfig(zipvoice=zv, num_threads=4)))
-            prompt = Narrator(ZIPVOICE[voice]).generate(PROMPT_TEXT, 1.0)
+            if voice in ZIPVOICE:
+                prompt = Narrator(ZIPVOICE[voice]).generate(PROMPT_TEXT, 1.0)
+                self._key = f"{ZV_DIR}|{voice}"
+            else:
+                import soundfile as sf
+                raw = (own / "prompt.wav").read_bytes()
+                self._prompt_text = (own / "prompt.txt").read_text(encoding="utf-8").strip()
+                x, sr = sf.read(own / "prompt.wav", dtype="float64", always_2d=True)
+                x = x.mean(axis=1)
+                if sr != SR:
+                    g = math.gcd(SR, sr)
+                    x = signal.resample_poly(x, SR // g, sr // g)
+                prompt = _trim(highpass(x, 70))
+                prompt = prompt / (np.max(np.abs(prompt)) + 1e-9) * 0.7
+                digest = hashlib.sha1(raw + self._prompt_text.encode()).hexdigest()[:12]
+                self._key = f"{ZV_DIR}|{voice}|{digest}"
             self._prompt = signal.resample_poly(prompt, 24000, SR).astype(np.float32).tolist()
-            self._key = f"{ZV_DIR}|{voice}"
             return
         sub, model, self._sid = VOICES[voice]
         d = str(MODEL_ROOT / sub) + "/"
@@ -161,7 +179,7 @@ class Narrator:
         if path.exists():
             return np.load(path)
         if self._prompt is not None:
-            a = self._tts.generate(text, PROMPT_TEXT, self._prompt, 24000, speed, 4)
+            a = self._tts.generate(text, self._prompt_text, self._prompt, 24000, speed, 4)
         else:
             a = self._tts.generate(text, sid=self._sid, speed=speed)
         x = np.asarray(a.samples, np.float64)
