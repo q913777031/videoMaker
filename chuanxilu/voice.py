@@ -25,9 +25,12 @@ from . import script
 VOICE = "me_new"
 INSTRUCT = ("You are a helpful assistant. 请用积极、充满好奇和热情的语气，语调起伏明显，"
             "像在给好朋友讲一个精彩的发现。<|endofprompt|>")
+# 〔燃〕句（结尾鼓劲）用更有力的语气前缀；仍是零样本克隆，音色来自同一段录音，音高同样统一到录音原调
+INSTRUCT_FIRE = ("You are a helpful assistant. 请用激昂有力、充满信心的语气，像在给好朋友打气，"
+                 "句尾坚定上扬。<|endofprompt|>")
 SEEDS, RETRY_SEEDS = (11,), (22, 33)
 # 多音字：CosyVoice 3 支持用 [声母][韵母] 指定读音
-PRON = {"种根": "[zh][òng]根", "种下": "[zh][òng]下"}
+PRON = {"种根": "[zh][òng]根", "种下": "[zh][òng]下", "空落落": "空[l][uò][l][uò]"}
 COSY_PYTHON = os.environ.get("COSY_PYTHON", "/home/user/tts_eval/cv/bin/python")
 ASR_DIR = audio.MODEL_ROOT / "sherpa-onnx-paraformer-zh-small-2024-03-09"
 WORKER = Path(__file__).resolve().parent / "cosy_worker.py"
@@ -88,20 +91,29 @@ def run(ep: str, report_only: bool = False):
     write_config()
     root = audio.cosy_dir(VOICE)
     raw = root / "raw"
-    texts = list(dict.fromkeys(gfx.plain(s.text) for sec in script.load(ep) for s in sec.sentences))
-    jobs = [{"key": audio.cosy_key(t), "text": t, "synth": synth_text(t)} for t in texts]
+    sents = {gfx.plain(s.text): s for sec in script.load(ep) for s in sec.sentences}
+    jobs = []
+    for t, sent in sents.items():
+        fire = "燃" in sent.tags
+        mkey = audio.cosy_key(t)
+        jobs.append({"key": ("f" + mkey[1:]) if fire else mkey, "mkey": mkey, "text": t, "synth": synth_text(t),
+                     "fire": fire})
     stats_path, meta_path = root / "stats.json", root / "meta.json"
     stats = json.loads(stats_path.read_text(encoding="utf-8")) if stats_path.exists() else {}
     meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
     asr = None
 
     def synth(js, seeds):
-        if report_only or not js:
+        if report_only:
             return
-        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8") as f:
-            json.dump(js, f, ensure_ascii=False)
-        subprocess.run([COSY_PYTHON, str(WORKER), f.name, str(raw), str(vd), INSTRUCT,
-                        ",".join(map(str, seeds))], check=True)
+        for fire, instruct in ((False, INSTRUCT), (True, INSTRUCT_FIRE)):
+            group = [j for j in js if j["fire"] == fire]
+            if not group:
+                continue
+            with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8") as f:
+                json.dump(group, f, ensure_ascii=False)
+            subprocess.run([COSY_PYTHON, str(WORKER), f.name, str(raw), str(vd), instruct,
+                            ",".join(map(str, seeds))], check=True)
 
     def score(j):
         nonlocal asr
@@ -133,7 +145,7 @@ def run(ep: str, report_only: bool = False):
         best = min(r["cer"] for _, r in rows)
         name, r = max([x for x in rows if x[1]["cer"] == best], key=lambda x: x[1]["range"])
         shift = float(np.clip(-0.7 * 12 * np.log2(r["median"] / ref), -2, 2))
-        meta[j["key"]] = dict(text=j["text"], file=name, shift=round(shift, 3), cer=r["cer"], asr=r["asr"])
+        meta[j["mkey"]] = dict(text=j["text"], file=name, shift=round(shift, 3), cer=r["cer"], asr=r["asr"])
         if best > 0:
             bad.append((j["text"], r["asr"], best))
     stats_path.write_text(json.dumps(stats, ensure_ascii=False, indent=1), encoding="utf-8")

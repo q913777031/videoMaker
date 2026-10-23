@@ -1,6 +1,7 @@
-"""第 01 讲 · 心即理：道理都懂，为什么还是过不好？（分镜）
+"""第 01 讲 · 心即理：道理都懂，为什么还是过不好？（第七版分镜：提出困扰 → 解释原因 → 当下实例 → 升华前行）
 
 每个场景对应文案若干句；画面锚定到“读到某个词”的时刻，打击乐与撞击帧对齐。
+配乐：音乐 drop 落在故事开场；第 4 节“扎心”段闷音，读到“别等准备好了”瞬间全开。
 """
 
 import math
@@ -18,11 +19,7 @@ TITLE = "道理都懂，为什么还是过不好？"
 HEADER = "第一讲 · 心即理"
 P = gfx.prog
 EO = gfx.ease_out
-CALLI = "道理都懂为什么还是过不好格物你缺的不是心即理反从心出发根知行合一今日功课我为什么想要它"
-
-
-def _fade(a, x):
-    return max(0.0, min(1.0, a)) * x
+CALLI = "知道这么多道理却依然过不好这一生心即理出发知行合一根你不是不努力"
 
 
 def backdrop(c, t, a, shift=0.0, far=0.28, near=0.45, y=560):
@@ -38,19 +35,14 @@ def night(c, a, y0=320, y1=1300, tone=(70, 84, 98), alpha=0.22):
     c.drawRoundRect(skia.Rect.MakeLTRB(70, y0, gfx.W - 70, y1), 30, 30, ink.paint(tone, alpha * a, blur=24))
 
 
-def divider(c, y, a, p=1.0):
-    ink.brush_path(c, [(120, y), (gfx.W - 120, y + 6)], 7, p=p, alpha=0.6 * a)
-    ink.label(c, "今", 92, y - 40, 34, tone=ink.CINNABAR, alpha=a * 0.9)
-    ink.label(c, "古", 92, y + 52, 34, tone=ink.CINNABAR, alpha=a * 0.9)
-
-
 def bamboo_grove(c, x0, y, t, a, n=6, h=560, seed=0, grow=1.0):
     for k in range(n):
-        art.bamboo(c, x0 + k * 52 + (k % 2) * 14, y + (k % 3) * 10, h - (k % 3) * 60, seed + k, t, a * (0.6 + 0.4 * (k % 2)),
-                   width=18 + (k % 2) * 6, grow=grow)
+        art.bamboo(c, x0 + k * 52 + (k % 2) * 14, y + (k % 3) * 10, h - (k % 3) * 60, seed + k, t,
+                   a * (0.6 + 0.4 * (k % 2)), width=18 + (k % 2) * 6, grow=grow)
 
 
-def counter_text(c, text, x, y, size, t0, t, tone=ink.INK, a=1.0):
+def pop_text(c, text, x, y, size, t0, t, tone=ink.INK, a=1.0, name="serif_black"):
+    """文字从 1.3 倍压到原大落定（配合打击乐的“砸字”）。"""
     k = P(t, t0, 0.18)
     if k <= 0:
         return
@@ -58,448 +50,397 @@ def counter_text(c, text, x, y, size, t0, t, tone=ink.INK, a=1.0):
     c.save()
     c.translate(x, y)
     c.scale(sc, sc)
-    ink.label(c, text, 0, 0, size, tone=tone, alpha=a * k)
+    ink.label(c, text, 0, 0, size, tone=tone, alpha=a * k, name=name)
     c.restore()
 
 
-# ================================================================ 第 1 节 · 钩子
+def strike(c, x, y, w, t0, t, a, tone=ink.CINNABAR):
+    """朱砂一笔划掉。"""
+    if t >= t0:
+        ink.brush_path(c, [(x - w / 2, y + 6), (x + w / 2, y - 6)], 12, p=P(t, t0, 0.15), tone=tone, alpha=a)
 
-def d_hook_fav(ctx):
+
+def rays(c, x, y, t, t0, a, n=14, tone=(255, 200, 120), r0=60, r1=280, spread=0.9):
+    """顿悟 / 晨光放射：从 (x, y) 向上半圈放射的光笔，随时间衰减。"""
+    if t < t0:
+        return
+    k = math.exp(-(t - t0) * 1.2)
+    for r in range(n):
+        ang = math.pi * (1 + (1 - spread) / 2 + spread * r / (n - 1))
+        ln = r1 + 80 * math.sin(r * 2.3)
+        ink.brush_path(c, [(x + math.cos(ang) * r0, y + math.sin(ang) * r0), (x + math.cos(ang) * ln, y + math.sin(ang) * ln)],
+                       10, p=P(t, t0, 0.25), tone=tone, alpha=0.55 * k * a)
+
+
+# ================================================================ 第 1 节 · 提出困扰
+
+def d_hook(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    night(c, a)
-    art.modern_bed_phone(c, 400, 1180, 1.25, a, glow=1.0, t=t)
-    inner = art.phone(c, 820, 700, 0.62, a, glow=0.6)
-    t300 = word(ctx, 0, "三百篇")
-    n = int(300 * EO(P(t, ctx.cue(0), max(0.3, t300 - ctx.cue(0) + 0.3))))
-    ink.label(c, f"收藏 {n}", inner.centerX(), inner.top() + 40, 30, alpha=a)
-    for k in range(5):
-        art.fav_card(c, inner.centerX(), inner.top() + 110 + k * 62, inner.width() - 26,
-                     ["自律的十个方法", "高效人士的7个习惯", "早起改变人生", "30天读完50本书", "一张表管好时间"][k],
-                     alpha=a * P(t, ctx.cue(0) + k * 0.15, 0.25), star=True)
-    t50 = word(ctx, 0, "五十本")
-    counter_text(c, "书单 50 本", 820, 1020, 40, t50, t, tone=ink.OCHRE, a=a)
-    t12 = ctx.cue(1)
-    counter_text(c, "00:00", 300, 520, 72, t12, t, a=a * (1 - P(t, ctx.cue(2), 0.2)))
-    t7 = ctx.cue(2)
-    if t >= t7:
-        counter_text(c, "07:00", 300, 520, 72, t7, t, a=a)
-        tx = word(ctx, 2, "按掉")
-        ink.brush_path(c, [(200, 470), (400, 570)], 16, p=P(t, tx, 0.15), tone=ink.CINNABAR, alpha=a)
-        ink.brush_path(c, [(400, 470), (200, 570)], 16, p=P(t, tx + 0.12, 0.15), tone=ink.CINNABAR, alpha=a)
+    night(c, a * (1 - P(t, 1.2, 0.6)))
+    inner = art.phone(c, 540, 820, 0.7, a * (1 - P(t, 1.0, 0.5)), glow=0.6)
+    n = int(300 * EO(P(t, 0, 1.0)))
+    ink.label(c, f"收藏 {n}", inner.centerX(), inner.top() + 40, 32, alpha=a * (1 - P(t, 1.0, 0.5)))
+    for k in range(6):
+        art.fav_card(c, inner.centerX(), inner.top() + 110 + k * 62, inner.width() - 26, "干货",
+                     alpha=a * P(t, k * 0.1, 0.2) * (1 - P(t, 1.0, 0.5)))
+    t1, t2 = word(ctx, 0, "知道"), word(ctx, 0, "却依然")
+    ink.label(c, "为什么", 540, 470, 64, alpha=a * P(t, 1.0, 0.3), name="serif_black")
+    hanzi.write(c, "知道这么多道理", 540, 680, 128, hanzi.progress(t, max(1.0, t1), max(0.8, t2 - t1)), alpha=a)
+    hanzi.write(c, "却依然过不好这一生", 540, 940, 106, hanzi.progress(t, t2, ctx.end(0) - t2 + 0.3), color=ink.CINNABAR,
+                alpha=a)
 
 
-def d_hook_title(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    ink.bloom(c, 540, 700, 420, P(t, 0, 1.2), seed=3, alpha=0.12 * a)
-    t1 = word(ctx, 0, "为什么")
-    hanzi.write(c, "道理都懂", 540, 600, 190, hanzi.progress(t, 0.0, max(0.6, t1 - 0.1)), alpha=a)
-    ink.label(c, "为什么还是", 540, 880, 70, alpha=a * P(t, t1, 0.3), name="serif_black")
-    t2 = word(ctx, 0, "过不好")
-    hanzi.write(c, "过不好", 540, 1060, 200, hanzi.progress(t, t2, 0.9), color=ink.CINNABAR, alpha=a)
+# ================================================================ 第 2 节 · 解释原因
 
-
-def d_hook_bamboo(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    t_out = word(ctx, 0, "病倒")
-    off = 1 - P(t, t_out, 0.35)
-    night(c, a, 330, 790)
-    art.modern_bed_phone(c, 520, 760, 0.95, a, glow=off, t=t)
-    divider(c, 830, a, P(t, 0, 0.5))
-    bamboo_grove(c, 560, 1330, t, a * 0.9, n=6, h=480, seed=2)
-    ink.lamp(c, 430, 1290, t, 0.9, alpha=a * off + a * 0.15, glow=off)
-    k = P(t, t_out, 0.4)
-    art.scholar_seated(c, 260, 1330, 0.85, a * (1 - k), t=t)
-    art.figure_fallen(c, 270, 1330, 0.8, a * k)
-    ink.label(c, "21 岁", 860, 960, 46, tone=ink.CINNABAR, alpha=a * P(t, word(ctx, 0, "二十一岁"), 0.3))
-
-
-# ================================================================ 第 2 节 · 开放回路
-
-def d_loop_gewu(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    backdrop(c, t, a * 0.6)
-    art.books(c, 540, 1300, 1.2, n=int(2 + 4 * P(t, 0, 1.5)), alpha=a)
-    ink.label(c, "当时最权威的说法", 540, 420, 46, tone=ink.OCHRE, alpha=a * P(t, 0.2, 0.4), name="serif_medium")
-    tg = word(ctx, 1, "格")
-    hanzi.write(c, "格物", 540, 700, 230, hanzi.progress(t, tg - 0.3, 1.0), alpha=a)
-    tq = word(ctx, 1, "穷究")
-    ink.label(c, "格 ＝ 穷究", 540, 920, 52, tone=ink.CINNABAR, alpha=a * P(t, tq, 0.3))
-
-
-def d_loop_bamboo(ctx):
+def d_bamboo(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
     backdrop(c, t, a * 0.5, y=480)
-    art.pavilion(c, 300, 1250, 0.75, a * 0.85)
-    bamboo_grove(c, 620, 1260, t, a, n=7, h=620, seed=6, grow=EO(P(t, 0, 1.2)))
-    t3, t7 = word(ctx, 2, "三天"), word(ctx, 2, "第七天")
-    k1, k2 = P(t, t3 + 0.3, 0.4), P(t, t7 + 0.4, 0.4)
-    art.scholar_standing(c, 480, 1250, 0.6, a * (1 - k1), flip=False)
-    art.figure_fallen(c, 470, 1250, 0.5, a * k1)
-    art.scholar_standing(c, 560, 1250, 0.66, a * (1 - k2))
-    art.figure_fallen(c, 570, 1255, 0.55, a * k2)
-    counter_text(c, "3 天", 300, 640, 88, t3, t, a=a)
-    counter_text(c, "7 天", 760, 640, 110, t7, t, tone=ink.CINNABAR, a=a)
-    tq = ctx.cue(3)
-    ink.seal(c, "？", 540, 470, 120, t - (tq + 0.4), round_=True)
+    bamboo_grove(c, 560, 1260, t, a, n=7, h=620, seed=6, grow=EO(P(t, 0, 1.2)))
+    ink.label(c, "王阳明", 300, 470, 70, alpha=a * P(t, word(ctx, 0, "王阳明"), 0.3), name="serif_black")
+    t7, tb = word(ctx, 1, "七天"), word(ctx, 2, "病倒")
+    pop_text(c, "7 天", 790, 520, 120, t7, t, tone=ink.CINNABAR, a=a)
+    k = P(t, tb, 0.4)
+    art.scholar_standing(c, 380, 1260, 0.8, a * (1 - k))
+    art.figure_fallen(c, 380, 1265, 0.75, a * k)
+    pop_text(c, "圣贤做不得", 380, 760, 54, word(ctx, 2, "圣贤"), t, a=a)
 
 
-def d_loop_longchang(ctx):
+def d_exile(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    pan = EO(P(t, 0, ctx.dur)) * 900
-    c.save()
-    c.translate(-pan * 0.3, 0)
-    bamboo_grove(c, 160 - pan * 0.7, 1300, t, a * (1 - P(t, 0.5, 1.5)), n=5, h=520, seed=6)
-    c.restore()
-    backdrop(c, t, a, shift=pan, far=0.32, near=0.55)
-    art.cave(c, 1380 - pan, 1250, 120, 210, a)
-    glow = P(t, ctx.dur - 1.5, 1.0)
-    c.drawCircle(1380 - pan, 1160, 70, ink.paint((255, 205, 120), 0.5 * glow * a, blur=40))
-    t16 = word(ctx, 0, "十六年后")
-    counter_text(c, "十六年后", 540, 460, 76, t16, t, a=a)
-    tg = word(ctx, 0, "贵州龙场")
-    counter_text(c, "贵州 · 龙场", 540, 560, 52, tg, t, tone=ink.CINNABAR, a=a)
+    k_m = P(t, ctx.cue(1), 1.0)
+    backdrop(c, t, a * (0.3 + 0.5 * k_m), y=520, near=0.6)
+    for yy in (900, 1050, 1180):
+        ink.mist(c, t * 1.5, yy, 0.6 * a * k_m, seed=yy)
+    tl, tz = word(ctx, 0, "刘瑾"), word(ctx, 0, "四十廷杖")
+    pop_text(c, "刘瑾", 300, 430, 64, tl, t, a=a * (1 - P(t, ctx.cue(1), 0.3)))
+    pop_text(c, "廷杖四十", 760, 430, 64, tz, t, tone=ink.CINNABAR, a=a * (1 - P(t, ctx.cue(1), 0.3)))
+    pop_text(c, "贬 · 贵州龙场", 540, 560, 56, word(ctx, 0, "贵州龙场"), t, a=a)
+    pop_text(c, "瘴气弥漫", 540, 680, 46, word(ctx, 1, "瘴气"), t, tone=ink.OCHRE, a=a * (1 - P(t, ctx.cue(2), 0.3)),
+             name="serif_medium")
+    for k, (txt, w) in enumerate((("官", "官没了"), ("名", "名没了"), ("书", "书也没了"))):
+        tk = word(ctx, 2, w)
+        x = 300 + k * 240
+        pop_text(c, txt, x, 820, 130, tk - 0.15, t, a=a)
+        strike(c, x, 820, 150, tk + 0.25, t, a)
+    pop_text(c, "连命都可能保不住", 540, 1040, 50, word(ctx, 2, "连命"), t, tone=ink.CINNABAR, a=a)
 
 
-def d_loop_promise(ctx):
+def d_coffin(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    t1 = word(ctx, 0, "你缺的")
-    hanzi.write(c, "你缺的", 540, 640, 150, hanzi.progress(t, t1, 0.8), alpha=a)
-    t2 = word(ctx, 0, "不是")
-    hanzi.write(c, "不是道理", 540, 860, 170, hanzi.progress(t, t2, 1.2), alpha=a)
-    ta = word(ctx, 1, "答案")
-    ink.seal(c, "？", 840, 1080, 150, t - (ta + 0.2), round_=True)
-    ink.label(c, "答案在最后", 540, 1110, 50, tone=ink.OCHRE, alpha=a * P(t, ta, 0.3), name="serif_medium")
+    backdrop(c, t, a * 0.6, y=380, far=0.32, near=0.5)
+    art.cave(c, 360, 1210, 200, 360, a)
+    ink.lamp(c, 470, 1200, t, 0.7, alpha=a)
+    art.scholar_seated(c, 360, 1212, 0.62, a, tone=(70, 62, 54), t=t)
+    pop_text(c, "荣辱 · 看开", 760, 520, 50, word(ctx, 0, "荣辱"), t, a=a)
+    pop_text(c, "生死 · 未破", 760, 600, 50, word(ctx, 0, "生死"), t, tone=ink.CINNABAR, a=a)
+    tc = word(ctx, 1, "石棺")
+    k = P(t, tc - 0.2, 0.5)
+    art.coffin(c, 790, 1240, 0.9, a * k)
+    ink.label(c, "《年谱》：吾惟俟命而已", 790, 1310, 30, tone=ink.OCHRE, alpha=a * k, name="serif_medium")
 
 
-# ================================================================ 第 3 节 · 原典登场
-
-def d_src_cave(ctx):
+def d_care(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    backdrop(c, t, a, far=0.35, near=0.6, y=420)
-    art.cave(c, 540, 1260, 230, 420, a)
-    tj = word(ctx, 3, "跳起来")
-    jump = math.sin(math.pi * P(t, tj, 0.45)) * 60
-    flare = 1 + 1.6 * math.exp(-max(0.0, t - tj) * 2.5) * (t >= tj)
-    ink.lamp(c, 690, 1250, t, 0.8, alpha=a, glow=flare)
-    art.scholar_seated(c, 540, 1262 - jump, 0.72, a * 0.95, tone=(70, 62, 54), t=t)
-    if t >= tj:
-        k = math.exp(-(t - tj) * 1.8)
-        for r in range(14):
-            ang = math.pi * (1.05 + 0.9 * r / 13)
-            ln = 260 + 120 * math.sin(r * 2.3)
-            ink.brush_path(c, [(690 + math.cos(ang) * 60, 1220 + math.sin(ang) * 60),
-                               (690 + math.cos(ang) * ln, 1220 + math.sin(ang) * ln)], 10, p=P(t, tj, 0.25),
-                           tone=(255, 200, 120), alpha=0.55 * k * a, taper=True)
-    k = P(t, tj + 0.25, 0.3)
-    for k_, x in enumerate((180, 900)):
-        art.scholar_standing(c, x, 1300, 0.42, a * 0.75, flip=(x > 540), bow=0.6 * k)
-    tq = ctx.cue(2)
-    ink.label(c, "？", 540, 760, 110, tone=ink.CINNABAR, alpha=a * P(t, tq, 0.3) * (1 - P(t, tj, 0.3)))
-    ink.label(c, "龙场 · 今贵州修文", 540, 380, 40, tone=ink.OCHRE, alpha=a * P(t, 0.3, 0.5), name="serif_medium")
-
-
-def d_src_card1(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    backdrop(c, t, a * 0.35, y=420)
-    t0, t1 = ctx.cue(1), ctx.end(1)
-    p = P(t, t0 - 0.3, (t1 - t0) + 0.3)
-    up = EO(P(t, ctx.cue(2), 0.6))
-    ink.text_card(c, ["圣人之道", "吾性自足", "向之求理", "于事物者", "误也"], 540, 860 - up * 60, max(0.02, p),
-                  size=66, source="《年谱》· 正德三年（非《传习录》正文）", alpha=a)
-
-
-def d_src_xuai(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    backdrop(c, t, a * 0.4, y=300, far=0.25, near=0.35)
-    art.scholar_seated(c, 730, 780, 0.75, a, t=t)
-    art.scholar_standing(c, 330, 790, 0.72, a, bow=EO(P(t, ctx.cue(0), 0.6)))
-    ink.label(c, "徐爱", 330, 380, 40, tone=ink.CINNABAR, alpha=a * P(t, word(ctx, 0, "徐爱"), 0.3))
-    divider(c, 860, a)
-    night(c, a, 900, 1330)
-    art.modern_desk(c, 470, 1290, 0.95, a, glow=1.0)
-    q = "找得全吗？"
+    backdrop(c, t, a * 0.35, y=380, far=0.22, near=0.32)
+    art.figure_fallen(c, 250, 1150, 0.6, a * 0.75)
+    art.figure_fallen(c, 820, 1160, 0.6, a * 0.75)
+    art.congee_pot(c, 560, 1170, 0.9, t, a * P(t, word(ctx, 0, "熬粥") - 0.3, 0.4))
+    art.scholar_standing(c, 420, 1170, 0.75, a, bow=0.3)
+    for k, (txt, w) in enumerate((("砍柴", "砍柴"), ("挑水", "挑水"), ("熬粥", "熬粥"))):
+        pop_text(c, txt, 300 + k * 240, 520, 56, word(ctx, 0, w), t, a=a * (1 - P(t, ctx.cue(1), 0.3)))
+    pop_text(c, "唱歌 · 讲笑话", 540, 620, 44, word(ctx, 0, "唱歌"), t, tone=ink.OCHRE, a=a * (1 - P(t, ctx.cue(1), 0.3)),
+             name="serif_medium")
     tq = ctx.cue(1)
-    n = int(len(q) * P(t, tq, ctx.end(1) - tq))
-    ink.label(c, q[:n], 640, 1030, 40, alpha=a, name="serif_black")
+    ink.seal(c, "？", 540, 560, 150, t - (tq + 0.2), round_=True)
+    pop_text(c, "圣人到了这一步，会怎么办？", 540, 720, 46, tq + 0.4, t, a=a)
 
 
-def d_src_card2(ctx):
+def d_wake(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    t0, t1 = ctx.cue(1), ctx.end(1)
-    p = P(t, t0 - 0.3, (t1 - t0) + 0.3)
-    dim = P(t, ctx.cue(3), 0.5)
-    ink.text_card(c, ["心即理也", "天下又有", "心外之事", "心外之理乎"], 540, 820, max(0.02, p), size=70,
-                  source="《传习录·上》· 徐爱录", alpha=a * (1 - 0.5 * dim))
-    ink.seal(c, "心即理", 800, 1180, 170, t - (word(ctx, 2, "心的理") + 0.3))
-    ink.label(c, "最不玄的一句", 540, 1290, 46, tone=ink.CINNABAR, alpha=a * P(t, word(ctx, 3, "最不玄"), 0.3),
-              name="serif_black")
+    tj = word(ctx, 0, "跳起来")
+    t1, t2 = ctx.cue(1), ctx.cue(2)
+    out = P(t, t1, 0.4)
+    backdrop(c, t, a * 0.6 * (1 - out), y=380)
+    art.cave(c, 540, 1230, 220, 400, a * (1 - out))
+    flare = 1 + 1.6 * math.exp(-max(0.0, t - tj) * 2.5) * (t >= tj)
+    ink.lamp(c, 680, 1220, t, 0.8, alpha=a * (1 - out), glow=flare)
+    jump = math.sin(math.pi * P(t, tj, 0.45)) * 60
+    art.scholar_seated(c, 540, 1232 - jump, 0.7, a * (1 - out), tone=(70, 62, 54), t=t)
+    rays(c, 680, 1200, t, tj, a * (1 - out))
+    if t >= t1:
+        for k, txt in enumerate(("官", "名", "书")):
+            x = 300 + k * 240
+            ink.label(c, txt, x, 520, 90, alpha=a * 0.35 * (1 - P(t, t1 + 0.5 + k * 0.3, 0.6)))
+            strike(c, x, 520, 110, t1, t, a * 0.6 * (1 - P(t, t1 + 0.5 + k * 0.3, 0.6)))
+        th = word(ctx, 1, "善意")
+        ink.bloom(c, 540, 860, 160, P(t, th, 1.0), seed=7, tone=ink.CINNABAR, alpha=0.6 * a)
+        hanzi.write(c, "心", 540, 860, 180, hanzi.progress(t, th, 0.6), color=ink.PAPER, alpha=a)
+        pop_text(c, "善意，一点没少", 540, 1100, 56, th + 0.3, t, tone=ink.CINNABAR, a=a * (1 - P(t, t2, 0.3)))
+    if t >= t2:
+        ink.text_card(c, ["圣人之道", "吾性自足"], 540, 1130, P(t, t2, 1.2), size=58, source="《年谱》", alpha=a)
 
 
-# ================================================================ 第 4 节 · 深讲
-
-def d_deep_zhuxi(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    ink.label(c, "朱熹", 540, 400, 64, alpha=a * P(t, 0.1, 0.3))
-    ink.label(c, "《大学章句》", 540, 470, 32, tone=ink.OCHRE, alpha=a * P(t, 0.2, 0.3), name="serif_medium")
-    stack = int(1 + 7 * EO(P(t, ctx.cue(1), ctx.end(1) - ctx.cue(1))))
-    art.books(c, 330, 1180, 1.0, n=stack, alpha=a)
-    th = word(ctx, 1, "豁然贯通")
-    ink.label(c, "豁然贯通", 330, 700, 60, tone=ink.CINNABAR, alpha=a * P(t, th, 0.3))
-    inner = art.phone(c, 790, 880, 0.62, a * P(t, ctx.cue(2), 0.3), glow=0.4)
-    tp = ctx.cue(2)
-    n = int(300 * EO(P(t, tp, ctx.end(2) - tp)))
-    if t >= tp:
-        ink.label(c, f"收藏 {n}", inner.centerX(), inner.top() + 40, 30, alpha=a)
-        for k in range(6):
-            art.fav_card(c, inner.centerX(), inner.top() + 110 + k * 62, inner.width() - 26, "干货", alpha=a * P(t, tp + k * 0.12, 0.2))
-
-
-def d_deep_reverse(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    tf = word(ctx, 0, "方向反了")
-    hanzi.write(c, "反", 540, 800, 420, hanzi.progress(t, tf, 0.7), alpha=a)
-    k = EO(P(t, tf + 0.4, 0.5))
-    ink.brush_path(c, ink.smooth([(260, 1180), (540, 1100 - 120 * k), (820, 1180)], 30), 18, p=k, tone=ink.CINNABAR,
-                   alpha=a)
-
-
-def d_deep_xiao(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    backdrop(c, t, a * 0.3, y=420, far=0.2, near=0.3)
-    art.scholar_seated(c, 720, 1100, 0.85, a * 0.8, tone=(80, 72, 64), t=t)
-    art.scholar_standing(c, 360, 1110, 0.8, a, bow=0.7)
-    tf = word(ctx, 0, "父亲身上")
-    ink.label(c, "孝的道理 · 在父亲身上？", 540, 430, 44, alpha=a * P(t, tf, 0.3) * (1 - P(t, ctx.cue(1), 0.3)),
-              name="serif_black")
-    th = word(ctx, 1, "心里")
-    ink.bloom(c, 390, 860, 90, P(t, th, 0.8), seed=6, tone=ink.CINNABAR, alpha=0.6 * a)
-    hanzi.write(c, "心", 390, 860, 120, hanzi.progress(t, th, 0.6), color=ink.PAPER, alpha=a)
-    tw, ts = word(ctx, 2, "冬天"), word(ctx, 2, "夏天")
-    counter_text(c, "冬 · 怕冷", 300, 430, 50, tw, t, a=a)
-    counter_text(c, "夏 · 怕热", 780, 430, 50, ts, t, a=a)
-
-
-def d_deep_tree(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    tg = word(ctx, 0, "根")
-    tz = word(ctx, 0, "枝叶")
-    t1 = ctx.cue(1)
-    roots = EO(P(t, tg - 0.2, 1.0)) if t < t1 else 1.0
-    br = EO(P(t, tz, 1.0)) if t < t1 else EO(P(t, word(ctx, 1, "才有枝叶"), 1.0))
-    if t < t1:
-        br = min(br, 0.35)
-    art.tree(c, 540, 1060, 1.1, roots, max(br, 0.0), P(t, word(ctx, 1, "才有枝叶") + 0.6, 0.8), a)
-    ink.label(c, "根", 360, 1220, 56, tone=ink.CINNABAR, alpha=a * P(t, tg, 0.3))
-    ink.label(c, "枝叶", 780, 520, 56, tone=ink.CINNABAR, alpha=a * P(t, tz, 0.3))
-    ink.text_card(c, ["这诚孝的心", "便是根", "许多条件", "便是枝叶"], 840, 1180, P(t, tg - 0.2, 1.2), size=34,
-                  source="《传习录·上》", alpha=a * 0.95)
-
-
-def d_deep_drop(ctx):
+def d_gold(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
     ink.bloom(c, 540, 820, 520, P(t, 0, 1.0), seed=9, alpha=0.1 * a)
-    tx = word(ctx, 0, "心即理")
-    hanzi.write(c, "心即理", 540, 820, 270, hanzi.progress(t, tx - 0.25, 1.3), alpha=a)
-    ink.seal(c, "阳明", 860, 1050, 130, t - (tx + 1.1))
+    ink.label(c, "道理从来不在竹子上", 540, 520, 58, alpha=a * P(t, 0.0, 0.3), name="serif_black")
+    pop_text(c, "就在自己心里", 540, 620, 64, word(ctx, 0, "就在"), t, tone=ink.CINNABAR, a=a)
+    tx = word(ctx, 1, "心即理")
+    hanzi.write(c, "心即理", 540, 900, 250, hanzi.progress(t, tx - 0.2, 1.1), alpha=a)
+    ink.seal(c, "心即理", 860, 1140, 150, t - (tx + 1.0))
 
 
-def d_deep_pot(ctx):
+def d_why(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    tw = word(ctx, 1, "活不了")
-    wither = P(t, tw, 1.0)
-    art.pot(c, 540, 1120, 1.3, a)
-    ink.label(c, "300", 540, 1230, 64, tone=ink.PAPER, alpha=a * 0.9)
-    rng = np.random.default_rng(3)
-    t300 = word(ctx, 0, "三百片")
-    n = int(16 * EO(P(t, ctx.cue(0), t300 - ctx.cue(0) + 0.5)))
-    for k in range(n):
-        ang = rng.uniform(-40, 40)
-        droop = wither * rng.uniform(20, 55) * (1 if ang > 0 else -1)
-        x = 540 + rng.uniform(-150, 150)
-        y = 1060 - rng.uniform(40, 360) + wither * 80
-        art.fav_card(c, x, y, 190, "干货", alpha=a * (1 - 0.65 * wither), rot=ang + droop,
-                     tone=gfx.mix(ink.INK, (150, 140, 120), wither))
-    ink.label(c, "根没种下", 540, 470, 64, tone=ink.CINNABAR, alpha=a * P(t, ctx.cue(1), 0.3), name="serif_black")
+    t0, t1 = ctx.cue(0), ctx.cue(1)
+    pop_text(c, "不是懂得太少", 540, 470, 58, word(ctx, 0, "不是懂得太少"), t, a=a)
+    rng = np.random.default_rng(5)
+    ko = EO(P(t, word(ctx, 1, "往外找"), 1.2))
+    for k in range(10):
+        ang = rng.uniform(0, 2 * math.pi)
+        d = 80 + ko * rng.uniform(220, 420)
+        art.fav_card(c, 540 + math.cos(ang) * d, 820 + math.sin(ang) * d * 0.7, 160, "干货", alpha=a * (1 - 0.7 * ko),
+                     rot=rng.uniform(-30, 30))
+    pop_text(c, "往外找 ×", 300, 1150, 54, word(ctx, 1, "往外找"), t, tone=ink.INK, a=a)
+    tg = word(ctx, 1, "扎根")
+    pop_text(c, "在心里扎根 √", 770, 1150, 54, tg, t, tone=ink.CINNABAR, a=a)
+    art.tree(c, 540, 820, 0.5, EO(P(t, tg, 1.0)), 0.0, 0.0, a * 0.8)
 
 
-# ================================================================ 第 5 节 · 现代对照
+# ================================================================ 第 3 节 · 当下实例
 
-def d_mod_lab(ctx):
+def d_root(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    ink.label(c, "1971 · 心理学家 德西（Deci）", 540, 400, 40, tone=ink.OCHRE, alpha=a * P(t, ctx.cue(1), 0.3),
+    tg, tz = word(ctx, 0, "真心是根"), word(ctx, 0, "枝叶")
+    art.tree(c, 540, 1010, 0.8, EO(P(t, tg, 1.0)), EO(P(t, tz, 1.0)), P(t, tz + 0.6, 0.8), a)
+    pop_text(c, "做法 ＝ 枝叶", 540, 420, 58, tz, t, a=a)
+    pop_text(c, "真心 ＝ 根", 540, 1320, 58, tg, t, tone=ink.CINNABAR, a=a)
+
+
+def d_wang(ctx):
+    c, t, a = ctx.c, ctx.t, env(ctx)
+    night(c, a * 0.6, 360, 1320, tone=(120, 110, 90), alpha=0.15)
+    art.courier(c, 540, 1250, 1.3, a, t=t)
+    pop_text(c, "王计兵 · 外卖员", 540, 440, 60, word(ctx, 0, "王计兵"), t, a=a)
+    for k, (txt, w, x, y) in enumerate((("初中没念完", "初中", 280, 600), ("木工", "木工", 820, 600),
+                                        ("摆地摊", "地摊", 250, 760), ("捡破烂", "破烂", 830, 760))):
+        pop_text(c, txt, x, y, 46, word(ctx, 1, w), t, tone=ink.OCHRE, a=a, name="serif_black")
+    pop_text(c, "心里一直有话想说", 540, 1340, 50, word(ctx, 2, "心里"), t, tone=ink.CINNABAR, a=a)
+
+
+def d_stairs(ctx):
+    c, t, a = ctx.c, ctx.t, env(ctx)
+    t0, t1 = ctx.cue(0), ctx.end(0)
+    climb = P(t, t0, t1 - t0)
+    art.stairs(c, 140, 1250, 1.0, 9, a * 0.8)
+    cx = 180 + climb * 560
+    cy = 1250 - climb * 400
+    art.courier(c, cx, cy, 0.7, a, climb=1.0 if climb < 1 else 0.0, t=t)
+    floor = 1 + int(17 * climb)
+    pop_text(c, f"{floor} 层", 820, 470, 110, t0, t, tone=ink.CINNABAR if floor == 18 else ink.INK, a=a)
+    tf = word(ctx, 0, "罚了款")
+    ink.seal(c, "罚款", 880, 900, 130, t - (tf + 0.1))
+    art.cig_box(c, 300, 600, 0.9, 5, P(t, ctx.cue(1), ctx.end(1) - ctx.cue(1) + 0.5), a * P(t, ctx.cue(1) - 0.2, 0.3))
+
+
+def d_book(ctx):
+    c, t, a = ctx.c, ctx.t, env(ctx)
+    tb = word(ctx, 1, "二〇二三年")
+    k = P(t, tb, 0.5)
+    rng = np.random.default_rng(2)
+    for i in range(7):
+        q = P(t, i * 0.35, 0.3)
+        x, y = 540 + rng.uniform(-300, 300) * (1 - k), 800 + rng.uniform(-260, 260) * (1 - k)
+        if i % 2:
+            art.cig_box(c, x, y, 0.55, 4, 1.0, a * q * (1 - k), rot=rng.uniform(-20, 20), seed=i)
+        else:
+            c.save()
+            c.translate(x, y)
+            c.rotate(rng.uniform(-15, 15))
+            c.drawRect(skia.Rect.MakeXYWH(-150, -100, 300, 200), ink.paint((222, 214, 196), a * q * (1 - k)))
+            for j in range(5):
+                c.drawLine(-130, -70 + j * 34, 130, -70 + j * 34, ink.paint(ink.INK, 0.25 * a * q * (1 - k), stroke=4))
+            c.restore()
+    ink.label(c, "烟盒 · 废报纸", 540, 470, 50, tone=ink.OCHRE, alpha=a * P(t, word(ctx, 0, "烟盒"), 0.3) * (1 - k),
               name="serif_medium")
-    tm = word(ctx, 2, "给钱")
-    to = word(ctx, 3, "离开房间")
-    tr = ctx.cue(4)
-    stop = P(t, tr, 0.5)
-    art.student_at_table(c, 330, 1150, 0.9, a, playing=1 - stop, t=t, coin=P(t, tm, 0.3))
-    art.student_at_table(c, 780, 1150, 0.9, a, playing=1.0, t=t)
-    ink.label(c, "有钱组", 330, 1230, 38, alpha=a * P(t, tm, 0.3))
-    ink.label(c, "无钱组", 780, 1230, 38, alpha=a * P(t, word(ctx, 2, "另一组"), 0.3))
-    art.door(c, 980, 800, 0.6, P(t, to, 0.4), a * P(t, ctx.cue(3) - 0.3, 0.3))
-    ink.label(c, "没人要求的时候", 540, 560, 50, tone=ink.CINNABAR, alpha=a * P(t, word(ctx, 3, "没人要求"), 0.3) * (1 - stop),
-              name="serif_black")
-    ink.label(c, "玩得更少", 330, 560, 56, tone=ink.CINNABAR, alpha=a * P(t, word(ctx, 4, "更少"), 0.3), name="serif_black")
+    art.book_cover(c, 540, 860, 1.1, "赶时间的人", "一个外卖员的诗", a * k)
+    pop_text(c, "2023 · 第一本诗集", 540, 1180, 50, tb, t, tone=ink.CINNABAR, a=a)
 
 
-def d_mod_meta(ctx):
+def d_heart(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    tn = word(ctx, 0, "一百二十八")
-    n = int(128 * EO(P(t, tn - 0.3, 0.8)))
-    ink.label(c, f"{n}", 540, 720, 200, alpha=a * P(t, tn - 0.3, 0.2))
-    ink.label(c, "项研究汇总", 540, 880, 50, alpha=a * P(t, tn, 0.3), name="serif_black")
-    ink.label(c, "Deci, Koestner & Ryan, 1999", 540, 960, 30, tone=ink.OCHRE, alpha=a * P(t, tn, 0.3),
-              name="serif_medium")
-    tc = ctx.cue(1)
-    ink.label(c, "反方：Cameron & Pierce, 1994", 540, 1130, 36, tone=ink.CINNABAR, alpha=a * P(t, tc, 0.3),
-              name="serif_medium")
-    ink.label(c, "争论至今", 540, 1200, 44, alpha=a * P(t, word(ctx, 1, "争论"), 0.3), name="serif_black")
+    tx, tj = word(ctx, 1, "想写的那颗心"), word(ctx, 1, "技巧")
+    art.tree(c, 540, 1010, 0.8, EO(P(t, tx, 1.0)), EO(P(t, tj, 1.5)), P(t, tj + 1.0, 0.8), a)
+    pop_text(c, "先学技巧？", 540, 420, 54, ctx.cue(0), t, a=a * (1 - P(t, ctx.cue(1), 0.3)))
+    strike(c, 540, 420, 280, ctx.cue(1), t, a * (1 - P(t, ctx.cue(1) + 0.6, 0.3)))
+    pop_text(c, "技巧慢慢长出来", 540, 420, 54, tj, t, a=a)
+    pop_text(c, "先有想写的心", 540, 1320, 56, tx, t, tone=ink.CINNABAR, a=a)
 
 
-def d_mod_root(ctx):
+# ================================================================ 第 4 节 · 升华前行
+
+def d_compare(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    tz, tg = word(ctx, 0, "枝叶"), word(ctx, 0, "根")
-    art.tree(c, 540, 980, 0.9, EO(P(t, tg, 0.8)), 1.0, 1.0, a)
-    ink.label(c, "外面的奖励 ＝ 枝叶", 540, 450, 54, alpha=a * P(t, tz, 0.3), name="serif_black")
-    ink.label(c, "自己想做的心 ＝ 根", 540, 1250, 54, tone=ink.CINNABAR, alpha=a * P(t, tg, 0.3), name="serif_black")
+    t2 = ctx.cue(2)
+    k = P(t, t2, 0.5)
+    art.cave(c, 300, 900, 120, 220, a * (1 - k))
+    art.scholar_seated(c, 300, 902, 0.42, a * (1 - k), tone=(70, 62, 54), t=t)
+    art.stairs(c, 620, 900, 0.6, 5, a * 0.8 * (1 - k))
+    art.courier(c, 700, 860, 0.55, a * (1 - k), t=t)
+    pop_text(c, "根扎得很深", 540, 1120, 56, word(ctx, 1, "根"), t, tone=ink.CINNABAR, a=a * (1 - k))
+    if t >= t2:
+        night(c, a * k)
+        art.modern_bed_phone(c, 420, 1180, 1.15, a * k, glow=1.0, t=t)
+        pop_text(c, "手里什么都有", 540, 470, 60, word(ctx, 2, "手里"), t, a=a)
+        pop_text(c, "心里空落落", 540, 570, 60, word(ctx, 2, "心里"), t, tone=ink.CINNABAR, a=a)
 
 
-# ================================================================ 第 6 节 · 误读与边界
-
-def d_mis_dust(ctx):
+def d_life(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    ink.seal(c, "误读", 540, 470, 150, t - (ctx.cue(0) + 0.3))
-    tno = ctx.cue(2)
-    dust = P(t, ctx.cue(1), 0.8) * (1 - P(t, tno + 0.3, 0.5))
-    art.scholar_seated(c, 360, 1150, 0.85, a, t=t)
-    art.books(c, 760, 1150, 0.9, n=4, alpha=a, dust=dust, t=t)
-    ink.label(c, "凭感觉？", 360, 700, 54, alpha=a * P(t, word(ctx, 1, "凭感觉"), 0.3) * (1 - P(t, tno, 0.2)),
-              name="serif_black")
-    if t >= tno:
-        ink.brush_path(c, [(250, 640), (470, 760)], 16, p=P(t, tno, 0.15), tone=ink.CINNABAR, alpha=a)
-        ink.brush_path(c, [(470, 640), (250, 760)], 16, p=P(t, tno + 0.1, 0.15), tone=ink.CINNABAR, alpha=a)
-    tr = ctx.cue(3)
-    ink.label(c, "只学枝叶、不种根", 540, 1290, 50, tone=ink.CINNABAR, alpha=a * P(t, tr, 0.3), name="serif_black")
+    t1, t2 = ctx.cue(1), ctx.cue(2)
+    k1, k2 = P(t, t1, 0.3), P(t, t2, 0.3)
+    art.subway(c, 540, 1250, 1.0, a * (1 - k1), t=t)
+    ts = word(ctx, 0, "收藏")
+    if t >= ts:
+        ink.seal(c, "收藏", 760, 860, 110, t - ts)
+    if t >= t1:
+        art.progress_bar(c, 540, 600, 520, 1 / 30, "第 1 节 / 共 30 节", a * k1 * (1 - k2))
+        art.books(c, 540, 1100, 1.2, n=4, alpha=a * k1 * (1 - k2))
+        pop_text(c, "塑封未拆", 540, 1180, 50, word(ctx, 1, "塑封"), t, tone=ink.CINNABAR, a=a * (1 - k2))
+    if t >= t2:
+        night(c, a * k2)
+        art.modern_bed_phone(c, 420, 1180, 1.15, a * k2, glow=0.3, t=t)
+        tm = word(ctx, 2, "明天一定改")
+        pop_text(c, "明天一定改", 540, 500, 70, tm, t, a=a)
+        tz = word(ctx, 2, "一切照旧")
+        strike(c, 540, 500, 380, tz, t, a)
+        pop_text(c, "一切照旧", 540, 620, 50, tz + 0.2, t, tone=ink.OCHRE, a=a, name="serif_medium")
 
 
-def d_mis_life(ctx):
+def d_hug(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    t1, t2, t3 = word(ctx, 0, "读书"), word(ctx, 0, "讲学"), word(ctx, 0, "带兵")
-    k1, k2, k3 = P(t, t1, 0.25), P(t, t2, 0.25), P(t, t3, 0.25)
-    art.books(c, 270, 900, 0.8, n=3, alpha=a * k1)
-    ink.label(c, "读书", 270, 1000, 50, alpha=a * k1, name="serif_black")
-    art.lectern(c, 560, 860, 0.45, a * k2)
-    ink.label(c, "讲学", 560, 1060, 50, alpha=a * k2, name="serif_black")
-    art.banner(c, 780, 1150, 0.55, t, a * k3, char="兵")
-    ink.label(c, "带兵", 880, 1220, 50, tone=ink.CINNABAR, alpha=a * k3, name="serif_black")
+    t1, t2 = ctx.cue(1), ctx.cue(2)
+    warm = P(t, 0, 0.8) * (1 - P(t, t1, 0.4))
+    c.drawCircle(540, 820, 520, ink.paint((255, 220, 170), 0.35 * warm * a, blur=120))
+    hanzi.write(c, "你不是不努力", 540, 760, 130, hanzi.progress(t, 0.1, ctx.end(0) * 0.55), alpha=a * (1 - P(t, t1, 0.3)))
+    pop_text(c, "只是太累了，又太怕落后", 540, 960, 50, word(ctx, 0, "太累"), t, tone=ink.CINNABAR, a=a * (1 - P(t, t1, 0.3)))
+    if t >= t1:
+        k = P(t, t1, 0.3) * (1 - P(t, t2, 0.3))
+        art.pot(c, 540, 1100, 1.2, a * k)
+        rng = np.random.default_rng(3)
+        n = int(14 * EO(P(t, word(ctx, 1, "塞道理"), 1.2)))
+        for i in range(n):
+            art.fav_card(c, 540 + rng.uniform(-140, 140), 1050 - rng.uniform(40, 340), 170, "道理", alpha=a * k,
+                         rot=rng.uniform(-40, 40))
+        pop_text(c, "往空花盆里插枝叶", 540, 470, 54, word(ctx, 1, "空花盆"), t, a=a * k)
+    if t >= t2:
+        k = P(t, t2, 0.3)
+        ink.bloom(c, 540, 820, 140, P(t, word(ctx, 2, "问问自己的心"), 1.0), seed=4, tone=ink.CINNABAR, alpha=0.55 * a)
+        pop_text(c, "你到底想要什么？", 540, 1080, 60, word(ctx, 2, "你到底"), t, a=a * k)
 
 
-def d_mis_gu(ctx):
+def d_task(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    k = P(t, ctx.cue(2), 0.6)
-    for x in (330, 750):
-        art.scholar_seated(c, x, 1150, 0.7, a * (1 - 0.6 * k), t=t)
-    ink.label(c, "空谈", 540, 760, 70, alpha=a * P(t, word(ctx, 0, "空谈"), 0.3) * (1 - k), name="serif_black")
-    ink.label(c, "顾炎武", 540, 420, 52, alpha=a * P(t, word(ctx, 1, "顾炎武"), 0.3))
-    ink.text_card(c, ["以明心见性之空言", "代修己治人之实学"], 540, 880, P(t, ctx.cue(2) - 0.2, 1.0), size=48,
-                  source="顾炎武《日知录》", alpha=a * k)
-
-
-def d_mis_gold(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    tx = word(ctx, 0, "从心出发")
-    ink.label(c, "不是停在心里", 540, 560, 54, alpha=a * P(t, word(ctx, 0, "停在心里"), 0.3), name="serif_black")
-    hanzi.write(c, "从心出发", 540, 860, 190, hanzi.progress(t, tx - 0.1, 1.2), alpha=a)
-    ink.seal(c, "心即理", 840, 1110, 120, t - (tx + 1.2))
-
-
-# ================================================================ 第 7 节 · 今日功课
-
-def d_hw_answer(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    ink.label(c, "你缺的，是什么？", 540, 460, 60, alpha=a * P(t, 0.0, 0.3) * (1 - 0.5 * P(t, ctx.cue(1), 0.3)),
-              name="serif_black")
-    tg = word(ctx, 1, "一条根")
-    hanzi.write(c, "根", 540, 780, 300, hanzi.progress(t, tg, 0.8), color=ink.CINNABAR, alpha=a)
-    art.tree(c, 540, 1080, 0.6, EO(P(t, tg + 0.5, 1.2)), 0.0, 0.0, a * 0.8)
-    ink.label(c, "你自己真心想要的那件事", 540, 1250, 46, alpha=a * P(t, word(ctx, 1, "真心想要"), 0.3), name="serif_black")
-
-
-def d_hw_task(ctx):
-    c, t, a = ctx.c, ctx.t, env(ctx)
-    ink.seal(c, "今日功课", 230, 470, 160, t - (ctx.cue(0) + 0.2))
-    ink.label(c, "五分钟", 230, 620, 44, tone=ink.CINNABAR, alpha=a * P(t, word(ctx, 0, "五分钟"), 0.3), name="serif_black")
-    steps = ["① 打开收藏夹", "② 只挑一篇", "③ 写一句：我为什么想要它"]
-    times = [ctx.cue(1), word(ctx, 1, "只挑一篇"), ctx.cue(2)]
-    for k, (txt, tk) in enumerate(zip(steps, times)):
-        ink.label(c, txt, 110, 760 + k * 80, 38, alpha=a * P(t, tk, 0.3), name="serif_black", align="left")
-    inner = art.phone(c, 790, 1000, 0.62, a, glow=0.4)
-    tsel = word(ctx, 1, "只挑一篇")
-    left = 300 - int(299 * EO(P(t, tsel, 1.0)))
-    ink.label(c, f"收藏 {left}", inner.centerX(), inner.top() + 40, 30, alpha=a)
-    shown = 5 if t < tsel else max(1, 5 - int(5 * P(t, tsel, 0.8)))
+    ink.seal(c, "今日功课", 230, 480, 160, t - (ctx.cue(0) + 0.1))
+    inner = art.phone(c, 760, 900, 0.7, a, glow=0.4)
+    tsel = word(ctx, 0, "挑一条")
+    left = 300 - int(299 * EO(P(t, tsel, 0.8)))
+    ink.label(c, f"收藏 {left}", inner.centerX(), inner.top() + 40, 32, alpha=a)
+    shown = 5 if t < tsel else max(1, 5 - int(5 * P(t, tsel, 0.6)))
     for k in range(shown):
         art.fav_card(c, inner.centerX(), inner.top() + 110 + k * 62, inner.width() - 26, "干货" if k else "我最想做到的",
                      alpha=a)
-    tw = ctx.cue(2)
-    if t >= tw:
-        hanzi.write(c, "我为什么想要它", inner.centerX(), inner.top() + 220, 26, hanzi.progress(t, tw, 1.6), alpha=a)
-    tok = ctx.cue(3)
-    ink.label(c, "写得出来 → 根种下了", 540, 1300, 42, tone=ink.CINNABAR, alpha=a * P(t, tok, 0.3), name="serif_black")
+    tw = word(ctx, 0, "我为什么想要它")
+    ink.label(c, "我为什么想要它？", 300, 900, 46, alpha=a * P(t, tw, 0.4), name="serif_black")
+    pop_text(c, "做一小步", 300, 1060, 64, word(ctx, 1, "一小步"), t, tone=ink.CINNABAR, a=a)
 
 
-def d_hw_next(ctx):
+def d_fire1(ctx):
+    c, t, a = ctx.c, ctx.t, env(ctx, fade_in=0.1, fade_out=0.15)
+    t1, t2 = ctx.cue(1), ctx.cue(2)
+    if t < t1:
+        pop_text(c, "别等准备好", 540, 640, 96, 0.0, t, a=a)
+        pop_text(c, "别等道理攒够", 540, 820, 96, word(ctx, 0, "别等道理"), t, tone=ink.CINNABAR, a=a)
+    elif t < t2:
+        backdrop(c, t, a * 0.7, y=380)
+        art.cave(c, 540, 1230, 220, 400, a)
+        tf = word(ctx, 1, "翻过来")
+        jump = math.sin(math.pi * P(t, tf, 0.45)) * 80
+        art.scholar_standing(c, 540, 1232 - jump, 0.75, a, tone=(70, 62, 54))
+        rays(c, 540, 1000, t, tf, a, r1=420)
+        pop_text(c, "把命运翻过来", 540, 470, 70, tf, t, tone=ink.CINNABAR, a=a)
+    else:
+        tk = word(ctx, 2, "多得多")
+        art.window(c, 540, 900, 1.15, EO(P(t, t2, 0.6)), a, light=P(t, t2 + 0.2, 0.6))
+        pop_text(c, "比他多得多！", 540, 460, 84, tk, t, tone=ink.CINNABAR, a=a)
+
+
+def d_fire2(ctx):
+    c, t, a = ctx.c, ctx.t, env(ctx, fade_in=0.1)
+    t1, t2 = ctx.cue(1), ctx.cue(2)
+    sun = P(t, t1, 0.6)
+    c.drawCircle(540, 760, 700, ink.paint((255, 214, 150), 0.45 * sun * a, blur=160))
+    if t < t2:
+        art.tree(c, 540, 820, 1.0, EO(P(t, 0, 1.0)), EO(P(t, 0.4, 1.0)), 1.0, a * (1 - 0.5 * sun))
+        pop_text(c, "根扎下了，路就在脚下", 540, 1180, 56, 0.0, t, a=a * (1 - sun))
+        rays(c, 540, 820, t, t1, a, n=18, r1=600, spread=1.0)
+        pop_text(c, "心亮起来，人就站起来！", 540, 1180, 60, word(ctx, 1, "心亮起来"), t, tone=ink.CINNABAR, a=a)
+    else:
+        tg = word(ctx, 2, "出发")
+        hanzi.write(c, "出发", 540, 820, 330, hanzi.progress(t, tg - 0.15, 0.7), alpha=a)
+        ink.seal(c, "心即理", 860, 1110, 170, t - (tg + 0.7))
+        ink.brush_path(c, ink.smooth([(200, 1300), (540, 1250), (880, 1180)], 30), 22, p=P(t, tg + 0.3, 0.5),
+                       tone=ink.CINNABAR, alpha=a)
+
+
+def d_next(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx, fade_out=1.0)
-    dawn = P(t, 0, 2.0)
-    c.drawRect(skia.Rect.MakeLTRB(0, 300, gfx.W, 1350), ink.paint((255, 236, 200), 0.18 * dawn * a, blur=60))
+    dawn = P(t, 0, 1.5)
+    c.drawRect(skia.Rect.MakeLTRB(0, 300, gfx.W, 1350), ink.paint((255, 236, 200), 0.2 * dawn * a, blur=60))
     backdrop(c, t, a * 0.8, y=420)
-    art.cave(c, 880, 1300, 70, 130, a * 0.8)
-    tk = word(ctx, 1, "知行合一")
-    ink.label(c, "下一讲", 540, 560, 44, tone=ink.OCHRE, alpha=a * P(t, ctx.cue(1), 0.3), name="serif_medium")
-    hanzi.write(c, "知行合一", 540, 760, 170, hanzi.progress(t, tk, 1.2), alpha=a)
-    ink.label(c, "知道却不去做，就是还不知道", 540, 1000, 42, alpha=a * P(t, ctx.cue(2), 0.4), name="serif_black")
-    ink.seal(c, "心即理", 200, 1180, 170, t - (word(ctx, 2, "还不知道") + 0.6))
+    tk = word(ctx, 0, "知行合一")
+    ink.label(c, "下一讲", 540, 520, 44, tone=ink.OCHRE, alpha=a * P(t, 0.1, 0.3), name="serif_medium")
+    ink.label(c, "知道却做不到，怎么办？", 540, 610, 50, alpha=a * P(t, 0.2, 0.3), name="serif_black")
+    hanzi.write(c, "知行合一", 540, 820, 170, hanzi.progress(t, tk, 1.1), alpha=a)
 
 
 def scenes():
     hanzi.prepare(CALLI)
     S = E.scene
     return [
-        S("hook_fav", 1, [0, 1, 2], d_hook_fav, [("ding", 0, "三百篇", 0.0), ("muyu", 2, "按掉", 0.0)],
-          marks={0: ("三百篇",)}),
-        S("hook_title", 1, [3], d_hook_title, [("dagu", 0, None, 0.0)], marks={0: ("过不好",)}),
-        S("hook_bamboo", 1, [4], d_hook_bamboo, [("tanggu", 0, "病倒", 0.0)], marks={0: ("病倒",)}),
-        S("loop_gewu", 2, [0, 1], d_loop_gewu, [("bangzi", 1, "格", 0.0)], marks={1: ("穷究",)}),
-        S("loop_bamboo", 2, [2, 3, 4, 5], d_loop_bamboo,
-          [("tanggu", 2, "三天", 0.3), ("dagu", 2, "第七天", 0.4)], marks={1: ("日夜苦想",)}),
-        S("loop_longchang", 2, [6], d_loop_longchang, [("daluo", 0, "贵州龙场", 0.0)]),
-        S("loop_promise", 2, [7, 8], d_loop_promise, [("dagu", 1, "答案", 0.2)], marks={0: ("更多的道理",)}),
-        S("src_cave", 3, [0, 1, 2, 3], d_src_cave, [("bangzi", 3, "跳起来", 0.0)]),
-        S("src_card1", 3, [4, 5, 6], d_src_card1, [("muyu", 1, None, -0.3)], marks={2: ("找错了",)}),
-        S("src_xuai", 3, [7, 8], d_src_xuai, [], marks={1: ("找得全吗",)}),
-        S("src_card2", 3, [9, 10, 11, 12], d_src_card2, [("muyu", 1, None, -0.3), ("dagu", 2, "心的理", 0.3)],
-          marks={2: ("就在心里",)}),
-        S("deep_zhuxi", 4, [0, 1, 2], d_deep_zhuxi, [], marks={1: ("豁然贯通",)}),
-        S("deep_reverse", 4, [3], d_deep_reverse, [("daluo", 0, "方向反了", 0.0)], marks={0: ("方向反了",)}),
-        S("deep_xiao", 4, [4, 5, 6], d_deep_xiao, [("bianzhong", 1, "心里", 0.0)], marks={1: ("想对爸妈好的心",)}),
-        S("deep_tree", 4, [7, 8], d_deep_tree, [("tanggu", 0, "根", 0.0)], marks={0: ("真心是根",)}),
-        S("deep_drop", 4, [9], d_deep_drop, [("dagu", 0, "心即理", 0.0)], marks={0: ("心即理",)}),
-        S("deep_pot", 4, [10, 11], d_deep_pot, [("tanggu", 1, "活不了", 0.0)], marks={1: ("活不了",)}),
-        S("mod_lab", 5, [0, 1, 2, 3, 4], d_mod_lab, [("muyu", 3, "离开房间", 0.0), ("tanggu", 4, "更少", 0.0)],
-          marks={4: ("更少",)}),
-        S("mod_meta", 5, [5, 6], d_mod_meta, [("dagu", 0, "一百二十八", 0.0)], marks={1: ("被夸大",)}),
-        S("mod_root", 5, [7], d_mod_root, [("bianzhong", 0, "根", 0.0)], marks={0: ("才是根",)}),
-        S("mis_dust", 6, [0, 1, 2, 3], d_mis_dust, [("daluo", 0, None, 0.3), ("bangzi", 2, None, 0.0)],
-          marks={3: ("只学枝叶",)}),
-        S("mis_life", 6, [4], d_mis_life, [("muyu", 0, "读书", 0.0), ("muyu", 0, "讲学", 0.0), ("tanggu", 0, "带兵", 0.0)]),
-        S("mis_gu", 6, [5, 6, 7], d_mis_gu, [("daluo", 2, None, -0.2)], marks={2: ("空话",)}),
-        S("mis_gold", 6, [8], d_mis_gold, [("dagu", 0, "从心出发", 0.0)], marks={0: ("从心出发",)}),
-        S("hw_answer", 7, [0, 1], d_hw_answer, [("dagu", 1, "一条根", 0.0)], marks={1: ("真心想要",)}),
-        S("hw_task", 7, [2, 3, 4, 5], d_hw_task, [("daluo", 0, None, 0.2)], marks={2: ("我为什么想要它",)}),
-        S("hw_next", 7, [6, 7, 8], d_hw_next, [("bianzhong", 1, "知行合一", 0.0), ("bianzhong", 2, "还不知道", 0.6)],
-          marks={1: ("知行合一",)}, tail=2.0),
+        S("hook", 1, [0], d_hook, [("dagu", 0, "却依然", 0.0)], marks={0: ("过不好这一生",)}),
+        S("bamboo", 2, [0, 1, 2], d_bamboo, [("tanggu", 1, "七天", 0.0), ("dagu", 2, "病倒", 0.0)], marks={2: ("病倒",)}),
+        S("exile", 2, [3, 4, 5], d_exile,
+          [("daluo", 0, "四十廷杖", 0.0), ("muyu", 2, "官没了", -0.15), ("muyu", 2, "名没了", -0.15),
+           ("muyu", 2, "书也没了", -0.15)], marks={0: ("四十廷杖",)}),
+        S("coffin", 2, [6, 7], d_coffin, [("tanggu", 1, "石棺", -0.2)], marks={1: ("石棺",)}),
+        S("care", 2, [8, 9], d_care, [("bangzi", 1, None, 0.2)], marks={1: ("还能怎么办",)}),
+        S("wake", 2, [10, 11, 12], d_wake, [("bangzi", 0, "跳起来", 0.0), ("bianzhong", 1, "善意", 0.0)],
+          marks={1: ("善意",)}),
+        S("gold", 2, [13, 14], d_gold, [("dagu", 1, "心即理", -0.2)], marks={0: ("自己心里",), 1: ("心即理",)}),
+        S("why", 2, [15, 16], d_why, [("tanggu", 1, "扎根", 0.0)], marks={1: ("扎根",)}),
+        S("root", 3, [0, 1], d_root, [("muyu", 0, "真心是根", 0.0)], marks={0: ("真心是根",)}),
+        S("wang", 3, [2, 3, 4], d_wang, [("bangzi", 0, "王计兵", 0.0)], marks={0: ("王计兵",)}),
+        S("stairs", 3, [5, 6], d_stairs, [("daluo", 0, "罚了款", 0.1)], marks={0: ("十八层",)}),
+        S("book", 3, [7, 8], d_book, [("dagu", 1, "二〇二三年", 0.0)], marks={1: ("赶时间的人",)}),
+        S("heart", 3, [9, 10], d_heart, [("tanggu", 1, "想写的那颗心", 0.0)], marks={1: ("想写的那颗心",)}),
+        S("compare", 4, [0, 1, 2], d_compare, [("dagu", 2, "手里", 0.0)], marks={2: ("心里却空落落",)}),
+        S("life", 4, [3, 4, 5], d_life, [("muyu", 0, "收藏", 0.0), ("muyu", 2, "一切照旧", 0.0)],
+          marks={2: ("一切照旧",)}),
+        S("hug", 4, [6, 7, 8], d_hug, [("bianzhong", 0, None, 0.1)], marks={0: ("你不是不努力",), 2: ("你到底想要什么",)}),
+        S("task", 4, [9, 10], d_task, [("daluo", 0, None, 0.1)], marks={0: ("我为什么想要它",)}),
+        S("fire1", 4, [11, 12, 13], d_fire1,
+          [("dagu", 0, None, 0.0), ("dagu", 0, "别等道理", 0.0), ("dagu", 1, "翻过来", 0.0), ("dagu", 2, "多得多", 0.0)],
+          marks={0: ("别等准备好了",), 2: ("比他多得多",)}),
+        S("fire2", 4, [14, 15, 16], d_fire2,
+          [("dagu", 0, None, 0.0), ("dagu", 1, "心亮起来", 0.0), ("daluo", 2, "出发", -0.15)],
+          marks={1: ("人就站起来",), 2: ("现在，就出发",)}),
+        S("next", 4, [17], d_next, [("bianzhong", 0, "知行合一", 0.0)], marks={0: ("知行合一",)}, tail=2.0),
     ]
 
 
+MUSIC = [("compare", 2, "low", "可我们呢"), ("fire1", 0, "full")]
+
+
 def video() -> InkVideo:
-    return InkVideo(scenes(), HEADER, drop_at="hook_title")
+    return InkVideo(scenes(), HEADER, drop_at="bamboo", music=MUSIC)

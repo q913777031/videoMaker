@@ -435,3 +435,171 @@ def lectern(c: skia.Canvas, x: float, y: float, s: float, alpha: float = 0.9):
     c.drawRect(skia.Rect.MakeXYWH(x - 110 * s, y - 180 * s, 220 * s, 14 * s), paint(INK, alpha * 0.8))
     for k in range(3):
         scholar_seated(c, x + (k - 1) * 190 * s, y + 230 * s, 0.55 * s, alpha * 0.75)
+
+
+# ---------------------------------------------------------------- 第 01 讲第七版新增小景
+
+def coffin(c: skia.Canvas, x: float, y: float, s: float = 1.0, alpha: float = 0.9):
+    """石棺（侧视）：石板盖、棺身皴擦。(x, y) 为底边中心。"""
+    if alpha <= 0:
+        return
+    body = _poly([(x - 170 * s, y), (x + 170 * s, y), (x + 150 * s, y - 95 * s), (x - 160 * s, y - 95 * s)])
+    c.drawPath(body, paint((120, 118, 108), alpha * 0.75, blur=1.5))
+    c.drawPath(_poly([(x - 180 * s, y - 92 * s), (x + 165 * s, y - 92 * s), (x + 150 * s, y - 122 * s),
+                      (x - 172 * s, y - 120 * s)]), paint((95, 93, 85), alpha * 0.9))
+    brush_path(c, [(x - 170 * s, y), (x + 170 * s, y)], 6 * s, alpha=alpha)
+    brush_path(c, [(x - 180 * s, y - 92 * s), (x + 165 * s, y - 92 * s)], 5 * s, alpha=alpha * 0.9)
+    rng = np.random.default_rng(8)
+    for _ in range(7):
+        px = x + rng.uniform(-140, 130) * s
+        py = y - rng.uniform(15, 80) * s
+        brush_path(c, [(px, py), (px + rng.uniform(20, 50) * s, py + rng.uniform(-6, 6) * s)], 3 * s,
+                   alpha=alpha * 0.45)
+
+
+def courier(c: skia.Canvas, x: float, y: float, s: float = 1.0, alpha: float = 0.9, climb: float = 0.0,
+            t: float = 0.0):
+    """外卖骑手：头盔、外卖箱；climb > 0 时做爬楼梯的抬腿动作。(x, y) 为脚底中心。"""
+    if alpha <= 0:
+        return
+    _fig(c, x, y, s, alpha)
+    step = math.sin(t * 8) * 18 * climb
+    _contour(c, [(-16, -150), (-24, -70), (-30 + step, 0)], 24, alpha * 0.9, )
+    _contour(c, [(16, -150), (22, -70), (30 - step, -10 * climb)], 24, alpha * 0.9)
+    _wash(c, [(-46, -150), (-40, -270), (0, -292), (40, -270), (46, -150), (0, -140)], alpha * 0.7)
+    _contour(c, [(-44, -150), (-40, -270), (0, -290)], 7, alpha)
+    c.drawRoundRect(skia.Rect.MakeXYWH(-112, -290, 76, 80), 8, 8, paint((214, 160, 40), alpha * 0.95))
+    c.drawRect(skia.Rect.MakeXYWH(-112, -262, 76, 8), paint(INK, alpha * 0.4))
+    _head(c, 4, -322, 28, alpha, bun=False)
+    c.drawPath(_curve([(-30, -322), (-26, -356), (4, -366), (34, -352), (36, -322), (4, -334)]),
+               paint((214, 160, 40), alpha))
+    c.restore()
+
+
+def stairs(c: skia.Canvas, x: float, y: float, s: float, n: int, alpha: float = 0.8):
+    """楼梯折线（右上方向）。(x, y) 为第一级左下角。"""
+    pts = [(x, y)]
+    for k in range(n):
+        px, py = pts[-1]
+        pts += [(px, py - 50 * s), (px + 70 * s, py - 50 * s)]
+    brush_path(c, pts, 6 * s, alpha=alpha, taper=False)
+    brush_path(c, [(x - 20 * s, y + 10 * s), (pts[-1][0] + 40 * s, pts[-1][1] + 10 * s)], 4 * s, alpha=alpha * 0.5,
+               taper=False)
+
+
+def cig_box(c: skia.Canvas, x: float, y: float, s: float, rows: int, p: float, alpha: float = 1.0,
+            rot: float = -6.0, seed: int = 0):
+    """烟盒背面的手写诗行：只画抽象的手写笔迹（不写具体诗句，避免虚构引文），p 控制逐行写出。"""
+    if alpha <= 0:
+        return
+    rng = np.random.default_rng(seed)
+    c.save()
+    c.translate(x, y)
+    c.rotate(rot)
+    c.drawRoundRect(skia.Rect.MakeXYWH(-130 * s, -190 * s, 260 * s, 380 * s), 10, 10, paint((240, 232, 214), alpha))
+    c.drawRoundRect(skia.Rect.MakeXYWH(-130 * s, -190 * s, 260 * s, 380 * s), 10, 10,
+                    paint(OCHRE, alpha * 0.6, stroke=3))
+    c.drawRect(skia.Rect.MakeXYWH(-130 * s, -190 * s, 260 * s, 60 * s), paint(CINNABAR, alpha * 0.55))
+    for k in range(rows):
+        q = max(0.0, min(1.0, p * rows - k))
+        if q <= 0:
+            break
+        ln = rng.uniform(140, 210) * s
+        y0 = -90 * s + k * 52 * s
+        pts = [(-105 * s + u * ln, y0 + math.sin(u * 40 + k) * 6 * s + rng.normal(0, 1.5) * s)
+               for u in np.linspace(0, 1, 40)]
+        brush_path(c, pts, 4 * s, p=q, alpha=alpha * 0.85, taper=False)
+    c.restore()
+
+
+def book_cover(c: skia.Canvas, x: float, y: float, s: float, title: str, sub: str, alpha: float = 1.0):
+    """诗集书封：竖排书名。"""
+    if alpha <= 0:
+        return
+    w, h = 300 * s, 430 * s
+    c.drawRect(skia.Rect.MakeXYWH(x - w / 2 + 12, y - h / 2 + 14, w, h), paint((90, 70, 50), 0.2 * alpha, blur=12))
+    c.drawRect(skia.Rect.MakeXYWH(x - w / 2, y - h / 2, w, h), paint((236, 226, 204), alpha))
+    c.drawRect(skia.Rect.MakeXYWH(x - w / 2, y - h / 2, 22 * s, h), paint(CINNABAR, alpha * 0.85))
+    f = gfx.font("serif_black", 50 * s)
+    for k, ch in enumerate(title):
+        wch = f.measureText(ch)
+        c.drawString(ch, x + 40 * s - wch / 2, y - h / 2 + 80 * s + k * 58 * s, f, paint(INK, alpha))
+    f2 = gfx.font("serif_medium", 24 * s)
+    for k, ch in enumerate(sub):
+        wch = f2.measureText(ch)
+        c.drawString(ch, x - 60 * s - wch / 2, y - h / 2 + 90 * s + k * 30 * s, f2, paint(OCHRE, alpha))
+
+
+def window(c: skia.Canvas, x: float, y: float, s: float, open_: float, alpha: float = 0.9, light: float = 0.0):
+    """窗与窗帘：open_ ∈ [0, 1] 拉开程度，light 为窗外晨光强度。(x, y) 为窗中心。"""
+    w, h = 360 * s, 460 * s
+    rect = skia.Rect.MakeXYWH(x - w / 2, y - h / 2, w, h)
+    if light > 0:
+        c.drawCircle(x, y, 520 * s, paint((255, 214, 150), 0.35 * light * alpha, blur=120))
+    c.drawRect(rect, paint((250, 236, 205) if light > 0 else (200, 205, 210), alpha * (0.6 + 0.4 * light)))
+    c.drawRect(rect, paint(INK, alpha * 0.8, stroke=8))
+    c.drawLine(x, y - h / 2, x, y + h / 2, paint(INK, alpha * 0.6, stroke=5))
+    cw = w / 2 * (1 - 0.82 * open_)
+    for side in (-1, 1):
+        cx = x + side * (w / 2 - cw / 2)
+        c.drawRect(skia.Rect.MakeXYWH(cx - cw / 2, y - h / 2 - 20, cw, h + 40), paint((120, 96, 80), alpha * 0.85))
+        for k in range(3):
+            fx = cx - cw / 2 + cw * (k + 1) / 4
+            c.drawLine(fx, y - h / 2 - 20, fx, y + h / 2 + 20, paint(INK, alpha * 0.25, stroke=3))
+
+
+def progress_bar(c: skia.Canvas, x: float, y: float, w: float, frac: float, label: str, alpha: float = 1.0):
+    """网课进度条：标题 + 细条 + 百分比。"""
+    if alpha <= 0:
+        return
+    c.drawRoundRect(skia.Rect.MakeXYWH(x - w / 2 - 30, y - 70, w + 60, 150), 20, 20, paint((255, 252, 244), alpha))
+    c.drawRoundRect(skia.Rect.MakeXYWH(x - w / 2 - 30, y - 70, w + 60, 150), 20, 20, paint(INK, alpha * 0.3, stroke=2))
+    f = gfx.font("serif_black", 34)
+    c.drawString(label, x - w / 2, y - 18, f, paint(INK, alpha))
+    c.drawRoundRect(skia.Rect.MakeXYWH(x - w / 2, y + 20, w, 18), 9, 9, paint(INK, alpha * 0.15))
+    c.drawRoundRect(skia.Rect.MakeXYWH(x - w / 2, y + 20, w * frac, 18), 9, 9, paint(CINNABAR, alpha * 0.85))
+
+
+def subway(c: skia.Canvas, x: float, y: float, s: float, alpha: float = 0.9, t: float = 0.0):
+    """地铁车厢里站着低头刷手机的人：扶手横杆 + 吊环 + 车窗。(x, y) 为脚底中心。"""
+    if alpha <= 0:
+        return
+    sway = math.sin(t * 1.3) * 4
+    c.drawLine(x - 380 * s, y - 560 * s, x + 380 * s, y - 560 * s, paint(INK, alpha * 0.7, stroke=8 * s))
+    for k in range(5):
+        hx = x - 300 * s + k * 150 * s + sway
+        c.drawLine(hx, y - 560 * s, hx, y - 500 * s, paint(INK, alpha * 0.6, stroke=4 * s))
+        c.drawOval(skia.Rect.MakeXYWH(hx - 18 * s, y - 500 * s, 36 * s, 40 * s), paint(INK, alpha * 0.6, stroke=5 * s))
+    for k in range(2):
+        c.drawRoundRect(skia.Rect.MakeXYWH(x - 380 * s + k * 420 * s, y - 470 * s, 340 * s, 170 * s), 20, 20,
+                        paint((150, 170, 185), alpha * 0.25))
+    _fig(c, x + 60 * s, y, s, alpha)
+    _contour(c, [(-16, -150), (-20, -70), (-24, 0)], 24, alpha * 0.9)
+    _contour(c, [(16, -150), (20, -70), (26, 0)], 24, alpha * 0.9)
+    _wash(c, [(-48, -150), (-44, -280), (0, -300), (44, -280), (48, -150), (0, -140)], alpha * 0.65)
+    _contour(c, [(40, -280), (60, -380), (64, -470)], 9, alpha * 0.9)
+    _contour(c, [(-36, -270), (-6, -230), (20, -236)], 9, alpha * 0.9)
+    _head(c, -4, -330, 28, alpha, bun=False)
+    c.drawRoundRect(skia.Rect.MakeXYWH(14, -262, 26, 46), 5, 5, paint(INK, alpha))
+    c.drawRoundRect(skia.Rect.MakeXYWH(17, -259, 20, 40), 3, 3, paint((205, 228, 245), alpha))
+    c.drawCircle(27, -250, 70, paint((170, 205, 235), 0.25 * alpha, blur=30))
+    c.restore()
+
+
+def congee_pot(c: skia.Canvas, x: float, y: float, s: float, t: float, alpha: float = 0.9):
+    """柴火上煮粥的陶罐，冒热气。(x, y) 为火堆中心。"""
+    if alpha <= 0:
+        return
+    for k in range(5):
+        a = -0.6 + k * 0.3
+        brush_path(c, [(x + math.sin(a) * 70 * s, y + 10 * s), (x - math.sin(a) * 50 * s, y - 30 * s)], 9 * s,
+                   tone=(110, 80, 50), alpha=alpha)
+    fl = 1 + 0.1 * math.sin(t * 14)
+    c.drawCircle(x, y - 20 * s, 60 * s * fl, paint((255, 170, 80), 0.5 * alpha, blur=26 * s))
+    c.drawPath(_curve([(x - 80 * s, y - 50 * s), (x - 90 * s, y - 120 * s), (x - 60 * s, y - 170 * s),
+                       (x + 60 * s, y - 170 * s), (x + 90 * s, y - 120 * s), (x + 80 * s, y - 50 * s)]),
+               paint((90, 70, 55), alpha))
+    for k in range(3):
+        sx = x + (k - 1) * 30 * s
+        pts = [(sx + math.sin(t * 2 + k + j * 0.8) * 12 * s, y - 180 * s - j * 30 * s) for j in range(6)]
+        brush_path(c, smooth(pts, 20), 7 * s, tone=(180, 175, 165), alpha=alpha * 0.45)

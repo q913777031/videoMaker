@@ -21,8 +21,8 @@ CAPTION_Y, CAPTION_SIZE, CAPTION_W = 1500, 50, 900
 class InkVideo(Video):
     """宣纸水墨版 Video：背景为固定宣纸纹理（全分辨率），字幕为宋体墨色逐字点亮，左上角系列页眉。"""
 
-    def __init__(self, scenes: list[Scene], header: str, drop_at: str | None = None):
-        super().__init__(scenes, PALETTES, voice=voice.VOICE, base_speed=1.0, drop_at=drop_at)
+    def __init__(self, scenes: list[Scene], header: str, drop_at: str | None = None, music: list[tuple] = ()):
+        super().__init__(scenes, PALETTES, music=music, voice=voice.VOICE, base_speed=1.0, drop_at=drop_at)
         self.header = header
 
     def build(self, with_audio: bool = True):
