@@ -85,8 +85,8 @@ def d_hook(ctx):
                      alpha=a * P(t, k * 0.1, 0.2) * (1 - P(t, 1.0, 0.5)))
     t1, t2 = word(ctx, 0, "知道"), word(ctx, 0, "却依然")
     ink.label(c, "为什么", 540, 470, 64, alpha=a * P(t, 1.0, 0.3), name="serif_black")
-    hanzi.write(c, "知道这么多道理", 540, 680, 128, hanzi.progress(t, max(1.0, t1), max(0.8, t2 - t1)), alpha=a)
-    hanzi.write(c, "却依然过不好这一生", 540, 940, 106, hanzi.progress(t, t2, ctx.end(0) - t2 + 0.3), color=ink.CINNABAR,
+    hanzi.write(c, "知道这么多道理", 540, 680, 118, hanzi.progress(t, max(1.0, t1), max(0.8, t2 - t1)), alpha=a)
+    hanzi.write(c, "却依然过不好这一生", 540, 920, 96, hanzi.progress(t, t2, ctx.end(0) - t2 + 0.3), color=ink.CINNABAR,
                 alpha=a)
 
 
@@ -324,19 +324,22 @@ def d_hug(ctx):
     c.drawCircle(540, 820, 520, ink.paint((255, 220, 170), 0.35 * warm * a, blur=120))
     hanzi.write(c, "你不是不努力", 540, 760, 130, hanzi.progress(t, 0.1, ctx.end(0) * 0.55), alpha=a * (1 - P(t, t1, 0.3)))
     pop_text(c, "只是太累了，又太怕落后", 540, 960, 50, word(ctx, 0, "太累"), t, tone=ink.CINNABAR, a=a * (1 - P(t, t1, 0.3)))
+    tw = word(ctx, 2, "你到底")
     if t >= t1:
-        k = P(t, t1, 0.3) * (1 - P(t, t2, 0.3))
+        k = P(t, t1, 0.3) * (1 - P(t, tw - 0.3, 0.3))
         art.pot(c, 540, 1100, 1.2, a * k)
         rng = np.random.default_rng(3)
         n = int(14 * EO(P(t, word(ctx, 1, "塞道理"), 1.2)))
         for i in range(n):
             art.fav_card(c, 540 + rng.uniform(-140, 140), 1050 - rng.uniform(40, 340), 170, "道理", alpha=a * k,
                          rot=rng.uniform(-40, 40))
-        pop_text(c, "往空花盆里插枝叶", 540, 470, 54, word(ctx, 1, "空花盆"), t, a=a * k)
+        pop_text(c, "往空花盆里插枝叶", 540, 470, 54, word(ctx, 1, "空花盆"), t, a=a * k * (1 - P(t, t2, 0.25)))
     if t >= t2:
-        k = P(t, t2, 0.3)
-        ink.bloom(c, 540, 820, 140, P(t, word(ctx, 2, "问问自己的心"), 1.0), seed=4, tone=ink.CINNABAR, alpha=0.55 * a)
-        pop_text(c, "你到底想要什么？", 540, 1080, 60, word(ctx, 2, "你到底"), t, a=a * k)
+        pop_text(c, "先别急着再装了", 540, 470, 54, t2 + 0.25, t, tone=ink.OCHRE, a=a * (1 - P(t, tw - 0.3, 0.3)),
+                 name="serif_medium")
+    if t >= tw - 0.3:
+        ink.bloom(c, 540, 820, 160, P(t, tw - 0.3, 1.0), seed=4, tone=ink.CINNABAR, alpha=0.55 * a)
+        pop_text(c, "你到底想要什么？", 540, 1080, 64, tw, t, a=a)
 
 
 def d_task(ctx):
