@@ -122,6 +122,12 @@ def run(ep: str, report_only: bool = False):
         stats[v] = json.loads(sp.read_text(encoding="utf-8")) if sp.exists() else {}
         metas[v] = json.loads(mp.read_text(encoding="utf-8")) if mp.exists() else {}
     asr = None
+    ref_cache: dict[str, float] = {}
+
+    def refs_f0(v: str) -> float:
+        if v not in ref_cache:
+            ref_cache[v] = float(np.median(_f0(_load16k(voice_dir(v) / "prompt.wav"), 16000)))
+        return ref_cache[v]
 
     def synth(js, seeds):
         if report_only:
@@ -143,17 +149,22 @@ def run(ep: str, report_only: bool = False):
                 s_ = asr.create_stream()
                 s_.accept_waveform(16000, y)
                 asr.decode_stream(s_)
-                st = 12 * np.log2(_f0(y, 16000))
-                st_v[p.name] = dict(asr=s_.result.text, cer=_cer(_pinyin(j["text"]), _pinyin(s_.result.text)),
-                                    range=float(np.percentile(st, 90) - np.percentile(st, 10)),
-                                    median=float(np.median(2 ** (st / 12))))
+                f0 = _f0(y, 16000)
+                if len(f0) < 10:
+                    # 无浊音（静音或坏输出）：记为读错，交给换种子重合成
+                    st_v[p.name] = dict(asr=s_.result.text, cer=1.0, range=0.0, median=refs_f0(j["voice"]))
+                else:
+                    st = 12 * np.log2(f0)
+                    st_v[p.name] = dict(asr=s_.result.text, cer=_cer(_pinyin(j["text"]), _pinyin(s_.result.text)),
+                                        range=float(np.percentile(st, 90) - np.percentile(st, 10)),
+                                        median=float(np.median(f0)))
             rows.append((p.name, st_v[p.name]))
         return rows
 
     synth(jobs, SEEDS)
     for seed in RETRY_SEEDS:
         synth([j for j in jobs if not any(r["cer"] == 0 for _, r in score(j))], (seed,))
-    refs = {v: float(np.median(_f0(_load16k(voice_dir(v) / "prompt.wav"), 16000))) for v in groups}
+    refs = {v: refs_f0(v) for v in groups}
     bad = []
     for j in jobs:
         rows = score(j)
