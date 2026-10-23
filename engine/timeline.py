@@ -30,6 +30,7 @@ class Line:
     speed: float = 1.0
     pause: float = 0.22
     caption: bool = True
+    voice: str | None = None  # 角色台词用的音色；None 时用 Video 的旁白音色
 
 
 @dataclass
@@ -169,7 +170,7 @@ class Video:
         卡点规则：场景切换落在半小节线上（可吃掉场景尾部 0.25 秒；drop_at 指定的场景落在小节线，并与音乐 drop 对齐）；
         每句的重音（boom/impact 落在拍上，其余音效或句首落在半拍上）在"可压缩上一停顿 60%、最多推迟一个网格单位"的窗口内吸附到最近网格点。
         """
-        narrator = audio.Narrator(self.voice)
+        narrators = {self.voice: audio.Narrator(self.voice)}
         grid = bgm.analyze(self.bgm)
         sync = bgm.Sync(self.bgm)
         beat, bar = grid.period, grid.bar
@@ -181,7 +182,10 @@ class Video:
             s.starts, s.ends = [], []
             pos, gap = s.lead, s.lead
             for i, ln in enumerate(s.lines):
-                x = narrator.generate(gfx.plain(ln.text), self.base_speed * ln.speed)
+                v = ln.voice or self.voice
+                if v not in narrators:
+                    narrators[v] = audio.Narrator(v)
+                x = narrators[v].generate(gfx.plain(ln.text), self.base_speed * ln.speed)
                 dur = len(x) / audio.SR
                 accent, strong = _accent(s, i, dur)
                 unit = beat if strong else beat / 2
@@ -201,7 +205,7 @@ class Video:
             s.duration = t1 - t0
             t0 = t1
         self.total = t0
-        del narrator
+        del narrators
 
         offset_bars = 0
         if drop_t is not None:

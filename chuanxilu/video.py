@@ -92,7 +92,7 @@ class Ep:
             if m not in text:
                 raise ValueError(f"'{m}' not in {sec}.{i}: {text}")
             text = text.replace(m, f"【{m}】", 1)
-        return Line(text, s.speed, s.pause)
+        return Line(text, s.speed, s.pause, voice=voice.role_voice(s.tags))
 
     def scene(self, name: str, sec: int, idx: list[int], draw, events: list[tuple] = (), marks: dict | None = None,
               tail: float = 0.3) -> Scene:

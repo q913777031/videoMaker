@@ -133,7 +133,7 @@ class Narrator:
         own = VOICE_DIR / voice
         if (own / "cosy.json").is_file():
             self._cosy = cosy_dir(voice)
-            self._key = f"cosy|{self._cosy.name}"
+            self._key = f"cosy2|{self._cosy.name}"
             return
         import sherpa_onnx
 
@@ -216,7 +216,8 @@ def cosy_key(text: str) -> str:
 
 
 def _cosy_line(root: Path, text: str, speed: float) -> np.ndarray:
-    """读取已挑选的候选句，按挑选时算好的半音数统一音高、按 speed 变速（保持音色共振峰）。
+    """读取已挑选的候选句，按挑选时算好的半音数统一音高、按 speed 变速（保持音色共振峰），
+    再用快速压缩把个别重读字的音量尖峰压平（起音 3 ms，3:1）。
 
     句子未预合成时抛 FileNotFoundError，提示先运行对应系列的旁白合成脚本。
     """
@@ -232,7 +233,8 @@ def _cosy_line(root: Path, text: str, speed: float) -> np.ndarray:
         raise FileNotFoundError(f"CosyVoice line not synthesized (run python3 -m chuanxilu.voice <ep>): {text}")
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "x.wav"
-        af = f"rubberband=tempo={speed:.4f}:pitch={2 ** (item['shift'] / 12):.6f}:formant=preserved:pitchq=quality"
+        af = (f"rubberband=tempo={speed:.4f}:pitch={2 ** (item['shift'] / 12):.6f}:formant=preserved:pitchq=quality,"
+              "acompressor=threshold=-22dB:ratio=3:attack=3:release=60:makeup=1.6")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(root / "raw" / item["file"]), "-af", af,
                         "-ac", "1", "-ar", str(SR), str(out)], check=True)
         x, _ = sf.read(out, dtype="float64")

@@ -102,7 +102,7 @@ def d_bamboo(ctx):
     k = P(t, tb, 0.4)
     art.scholar_standing(c, 380, 1260, 0.8, a * (1 - k))
     art.figure_fallen(c, 380, 1265, 0.75, a * k)
-    pop_text(c, "圣贤做不得", 380, 760, 54, word(ctx, 2, "圣贤"), t, a=a)
+    pop_text(c, "圣贤做不得", 380, 760, 54, word(ctx, 3, "圣贤"), t, a=a)
 
 
 def d_exile(ctx):
@@ -131,9 +131,9 @@ def d_coffin(ctx):
     art.cave(c, 360, 1210, 200, 360, a)
     ink.lamp(c, 470, 1200, t, 0.7, alpha=a)
     art.scholar_seated(c, 360, 1212, 0.62, a, tone=(70, 62, 54), t=t)
-    pop_text(c, "荣辱 · 看开", 760, 520, 50, word(ctx, 0, "荣辱"), t, a=a)
-    pop_text(c, "生死 · 未破", 760, 600, 50, word(ctx, 0, "生死"), t, tone=ink.CINNABAR, a=a)
-    tc = word(ctx, 1, "石棺")
+    pop_text(c, "荣辱 · 看开", 760, 520, 50, word(ctx, 1, "荣辱"), t, a=a)
+    pop_text(c, "生死 · 未破", 760, 600, 50, word(ctx, 1, "生死"), t, tone=ink.CINNABAR, a=a)
+    tc = word(ctx, 2, "石棺")
     k = P(t, tc - 0.2, 0.5)
     art.coffin(c, 790, 1240, 0.9, a * k)
     ink.label(c, "《年谱》：吾惟俟命而已", 790, 1310, 30, tone=ink.OCHRE, alpha=a * k, name="serif_medium")
@@ -324,7 +324,7 @@ def d_hug(ctx):
     c.drawCircle(540, 820, 520, ink.paint((255, 220, 170), 0.35 * warm * a, blur=120))
     hanzi.write(c, "你不是不努力", 540, 760, 130, hanzi.progress(t, 0.1, ctx.end(0) * 0.55), alpha=a * (1 - P(t, t1, 0.3)))
     pop_text(c, "只是太累了，又太怕落后", 540, 960, 50, word(ctx, 0, "太累"), t, tone=ink.CINNABAR, a=a * (1 - P(t, t1, 0.3)))
-    tw = word(ctx, 2, "你到底")
+    tw = word(ctx, 3, "你到底")
     if t >= t1:
         k = P(t, t1, 0.3) * (1 - P(t, tw - 0.3, 0.3))
         art.pot(c, 540, 1100, 1.2, a * k)
@@ -412,16 +412,16 @@ def scenes():
     S = E.scene
     return [
         S("hook", 1, [0], d_hook, [("dagu", 0, "却依然", 0.0)], marks={0: ("过不好这一生",)}),
-        S("bamboo", 2, [0, 1, 2], d_bamboo, [("tanggu", 1, "七天", 0.0), ("dagu", 2, "病倒", 0.0)], marks={2: ("病倒",)}),
-        S("exile", 2, [3, 4, 5], d_exile,
+        S("bamboo", 2, [0, 1, 2, 3], d_bamboo, [("tanggu", 1, "七天", 0.0), ("dagu", 2, "病倒", 0.0)], marks={2: ("病倒",)}),
+        S("exile", 2, [4, 5, 6], d_exile,
           [("daluo", 0, "四十廷杖", 0.0), ("muyu", 2, "官没了", -0.15), ("muyu", 2, "名没了", -0.15),
            ("muyu", 2, "书也没了", -0.15)], marks={0: ("四十廷杖",)}),
-        S("coffin", 2, [6, 7], d_coffin, [("tanggu", 1, "石棺", -0.2)], marks={1: ("石棺",)}),
-        S("care", 2, [8, 9], d_care, [("bangzi", 1, None, 0.2)], marks={1: ("还能怎么办",)}),
-        S("wake", 2, [10, 11, 12], d_wake, [("bangzi", 0, "跳起来", 0.0), ("bianzhong", 1, "善意", 0.0)],
+        S("coffin", 2, [7, 8, 9], d_coffin, [("tanggu", 2, "石棺", -0.2)], marks={2: ("石棺",)}),
+        S("care", 2, [10, 11, 12], d_care, [("bangzi", 1, None, 0.2)], marks={2: ("还能怎么办",)}),
+        S("wake", 2, [13, 14, 15], d_wake, [("bangzi", 0, "跳起来", 0.0), ("bianzhong", 1, "善意", 0.0)],
           marks={1: ("善意",)}),
-        S("gold", 2, [13, 14], d_gold, [("dagu", 1, "心即理", -0.2)], marks={0: ("自己心里",), 1: ("心即理",)}),
-        S("why", 2, [15, 16], d_why, [("tanggu", 1, "扎根", 0.0)], marks={1: ("扎根",)}),
+        S("gold", 2, [16, 17], d_gold, [("dagu", 1, "心即理", -0.2)], marks={0: ("自己心里",), 1: ("心即理",)}),
+        S("why", 2, [18, 19], d_why, [("tanggu", 1, "扎根", 0.0)], marks={1: ("扎根",)}),
         S("root", 3, [0, 1], d_root, [("muyu", 0, "真心是根", 0.0)], marks={0: ("真心是根",)}),
         S("wang", 3, [2, 3, 4], d_wang, [("bangzi", 0, "王计兵", 0.0)], marks={0: ("王计兵",)}),
         S("stairs", 3, [5, 6], d_stairs, [("daluo", 0, "罚了款", 0.1)], marks={0: ("十八层",)}),
@@ -430,15 +430,15 @@ def scenes():
         S("compare", 4, [0, 1, 2], d_compare, [("dagu", 2, "手里", 0.0)], marks={2: ("心里却空落落",)}),
         S("life", 4, [3, 4, 5], d_life, [("muyu", 0, "收藏", 0.0), ("muyu", 2, "一切照旧", 0.0)],
           marks={2: ("一切照旧",)}),
-        S("hug", 4, [6, 7, 8], d_hug, [("bianzhong", 0, None, 0.1)], marks={0: ("你不是不努力",), 2: ("你到底想要什么",)}),
-        S("task", 4, [9, 10], d_task, [("daluo", 0, None, 0.1)], marks={0: ("我为什么想要它",)}),
-        S("fire1", 4, [11, 12, 13], d_fire1,
+        S("hug", 4, [6, 7, 8, 9], d_hug, [("bianzhong", 0, None, 0.1)], marks={0: ("你不是不努力",), 3: ("你到底想要什么",)}),
+        S("task", 4, [10, 11], d_task, [("daluo", 0, None, 0.1)], marks={0: ("我为什么想要它",)}),
+        S("fire1", 4, [12, 13, 14], d_fire1,
           [("dagu", 0, None, 0.0), ("dagu", 0, "别等道理", 0.0), ("dagu", 1, "翻过来", 0.0), ("dagu", 2, "多得多", 0.0)],
           marks={0: ("别等准备好了",), 2: ("比他多得多",)}),
-        S("fire2", 4, [14, 15, 16], d_fire2,
+        S("fire2", 4, [15, 16, 17], d_fire2,
           [("dagu", 0, None, 0.0), ("dagu", 1, "心亮起来", 0.0), ("daluo", 2, "出发", -0.15)],
           marks={1: ("人就站起来",), 2: ("现在，就出发",)}),
-        S("next", 4, [17], d_next, [("bianzhong", 0, "知行合一", 0.0)], marks={0: ("知行合一",)}, tail=2.0),
+        S("next", 4, [18], d_next, [("bianzhong", 0, "知行合一", 0.0)], marks={0: ("知行合一",)}, tail=2.0),
     ]
 
 
