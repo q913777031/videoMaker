@@ -26,16 +26,18 @@ from engine import audio, gfx
 from . import script
 
 VOICE = "me_new"
-INSTRUCT = ("You are a helpful assistant. 请用亲切自然、有精神的语气，像跟好朋友聊天，"
-            "每个字都轻松平稳，不要刻意加重字音。<|endofprompt|>")
+INSTRUCT = ("You are a helpful assistant. 请像真人跟好朋友面对面聊天一样说话：有感情、有呼吸感，"
+            "该感慨的地方放慢、放轻，该惊讶的地方提起来，句子之间自然换气，不要播音腔，也不要把字音砸得太重。"
+            "<|endofprompt|>")
 # 〔燃〕句（结尾鼓劲）用更有力的语气前缀；仍是零样本克隆，音色来自同一段录音，音高同样统一到录音原调
 INSTRUCT_FIRE = ("You are a helpful assistant. 请用激昂有力、充满信心的语气，像在给好朋友打气，"
                  "气息饱满但字音不要砸得太重。<|endofprompt|>")
 # 角色 → (音色目录, 语气前缀)；voices/wym 的提示音：Kokoro 合成音色 zm_yunyang 慢读，降 3 个半音并下移共振峰（更苍老浑厚）
 ROLES = {"王阳明": ("wym", "You are a helpful assistant. 请用一位五十多岁的明代儒者的语气：声音浑厚、沉稳、徐缓，"
                          "带一点书卷气和温和的笑意，像在跟学生谈心。<|endofprompt|>")}
-TARGET_RANGE = 4.5  # 句内音高起伏（第 10–90 百分位，半音）的自然水平
+EXPRESSIVE_TAGS = {"金句", "慢", "燃", "留白"}  # 这些句子多合成一个候选，挑更有感情的
 SEEDS, RETRY_SEEDS = (11,), (22, 33, 44, 55)
+EXTRA_SEEDS = (22,)
 # 多音字：CosyVoice 3 支持用 [声母][韵母] 指定读音
 PRON = {"种根": "[zh][òng]根", "种下": "[zh][òng]下", "空落落": "空[l][uò][l][uò]", "廷杖": "廷[zh][àng]"}
 COSY_PYTHON = os.environ.get("COSY_PYTHON", "/home/user/tts_eval/cv/bin/python")
@@ -118,7 +120,10 @@ def run(ep: str, report_only: bool = False):
             fire = "燃" in sent.tags and v == VOICE
             mkey = audio.cosy_key(t)
             jobs.append({"key": ("f" + mkey[1:]) if fire else mkey, "mkey": mkey, "text": t, "synth": synth_text(t),
-                         "voice": v, "instruct": INSTRUCT_FIRE if fire else groups[v]})
+                         "voice": v, "instruct": INSTRUCT_FIRE if fire else groups[v],
+                         "expressive": bool(sent.tags & EXPRESSIVE_TAGS) or sent.pause > 0.3,
+                         "recorded": (voice_dir(v) / "lines" / f"{mkey}.wav").is_file()})
+    jobs = [j for j in jobs if not j["recorded"]]
     jobs = list({(j["voice"], j["mkey"]): j for j in jobs}.values())
     roots = {v: audio.cosy_dir(v) for v in groups}
     stats, metas = {}, {}
@@ -167,16 +172,28 @@ def run(ep: str, report_only: bool = False):
         return rows
 
     synth(jobs, SEEDS)
+    synth([j for j in jobs if j["expressive"]], EXTRA_SEEDS)
     for seed in RETRY_SEEDS:
         synth([j for j in jobs if not any(r["cer"] == 0 for _, r in score(j))], (seed,))
     refs = {v: refs_f0(v) for v in groups}
+    # 以本人录音实测的句内起伏为“自然水平”，而不是固定数值
+    nat = {}
+    for v in groups:
+        st = 12 * np.log2(_f0(_load16k(voice_dir(v) / "prompt.wav"), 16000))
+        nat[v] = float(np.percentile(st, 90) - np.percentile(st, 10))
     bad = []
     for j in jobs:
         rows = score(j)
         if not rows:
             raise FileNotFoundError(f"no candidates for: {j['text']}")
         best = min(r["cer"] for _, r in rows)
-        name, r = min([x for x in rows if x[1]["cer"] == best], key=lambda x: abs(x[1]["range"] - TARGET_RANGE))
+        ok = [x for x in rows if x[1]["cer"] == best]
+        # 有感情的句子：在不超过录音起伏 1.6 倍的候选里选起伏最大的；其余：选最接近录音起伏的
+        if j["expressive"]:
+            cap = [x for x in ok if x[1]["range"] <= nat[j["voice"]] * 1.6] or ok
+            name, r = max(cap, key=lambda x: x[1]["range"])
+        else:
+            name, r = min(ok, key=lambda x: abs(x[1]["range"] - nat[j["voice"]]))
         # 旁白拉回 70%（保留语气起伏）；角色台词完全对齐到提示音原调，保证全片同一个声音
         k = 0.7 if j["voice"] == VOICE else 1.0
         shift = float(np.clip(-k * 12 * np.log2(r["median"] / refs[j["voice"]]), -3, 3))
@@ -187,7 +204,7 @@ def run(ep: str, report_only: bool = False):
     for v, root in roots.items():
         (root / "stats.json").write_text(json.dumps(stats[v], ensure_ascii=False, indent=1), encoding="utf-8")
         (root / "meta.json").write_text(json.dumps(metas[v], ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"{len(jobs)} lines, reference f0 " + ", ".join(f"{v} {f:.0f}Hz" for v, f in refs.items())
+    print(f"{len(jobs)} lines, reference f0 " + ", ".join(f"{v} {f:.0f}Hz 起伏 {nat[v]:.1f}半音" for v, f in refs.items())
           + f", {len(bad)} with pinyin mismatch")
     for v, text, hyp, e in bad:
         print(f"  [{e:.2f}] ({v}) {text}\n         识别：{hyp}")

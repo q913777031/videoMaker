@@ -130,6 +130,7 @@ class Narrator:
         self._prompt = None
         self._prompt_text = PROMPT_TEXT
         self._cosy: Path | None = None
+        self._voice = voice
         own = VOICE_DIR / voice
         if (own / "cosy.json").is_file():
             self._cosy = cosy_dir(voice)
@@ -180,6 +181,9 @@ class Narrator:
 
     def generate(self, text: str, speed: float = 1.0) -> np.ndarray:
         """合成一句旁白；结果按 (音色, 语速, 文本) 缓存到 .cache/tts，改画面重渲染时无需重新合成。"""
+        rec = VOICE_DIR / self._voice / "lines" / f"{cosy_key(text)}.wav"
+        if rec.is_file():
+            return recorded_line(rec)
         key = hashlib.sha1(f"{self._key}|{speed:.4f}|{text}".encode()).hexdigest()
         path = CACHE_DIR / f"{key}.npy"
         if path.exists():
@@ -234,11 +238,27 @@ def _cosy_line(root: Path, text: str, speed: float) -> np.ndarray:
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "x.wav"
         af = (f"rubberband=tempo={speed:.4f}:pitch={2 ** (item['shift'] / 12):.6f}:formant=preserved:pitchq=quality,"
-              "acompressor=threshold=-22dB:ratio=3:attack=3:release=60:makeup=1.6")
+              "acompressor=threshold=-18dB:ratio=2:attack=5:release=80:makeup=1.2")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(root / "raw" / item["file"]), "-af", af,
                         "-ac", "1", "-ar", str(SR), str(out)], check=True)
         x, _ = sf.read(out, dtype="float64")
     return x
+
+
+def recorded_line(path: Path) -> np.ndarray:
+    """真人录制的单句（voices/<音色>/lines/<句子哈希>.wav）：转单声道 44.1k、高通、裁首尾静音、峰值归一；不变速不变调。
+
+    每次调用都重新读取，录音替换后立即生效，不走合成缓存。
+    """
+    import soundfile as sf
+
+    x, sr = sf.read(path, dtype="float64", always_2d=True)
+    x = x.mean(axis=1)
+    if sr != SR:
+        g = math.gcd(SR, sr)
+        x = signal.resample_poly(x, SR // g, sr // g)
+    x = _trim(highpass(x, 70), thr_db=-42.0)
+    return x / (np.max(np.abs(x)) + 1e-9) * 0.7
 
 
 def _trim(x: np.ndarray, thr_db: float = -38.0) -> np.ndarray:
