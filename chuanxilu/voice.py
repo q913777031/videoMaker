@@ -31,9 +31,9 @@ INSTRUCT = ("You are a helpful assistant. 请用亲切自然、有精神的语�
 # 〔燃〕句（结尾鼓劲）用更有力的语气前缀；仍是零样本克隆，音色来自同一段录音，音高同样统一到录音原调
 INSTRUCT_FIRE = ("You are a helpful assistant. 请用激昂有力、充满信心的语气，像在给好朋友打气，"
                  "气息饱满但字音不要砸得太重。<|endofprompt|>")
-# 角色 → (音色目录, 语气前缀)；voices/wym 的提示音由 Kokoro 合成音色 zm_yunyang 生成
-ROLES = {"王阳明": ("wym", "You are a helpful assistant. 请用沉稳温和、略带笑意的中年男性语气，"
-                         "慢慢地、像在跟学生谈心一样说。<|endofprompt|>")}
+# 角色 → (音色目录, 语气前缀)；voices/wym 的提示音：Kokoro 合成音色 zm_yunyang 慢读，降 3 个半音并下移共振峰（更苍老浑厚）
+ROLES = {"王阳明": ("wym", "You are a helpful assistant. 请用一位五十多岁的明代儒者的语气：声音浑厚、沉稳、徐缓，"
+                         "带一点书卷气和温和的笑意，像在跟学生谈心。<|endofprompt|>")}
 TARGET_RANGE = 4.5  # 句内音高起伏（第 10–90 百分位，半音）的自然水平
 SEEDS, RETRY_SEEDS = (11,), (22, 33)
 # 多音字：CosyVoice 3 支持用 [声母][韵母] 指定读音
@@ -73,8 +73,13 @@ def _asr():
                                                          tokens=str(ASR_DIR / "tokens.txt"), num_threads=4)
 
 
+_DIGITS = dict(zip("0123456789", "零一二三四五六七八九"))
+
+
 def _pinyin(text: str) -> list[str]:
+    """拼音序列（不计声调）；阿拉伯数字按逐位读法（2023 → 二零二三）比对。"""
     from pypinyin import lazy_pinyin
+    text = "".join(_DIGITS.get(ch, ch) for ch in text)
     return lazy_pinyin(re.sub(r"[^一-鿿]", "", text))
 
 
@@ -172,7 +177,9 @@ def run(ep: str, report_only: bool = False):
             raise FileNotFoundError(f"no candidates for: {j['text']}")
         best = min(r["cer"] for _, r in rows)
         name, r = min([x for x in rows if x[1]["cer"] == best], key=lambda x: abs(x[1]["range"] - TARGET_RANGE))
-        shift = float(np.clip(-0.7 * 12 * np.log2(r["median"] / refs[j["voice"]]), -2, 2))
+        # 旁白拉回 70%（保留语气起伏）；角色台词完全对齐到提示音原调，保证全片同一个声音
+        k = 0.7 if j["voice"] == VOICE else 1.0
+        shift = float(np.clip(-k * 12 * np.log2(r["median"] / refs[j["voice"]]), -3, 3))
         metas[j["voice"]][j["mkey"]] = dict(text=j["text"], file=name, shift=round(shift, 3), cer=r["cer"],
                                            asr=r["asr"])
         if best > 0:

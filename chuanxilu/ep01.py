@@ -245,7 +245,7 @@ def d_stairs(ctx):
 
 def d_book(ctx):
     c, t, a = ctx.c, ctx.t, env(ctx)
-    tb = word(ctx, 1, "二〇二三年")
+    tb = word(ctx, 1, "2023年")
     k = P(t, tb, 0.5)
     rng = np.random.default_rng(2)
     for i in range(7):
@@ -425,7 +425,7 @@ def scenes():
         S("root", 3, [0, 1], d_root, [("muyu", 0, "真心是根", 0.0)], marks={0: ("真心是根",)}),
         S("wang", 3, [2, 3, 4], d_wang, [("bangzi", 0, "王计兵", 0.0)], marks={0: ("王计兵",)}),
         S("stairs", 3, [5, 6], d_stairs, [("daluo", 0, "罚了款", 0.1)], marks={0: ("十八层",)}),
-        S("book", 3, [7, 8], d_book, [("dagu", 1, "二〇二三年", 0.0)], marks={1: ("赶时间的人",)}),
+        S("book", 3, [7, 8], d_book, [("dagu", 1, "2023年", 0.0)], marks={1: ("赶时间的人",)}),
         S("heart", 3, [9, 10], d_heart, [("tanggu", 1, "想写的那颗心", 0.0)], marks={1: ("想写的那颗心",)}),
         S("compare", 4, [0, 1, 2], d_compare, [("dagu", 2, "手里", 0.0)], marks={2: ("心里却空落落",)}),
         S("life", 4, [3, 4, 5], d_life, [("muyu", 0, "收藏", 0.0), ("muyu", 2, "一切照旧", 0.0)],
