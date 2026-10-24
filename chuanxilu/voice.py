@@ -35,7 +35,7 @@ INSTRUCT_FIRE = ("You are a helpful assistant. 请用激昂有力、充满信心
 ROLES = {"王阳明": ("wym", "You are a helpful assistant. 请用一位五十多岁的明代儒者的语气：声音浑厚、沉稳、徐缓，"
                          "带一点书卷气和温和的笑意，像在跟学生谈心。<|endofprompt|>")}
 TARGET_RANGE = 4.5  # 句内音高起伏（第 10–90 百分位，半音）的自然水平
-SEEDS, RETRY_SEEDS = (11,), (22, 33)
+SEEDS, RETRY_SEEDS = (11,), (22, 33, 44, 55)
 # 多音字：CosyVoice 3 支持用 [声母][韵母] 指定读音
 PRON = {"种根": "[zh][òng]根", "种下": "[zh][òng]下", "空落落": "空[l][uò][l][uò]", "廷杖": "廷[zh][àng]"}
 COSY_PYTHON = os.environ.get("COSY_PYTHON", "/home/user/tts_eval/cv/bin/python")
