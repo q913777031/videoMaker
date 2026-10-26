@@ -356,6 +356,7 @@ python3 -m maoxuan.build 01 --sheet     # 逐镜联系表
 python3 -m maoxuan.build 01             # 渲染到 out/maoxuan/ep01/
 python3 -m maoxuan.build --verify       # 核验成片
 python3 -m maoxuan.build --publish      # 交付到 videos/maoxuan/
+python3 -m maoxuan.build --square       # 每讲 1080×1080 横屏封面（毛笔片名 + 故事镜头），写入各讲交付目录
 ```
 
 结构参照《资治通鉴》系列：职场问题钩子 → 原文金句 drop → 写作背景与原文 → 作者亲身实例 → 原文点评 → 当下现象 → 落到自己 → 书中给出的方法（4 招）→ 评论区互动。
