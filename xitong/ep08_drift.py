@@ -31,7 +31,7 @@ def build():
         S("忙了一周：半小时", "灵魂拷问", [
             Card("一小时", 540, 560, 60, at=0, enter="none"),
             Icon("cross", 700, 540, 110, color=K.RED, at=1, sfx="rim"),
-            Card("半小时", 540, 860, 60, at=2, sfx="pop"),
+            Card("半小时", 540, 860, 60, at=2, sfx="pop", gain=0.6),
         ]),
         S("又累了：十分钟", "灵魂拷问", [
             Card("半小时", 540, 560, 60, at=0, enter="none"),
@@ -66,7 +66,7 @@ def build():
         S("标准跟着表现走", "书中观点 · 目标侵蚀", [
             Custom(A.goal_line, x=540, y=760, at=0, enter="fade", b0=0, b1=3, mode="drift"),
             Fig(150, G + 60, 220, at=1, pose="point", mood="worried", **ME),
-        ], hits=[(0, "shaker", 0.7, "表现线"), (1, "tom", 0.8, "目标跟降"), (3, "tom", 0.8, "目标再降")]),
+        ], hits=[(0, "shaker", 0.7, "表现线"), (1, "tom", 0.55, "目标跟降"), (3, "tom", 0.8, "目标再降")]),
         S("坏消息记得更牢", "书中观点 · 目标侵蚀", [
             Custom(A.sizes, x=540, y=720, at=0, enter="pop", b=1, sfx="pop"),
             Fig(540, G + 40, 230, at=2, pose="think", mood="worried", **ME, sfx="wood_high"),
