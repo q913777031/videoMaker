@@ -12,6 +12,10 @@ import sys
 from adler import build as B
 from adler import core
 
+from . import ink
+
+ink.install()
+
 core.SERIES.update(name="毛选", count="10讲", prefix="毛选", tagline="把难题拆开的方法论，今天还管用")
 B.PKG = "maoxuan"
 B.OUT = B.ROOT / "out" / "maoxuan"

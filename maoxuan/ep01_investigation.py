@@ -17,8 +17,17 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = A.RED
 G = A.GROUND_Y
-ME = dict(hair="short")
-BOSS = dict(color=K.DARK, hair="short")
+ME = dict(hair="short", role="worker")
+BOSS = dict(hair="short", role="boss")
+
+
+def benches(g):
+    """调查会：地面 + 两条长凳。"""
+    A.ground(g)
+    for x in (250, 830):
+        K.rr(g.c, x, G - 72, 200, 18, 6, A.DESK)
+        K.rr(g.c, x - 80, G - 36, 12, 70, 4, K.shade(A.DESK, 0.3))
+        K.rr(g.c, x + 80, G - 36, 12, 70, 4, K.shade(A.DESK, 0.3))
 
 
 def build():
@@ -84,10 +93,12 @@ def build():
              extra=[Rays(540, 780, 620, at=2, alpha=0.2)]),
         # ---- 本本主义 13–17
         S("那年，红四军里", "写作背景", [
-            Counter(1900, 1930, 540, 720, 220, at=0, land=2, fmt="{:.0f}", sub="年 · 红四军"),
-        ], hits=[(0, "shaker", 0.8, "年份滚动")]),
+            Counter(1900, 1930, 540, 600, 200, at=0, land=2, fmt="{:.0f}", sub="年 · 红四军"),
+            Fig(200, G, 300, at=1, pose="stand", mood="calm", role="soldier", sfx="wood_high"),
+            Fig(880, G, 300, at=3, pose="stand", mood="calm", role="soldier", face=-1, sfx="wood_high"),
+        ], draw=A.ground, hits=[(0, "shaker", 0.8, "年份滚动")]),
         S("有人开口闭口", "原文 · 拿本本来", [
-            Fig(400, G, 330, at=0, pose="stand", mood="open", color="#7A6A55", hair="cap",
+            Fig(400, G, 330, at=0, pose="stand", mood="open", hair="cap", role="soldier",
                 moves=[(1, dict(pose="fist", dur=0.25, sfx="wood_high"))]),
             Bubble("拿【本本】来！", 700, 540, 54, at=1, enter="pop"),
             Icon("book", 760, 800, 150, color=ACC, at=2, sfx="pop"), Spark(760, 800, at=2),
@@ -119,15 +130,16 @@ def build():
             Custom(A.map_pin, x=540, y=780, at=0, enter="fade", pin=1, region="江西", place="1930.5 寻乌"),
         ], hits=[(0, "wood_low", 0.8, "地图"), (1, "kick", 0.9, "图钉落下"), (2, "pop", 0.8, "地名")]),
         S("调查会开了十多天", "寻乌调查", [
-            Counter(0, 10, 540, 760, 260, at=0, land=2, suffix="多天", sub="调查会"),
-            Icon("clock", 540, 460, 110, color=K.INK2, at=3, sfx="wood_high"),
-        ], hits=[(0, "shaker", 0.8, "滚动")]),
+            Counter(0, 10, 540, 560, 200, at=0, land=2, suffix="多天", sub="调查会"),
+            Fig(250, G, 290, at=1, pose="sit", mood="open", role="merchant"),
+            Fig(830, G, 290, at=3, pose="sit", mood="smile", role="scholar", face=-1, sfx="wood_high"),
+        ], draw=benches, hits=[(0, "shaker", 0.8, "滚动")]),
         S("店主、老童生、乡干部", "寻乌调查 · 提供材料的人", [
-            Fig(230, G, 290, at=0, pose="stand", mood="smile", color=K.OTHER, hair="cap", sfx="pop"),
-            Fig(540, G, 300, at=1, pose="wave", mood="happy", color=K.OTHER2, hair="bun", sfx="pop"),
-            Fig(850, G, 290, at=2, pose="stand", mood="open", color="#9C8FB0", hair="short", face=-1, sfx="pop"),
-            Label("杂货店主", 230, 520, 38, at=0), Label("老童生", 540, 500, 38, at=1),
-            Label("乡干部", 850, 520, 38, at=2), Spark(540, 600, at=3, sfx="ding"),
+            Fig(230, G, 300, at=0, pose="stand", mood="smile", role="merchant", sfx="pop"),
+            Fig(540, G, 310, at=1, pose="wave", mood="happy", role="scholar", sfx="pop"),
+            Fig(850, G, 300, at=2, pose="stand", mood="open", role="farmer", face=-1, sfx="pop"),
+            Label("杂货店主", 230, 470, 38, at=0), Label("老童生", 540, 450, 38, at=1),
+            Label("乡干部", 850, 470, 38, at=2), Spark(540, 600, at=3, sfx="ding"),
         ], draw=A.ground),
         S("县城的店，一家家问", "寻乌调查 · 商业", [
             Custom(A.shops, x=540, y=800, at=0, enter="fade", b0=0, step=0.5,

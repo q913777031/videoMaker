@@ -485,7 +485,8 @@ def draw_el(c, el: El, g: G):
         with K.at(c, x, y, rot, sc):
             K.figure(c, 0, 0, s, p, d.get("color", K.HERO), d.get("head_color", K.SKIN), alpha, d.get("face", 1),
                      d.get("mood", "calm"), d.get("hair"), d.get("hair_color"), bob, d.get("lift", 1.0),
-                     d.get("look", 0.0), d.get("blink", False), d.get("scarf"), d.get("prop"))
+                     d.get("look", 0.0), d.get("blink", False), d.get("scarf"), d.get("prop"),
+                     **({"role": d["role"]} if "role" in d else {}))
     elif kind == "icon":
         pv = d.get("p", 1.0)
         if callable(pv):
