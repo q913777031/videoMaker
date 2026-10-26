@@ -47,10 +47,12 @@ def build():
                    msgs=[(0, "周末回来吗"), (1, "体检约了没"), (2, "回个话呀")]),
         ], hits=[(0, "pop", 0.8, "消息"), (1, "pop", 0.8, "消息"), (2, "rim", 0.9, "消息")]),
         S("要么全扑上去", "灵魂拷问", [
-            Custom(B.piano, x=540, y=820, at=0, enter="fade", mode="all", all_at=1, labels=KEYS),
+            Custom(B.piano, x=540, y=700, at=0, enter="fade", mode="all", all_at=1, labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="cheer", mood="angry", **ME),
         ], hits=[(0, "wood_low", 0.7, "键盘"), (1, "kick", 1.0, "十指齐按")], shake=[1], flashes=[1]),
         S("要么只顾一件", "灵魂拷问", [
-            Custom(B.piano, x=540, y=820, at=0, enter="fade", mode="one", key=4, b0=0, labels=KEYS),
+            Custom(B.piano, x=540, y=700, at=0, enter="fade", mode="one", key=4, b0=0, labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="point", mood="flat", **ME),
         ], hits=[(0, "wood_high", 0.7, "按"), (1, "wood_high", 0.7, "按"), (2, "wood_high", 0.7, "按"),
                  (3, "rim", 0.8, "其它没动")]),
         S("两头都不讨好", "灵魂拷问", [
@@ -78,7 +80,8 @@ def build():
             Spark(540, 860, at=2, sfx="ding"),
         ], punch=0.035, flashes=[0, 1], shake=[0, 1]),
         S("有的动，有的不动", "原文 · 不能有的动，有的不动", [
-            Custom(B.piano, x=540, y=820, at=0, enter="fade", mode="one", key=4, b0=0, labels=KEYS),
+            Custom(B.piano, x=540, y=700, at=0, enter="fade", mode="one", key=4, b0=0, labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="point", mood="flat", **ME),
             Icon("cross", 860, 460, 110, color=K.RED, at=2, sfx="rim"),
         ], hits=[(0, "wood_high", 0.7, "按"), (1, "wood_high", 0.7, "按")]),
         S("别的全丢掉了", "原文 · 把别的丢掉", [
@@ -88,17 +91,20 @@ def build():
             Icon("cross", 840, 680, 100, color=K.RED, at=3, sfx="rim"),
         ], hits=[(0, "pop", 0.7, "便利贴"), (1, "pop", 0.7, "便利贴")]),
         S("十指同时按下去", "原文 · 十个指头同时都按下去", [
-            Custom(B.piano, x=540, y=820, at=0, enter="fade", mode="all", all_at=1, labels=KEYS),
+            Custom(B.piano, x=540, y=700, at=0, enter="fade", mode="all", all_at=1, labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="cheer", mood="angry", **ME),
         ], hits=[(0, "wood_low", 0.7, "键盘"), (1, "kick", 1.0, "齐按"), (2, "rim", 0.8, "乱音")], shake=[1]),
         S("那也不成调子", "原文 · 那也不成调子", [
-            Custom(B.piano, x=540, y=820, at=0, enter="none", mode="all", all_at=0, labels=KEYS),
+            Custom(B.piano, x=540, y=700, at=0, enter="none", mode="all", all_at=0, labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="cheer", mood="angry", **ME),
             Icon("cross", 540, 380, 110, color=K.RED, at=2, sfx="rim"),
         ], hits=[(0, "kick", 0.8, "乱音")]),
         pops("要有 【节奏】 要 【配合】", "原文 · 要有节奏，要互相配合", size=140, flash=1,
              extra=[Rays(540, 780, 620, at=1, alpha=0.2)]),
         S("抓紧中心工作", "原文 · 抓紧中心工作", [
-            Custom(B.piano, x=540, y=820, at=0, enter="fade", mode="rhythm", center=4, b0=0,
+            Custom(B.piano, x=540, y=700, at=0, enter="fade", mode="rhythm", center=4, b0=0,
                    seq=(4, 1, 4, 7, 4, 2, 4, 8), labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="push", mood="happy", **ME),
         ], hits=[(0, "ding", 0.8, "中心键"), (1, "ding", 0.8, "中心键"), (2, "ding", 0.8, "中心键"),
                  (3, "ding", 0.8, "中心键")]),
         S("其它围着它转", "原文 · 围绕中心工作", [
@@ -106,15 +112,16 @@ def build():
                    items=("项目一", "项目二", "新任务", "家里", "学习")),
         ], hits=[(1, "ding", 1.0, "中心"), (2, "ding", 0.8, "其余跟上")]),
         S("有问题的都点一下", "原文 · 都要点一下", [
-            Custom(B.piano, x=540, y=820, at=0, enter="fade", mode="rhythm", center=4, b0=0,
+            Custom(B.piano, x=540, y=700, at=0, enter="fade", mode="rhythm", center=4, b0=0,
                    seq=(0, 2, 4, 6, 4, 8, 9, 4), labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="push", mood="happy", **ME),
         ], hits=[(0, "pop", 0.7, "点"), (1, "ding", 0.8, "中心"), (2, "ding", 0.8, "中心"), (3, "pop", 0.7, "点")]),
         S("弹得好坏，差别很大", "原文 · 调子差别很大", [
             Card("乱按", 280, 520, 60, at=0, sfx="pop"), Card("有节奏", 800, 520, 60, at=1, sfx="pop"),
             Icon("cross", 280, 690, 100, color=K.RED, at=2, sfx="rim"),
             Icon("check", 800, 690, 100, color=K.GREEN, at=3, sfx="ding"),
             Fig(280, G, 320, at=0, pose="fist", mood="angry", **ME),
-            Fig(800, G, 320, at=1, pose="wave", mood="happy", face=-1, role="worker_f"),
+            Fig(800, G, 320, at=1, pose="wave", mood="happy", face=-1, role="worker_f", hair="long", color="#C97B84"),
         ]),
         # ---- 二次钩子：抓紧 20–25
         S("但光抓还不够", "原文 · 要“抓紧”", [
@@ -191,12 +198,14 @@ def build():
                    sfx="wood_low"),
         ], hits=[(1, "ding", 1.0, "打开")], flashes=[1]),
         S("① 定一个中心", "多线 4 招 · 抓紧中心工作", [
-            Custom(B.piano, x=540, y=820, at=0, enter="fade", mode="rhythm", center=4, b0=0, seq=(4, 4, 4, 4, 4, 4),
+            Custom(B.piano, x=540, y=700, at=0, enter="fade", mode="rhythm", center=4, b0=0, seq=(4, 4, 4, 4, 4, 4),
                    labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="push", mood="happy", **ME),
         ], hits=[(0, "ding", 0.8, "中心"), (1, "ding", 0.8, "中心"), (2, "ding", 0.8, "中心")]),
         S("② 其它点一下", "多线 4 招 · 都要点一下", [
-            Custom(B.piano, x=540, y=820, at=0, enter="fade", mode="rhythm", center=4, b0=0,
+            Custom(B.piano, x=540, y=700, at=0, enter="fade", mode="rhythm", center=4, b0=0,
                    seq=(4, 0, 4, 7, 4, 9, 4, 2), labels=KEYS),
+            Fig(540, G, 240, at=0, enter="none", pose="push", mood="happy", **ME),
         ], hits=[(0, "ding", 0.8, "中心"), (1, "ding", 0.8, "中心"), (2, "ding", 0.8, "中心"), (3, "ding", 0.8, "中心")]),
         S("③ 主要的抓紧", "多线 4 招 · 要“抓紧”", [
             Custom(B.grip, x=540, y=780, at=0, enter="fade", stage=2, b=1, ball="中心工作"),

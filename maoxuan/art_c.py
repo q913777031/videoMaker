@@ -76,8 +76,12 @@ def plateau(c, g, el_t, d):
         (q.moveTo if i == 0 else q.lineTo)(-w / 2 + u * w, h / 2 - f(u) * h)
     c.drawPath(q, K.paint(g.acc, 1, 12))
     x, y = -w / 2 + k * w, h / 2 - f(k) * h
-    K.dot(c, x, y, 22, g.acc)
-    fx.glow(c, x, y, 80, K.GOLD, 0.4)
+    if d.get("walker"):
+        moving = 0 < k < 1
+        K.figure(c, x, y, 150, K.walk(g.t * 2.4, 1.0) if moving else "stand", None, mood="calm", role=d["walker"])
+    else:
+        K.dot(c, x, y, 22, g.acc)
+        fx.glow(c, x, y, 80, K.GOLD, 0.4)
     la = d.get("label_at")
     if la is not None:
         st = fx.word_pop(g.since(la))
@@ -263,7 +267,7 @@ def relation_map(c, g, el_t, d):
             K.seg(c, 0, 0, x, y, cc, 6, 0.6)
         with K.at(c, x, y, 0, s_):
             K.dot(c, 0, 0, 62, cc, a)
-            K.text(c, lab, 0, 0, 34, "serif_black", K.PAPER, a)
+            K.text(c, lab, 0, 0, 32, "bold", K.PAPER, a)
     fx.glow(c, 0, 0, 140, K.GOLD, 0.3)
     K.dot(c, 0, 0, 78, K.HERO)
     K.text(c, "我", 0, 0, 56, "serif_black", K.PAPER)

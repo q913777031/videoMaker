@@ -22,7 +22,7 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = "#C0502A"
 G = A.GROUND_Y
-ME = dict(hair="short")
+ME = dict(hair="short", role="worker")
 
 
 def build():
@@ -34,8 +34,8 @@ def build():
         ], punch=0.025, flashes=[0], hits=[(0, "shaker", 0.7, "滚动")]),
         S("同届都升职了", "灵魂拷问", [
             Icon("ladder", 540, 760, 420, color=K.INK2, at=0, sfx="wood_low"),
-            Fig(640, 560, 200, at=1, pose="cheer", mood="happy", color=K.OTHER, hair="bun", sfx="pop"),
-            Fig(440, 700, 200, at=2, pose="wave", mood="happy", color=K.OTHER2, hair="long", sfx="pop"),
+            Fig(640, 560, 210, at=1, pose="cheer", mood="happy", color=K.OTHER, hair="bun", role="worker_f", sfx="pop"),
+            Fig(440, 700, 210, at=2, pose="wave", mood="happy", color=K.OTHER2, role="worker", sfx="pop"),
         ]),
         S("我还在原地", "灵魂拷问", [
             Fig(540, G, 330, at=0, pose="sad", mood="sad", **ME),
@@ -72,56 +72,66 @@ def build():
             Custom(C.prairie, x=540, y=760, at=0, enter="fade", spark=0, b1=3),
         ], hits=[(0, "pop", 0.8, "火星落下"), (1, "shaker", 0.8, "起火"), (3, "kick", 0.9, "烧满")], shake=[3]),
         S("写给悲观同志的信", "写作背景", [
-            Card("一封回信", 540, 620, 70, at=0, sfx="pop"),
-            Icon("cloud", 360, 880, 150, color=K.INK2, at=1, sfx="wood_low"),
-            Icon("cloud", 720, 900, 120, color=K.INK3, at=2, sfx="wood_low"),
+            Fig(300, G, 330, at=1, pose="carry", mood="worried", color=None, role="soldier", sfx="wood_low"),
+            Card("一封回信", 700, 620, 66, at=0, sfx="pop"),
+            Icon("cloud", 300, 480, 130, color=K.INK2, at=2, sfx="wood_low"),
+            Icon("cloud", 760, 860, 110, color=K.INK3, at=3, sfx="wood_low"),
         ]),
         S("他觉得前途渺茫", "原文 · 前途未免渺茫得很", [
-            Fig(400, G, 320, at=0, pose="sad", mood="worried", color="#7A6A55", hair="cap"),
+            Fig(400, G, 330, at=0, pose="sad", mood="worried", color=None, role="soldier"),
             Bubble("前途【渺茫】", 700, 520, 52, at=1, enter="pop", sfx="wood_low"),
             Icon("question", 760, 760, 110, color=K.RED, at=3, sfx="rim"),
         ], draw=A.ground),
         S("力量确实很小", "原文 · 一点小小的力量", [
-            Custom(XZ.flame, x=540, y=720, at=0, enter="pop", s=110, sfx="pop"),
-            Label("小小的力量", 540, 960, 50, at=2, sfx="wood_high"),
+            Fig(330, G, 330, at=0, pose="give", mood="smile", color=None, role="farmer"),
+            Custom(XZ.flame, x=560, y=880, at=1, enter="pop", s=100, sfx="pop"),
+            Label("小小的力量", 600, 680, 50, at=2, sfx="wood_high"),
         ]),
         pops("但它的发展 会是 【很快的】", "原文 · 它的发展会是很快的", size=120, flash=2,
              extra=[Rays(540, 780, 620, at=2, alpha=0.2)]),
         # ---- 怎么看、怎么做 15–23
         S("要看实质", "原文 · 必须要看它的实质", [
-            Custom(XZ.flame, x=540, y=760, at=0, enter="fade", s=90),
-            Custom(Z.magnifier, x=540, y=740, at=1, enter="pop", r=170, sfx="wood_high"),
-            Spark(540, 740, at=2, sfx="ding"),
+            Fig(230, G, 320, at=0, pose="reach", mood="open", color=None, role="soldier"),
+            Custom(XZ.flame, x=640, y=760, at=0, enter="fade", s=90),
+            Custom(Z.magnifier, x=640, y=740, at=1, enter="pop", r=170, sfx="wood_high"),
+            Spark(640, 740, at=2, sfx="ding"),
         ]),
         S("现象只是向导", "原文 · 现象只看作入门的向导", [
-            Icon("door", 400, 740, 260, color=K.INK2, at=0, sfx="wood_low"),
-            Label("现象", 400, 980, 46, at=0),
-            Icon("key", 760, 740, 160, color=K.GOLD, at=2, sfx="ding"),
-            Label("实质", 760, 980, 46, at=2, fill=K.GOLD),
+            Fig(190, G, 300, at=0, pose="point", mood="smile", color=None, role="youth"),
+            Icon("door", 500, 740, 240, color=K.INK2, at=0, sfx="wood_low"),
+            Label("现象", 500, 970, 46, at=0),
+            Icon("key", 830, 740, 150, color=K.GOLD, at=2, sfx="ding"),
+            Label("实质", 830, 970, 46, at=2, fill=K.GOLD),
         ]),
         S("一时挫折别放大", "原文 · 一般化扩大化", [
-            Custom(C.magnify_split, x=540, y=740, at=0, enter="fade", grow=1, label="一次败仗"),
-            Icon("cross", 820, 440, 110, color=K.RED, at=3, sfx="rim"),
+            Fig(170, G, 300, at=0, pose="sad", mood="sad", color=None, role="soldier"),
+            Custom(C.magnify_split, x=600, y=700, at=0, enter="fade", grow=1, label="一次败仗"),
+            Icon("cross", 880, 420, 100, color=K.RED, at=3, sfx="rim"),
         ], hits=[(1, "kick", 0.9, "放大")]),
         S("到处都是干柴", "原文 · 全国都布满了干柴", [
             Custom(C.prairie, x=540, y=760, at=0, enter="fade", spark=1, b1=3),
         ], hits=[(0, "wood_low", 0.7, "干柴"), (1, "pop", 0.8, "火星"), (3, "kick", 0.9, "烈火")]),
         S("看大看小都不对", "原文 · 不切当的估量", [
-            Card("看大了", 300, 700, 64, at=0, sfx="pop"),
-            Card("看小了", 780, 700, 64, at=1, sfx="pop"),
-            Icon("cross", 300, 900, 120, color=K.RED, at=2, sfx="rim"),
-            Icon("cross", 780, 900, 120, color=K.RED, at=3, sfx="rim"),
+            Fig(200, G, 300, at=0, pose="cheer", mood="happy", color=None, role="soldier"),
+            Fig(880, G, 300, at=1, pose="sad", mood="sad", color=None, role="soldier", face=-1),
+            Card("看大了", 380, 560, 60, at=0, sfx="pop"),
+            Card("看小了", 700, 560, 60, at=1, sfx="pop"),
+            Icon("cross", 380, 760, 110, color=K.RED, at=2, sfx="rim"),
+            Icon("cross", 700, 760, 110, color=K.RED, at=3, sfx="rim"),
         ]),
         S("那该怎么做？", "原文 · 行动问题", [
-            Icon("question", 540, 660, 240, color=K.RED, at=0, sfx="wood_high"),
-            Icon("key", 780, 900, 140, color=K.GOLD, at=2, sfx="ding"), Spark(780, 900, at=2),
+            Fig(300, G, 330, at=0, pose="think", mood="worried", color=None, role="soldier"),
+            Icon("question", 660, 600, 200, color=K.RED, at=0, sfx="wood_high"),
+            Icon("key", 830, 880, 140, color=K.GOLD, at=2, sfx="ding"), Spark(830, 880, at=2),
         ], punch=0.02),
         S("不是到处乱跑", "原文 · 流动游击", [
             Custom(C.base_vs_roam, x=540, y=780, at=0, enter="fade", grow=1, b=2),
         ], hits=[(0, "wood_low", 0.7, "流动"), (1, "pop", 0.8, "扎根"), (2, "ding", 0.9, "对比")]),
         S("先扎根一块地方", "原文 · 有根据地的", [
-            Custom(C.waves, x=540, y=760, at=0, enter="fade", n=1, b0=0, core="根据地"),
-            Label("有计划地建设", 540, 1080, 46, at=2, sfx="ding"),
+            Custom(C.waves, x=540, y=700, at=0, enter="fade", n=1, b0=0, core="根据地"),
+            Fig(250, G, 300, at=1, pose="carry", mood="happy", color=None, role="farmer", sfx="pop"),
+            Fig(830, G, 300, at=1, pose="wave", mood="smile", color=None, role="woman", face=-1),
+            Label("有计划地建设", 540, 940, 46, at=2, sfx="ding"),
         ], hits=[(0, "kick", 0.8, "扎根")]),
         S("再波浪式扩大", "原文 · 波浪式地向前扩大", [
             Custom(C.waves, x=540, y=760, at=0, enter="fade", n=4, b0=0, core="根据地"),
@@ -136,7 +146,7 @@ def build():
             Custom(C.ship_mast, x=540, y=780, at=0, enter="fade", b0=0, b1=3),
         ], hits=[(0, "wood_low", 0.7, "海"), (1, "pop", 0.8, "桅杆"), (3, "ding", 0.9, "船身")]),
         S("喷薄欲出的朝日", "原文 · 喷薄欲出的一轮朝日", [
-            Custom(C.sunrise, x=540, y=780, at=0, enter="fade", b0=0, b1=3),
+            Custom(C.sunrise, x=540, y=780, at=0, enter="fade", b0=0, b1=3, watcher="youth"),
         ], hits=[(0, "wood_low", 0.7, "山"), (2, "pop", 0.8, "日出"), (3, "ding", 1.0, "光芒")], flashes=[3]),
         pops("快要 成熟了的 【婴儿】", "原文 · 躁动于母腹中", size=130, flash=2,
              extra=[Rays(540, 780, 620, at=2, alpha=0.2)]),

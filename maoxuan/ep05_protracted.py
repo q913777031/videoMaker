@@ -11,7 +11,7 @@
 
 from adler import kit as K
 from adler.core import Big, Bubble, Card, Counter, Custom, Fig, Icon, Label, Rays, Spark
-from sapiens.art import crowd, timeline
+from sapiens.art import timeline
 
 from zizhi import art as Z
 
@@ -21,7 +21,9 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = "#8A3B2E"
 G = A.GROUND_Y
-ME = dict(hair="short")
+ME = dict(hair="short", role="worker")
+ROLES_1938 = ("farmer", "soldier", "scholar", "woman", "merchant", "youth")
+
 
 ACTS = (("第一幕", "我方|防御"), ("第二幕", "准备|反攻"), ("第三幕", "战略|反攻"))
 
@@ -71,17 +73,18 @@ def build():
             Spark(540, 870, at=2, sfx="ding"),
         ], punch=0.035, flashes=[0, 1], shake=[0, 1]),
         S("原文自问自答", "原文 · 问题的提起", [
-            Card("中国会亡吗？|答复：不会亡", 540, 640, 50, at=0, sfx="pop"),
-            Card("中国能够速胜吗？|答复：不能速胜", 540, 920, 50, at=2, sfx="pop"),
-            Spark(540, 640, at=1, sfx="ding"), Spark(540, 920, at=3, sfx="ding"),
+            Fig(170, G, 330, at=0, pose="point", mood="open", color=None, role="scholar"),
+            Card("中国会亡吗？|答复：不会亡", 640, 600, 48, at=0, sfx="pop"),
+            Card("中国能够速胜吗？|答复：不能速胜", 640, 880, 48, at=2, sfx="pop"),
+            Spark(640, 600, at=1, sfx="ding"), Spark(640, 880, at=3, sfx="ding"),
         ]),
         S("亡国论：太悲观", "原文 · 亡国论", [
-            Fig(400, G, 330, at=0, pose="sad", mood="sad", color="#7A6A55", hair="cap"),
+            Fig(400, G, 330, at=0, pose="sad", mood="sad", color=None, role="scholar"),
             Bubble("【中国会亡】", 700, 540, 52, at=1, enter="pop", sfx="wood_low"),
             Icon("cross", 700, 820, 140, color=K.RED, at=3, sfx="rim"),
         ], draw=A.ground),
         S("速胜论：太性急", "原文 · 速胜论", [
-            Fig(400, G, 330, at=0, pose="cheer", mood="happy", color="#7A6A55", hair="cap"),
+            Fig(400, G, 330, at=0, pose="cheer", mood="happy", color=None, role="merchant"),
             Bubble("很快就能【战胜】", 700, 540, 48, at=1, enter="pop", sfx="pop"),
             Icon("cross", 700, 820, 140, color=K.RED, at=3, sfx="rim"),
         ], draw=A.ground),
@@ -89,11 +92,13 @@ def build():
              extra=[Rays(540, 780, 620, at=1, alpha=0.2)]),
         # ---- 三幕戏 14–22
         S("抗战才打十个月", "写作背景", [
-            Counter(0, 10, 540, 720, 240, at=0, land=2, suffix="个月", sub="一九三八年五月讲演"),
-            Icon("clock", 540, 440, 110, color=K.INK2, at=3, sfx="wood_high"),
+            Counter(0, 10, 540, 640, 200, at=0, land=2, suffix="个月", sub="一九三八年五月讲演"),
+            Icon("clock", 540, 420, 90, color=K.INK2, at=3, sfx="wood_high"),
+            Fig(220, G, 300, at=1, pose="stand", mood="worried", color=None, role="soldier"),
+            Fig(860, G, 290, at=1, pose="stand", mood="worried", color=None, role="farmer", face=-1),
         ], hits=[(0, "shaker", 0.8, "滚动")]),
         S("人人都在问结局", "原文 · 能速胜还是不能速胜", [
-            Custom(crowd, x=540, y=G, at=0, enter="fade", n=6, s=250, spread=820),
+            Custom(C.crowd_roles, x=540, y=G, at=0, enter="fade", n=6, s=270, spread=820, roles=ROLES_1938),
             Icon("question", 300, 560, 90, color=K.RED, at=1, sfx="wood_high"),
             Icon("question", 540, 500, 110, color=K.RED, at=2, sfx="wood_high"),
             Icon("question", 780, 560, 90, color=K.RED, at=3, sfx="wood_high"),
@@ -111,7 +116,8 @@ def build():
             Icon("question", 540, 375, 70, color=K.RED, at=0, enter="none"),
         ], hits=[(0, "wood_low", 0.6, "舞台"), (1, "kick", 1.0, "第二幕放大")], flashes=[1], shake=[1]),
         S("最难也是转折点", "原文 · 它是转变的枢纽", [
-            Custom(C.plateau, x=540, y=780, at=0, enter="fade", b0=0, b1=3, label_at=2, label="最困难 · 转折点"),
+            Custom(C.plateau, x=540, y=780, at=0, enter="fade", b0=0, b1=3, label_at=2, label="最困难 · 转折点",
+                   walker="farmer"),
         ], hits=[(0, "shaker", 0.7, "爬坡"), (2, "ding", 1.0, "转折点"), (3, "pop", 0.8, "上扬")]),
         S("撑住就转弱为强", "原文 · 转弱为强", [
             Custom(C.power, x=540, y=780, at=0, enter="fade", grow=1, left="自己的力量", right="困难"),
@@ -121,7 +127,8 @@ def build():
             Spark(830, 780, at=2, sfx="ding"),
         ], hits=[(0, "wood_low", 0.6, "舞台"), (1, "kick", 1.0, "第三幕放大")], flashes=[1]),
         S("靠全体演员努力", "原文 · 全体演员的努力", [
-            Custom(crowd, x=540, y=G, at=0, enter="fade", n=7, s=250, spread=860),
+            Custom(C.crowd_roles, x=540, y=G, at=0, enter="fade", n=7, s=270, spread=860, roles=ROLES_1938,
+                   moods=("happy", "smile", "open")),
             Icon("heart", 300, 520, 90, color=ACC, at=1, sfx="pop"),
             Icon("heart", 540, 470, 110, color=ACC, at=2, sfx="pop"),
             Icon("heart", 780, 520, 90, color=ACC, at=3, sfx="pop"),
@@ -133,16 +140,18 @@ def build():
         ], shake=[2], draw=A.ground),
         # ---- 二次钩子 23–26
         S("想缩短时间？", "原文 · 想要缩短战争时间", [
-            Icon("clock", 540, 640, 260, color=K.INK2, at=0, sfx="wood_high"),
-            Icon("question", 760, 440, 120, color=K.RED, at=1, sfx="rim"),
+            Fig(300, G, 330, at=0, pose="think", mood="worried", color=None, role="scholar"),
+            Icon("clock", 720, 680, 240, color=K.INK2, at=0, sfx="wood_high"),
+            Icon("question", 880, 470, 110, color=K.RED, at=1, sfx="rim"),
         ], flashes=[0], punch=0.025),
         pops("只有 增加 【自己力量】", "原文 · 惟有努力于增加自己力量", size=140, flash=2,
              extra=[Rays(540, 780, 620, at=2, alpha=0.2)]),
         S("谁也算不准哪天", "原文 · 不能造出一本流年", [
-            Card("哪天成功？", 540, 600, 70, at=0, sfx="pop"),
-            Icon("question", 300, 860, 120, color=K.RED, at=1, sfx="wood_high"),
-            Icon("question", 540, 900, 140, color=K.RED, at=2, sfx="wood_high"),
-            Icon("question", 780, 860, 120, color=K.RED, at=3, sfx="wood_high"),
+            Fig(260, G, 330, at=0, pose="shrug", mood="flat", color=None, role="sage"),
+            Card("哪天成功？", 680, 560, 64, at=0, sfx="pop"),
+            Icon("question", 560, 820, 100, color=K.RED, at=1, sfx="wood_high"),
+            Icon("question", 720, 860, 120, color=K.RED, at=2, sfx="wood_high"),
+            Icon("question", 880, 820, 100, color=K.RED, at=3, sfx="wood_high"),
         ]),
         S("但轮廓能画出来", "原文 · 描画一个轮廓", [
             Custom(timeline, x=540, y=780, at=0, enter="fade", b0=1, step=1,
@@ -155,8 +164,9 @@ def build():
             Counter(0, 7, 760, 660, 200, at=0, land=2, suffix="天", sub="健身打卡"),
         ], draw=A.ground, hits=[(0, "shaker", 0.7, "滚动")]),
         S("镜子里没变化", "当下 · 现象", [
-            Icon("mirror", 540, 700, 280, color=K.INK2, at=0, sfx="pop"),
-            Icon("question", 760, 460, 110, color=K.RED, at=2, sfx="rim"),
+            Fig(330, G, 330, at=0, pose="stand", mood="worried", **ME),
+            Icon("mirror", 720, 760, 260, color=K.INK2, at=1, sfx="pop"),
+            Icon("question", 860, 500, 100, color=K.RED, at=2, sfx="rim"),
         ]),
         S("背了一个月单词", "当下 · 现象", [
             Icon("book", 400, 720, 220, color=K.HERO, at=0, sfx="pop"),
@@ -173,7 +183,7 @@ def build():
         ], hits=[(1, "ding", 0.7, "打勾"), (2, "rim", 1.0, "断了")], shake=[2]),
         pops("你卡在了 【第二幕】", "一句话", size=140, flash=1, extra=[Rays(540, 780, 620, at=1, alpha=0.2)]),
         S("其实快到转折了", "落到自己", [
-            Custom(C.plateau, x=540, y=780, at=0, enter="fade", b0=0, b1=2, label_at=2, label="你在这里"),
+            Custom(C.plateau, x=540, y=780, at=0, enter="fade", b0=0, b1=2, label_at=2, label="你在这里", walker="worker"),
         ], hits=[(0, "shaker", 0.7, "走"), (2, "ding", 1.0, "你在这里")]),
         S("换个打法", "落到自己", [
             Custom(A.stack, x=540, y=800, at=0, enter="fade", top=1,
@@ -189,7 +199,8 @@ def build():
                    points=[("基础", "前三月"), ("平台", "最难熬"), ("冲刺", "见效")]),
         ], hits=[(0, "pop", 0.8, "基础"), (2, "pop", 0.8, "平台"), (3, "ding", 0.9, "冲刺")]),
         S("② 认准最难那段", "坚持 4 招 · 最困难的时期", [
-            Custom(C.plateau, x=540, y=780, at=0, enter="fade", b0=-9, b1=-8, label_at=1, label="提前留好余量"),
+            Custom(C.plateau, x=540, y=780, at=0, enter="fade", b0=-9, b1=-8, label_at=1, label="提前留好余量",
+                   walker="worker"),
             Icon("shield", 860, 380, 110, color=K.GREEN, at=2, sfx="ding"),
         ], hits=[(0, "wood_low", 0.7, "曲线"), (1, "pop", 0.9, "余量")]),
         S("③ 只管增加力量", "坚持 4 招 · 增加自己力量", [

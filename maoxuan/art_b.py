@@ -317,9 +317,9 @@ def piano(c, g, el_t, d):
                 pressed.add(kk)
             if dt >= 0:
                 xx = x0 + kk * kw
-                yy = -kh / 2 - 100 - 150 * clamp01(dt / 1.4)
+                yy = -kh / 2 - 80 - 60 * clamp01(dt / 1.4)
                 a = 1 - clamp01((dt - 0.8) / 0.6)
-                K.text(c, "♪", xx, yy, 70, "black", g.acc if kk == d.get("center") else K.INK2, a)
+                K.text(c, "♪", xx, yy, 56, "black", g.acc if kk == d.get("center") else K.INK2, a)
     for i in range(10):
         x = x0 + i * kw
         dim = mode == "one" and i != d.get("key", 0)

@@ -21,7 +21,8 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = "#3E6A8A"
 G = A.GROUND_Y
-ME = dict(hair="short")
+ME = dict(hair="short", role="worker")
+ROLES_1925 = ("merchant", "farmer", "scholar")      # 小资产阶级三部分：有余钱剩米 / 中立 / 生活下降
 PEOPLE = [("领导", "支持", -90), ("同组", "支持", -30), ("隔壁组", "中立", 30), ("新人", "中立", 90),
           ("财务", "中立", 150), ("老张", "阻力", 210)]
 
@@ -41,7 +42,7 @@ def build():
         ], draw=A.ground),
         S("还有人唱反调", "灵魂拷问", [
             Fig(300, G, 300, at=0, pose="stand", mood="worried", **ME),
-            Fig(760, G, 310, at=0, pose="shrug", mood="flat", color=K.DARK, hair="cap", face=-1,
+            Fig(760, G, 310, at=0, pose="shrug", mood="flat", color=K.DARK, role="worker", face=-1,
                 moves=[(1, dict(pose="point", dur=0.25, sfx="rim"))]),
             Bubble("这能【行】？", 760, 520, 48, at=1, enter="pop"),
             Custom(Z.sweat, x=330, y=740, at=2, enter="fade"),
@@ -88,7 +89,7 @@ def build():
             Custom(Z.sweat, x=420, y=520, at=2, enter="fade"),
         ], hits=[(0, "wood_low", 0.8, "对比"), (2, "rim", 0.8, "冷汗")]),
         S("不知去哪找帮手", "写作背景 · 到何处去寻找力量", [
-            Fig(540, G, 320, at=0, pose="think", mood="worried", color="#7A6A55", hair="cap"),
+            Fig(540, G, 320, at=0, pose="think", mood="worried", color=None, role="scholar"),
             Icon("question", 300, 560, 90, color=K.RED, at=1, sfx="wood_high"),
             Icon("question", 540, 480, 110, color=K.RED, at=2, sfx="wood_high"),
             Icon("question", 780, 560, 90, color=K.RED, at=3, sfx="wood_high"),
@@ -99,33 +100,36 @@ def build():
         ], hits=[(0, "shaker", 0.7, "写"), (1, "shaker", 0.7, "写"), (2, "shaker", 0.7, "写"),
                  (3, "ding", 0.9, "写完")]),
         S("看处境也看态度", "原文 · 经济地位及其态度", [
-            Card("处境", 300, 700, 80, at=0, sfx="pop"),
-            Card("态度", 780, 700, 80, at=1, sfx="pop"),
-            Icon("eye", 540, 950, 160, color=ACC, at=2, sfx="ding"), Spark(540, 950, at=2),
+            Card("处境", 290, 520, 70, at=0, sfx="pop"),
+            Card("态度", 790, 520, 70, at=1, sfx="pop"),
+            Fig(290, G, 300, at=0, pose="shrug", mood="worried", color=None, role="merchant"),
+            Fig(790, G, 300, at=1, pose="stand", mood="calm", color=None, role="farmer", face=-1),
+            Icon("eye", 540, 760, 140, color=ACC, at=2, sfx="ding"), Spark(540, 760, at=2),
         ]),
         S("比如教员、小职员", "原文 · 小资产阶级", [
-            Fig(230, G, 280, at=0, pose="stand", mood="smile", color=K.OTHER, hair="bun", sfx="pop"),
-            Fig(540, G, 290, at=1, pose="wave", mood="happy", color=K.OTHER2, hair="short", sfx="pop"),
-            Fig(850, G, 280, at=2, pose="stand", mood="open", color="#9C8FB0", hair="long", face=-1, sfx="pop"),
+            Fig(230, G, 290, at=0, pose="stand", mood="smile", color=None, role="scholar", sfx="pop"),
+            Fig(540, G, 290, at=1, pose="wave", mood="happy", color=None, role="merchant", sfx="pop"),
+            Fig(850, G, 290, at=2, pose="stand", mood="open", color="#6E7F5A", role="merchant", face=-1, sfx="pop"),
             Label("中小学教员", 230, 520, 36, at=0), Label("小事务员", 540, 500, 36, at=1),
             Label("小商人", 850, 520, 36, at=2), Spark(540, 600, at=3, sfx="ding"),
         ], draw=A.ground),
         S("同一群人分三种", "原文 · 三个不同的部分", [
-            Custom(C.three_groups, x=540, y=760, at=0, enter="fade", b0=0),
+            Custom(C.three_groups, x=540, y=760, at=0, enter="fade", b0=0, roles=ROLES_1925),
         ], hits=[(0, "pop", 0.8, "观望"), (1, "pop", 0.8, "中立"), (2, "pop", 0.8, "支持")]),
         S("中间的人最多", "原文 · 大概占一半", [
             Custom(C.half_pie, x=540, y=740, at=0, enter="pop", fill=1, text="一半", sub="中立的那部分", sfx="pop"),
         ], hits=[(1, "shaker", 0.8, "扇区"), (2, "ding", 0.9, "一半")]),
         S("中立但不反对", "原文 · 绝不反对革命", [
-            Card("中立的态度", 540, 620, 64, at=0, sfx="pop"),
-            Card("绝不反对", 540, 880, 64, at=2, sfx="pop"),
-            Icon("check", 860, 880, 110, color=K.GREEN, at=3, sfx="ding"),
+            Fig(200, G, 320, at=0, pose="stand", mood="calm", color=None, role="farmer"),
+            Card("中立的态度", 620, 600, 60, at=0, sfx="pop"),
+            Card("绝不反对", 600, 860, 60, at=2, sfx="pop"),
+            Icon("check", 900, 860, 100, color=K.GREEN, at=3, sfx="ding"),
         ]),
         S("见到曙光就跟上", "原文 · 看得见胜利的曙光", [
-            Custom(C.three_groups, x=540, y=760, at=0, enter="none", b0=-9, sun=1),
+            Custom(C.three_groups, x=540, y=760, at=0, enter="none", b0=-9, sun=1, roles=ROLES_1925),
         ], hits=[(0, "wood_low", 0.7, "三组"), (1, "ding", 1.0, "曙光"), (2, "pop", 0.8, "跟上")], flashes=[1]),
         S("摇摆的要留心", "原文 · 要时常提防他们", [
-            Fig(540, G, 320, at=0, pose="stand", mood="flat", color=K.OTHER, hair="bun",
+            Fig(540, G, 320, at=0, pose="stand", mood="flat", color=None, role="merchant",
                 moves=[(1, dict(pose="point", face=-1, dur=0.25)), (2, dict(pose="point", face=1, dur=0.25)),
                        (3, dict(pose="shrug", dur=0.25))]),
             Icon("eye", 820, 470, 120, color=ACC, at=1, sfx="wood_high"),
@@ -145,23 +149,23 @@ def build():
         ]),
         S("只盯着反对的人", "当下 · 现象", [
             Fig(300, G, 320, at=0, pose="point", mood="angry", **ME),
-            Fig(780, G, 310, at=0, pose="stand", mood="flat", color=K.DARK, hair="cap", face=-1),
+            Fig(780, G, 310, at=0, pose="stand", mood="flat", color=K.DARK, role="worker", face=-1),
             Icon("eye", 540, 520, 130, color=K.RED, at=1, sfx="wood_high"),
             Icon("eye", 540, 520, 160, color=K.RED, at=2, sfx="rim"),
         ], draw=A.ground),
         S("跟他争了一下午", "当下 · 现象", [
             Fig(300, G, 320, at=0, pose="fist", mood="angry", **ME),
-            Fig(780, G, 310, at=0, pose="point", mood="angry", color=K.DARK, hair="cap", face=-1),
+            Fig(780, G, 310, at=0, pose="point", mood="angry", color=K.DARK, role="worker", face=-1),
             Bubble("不对！", 300, 540, 50, at=1, enter="pop", sfx="wood_high"),
             Bubble("就不对！", 780, 540, 50, at=2, enter="pop", sfx="wood_high"),
             Icon("clock", 540, 420, 100, color=K.INK2, at=3, sfx="rim"),
         ], draw=A.ground, shake=[2]),
         S("中间的人都走了", "当下 · 现象", [
-            Fig(260, G, 280, at=0, pose="stand", mood="worried", color=K.GOLD, hair="bun",
+            Fig(260, G, 280, at=0, pose="stand", mood="worried", color=K.GOLD, hair="bun", role="worker_f",
                 moves=[(1, dict(x=-200, dur=0.9, sfx="wood_low"))]),
-            Fig(540, G, 290, at=0, pose="stand", mood="worried", color=K.GOLD, hair="long",
+            Fig(540, G, 290, at=0, pose="stand", mood="worried", color=K.GOLD, hair="long", role="worker_f",
                 moves=[(2, dict(x=-300, dur=0.9, sfx="wood_low"))]),
-            Fig(820, G, 280, at=0, pose="stand", mood="worried", color=K.GOLD, hair="short", face=-1,
+            Fig(820, G, 280, at=0, pose="stand", mood="worried", color=K.GOLD, hair="short", role="worker", face=-1,
                 moves=[(3, dict(x=1280, dur=0.9, sfx="wood_low"))]),
         ], draw=A.ground),
         S("最后孤军奋战", "当下 · 现象", [

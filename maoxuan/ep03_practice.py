@@ -74,7 +74,7 @@ def build():
         ], punch=0.035, flashes=[0, 1], shake=[0, 1]),
         S("听人说甜，不算", "原文 · 梨子的滋味", [
             Custom(B.pear, x=540, y=640, at=0, enter="pop", s=0.8, sfx="pop"),
-            Fig(860, G, 300, at=0, pose="point", mood="happy", face=-1, role="worker_f"),
+            Fig(860, G, 300, at=0, pose="point", mood="happy", face=-1, role="worker_f", hair="long", color="#C97B84"),
             Bubble("听说很甜", 800, 420, 46, at=1, enter="pop", sfx="wood_high"),
             Fig(220, G, 300, at=2, pose="shrug", mood="worried", **ME, sfx="pop"),
             Icon("cross", 220, 760, 90, color=K.RED, at=3, sfx="rim"),
