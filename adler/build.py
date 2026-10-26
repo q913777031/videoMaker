@@ -297,6 +297,7 @@ def episode_square(k: str, path: Path):
         K.rr(c, 0, 0, lw, 70, 12, ep.accent)
         K.rr_stroke(c, 0, 0, lw - 12, 58, 8, K.PAPER, 2, 0.8)
         K.text(c, lab, 0, 0, 40, "serif_black", K.PAPER)
+    path.parent.mkdir(parents=True, exist_ok=True)
     _save_capped(surf.makeImageSnapshot(), path)
     return path
 
