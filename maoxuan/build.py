@@ -104,67 +104,10 @@ def square_cover(path=None):
 SQUARE_SHOT = {"01": 21, "02": 17, "03": 12, "04": 10, "05": 21, "06": 25, "07": 17, "08": 15, "09": 14, "10": 11}
 
 
-def episode_square(k: str, path=None):
-    """单讲横屏封面（1080×1080，≤5MB）：上方期号、毛笔片名（【】高亮）与概念，下方装裱的故事镜头（不含字幕与界面）。"""
-    import skia
-
-    from adler import fx
-    from adler import kit as K
-    from engine import gfx
-
-    ep = B.load(k)
-    i = SQUARE_SHOT[k]
-    shot = ep.shots[i]
-    frame = B._surface(core.W, core.H)
-    fc = frame.getCanvas()
-    fc.drawImage(core.bg_image(ep.accent), 0, 0)
-    core._draw_shot(fc, ep, i, max(0.5, shot.t1 - shot.t0 - 0.15))
-    stage = frame.makeImageSnapshot()
-
-    S = 1080
-    surf = B._surface(S, S)
-    c = surf.getCanvas()
-    B._paper(c, ep, S, S)
-    K.rr(c, 110, 78, 104, 56, 28, ep.accent)
-    K.text(c, f"{ep.no:02d}", 110, 78, 36, "black", K.PAPER)
-    K.text(c, f"{B.BRAND} · {core.SERIES['name']}", 180, 78, 34, "sans_medium", K.INK2, 1, "left")
-    lines = ep.cover_title.split("|")
-    widest = max(K.text_w(gfx.plain(ln), 104, "serif_black") for ln in lines)
-    size = min(104.0, 104 * 940 / widest)
-    for j, ln in enumerate(lines):
-        gfx.draw_rich(c, ln, S / 2, 190 + j * size * 1.18, size, "serif_black", K.INK, ep.accent, 1.0, "center",
-                      shadow=(3, 5, 6, K.SHADOW))
-    top = 190 + (len(lines) - 1) * size * 1.18 + size * 0.75
-    ph = S - top - 70
-    pw = min(S - 120, ph * 1080 / 900)
-    px, py = S / 2, top + ph / 2 + 10
-    fx.glow(c, px, py, 560, ep.accent2, 0.3)
-    with K.at(c, px, py, -1.2):
-        K.card(c, 0, 0, pw + 26, ph + 26, "#F7F0E2", 1, r=10)
-        c.save()
-        c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), 6, 6), doAntiAlias=True)
-        sh = 900 * pw / ph if pw / ph < 1080 / 900 else 1080
-        src_h = sh * ph / pw
-        c.drawImageRect(stage, skia.Rect.MakeXYWH((1080 - sh) / 2, 360 + (900 - src_h) / 2, sh, src_h),
-                        skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), skia.SamplingOptions(skia.FilterMode.kLinear))
-        c.restore()
-        K.rr_stroke(c, 0, 0, pw + 10, ph + 10, 8, K.shade("#C9B48E", 0.2), 3)
-    lab = ep.concept
-    lw = K.text_w(lab, 40, "serif_black") + 56
-    with K.at(c, px + pw / 2 - lw / 2 + 10, py + ph / 2 - 6, -3):
-        K.rr(c, 0, 0, lw, 70, 12, ep.accent)
-        K.rr_stroke(c, 0, 0, lw - 12, 58, 8, K.PAPER, 2, 0.8)
-        K.text(c, lab, 0, 0, 40, "serif_black", K.PAPER)
-    path = path or B.ROOT / "videos" / B.PKG / f"{k}_{ep.concept}" / "横屏封面_1080x1080.png"
-    B._save_capped(surf.makeImageSnapshot(), path)
-    return path
-
+B.SQUARE = SQUARE_SHOT
 
 if __name__ == "__main__":
-    if "--square" in sys.argv:
-        for k in [a for a in sys.argv[1:] if a in B.MODS] or list(B.MODS):
-            print(episode_square(k))
-    elif "--series" in sys.argv:
+    if "--series" in sys.argv:
         print(series_cover())
         print(square_cover())
     else:

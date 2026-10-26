@@ -7,7 +7,8 @@
     python3 -m adler.build 01 --sheet         # 导出逐镜联系表（每镜头取画面完整时刻），用于检查
     python3 -m adler.build 01 --still 17.5    # 导出单帧
     python3 -m adler.build --verify           # 核验已渲染成片（时长、编码、响度、真峰值、音画偏差），写 out/adler/核验.md
-    python3 -m adler.build --publish          # 交付成片、封面、标题与话题到 videos/adler/（多讲另出合集图与 1080×1080 封面）
+    python3 -m adler.build --publish          # 交付成片、封面、标题与话题到 videos/adler/（配置了取景镜头的讲另出单讲 1080×1080 横屏封面；多讲另出合集图与 1080×1080 封面）
+    python3 -m adler.build --square           # 只重出单讲 1080×1080 横屏封面（需配置 SQUARE / 分镜模块 SQUARE_SHOT）
 输出目录：out/adler/epXX/
 """
 
@@ -35,8 +36,17 @@ MODS = {
 }
 
 
+SQUARE: dict = {}                   # 每讲 1080×1080 横屏封面的取景镜头 {期号: 镜头序号}；分镜模块里的 SQUARE_SHOT 优先
+
+
 def load(key: str) -> core.Episode:
     return importlib.import_module(f"{PKG}.{MODS[key]}").build()
+
+
+def square_shot(key: str) -> int | None:
+    """该讲横屏封面取景的镜头序号；未配置时返回 None（不出单讲横屏封面，旧系列保持原样）。"""
+    mod = importlib.import_module(f"{PKG}.{MODS[key]}")
+    return getattr(mod, "SQUARE_SHOT", SQUARE.get(key))
 
 
 def sheet(ep: core.Episode, path: Path, cols: int = 4):
@@ -119,6 +129,8 @@ def publish(keys: list[str]):
         shutil.copy2(_video(k, ep), dst / _video(k, ep).name)
         shutil.copy2(src / "cover.png", dst / "cover.png")
         (dst / "标题与话题.txt").write_text(f"{BRAND}｜{ep.title}\n{ep.hashtags}\n", encoding="utf-8")
+        if square_shot(k) is not None:
+            episode_square(k, dst / "横屏封面_1080x1080.png")
         print(dst)
     if len(MODS) > 1 and set(keys) == set(MODS):
         d = ROOT / "videos" / PKG
@@ -235,6 +247,60 @@ def square_cover(eps, path: Path):
     _save_capped(surf.makeImageSnapshot(), path)
 
 
+def episode_square(k: str, path: Path):
+    """单讲横屏封面（1080×1080，≤5MB）：上方期号、片名大字（【】高亮），下方装裱的取景镜头画面（不含字幕与界面），右下角概念印章。"""
+    from engine import gfx
+
+    from . import fx
+    from . import kit as K
+
+    ep = load(k)
+    i = square_shot(k)
+    shot = ep.shots[i]
+    frame = _surface(core.W, core.H)
+    fc = frame.getCanvas()
+    fc.drawImage(core.bg_image(ep.accent), 0, 0)
+    core._draw_shot(fc, ep, i, max(0.5, shot.t1 - shot.t0 - 0.15))
+    stage = frame.makeImageSnapshot()
+
+    S = 1080
+    surf = _surface(S, S)
+    c = surf.getCanvas()
+    _paper(c, ep, S, S)
+    K.rr(c, 110, 78, 104, 56, 28, ep.accent)
+    K.text(c, f"{ep.no:02d}", 110, 78, 36, "black", K.PAPER)
+    K.text(c, f"{BRAND} · {core.SERIES['name']}", 180, 78, 34, "sans_medium", K.INK2, 1, "left")
+    lines = ep.cover_title.split("|")
+    widest = max(K.text_w(gfx.plain(ln), 104, "serif_black") for ln in lines)
+    size = min(104.0, 104 * 940 / widest)
+    for j, ln in enumerate(lines):
+        gfx.draw_rich(c, ln, S / 2, 190 + j * size * 1.18, size, "serif_black", K.INK, ep.accent, 1.0, "center",
+                      shadow=(3, 5, 6, K.SHADOW))
+    top = 190 + (len(lines) - 1) * size * 1.18 + size * 0.75
+    ph = S - top - 70
+    pw = min(S - 120, ph * 1080 / 900)
+    px, py = S / 2, top + ph / 2 + 10
+    fx.glow(c, px, py, 560, ep.accent2, 0.3)
+    with K.at(c, px, py, -1.2):
+        K.card(c, 0, 0, pw + 26, ph + 26, "#F7F0E2", 1, r=10)
+        c.save()
+        c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), 6, 6), doAntiAlias=True)
+        sw = 900 * pw / ph if pw / ph < 1080 / 900 else 1080
+        sh = sw * ph / pw
+        c.drawImageRect(stage, skia.Rect.MakeXYWH((1080 - sw) / 2, 360 + (900 - sh) / 2, sw, sh),
+                        skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), skia.SamplingOptions(skia.FilterMode.kLinear))
+        c.restore()
+        K.rr_stroke(c, 0, 0, pw + 10, ph + 10, 8, K.shade("#C9B48E", 0.2), 3)
+    lab = ep.concept
+    lw = K.text_w(lab, 40, "serif_black") + 56
+    with K.at(c, px + pw / 2 - lw / 2 + 10, py + ph / 2 - 6, -3):
+        K.rr(c, 0, 0, lw, 70, 12, ep.accent)
+        K.rr_stroke(c, 0, 0, lw - 12, 58, 8, K.PAPER, 2, 0.8)
+        K.text(c, lab, 0, 0, 40, "serif_black", K.PAPER)
+    _save_capped(surf.makeImageSnapshot(), path)
+    return path
+
+
 def main():
     args = sys.argv[1:]
     keys = [a for a in args if a in MODS] or list(MODS)
@@ -242,6 +308,11 @@ def main():
         sys.exit(0 if verify(keys) else 1)
     if "--publish" in args:
         publish(keys)
+        return
+    if "--square" in args:
+        for k in keys:
+            ep = load(k)
+            print(episode_square(k, ROOT / "videos" / PKG / f"{k}_{ep.concept}" / "横屏封面_1080x1080.png"))
         return
     if "--still" in args:
         T = float(args[args.index("--still") + 1])
