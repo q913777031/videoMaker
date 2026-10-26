@@ -237,7 +237,7 @@ def lever(c, g, el_t, d):
     push = d.get("push", 1)
     k = ease_out(clamp01(g.since(push) / 0.5))
     wrong = d.get("wrong", False)
-    ang = lerp(-10, 14 if not wrong else -22, k)
+    ang = lerp(10, -14 if not wrong else 22, k)
     fxp = d.get("fulcrum", 140)
     K.poly(c, [(fxp - 70, 260), (fxp + 70, 260), (fxp, 160)], K.INK2)
     with K.at(c, fxp, 150, ang):
@@ -263,37 +263,38 @@ LEVERS = [
 
 def ladder12(c, g, el_t, d):
     """十二级杠杆阶梯：自下而上 12→1，b0 起每 step 拍点亮一级；hi 为高亮的等级（1–12），其它变淡；
-    marker 拍时一个小人站上 hi 那一级。"""
+    marker 拍时一个小人站在 hi 那一级左侧。"""
     b0, step = d.get("b0", 0), d.get("step", 0.25)
     his = d.get("hi", ())
     if isinstance(his, int):
         his = (his,)
-    rh, w0 = 66, 360
+    rh, w0 = 70, 420
+
+    def geo(i):
+        return -150 + i * 20, 400 - i * rh, w0 + i * 30
+
     for i in range(12):
         lvl = 12 - i
-        y = 380 - i * rh
-        w = w0 + i * 26
-        x = -160 + i * 26
-        on = g.since(b0 + i * step) >= 0
-        hi = lvl in his
-        if not on:
+        x, y, w = geo(i)
+        if g.since(b0 + i * step) < 0:
             continue
-        col = g.acc if hi else (K.tint(g.acc, 0.6) if not his else "#DDD2BE")
+        hi = lvl in his
+        col = g.acc if hi else (K.tint(g.acc, 0.55) if not his else "#DDD2BE")
+        tc = K.PAPER if (hi or not his) else K.INK3
         K.rr(c, x, y, w, rh - 10, 10, col)
-        K.text(c, f"{lvl}", x - w / 2 + 34, y, 34, "black", K.PAPER if (hi or not his) else K.INK3)
+        K.text(c, f"{lvl}", x - w / 2 + 36, y, 36, "black", tc)
         lab = LEVERS[lvl - 1]
-        size = min(32.0, 32 * (w - 90) / K.text_w(lab, 32, "serif_black"))
-        K.text(c, lab, x - w / 2 + 64, y, size, "serif_black", K.PAPER if (hi or not his) else K.INK3, 1, "left")
+        size = min(36.0, 36 * (w - 100) / K.text_w(lab, 36, "bold"))
+        K.text(c, lab, x - w / 2 + 70, y, size, "bold", tc, 1, "left")
     m = d.get("marker")
     if m is not None and his and g.since(m) >= 0:
-        i = 12 - his[0]
-        y = 380 - i * rh - rh / 2 + 6
-        x = -160 + i * 26 - (w0 + i * 26) / 2 - 70
-        K.figure(c, x, y + rh / 2 - 6, 150, "cheer" if his[0] <= 3 else "point", None, mood="happy", face=1, role="worker")
+        x, y, w = geo(12 - his[0])
+        K.figure(c, x - w / 2 - 60, y + rh / 2 - 5, 130, "cheer" if his[0] <= 3 else "point", None, mood="happy",
+                 face=1, role="worker")
     if d.get("arrow"):
         a = clamp01(g.since(d["arrow"]) / 0.4)
-        K.arrow(c, (440, 360), (440, -330), K.GOLD, 12, a, a, 0, 34)
-        K.text(c, "越有力", 440, -380, 40, "serif_black", K.GOLD, a)
+        K.arrow(c, (470, 380), (470, -330), K.GOLD, 12, a, a, 0, 34)
+        K.text(c, "越有力", 470, -380, 40, "serif_black", K.GOLD, a)
 
 
 def knob(c, g, el_t, d):
