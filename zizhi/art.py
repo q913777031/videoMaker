@@ -434,3 +434,67 @@ def sweat(c, g, el_t, d):
     for i in range(2):
         dt = (g.t * 0.9 + i * 0.5) % 1.0
         K.icon(c, "water", 20 * i, 60 * dt, 40, WATER, 1 - dt, 0.2)
+
+
+# ---------------------------------------------------------------- 各讲专用道具
+
+def pole(c, g, el_t, d):
+    """立木为信：南门、北门两座门；三丈木立在南门，move 拍起一人把木头扛到北门（2 拍走完）。"""
+    for x, name in ((-360, "南门"), (360, "北门")):
+        K.icon(c, "door", x, 120, 220, WOOD, 1, 0.8, 0, 1, 0.0, K.GOLD)
+        K.pill(c, x, 290, name, 34, INKWASH, K.PAPER)
+    mv = d.get("move")
+    k = ease_in_out(clamp01(g.since(mv) / max(1e-6, g.b(mv + 2) - g.b(mv)))) if mv is not None else 0.0
+    px = lerp(-200, 220, k)
+    if mv is not None and g.since(mv) >= 0:
+        K.figure(c, px - 40, 230, 280, "carry", "#6E7F5A", mood="happy", hair="short")
+        with K.at(c, px, 40, 80 * min(1.0, k * 6) if k < 1 else 0):
+            K.rr(c, 0, -60, 30, 360, 10, WOOD)
+    else:
+        K.rr(c, px, 50, 30, 360, 10, WOOD)
+        K.pill(c, px, -170, "三丈木", 32, CINNABAR, K.PAPER)
+
+
+def awl_bag(c, g, el_t, d):
+    """锥处囊中：一个布口袋，poke 拍起锥尖从袋口刺出并闪光。"""
+    k = ease_out(clamp01(g.since(d.get("poke", 99)) / 0.3))
+    K.rr(c, 0, -170 - 120 * k, 18, 240, 6, "#8E949C")
+    K.poly(c, [(-9, -290 - 120 * k), (9, -290 - 120 * k), (0, -340 - 130 * k)], "#C9CDD2")
+    if k > 0:
+        fx.sparkle(c, 0, -340 - 130 * k, 40 * k, K.GOLD, 1.0, g.t * 60)
+        fx.glow(c, 0, -340 - 130 * k, 120, K.GOLD, 0.4 * k)
+    with K.paper(c, 1.0, 0.8, skia.Rect.MakeXYWH(-300, -300, 600, 600)):
+        c.drawOval(skia.Rect.MakeXYWH(-180, -120, 360, 300), K.paint("#C9A46A"))
+        K.poly(c, [(-90, -110), (90, -110), (130, -190), (-130, -190)], "#C9A46A")
+        K.rr(c, 0, -112, 200, 22, 10, K.shade("#C9A46A", 0.35))
+        K.text(c, d.get("label", "囊"), 0, 40, 110, "serif_black", K.shade("#C9A46A", 0.4))
+
+
+def letters(c, g, el_t, d):
+    """一摞书信：burn 拍起火焰升起，信件化为灰烬。"""
+    from xingzuo.art import fire
+    burn = d.get("burn")
+    kb = clamp01(g.since(burn) / 1.2) if burn is not None else 0.0
+    for i in range(6):
+        a = 1 - clamp01(kb * 1.6 - i * 0.12)
+        with K.at(c, (i % 3 - 1) * 160, (i // 3) * 120 - 40, (i * 37) % 13 - 6):
+            K.card(c, 0, 0, 220, 150, "#F2E6CC", a, r=8)
+            K.poly(c, [(-110, -75), (110, -75), (0, 10)], K.shade("#F2E6CC", 0.12), a)
+            K.text(c, "信", 0, 30, 46, "serif_black", INKWASH, a)
+    if burn is not None and g.since(burn) >= 0:
+        fire(c, 0, 0, 340 * ease_out(clamp01(g.since(burn) / 0.3)), g.t, 1.0, True, g.pulse(5))
+
+
+def icon_row(c, g, el_t, d):
+    """一排排小图标：n 个 icon 分 4 组在第 0–3 拍依次弹出（用于“十户人家”等计数）。"""
+    n, name = d.get("n", 10), d.get("icon", "house")
+    cols = d.get("cols", 5)
+    for i in range(n):
+        st = fx.word_pop(g.since(min(3, i * 4 // n)))
+        if st is None:
+            continue
+        a, s_, _ = st
+        x = (i % cols - (cols - 1) / 2) * 170
+        y = (i // cols - (n // cols - 1) / 2) * 190
+        with K.at(c, x, y, 0, s_):
+            K.icon(c, name, 0, 0, 130, d.get("color", CINNABAR), a, 0.5, 0, 1, 1, K.GOLD)

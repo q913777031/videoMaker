@@ -13,7 +13,7 @@ from adler import core
 core.SERIES.update(name="资治通鉴", count="10讲", prefix="资治通鉴", tagline="两千年前的识人术，今天还管用")
 B.PKG = "zizhi"
 B.OUT = B.ROOT / "out" / "zizhi"
-B.MODS = {"01": "ep01_talent_virtue"}
+B.MODS = {"01": "ep01_talent_virtue", "02": "ep02_trust", "03": "ep03_mirror", "04": "ep04_learn", "05": "ep05_burn", "06": "ep06_lead", "07": "ep07_practice", "08": "ep08_speak_up", "09": "ep09_frugal", "10": "ep10_persist"}
 
 if __name__ == "__main__":
     B.main()

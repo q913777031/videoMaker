@@ -31,8 +31,12 @@ def outro(question: str, next_title: str | None, text: str) -> Shot:
         K.card(c, W / 2, 900, 860, 150, K.PAPER, g.p(1, 0.3), r=30, accent=g.acc)
         K.text(c, question, W / 2, 905, 46, "serif_black", K.INK, g.p(1, 0.3))
         ap = g.p(2, 0.4)
+        if next_title == "END":
+            K.text(c, "全系列完 · 感谢收看", W / 2, 1100, 54, "serif_black", g.acc, ap)
+            return
         K.text(c, "下一讲", W / 2, 1060, 34, "sans_medium", K.INK3, ap)
-        K.text(c, next_title or "敬请期待", W / 2, 1130, 50, "serif_black", g.acc, ap)
+        nt = next_title or "敬请期待"
+        K.text(c, nt, W / 2, 1130, min(50.0, 50 * 900 / max(1.0, K.text_w(nt, 50, "serif_black"))), "serif_black", g.acc, ap)
 
     return Shot(1, text, "评论区见", [], over=draw, text_beat=0, note="片尾：互动与下一讲预告",
                 hits=[(0, "cymbal", 0.5, "片尾落版"), (1, "pop", 0.8, "问题卡"), (2, "wood_high", 0.7, "下一讲"),
