@@ -21,15 +21,28 @@ FPS = 30
 BG_SCALE = 4
 CAPTION_Y = 1400
 CAPTION_MAX_W = 820
+BED_GAIN = 0.32
 
 
 @dataclass
 class Line:
-    """一句旁白。text 中用【】标记字幕高亮的关键词（朗读时自动去掉）。"""
+    """一句旁白。text 中用【】标记字幕高亮的关键词（朗读时自动去掉）。
+
+    say 给出时代替字幕文本送去合成（用同音字纠正多音字读音），必须与去掉标记后的 text 等长，以保持逐字时间对齐。
+    """
     text: str
     speed: float = 1.0
     pause: float = 0.22
     caption: bool = True
+    say: str | None = None
+
+    def spoken(self) -> str:
+        plain = gfx.plain(self.text)
+        if self.say is None:
+            return plain
+        if len(self.say) != len(plain):
+            raise ValueError(f"say must match caption length: {self.say!r} vs {plain!r}")
+        return self.say
 
 
 @dataclass
@@ -171,7 +184,7 @@ class Video:
             s.starts, s.ends = [], []
             pos, gap = s.lead, s.lead
             for i, ln in enumerate(s.lines):
-                x = narrator.generate(gfx.plain(ln.text), self.base_speed * ln.speed)
+                x = narrator.generate(ln.spoken(), self.base_speed * ln.speed)
                 dur = len(x) / audio.SR
                 accent, strong = _accent(s, i, dur)
                 unit = beat if strong else beat / 2
@@ -235,10 +248,13 @@ class Video:
         self.audio = audio.master(audio.process_voice(voice), music, sfx_track)[: int(self.total * audio.SR)]
 
     def _automate(self, music: np.ndarray) -> np.ndarray:
-        """按 music 表做配乐自动化：low 段切到低通闷音（0.5 秒渐入），full 段瞬间恢复全频，制造"收—放"的卡点对比。"""
+        """按 music 表做配乐自动化：low 段切到低通闷音（0.5 秒渐入），full 段瞬间恢复全频，制造"收—放"的卡点对比；
+        bed 段在闷音基础上再压低约 10 dB（0.5 秒渐入），作为长段旁白下的垫底。"""
         by_name = {s.name: s for s in self.scenes}
         marks = []
         for name, i, style, *word in self.music:
+            if style not in ("low", "full", "bed"):
+                raise ValueError(f"unknown music style: {style}")
             s = by_name[name]
             t = s.t0
             if i >= 0:
@@ -250,18 +266,26 @@ class Video:
             marks.append((t, style))
         if not marks:
             return music
-        mix_ = np.zeros(len(music))
-        for t, style in sorted(marks):
-            i = int(t * audio.SR)
-            ramp = int((0.5 if style == "low" else 0.05) * audio.SR)
-            target = 1.0 if style == "low" else 0.0
-            start = mix_[i - 1] if i > 0 else 0.0
-            seg = np.full(len(mix_) - i, target)
-            seg[:ramp] = np.linspace(start, target, ramp)[: len(seg)]
-            mix_[i:] = seg
+
+        def envelope(target_of) -> np.ndarray:
+            env = np.zeros(len(music))
+            for t, style in sorted(marks):
+                i = int(t * audio.SR)
+                ramp = int((0.05 if style == "full" else 0.5) * audio.SR)
+                target = target_of(style)
+                start = env[i - 1] if i > 0 else 0.0
+                seg = np.full(len(env) - i, target)
+                seg[:ramp] = np.linspace(start, target, ramp)[: len(seg)]
+                env[i:] = seg
+            return env
+
+        mix_ = envelope(lambda style: 0.0 if style == "full" else 1.0)
         low = np.stack([audio.lowpass(music[:, ch], 600, 4) for ch in range(2)], axis=1) * 0.8
         a = mix_[:, None]
-        return music * (1 - a) + low * a
+        out = music * (1 - a) + low * a
+        if any(style == "bed" for _, style in marks):
+            out = out * (1 - (1 - BED_GAIN) * envelope(lambda style: float(style == "bed")))[:, None]
+        return out
 
     def layout_fixed(self, durations: list[float], chars_per_sec: float = 4.6):
         """不合成旁白、按给定场景时长排时（无声版用）：场景内各句起止按可读字数（不计标点）与语速估算，事件只保留画面效果。"""
