@@ -96,7 +96,7 @@ def build():
             Icon("book", 380, 520, 180, color=K.INK2, at=0, sfx="wood_low"),
             Card("《水浒传》|三打祝家庄", 380, 800, 50, at=1, sfx="pop"), Spark(380, 800, at=2, sfx="ding"),
             Fig(820, G, 340, at=1, pose="proud", mood="calm", face=-1, **SONG),
-            Label("宋江", 820, 700, 40, at=3, sfx="pop"),
+            Label("宋江", 820, 640, 40, at=3, sfx="pop"),
         ]),
         S("宋江打祝家庄", "书中例子 · 三打祝家庄", [
             Custom(B.villages, x=540, y=680, at=0, enter="pop", sfx="wood_low"),
@@ -123,8 +123,8 @@ def build():
             Fig(540, G, 340, at=0, pose="think", mood="worried", **SONG),
         ]),
         S("改从调查入手", "原文 · 从调查情形入手", [
-            Custom(A.footprints, x=540, y=760, at=0, enter="none", n=7, b0=0, step=0.5, label="盘陀路"),
-            Fig(170, G, 300, at=0, pose=K.walk(0.3), mood="open", **SONG),
+            Custom(A.footprints, x=580, y=720, at=0, enter="none", n=7, b0=0, step=0.5, label="盘陀路"),
+            Fig(100, G, 290, at=0, pose=K.walk(0.3), mood="open", **SONG),
         ], hits=[(0, "wood_high", 0.7, "迈步"), (1, "wood_high", 0.7, "迈步"), (2, "wood_high", 0.7, "迈步"),
                  (3, "ding", 0.9, "摸清盘陀路")]),
         S("拆散三庄联盟", "原文 · 拆散了联盟", [
