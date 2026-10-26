@@ -21,9 +21,9 @@ from .common import BOOK, S, episode, pops
 
 ACC = A.RED
 G = A.GROUND_Y
-ME = dict(hair="short")
-OLD = dict(color="#7A6A55", hair="bun")          # 愚公（寓言人物）
-SAGE = dict(color="#8E7FA6", hair="bun")         # 智叟（寓言人物）
+ME = dict(role="worker")
+OLD = dict(role="elder")          # 愚公（寓言人物）
+SAGE = dict(role="sage")         # 智叟（寓言人物）
 MY = 1020                                         # 山脚地面 y
 
 
@@ -96,15 +96,17 @@ def build():
         ], punch=0.035, flashes=[0, 1], shake=[0, 1]),
         # ---- 寓言 10–24
         S("古代有个寓言", "原文 · 愚公移山", [
-            Custom(brush_text, x=540, y=780, at=0, enter="none", text="愚公移山", size=150, b0=0, step=0.5),
+            Custom(brush_text, x=440, y=780, at=0, enter="none", text="愚公移山", size=150, b0=0, step=0.5),
+            Custom(D.digger, x=780, y=G, at=1, enter="rise", b0=99, s=320, **OLD),
         ], hits=[(0, "wood_low", 0.8, "写"), (1, "wood_high", 0.7, "写"), (2, "ding", 0.8, "写完")]),
         S("两座大山挡住出路", "原文 · 太行山 王屋山", [
             Custom(D.mountains, x=540, y=MY - 300, at=0, enter="none", drop=1),
+            Fig(960, MY, 220, at=3, pose="shrug", mood="worried", face=-1, **OLD),
         ], hits=[(0, "wood_low", 0.8, "小屋"), (1, "kick", 1.0, "太行山"), (2, "kick", 1.0, "王屋山")], shake=[1, 2]),
         S("愚公带儿子挖山", "原文 · 用锄头挖", [
             Custom(D.mountains, x=540, y=MY - 300, at=0, enter="none", drop=-9, dig=0, dig_end=4, low=0.92),
             Custom(D.digger, x=300, y=MY, at=0, enter="rise", b0=0, s=260, **OLD),
-            Custom(D.digger, x=470, y=MY, at=1, enter="rise", b0=1, s=220, color=K.HERO, hair="short"),
+            Custom(D.digger, x=480, y=MY, at=1, enter="rise", b0=1, s=230, role="youth"),
         ], hits=[(0, "wood_low", 0.8, "挖"), (1, "wood_low", 0.8, "挖"), (2, "wood_low", 0.8, "挖"),
                  (3, "wood_low", 0.8, "挖")]),
         S("智叟笑他太愚蠢", "原文 · 智叟发笑", [
@@ -119,20 +121,22 @@ def build():
         ], draw=A.ground, shake=[1], hits=[(0, "wood_low", 0.7, "智叟")]),
         S("我死了有儿子", "原文 · 愚公回答", [
             Fig(260, G, 320, at=0, pose="stand", mood="calm", **OLD, moves=[(1, dict(pose="point", dur=0.25, sfx="wood_high"))]),
-            Fig(560, G, 260, at=2, pose="stand", mood="smile", color=K.HERO, hair="short", sfx="pop"),
+            Fig(560, G, 270, at=2, pose="stand", mood="smile", role="youth", sfx="pop"),
             Spark(560, 600, at=2),
         ], draw=A.ground, hits=[(3, "ding", 0.7, "儿子")]),
         S("儿子死了有孙子", "原文 · 愚公回答", [
-            Fig(260, G, 260, at=0, enter="none", pose="stand", mood="smile", color=K.HERO, hair="short"),
-            Fig(560, G, 210, at=1, pose="wave", mood="happy", color=K.GREEN, hair="short", sfx="pop"),
-            Fig(800, G, 170, at=2, pose="cheer", mood="happy", color=K.GOLD, hair="bun", sfx="pop"),
+            Fig(260, G, 270, at=0, enter="none", pose="stand", mood="smile", role="youth"),
+            Fig(560, G, 220, at=1, pose="wave", mood="happy", role="youth", color=K.GREEN, sfx="pop"),
+            Fig(800, G, 170, at=2, pose="cheer", mood="happy", role="youth", color=K.GOLD, sfx="pop"),
         ], draw=A.ground, hits=[(3, "ding", 0.8, "孙子")]),
         S("子子孙孙，没有穷尽", "原文 · 子子孙孙", [
-            Custom(crowd, x=540, y=G, at=0, enter="fade", n=9, s=200, spread=900),
+            Custom(D.ink_crowd, x=540, y=G, at=0, enter="fade", spread=880, s=230,
+                   roles=("elder", "youth", "woman", "youth", "farmer", "youth", "youth")),
             Label("没有穷尽", 540, 480, 60, at=2, sfx="ding"),
         ], hits=[(0, "shaker", 0.8, "人越来越多")]),
         S("山却不会再长高", "原文 · 不会再增高了", [
             Custom(D.mountains, x=540, y=MY - 300, at=0, enter="none", drop=-9, house=False),
+            Fig(960, MY, 230, at=0, pose="point", mood="smile", face=-1, **OLD),
             Label("封顶", 330, 360, 50, at=1, sfx="pop", fill=K.GREEN),
             Icon("check", 760, 380, 110, color=K.GREEN, at=2, sfx="ding"),
         ], hits=[(3, "wood_high", 0.7, "确认")]),
@@ -140,6 +144,8 @@ def build():
              extra=[Rays(540, 780, 620, at=2, alpha=0.2)]),
         S("为什么挖不平呢", "原文 · 为什么挖不平呢", [
             Custom(D.mountains, x=540, y=MY - 300, at=0, enter="none", drop=-9, dig=0, dig_end=3, low=0.6, house=False),
+            Custom(D.digger, x=230, y=MY, at=0, enter="none", b0=0, s=260, **OLD),
+            Custom(D.digger, x=420, y=MY, at=0, enter="none", b0=0, s=230, role="youth"),
             Icon("question", 540, 400, 120, color=K.RED, at=3, sfx="rim"),
         ], hits=[(0, "wood_low", 0.8, "挖"), (1, "wood_low", 0.8, "挖"), (2, "wood_low", 0.8, "挖")]),
         S("每天挖山不止", "原文 · 每天挖山不止", [
@@ -174,7 +180,7 @@ def build():
             Icon("question", 780, 480, 90, color=K.RED, at=3, sfx="wood_high"),
         ], hits=[(1, "shaker", 0.7, "称")]),
         S("身边人：算了吧", "当下 · 现象", [
-            Fig(760, G, 320, at=0, pose="shrug", mood="happy", face=-1, color=K.OTHER2, hair="long"),
+            Fig(760, G, 320, at=0, pose="shrug", mood="happy", face=-1, role="worker_f"),
             Bubble("【算了】吧", 620, 520, 50, at=1, enter="pop", sfx="wood_high"),
             Fig(280, G, 300, at=0, pose="stand", mood="worried", **ME, moves=[(3, dict(pose="sad", dur=0.3, sfx="tom"))]),
         ], draw=A.ground),
@@ -203,19 +209,20 @@ def build():
         ], draw=A.ground, shake=[1]),
         S("② 拆成一小锄", "坚持 4 招 · 挖一点就会少一点", [
             Custom(D.mountains, x=540, y=MY - 300, at=0, enter="none", drop=-9, house=False, names=("大目标", "")),
+            Custom(D.digger, x=860, y=MY, at=0, enter="rise", b0=0, s=240, role="worker"),
             Label("今天：一页书", 300, 400, 42, at=1, sfx="pop"),
             Label("今天：一道题", 780, 460, 42, at=2, sfx="pop"),
             Spark(540, 600, at=3, sfx="ding"),
         ]),
         S("③ 每天挖，不停", "坚持 4 招 · 每天挖山不止", [
-            Custom(D.digger, x=400, y=MY, at=0, enter="rise", b0=0, s=300, color=K.HERO, hair="short"),
+            Custom(D.digger, x=400, y=MY, at=0, enter="rise", b0=0, s=300, role="worker"),
             Custom(D.daily, x=800, y=560, at=0, enter="pop", n=9, cols=3, b0=0, step=0.4, title="", cw=80),
         ], hits=[(0, "wood_low", 0.8, "挖"), (1, "wood_low", 0.8, "挖"), (2, "wood_low", 0.8, "挖"),
                  (3, "ding", 0.8, "打卡")]),
         S("④ 拉上人一起挖", "坚持 4 招 · 一道挖", [
-            Custom(D.digger, x=220, y=MY, at=0, enter="rise", b0=0, s=260, color=K.HERO, hair="short"),
-            Custom(D.digger, x=500, y=MY, at=1, enter="rise", b0=1, s=250, color=K.OTHER2, hair="long"),
-            Custom(D.digger, x=780, y=MY, at=2, enter="rise", b0=2, s=250, color=K.GREEN, hair="bun"),
+            Custom(D.digger, x=220, y=MY, at=0, enter="rise", b0=0, s=260, role="worker"),
+            Custom(D.digger, x=500, y=MY, at=1, enter="rise", b0=1, s=250, role="worker_f"),
+            Custom(D.digger, x=780, y=MY, at=2, enter="rise", b0=2, s=250, role="worker", color=K.GREEN),
         ], hits=[(0, "pop", 0.8, "一人"), (1, "pop", 0.8, "两人"), (2, "pop", 0.8, "三人"), (3, "ding", 0.9, "一起")]),
         S("别被笑声劝退", "落到自己", [
             Bubble("别折腾了", 300, 520, 44, at=0, enter="pop", sfx="wood_high"),

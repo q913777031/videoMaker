@@ -20,8 +20,8 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = A.RED
 G = A.GROUND_Y
-ME = dict(hair="short")
-BOSS = dict(color=K.DARK, hair="short")
+ME = dict(role="worker")
+BOSS = dict(role="boss", color=K.DARK)
 
 
 def build():
@@ -96,7 +96,7 @@ def build():
             Custom(D.blind_catch, x=540, y=780, at=0, enter="fade", grab=2),
         ], hits=[(0, "wood_low", 0.7, "蒙眼"), (2, "rim", 1.0, "扑空")]),
         S("瞎子摸鱼", "原文 · 瞎子摸鱼", [
-            Custom(D.blind_catch, x=540, y=780, at=0, enter="fade", grab=2, fish=True),
+            Custom(D.blind_catch, x=540, y=780, at=0, enter="fade", grab=2, fish=True, role="farmer"),
         ], hits=[(0, "wood_low", 0.7, "下水"), (2, "rim", 1.0, "鱼跑了")]),
         S("粗枝大叶，夸夸其谈", "原文 · 粗枝大叶", [
             Custom(A.talker, x=540, y=780, at=0, enter="fade", b0=0, step=1,
@@ -128,16 +128,19 @@ def build():
         ], hits=[(2, "rim", 1.0, "一碰就裂")], shake=[2]),
         # ---- 对子 23–27
         S("有副对子画像", "原文 · 对子", [
+            Fig(540, G, 250, at=0, pose="think", mood="calm", role="scholar"),
             Custom(D.couplet, x=540, y=780, at=0, enter="fade", b0=0, step=0.25,
                    left="墙上芦苇头重脚轻根底浅", right="山间竹笋嘴尖皮厚腹中空"),
         ], hits=[(0, "wood_low", 0.8, "上联"), (1, "shaker", 0.6, "写"), (2, "shaker", 0.6, "写"),
                  (3, "ding", 0.8, "下联")]),
         S("头重脚轻根底浅", "原文 · 墙上芦苇", [
-            Custom(D.reed, x=540, y=760, at=0, enter="fade", sway=1, lab=2),
+            Custom(D.reed, x=600, y=760, at=0, enter="fade", sway=1, lab=2),
+            Fig(110, G, 260, at=0, pose="point", mood="smile", role="scholar"),
         ], hits=[(0, "wood_low", 0.8, "墙"), (1, "shaker", 0.8, "摇晃"), (2, "pop", 0.8, "头重脚轻"),
                  (3, "pop", 0.8, "根底浅")]),
         S("嘴尖皮厚腹中空", "原文 · 山间竹笋", [
-            Custom(D.shoot, x=540, y=760, at=0, enter="fade", lab=1, cut=2),
+            Custom(D.shoot, x=560, y=760, at=0, enter="fade", lab=1, cut=2),
+            Fig(130, 1060, 240, at=0, pose="point", mood="surprised", role="farmer"),
         ], hits=[(0, "wood_low", 0.8, "竹笋"), (1, "pop", 0.8, "嘴尖"), (2, "rim", 1.0, "剖开")]),
         pops("你们看 【像不像】？", "原文 · 你们看，像不像？", size=150, flash=1,
              extra=[Rays(540, 780, 620, at=1, alpha=0.2)]),

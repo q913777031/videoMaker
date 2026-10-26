@@ -74,8 +74,9 @@ def target(c, g, el_t, d):
             continue
         k = ease_in(clamp01(dt / 0.25))
         tx, ty = (0, 0) if hit else (r + 140, -r - 40)
-        x, y = lerp(-600, tx, k), lerp(-300, ty, k)
-        ang = math.degrees(math.atan2(ty + 300, tx + 600))
+        sx, sy = d.get("src", (-600, -300))
+        x, y = lerp(sx, tx, k), lerp(sy, ty, k)
+        ang = math.degrees(math.atan2(ty - sy, tx - sx))
         with K.at(c, x, y, ang):
             K.seg(c, -170, 0, 0, 0, WOODC, 10)
             K.poly(c, [(0, -14), (30, 0), (0, 14)], K.INK)
@@ -219,7 +220,7 @@ def blind_catch(c, g, el_t, d):
     pose = K.blend(K.pose("stand"), K.pose("reach"), clamp01((dg + 0.3) / 0.3)) if dg > -0.3 else K.pose("stand")
     x = -200 + (60 * ease_out(clamp01(dg / 0.2)) if dg >= 0 else 0)
     K.figure(c, x, 300, 340, pose, d.get("color"), mood="flat", hair="short", role=d.get("role", "scholar"))
-    hy = 300 - 340 * 0.92
+    hy = 300 - 340 * 0.975
     K.rr(c, x + 14, hy, 110, 22, 10, K.INK)
     fish = d.get("fish", False)
     for i in range(3):

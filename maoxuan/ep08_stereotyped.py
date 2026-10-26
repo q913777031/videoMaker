@@ -10,7 +10,6 @@
 
 from adler import kit as K
 from adler.core import Big, Bubble, Card, Counter, Custom, Fig, Icon, Label, Rays, Spark
-from sapiens.art import crowd
 from scarcity.art import laptop
 
 from . import art as A
@@ -19,8 +18,9 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = A.RED
 G = A.GROUND_Y
-ME = dict(hair="short")
-BOSS = dict(color=K.DARK, hair="short")
+ME = dict(role="worker")
+BOSS = dict(role="boss", color=K.DARK)
+ARCHER = dict(role="hero")
 CRIMES = ("空话连篇", "装腔作势", "无的放矢", "语言无味", "甲乙丙丁", "不负责任", "流毒全党", "传播出去")
 
 
@@ -75,14 +75,16 @@ def build():
             Spark(540, 860, at=2, sfx="ding"),
         ], punch=0.035, flashes=[0, 1], shake=[0, 1]),
         S("懒婆娘的裹脚", "原文 · 又长又臭", [
-            Custom(D.cloth, x=540, y=780, at=0, enter="fade", b0=0, b1=3),
-        ], hits=[(0, "wood_low", 0.8, "布"), (1, "shaker", 0.7, "拉长"), (2, "shaker", 0.7, "拉长"),
+            Custom(D.cloth, x=540, y=780, at=0, enter="fade", b0=0, b1=3, span=600),
+            Fig(880, G, 300, at=1, pose="shrug", mood="flat", face=-1, role="woman", sfx="pop"),
+        ], draw=A.ground, hits=[(0, "wood_low", 0.8, "布"), (1, "shaker", 0.7, "拉长"), (2, "shaker", 0.7, "拉长"),
                  (3, "rim", 0.9, "臭")]),
         S("群众见了就摇头", "原文 · 群众见了就摇头", [
-            Custom(crowd, x=540, y=G, at=0, enter="fade", n=6, s=250, spread=820),
-            Icon("cross", 300, 520, 90, color=K.RED, at=1, sfx="rim"),
-            Icon("cross", 540, 480, 110, color=K.RED, at=2, sfx="rim"),
-            Icon("cross", 780, 520, 90, color=K.RED, at=3, sfx="rim"),
+            Custom(D.ink_crowd, x=540, y=G, at=0, enter="fade", spread=760, s=260,
+                   roles=("farmer", "woman", "merchant", "youth", "farmer")),
+            Icon("cross", 350, 470, 90, color=K.RED, at=1, sfx="rim"),
+            Icon("cross", 540, 430, 110, color=K.RED, at=2, sfx="rim"),
+            Icon("cross", 730, 470, 90, color=K.RED, at=3, sfx="rim"),
         ]),
         S("他列了八大罪状", "原文 · 八大罪状", [
             Counter(0, 8, 540, 740, 260, at=0, land=2, suffix="条", sub="罪状"),
@@ -90,28 +92,37 @@ def build():
         ], hits=[(0, "shaker", 0.8, "滚动")]),
         # ---- 八条罪状 13–23
         S("装腔作势，借以吓人", "罪状 · 二", [
-            Fig(540, G, 360, at=0, pose="proud", mood="angry", **BOSS,
+            Fig(560, G, 380, at=0, pose="proud", mood="angry", role="scholar",
                 moves=[(2, dict(pose="fist", dur=0.2, sfx="kick"))]),
-            Icon("megaphone", 800, 560, 150, color=K.INK2, at=1, sfx="wood_high"),
-            Fig(230, G, 240, at=0, pose="cover", mood="worried", color=K.OTHER, hair="long"),
+            Icon("megaphone", 830, 520, 150, color=K.INK2, at=1, sfx="wood_high"),
+            Fig(220, G, 260, at=0, pose="cover", mood="worried", role="farmer"),
         ], draw=A.ground, shake=[2]),
         S("无的放矢，不看对象", "罪状 · 三", [
-            Custom(D.target, x=540, y=760, at=0, enter="pop", arrows=[(1, False), (2, False)], sfx="pop"),
-        ], hits=[(1, "rim", 0.9, "射偏"), (2, "rim", 0.9, "又射偏")]),
+            Fig(170, G, 300, at=0, pose="point", mood="flat", **ARCHER),
+            Custom(D.target, x=720, y=700, at=0, enter="pop", arrows=[(1, False), (2, False)], r=180,
+                   src=(-430, 205), sfx="pop"),
+        ], draw=A.ground, hits=[(1, "rim", 0.9, "射偏"), (2, "rim", 0.9, "又射偏")]),
         S("射箭要看靶子", "原文 · 射箭要看靶子", [
-            Custom(D.target, x=540, y=760, at=0, enter="pop", arrows=[(2, True)], label="靶子", sfx="pop"),
-        ], hits=[(2, "kick", 1.0, "正中靶心")], flashes=[2]),
+            Fig(170, G, 300, at=0, pose="point", mood="smile", **ARCHER,
+                moves=[(3, dict(pose="cheer", mood="happy", dur=0.25))]),
+            Custom(D.target, x=720, y=700, at=0, enter="pop", arrows=[(2, True)], label="靶子", r=180,
+                   src=(-430, 205), sfx="pop"),
+        ], draw=A.ground, hits=[(2, "kick", 1.0, "正中靶心")], flashes=[2]),
         S("弹琴要看听众", "原文 · 弹琴要看听众", [
-            Custom(crowd, x=540, y=G, at=0, enter="fade", n=5, s=240, spread=760),
-            Label("听众是谁？", 540, 520, 54, at=1, sfx="pop"),
-            Icon("eye", 540, 400, 110, color=ACC, at=2, sfx="ding"), Spark(540, 400, at=2),
-        ]),
+            Fig(190, G, 300, at=0, pose="carry", mood="smile", role="scholar"),
+            Custom(D.qin, x=260, y=G - 170, at=0, enter="pop", b0=0, w=260),
+            Custom(D.ink_crowd, x=700, y=G, at=0, enter="fade", spread=420, s=250, face=-1,
+                   roles=("farmer", "woman", "youth")),
+            Label("听众是谁？", 660, 470, 50, at=1, sfx="pop"),
+            Icon("eye", 660, 360, 100, color=ACC, at=2, sfx="ding"), Spark(660, 360, at=2),
+        ], draw=A.ground),
         S("对牛弹琴，笑弹琴人", "原文 · 讥笑弹琴者", [
-            Fig(300, G, 320, at=0, pose="wave", mood="happy", **ME),
-            Label("对牛弹琴", 300, 470, 46, at=0, sfx="pop"),
-            Custom(crowd, x=760, y=G, at=1, enter="fade", n=3, s=230, spread=360),
-            Bubble("听不懂", 760, 560, 44, at=2, enter="pop", sfx="wood_high"),
-            Icon("cross", 300, 640, 120, color=K.RED, at=3, sfx="rim"),
+            Fig(220, G, 300, at=0, pose="carry", mood="happy", role="scholar"),
+            Custom(D.qin, x=290, y=G - 170, at=0, enter="pop", b0=0, w=260),
+            Label("对牛弹琴", 260, 420, 46, at=0, sfx="pop"),
+            Custom(D.cow, x=780, y=G, at=1, enter="pop", s=360, face=-1, ear=2, sfx="wood_low"),
+            Bubble("哞？", 800, 640, 44, at=2, enter="pop", sfx="wood_high"),
+            Icon("cross", 220, 560, 100, color=K.RED, at=3, sfx="rim"),
         ], draw=A.ground),
         S("语言无味，像个瘪三", "罪状 · 四", [
             Custom(A.talker, x=540, y=780, at=0, enter="fade", b0=0, step=1,
@@ -158,7 +169,7 @@ def build():
             Custom(D.nested, x=540, y=780, at=0, enter="pop", b0=0, step=0.75, sfx="pop"),
         ], hits=[(1, "wood_high", 0.7, "套娃"), (2, "wood_high", 0.7, "套娃"), (3, "rim", 0.9, "套娃")]),
         S("读的人看不懂", "当下 · 现象", [
-            Fig(540, G, 330, at=0, pose="think", mood="worried", color=K.OTHER2, hair="long"),
+            Fig(540, G, 330, at=0, pose="think", mood="worried", role="worker_f"),
             Icon("phone", 760, 600, 120, color=K.INK2, at=0, sfx="pop"),
             Icon("question", 420, 460, 80, color=K.RED, at=1, sfx="wood_high"),
             Icon("question", 620, 420, 100, color=K.RED, at=2, sfx="wood_high"),
@@ -182,8 +193,10 @@ def build():
             Icon("check", 820, 470, 110, color=K.GREEN, at=3, sfx="ding"),
         ], hits=[(0, "shaker", 0.7, "写"), (1, "shaker", 0.7, "写"), (2, "shaker", 0.7, "写")]),
         S("② 先看读者是谁", "写作 4 招 · 射箭要看靶子", [
-            Custom(D.target, x=540, y=720, at=0, enter="pop", arrows=[(2, True)], label="读者", sfx="pop"),
-        ], hits=[(1, "wood_high", 0.7, "瞄准"), (2, "kick", 1.0, "命中")], flashes=[2]),
+            Fig(170, G, 300, at=0, pose="point", mood="smile", **ME),
+            Custom(D.target, x=720, y=700, at=0, enter="pop", arrows=[(2, True)], label="读者", r=180,
+                   src=(-430, 205), sfx="pop"),
+        ], draw=A.ground, hits=[(1, "wood_high", 0.7, "瞄准"), (2, "kick", 1.0, "命中")], flashes=[2]),
         S("③ 用大白话写", "写作 4 招 · 向人民群众学习语言", [
             Card("赋能", 300, 640, 60, at=0, sfx="pop"),
             Icon("cross", 300, 880, 120, color=K.RED, at=1, sfx="rim"),
