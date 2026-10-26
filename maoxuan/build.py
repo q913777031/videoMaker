@@ -15,7 +15,9 @@ from adler import core
 core.SERIES.update(name="毛选", count="10讲", prefix="毛选", tagline="把难题拆开的方法论，今天还管用")
 B.PKG = "maoxuan"
 B.OUT = B.ROOT / "out" / "maoxuan"
-B.MODS = {"01": "ep01_investigation"}
+B.MODS = {"01": "ep01_investigation", "02": "ep02_contradiction", "03": "ep03_practice", "04": "ep04_piano",
+          "05": "ep05_protracted", "06": "ep06_spark", "07": "ep07_friends", "08": "ep08_stereotyped",
+          "09": "ep09_truth", "10": "ep10_yugong"}
 
 # 系列规划：(期号, 概念, 片名)；已出的讲在合集图里放封面，未出的放“敬请期待”
 PLAN = [
