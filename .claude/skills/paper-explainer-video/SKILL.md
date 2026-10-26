@@ -8,6 +8,13 @@ description: 用阿德勒纸片风引擎（adler/core.py + adler/fx.py）制作�
 1080×1920、30fps、92.6 秒/期，配乐固定为 `music/bgm.m4a`（CLAUDE.md 强制），镜头边界、动作与音效全部落在 `bgm.detect()` 的实测拍点上。
 现成范例：`adler/`（10 讲）、`nutrition/`（8 讲）、`scarcity/`（8 讲，光效层 + 上班族日常情境，新系列优先照它写）。
 
+## 0. 快节奏规则（强制，优先于下文第 2 节的旧骨架）
+
+- 每镜 1 小节（≈2.1 秒，≤3 秒），42 镜；硬切 + 切镜推镜（`RULES` 默认启用，不要用 `LEGACY`）。
+- 动画为主：每镜 ≥2 个拍点有画面事件；文字为辅：字幕 ≤10 字，长句用纯弹字镜头或 `keep=True` 跨镜。
+- 模板见 `xingzuo/common.py`（`S`、`drop`、`pops`、`outro`），手写范例 `xingzuo/ep01_aries.py`；
+  同结构多讲系列可照 `xingzuo/story.py`（通用 42 镜模板）+ `xingzuo/specs.py`（每讲一份文案表）批量生成。
+
 ## 1. 工作流
 
 1. **事实核查先于分镜**：用 WebSearch 核实书中每个案例与研究（作者、年份、期刊、样本量、结论方向），同时查反面证据与复现情况。

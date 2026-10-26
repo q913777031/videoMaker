@@ -271,4 +271,5 @@ def main():
 
 
 if __name__ == "__main__":
+    core.RULES.update(core.LEGACY)   # 阿德勒 10 讲为旧系列，保持原节奏
     main()

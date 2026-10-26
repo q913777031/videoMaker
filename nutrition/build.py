@@ -10,6 +10,8 @@
 from adler import build as B
 from adler import core
 
+core.RULES.update(core.LEGACY)       # 旧系列：保持 2026-10 之前的慢节奏规则，成片不变
+
 core.SERIES.update(name="动物为什么吃不胖", count="8讲", prefix="吃不胖")
 B.PKG = "nutrition"
 B.OUT = B.ROOT / "out" / "nutrition"

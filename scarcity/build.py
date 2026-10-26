@@ -10,6 +10,8 @@
 from adler import build as B
 from adler import core
 
+core.RULES.update(core.LEGACY)       # 旧系列：保持 2026-10 之前的慢节奏规则，成片不变
+
 core.SERIES.update(name="稀缺", count="8讲", prefix="稀缺", tagline="为什么越缺，越忙越乱")
 B.PKG = "scarcity"
 B.OUT = B.ROOT / "out" / "scarcity"
