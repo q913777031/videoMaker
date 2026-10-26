@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>绵绵与钟大爷 · 黏土</title>
+<style>
+  @font-face { font-family: "SC"; src: url("../../assets/fonts/NotoSansCJKsc-Black.otf"); font-weight: 900; }
+  @font-face { font-family: "SerifSC"; src: url("../../assets/fonts/NotoSerifCJKsc-Black.otf"); font-weight: 900; }
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #1b1530; }
+  #gl { position: absolute; left: 0; top: 0; }
+  #grade { position: absolute; inset: 0; pointer-events: none;
+           background: radial-gradient(ellipse 75% 60% at 50% 48%, rgba(0,0,0,0) 55%, rgba(20,8,20,0.55) 100%); }
+  #cap { position: absolute; left: 0; right: 0; top: 1715px; text-align: center; font: 900 58px "SC";
+         color: #fff; -webkit-text-stroke: 10px #120a10; paint-order: stroke fill; letter-spacing: 2px; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "../../ac3d/node_modules/three/build/three.module.js",
+               "three/addons/": "../../ac3d/node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<canvas id="gl" width="1080" height="1920"></canvas>
+<div id="grade"></div>
+<div id="cap"></div>
+<script type="module" src="./clay.js"></script>
+</body>
+</html>
