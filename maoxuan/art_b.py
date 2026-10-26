@@ -82,7 +82,8 @@ def bamboo_split(c, g, el_t, d):
 
 def fog(c, g, el_t, d):
     """如堕烟海：人物在灰雾里打转，问号漂浮；雾团随时间缓慢飘动。"""
-    K.figure(c, 0, 300, 320, "think", K.HERO, mood="worried", hair="short", face=1 if math.sin(g.t * 2) > 0 else -1)
+    K.figure(c, 0, 300, 320, "think", K.HERO, mood="worried", hair="short", face=1 if math.sin(g.t * 2) > 0 else -1,
+             role=d.get("role", "worker"))
     for i in range(9):
         x = math.sin(g.t * 0.8 + i * 1.7) * 380
         y = -300 + i * 70 + math.cos(g.t + i) * 30
@@ -282,9 +283,10 @@ def cave(c, g, el_t, d):
         K.dot(c, sx * 50, 90, 18, K.GOLD, ke)
     kg = g.span(d.get("go", 2), d.get("go", 2) + 1.5)
     if g.since(d.get("go", 2)) >= 0:
-        K.figure(c, lerp(-380, -120, kg), 300, 260, K.walk(g.t * 2.4, 1.0), K.HERO, mood="open", hair="short")
+        K.figure(c, lerp(-380, -120, kg), 300, 260, K.walk(g.t * 2.4, 1.0), K.HERO, mood="open", hair="short",
+                 role=d.get("role", "youth"))
     else:
-        K.figure(c, -380, 300, 260, "stand", K.HERO, mood="worried", hair="short")
+        K.figure(c, -380, 300, 260, "stand", K.HERO, mood="worried", hair="short", role=d.get("role", "youth"))
 
 
 # ---------------------------------------------------------------- 弹钢琴

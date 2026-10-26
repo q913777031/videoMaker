@@ -35,15 +35,16 @@ def long_doc(c, g, el_t, d):
 def cloth(c, g, el_t, d):
     """裹脚布：一卷布从左向右（再折回）越拉越长，上方飘着臭味波浪线。"""
     k = g.span(d.get("b0", 0), d.get("b1", 3), ease=ease_out)
-    L = 2600 * k
+    span = d.get("span", 800)
+    L = 3.25 * span * k
     rows = [(-300, 1), (-100, -1), (100, 1), (300, -1)]
     left = L
     for y, dirn in rows:
-        seg = min(800.0, max(0.0, left))
-        left -= 800
+        seg = min(float(span), max(0.0, left))
+        left -= span
         if seg <= 0:
             break
-        x0 = -400 if dirn > 0 else 400
+        x0 = -400 if dirn > 0 else -400 + span
         x1 = x0 + dirn * seg
         K.rr(c, (x0 + x1) / 2, y, abs(x1 - x0) + 2, 90, 12, "#EADBC0")
         for j in range(int(seg / 80)):
@@ -58,7 +59,7 @@ def cloth(c, g, el_t, d):
             p.lineTo(x + math.sin(ph + j) * 20, -380 - j * 22)
         a = clamp01(k * 3 - 0.5)
         c.drawPath(p, K.paint("#8FA05E", a * 0.8, 6))
-    K.pill(c, 0, 420, d.get("label", "又长又臭"), 46, RED, K.PAPER)
+    K.pill(c, -400 + span / 2, 420, d.get("label", "又长又臭"), 46, RED, K.PAPER)
 
 
 def target(c, g, el_t, d):
@@ -217,9 +218,9 @@ def blind_catch(c, g, el_t, d):
     dg = g.since(grab)
     pose = K.blend(K.pose("stand"), K.pose("reach"), clamp01((dg + 0.3) / 0.3)) if dg > -0.3 else K.pose("stand")
     x = -200 + (60 * ease_out(clamp01(dg / 0.2)) if dg >= 0 else 0)
-    K.figure(c, x, 300, 340, pose, d.get("color", K.HERO), mood="flat", hair="short")
-    hy = 300 - 340 * 0.88
-    K.rr(c, x + 18, hy, 120, 26, 10, K.INK)
+    K.figure(c, x, 300, 340, pose, d.get("color"), mood="flat", hair="short", role=d.get("role", "scholar"))
+    hy = 300 - 340 * 0.92
+    K.rr(c, x + 14, hy, 110, 22, 10, K.INK)
     fish = d.get("fish", False)
     for i in range(3):
         bx, by = 180 + i * 90, (120 if fish else -40) + (i % 2) * 50
@@ -298,8 +299,8 @@ def digger(c, g, el_t, d):
     beat = g.since(b0)
     ph = (beat / max(1e-3, g.b(b0 + 1) - g.b(b0))) % 1 if beat >= 0 else 0
     up = K.blend(K.pose("fist"), K.pose("crouch"), ease_in_out(clamp01(ph * 2 if ph < 0.5 else 2 - ph * 2)))
-    K.figure(c, x0, 0, s, up if beat >= 0 else "stand", d.get("color", "#7A6A55"), mood=d.get("mood", "calm"),
-             hair=d.get("hair", "bun"), face=d.get("face", 1), prop=hoe)
+    K.figure(c, x0, 0, s, up if beat >= 0 else "stand", d.get("color"), mood=d.get("mood", "calm"),
+             hair=d.get("hair", "bun"), face=d.get("face", 1), prop=hoe, role=d.get("role"))
     if beat >= 0 and ph < 0.3:
         for i in range(5):
             a = i * 0.8 + 0.5
@@ -338,7 +339,7 @@ def immortals(c, g, el_t, d):
         _mountain(c, x, y + 100, 300 * (1 - 0.1 * i), 360, "" if up > 0 else ("太行山", "王屋山")[i], alpha=1 - 0.3 * up)
         if k > 0:
             fx.glow(c, x, y - 300, 140, K.GOLD, 0.5 * k)
-            K.figure(c, x, y - 220, 180, "carry", K.PAPER, alpha=k, mood="smile", hair="bun")
+            K.figure(c, x, y - 220, 200, "carry", None, alpha=k, mood="smile", hair="bun", role="immortal")
 
 
 def chips(c, g, el_t, d):
@@ -356,3 +357,60 @@ def chips(c, g, el_t, d):
             lab = f"{no} {name}"
             size = min(40.0, 40 * 360 / K.text_w(lab, 40, "serif_black"))
             K.text(c, lab, 0, 0, size, "serif_black", K.PAPER if i == len(items) - 1 else K.INK, a)
+
+
+# ---------------------------------------------------------------- 水墨角色组合
+
+def ink_crowd(c, g, el_t, d):
+    """一排指定造型的人（roles），带轻微呼吸起伏；face_to 为众人朝向的 x（元素坐标）。"""
+    roles = d["roles"]
+    n = len(roles)
+    sp, s = d.get("spread", 760), d.get("s", 240)
+    for i, r in enumerate(roles):
+        x = -sp / 2 + sp * i / max(1, n - 1)
+        sc = s * (1, 0.92, 1.04, 0.88, 0.97)[i % 5]
+        f = d.get("face", 1) if d.get("face_to") is None else (1 if d["face_to"] > x else -1)
+        K.figure(c, x, 0, sc, "stand", None, face=f, mood=("calm", "smile", "flat")[i % 3],
+                 bob=0.006 * math.sin(g.t * 2.4 + i), role=r)
+
+
+def qin(c, g, el_t, d):
+    """古琴：长条琴身 + 七根弦；从 b0 起每拍琴弦一亮，飘出音符。"""
+    w = d.get("w", 340)
+    K.rr(c, 0, 0, w, 54, 18, "#5A3A26")
+    K.rr(c, 0, -6, w - 30, 30, 12, "#7A5236")
+    for i in range(7):
+        K.seg(c, -w / 2 + 30, -16 + i * 4.5, w / 2 - 20, -16 + i * 4.5, "#E8D9B0", 1.6, 0.9)
+    for i in range(3):
+        dt = g.since(d.get("b0", 0) + i)
+        if dt < 0:
+            continue
+        k = clamp01(dt / 1.2)
+        x, y = -60 + i * 70 + 30 * k, -60 - 160 * k
+        a = 1 - k
+        K.dot(c, x, y, 14, K.INK, a)
+        K.seg(c, x + 12, y, x + 12, y - 50, K.INK, 4, a)
+        K.seg(c, x + 12, y - 50, x + 34, y - 36, K.INK, 4, a)
+
+
+def cow(c, g, el_t, d):
+    """水墨黄牛：(0, 0) 为蹄底中点；face=-1 朝左；chew 时嘴微动，ear 拍起耳朵一扇。"""
+    s, f = d.get("s", 300), d.get("face", -1)
+    col = "#A8763E"
+    with K.at(c, 0, 0, 0, 1):
+        c.save()
+        c.scale(f, 1)
+        for i, lx in enumerate((-0.32, -0.18, 0.2, 0.32)):
+            K.rr(c, lx * s, -0.17 * s, 0.08 * s, 0.34 * s, 0.03 * s, K.shade(col, 0.15 if i % 2 else 0))
+        c.drawOval(skia.Rect.MakeXYWH(-0.46 * s, -0.6 * s, 0.92 * s, 0.4 * s), K.paint(col))
+        c.drawOval(skia.Rect.MakeXYWH(-0.2 * s, -0.55 * s, 0.3 * s, 0.2 * s), K.paint("#F1E6D0", 0.9))
+        c.drawOval(skia.Rect.MakeXYWH(0.36 * s, -0.72 * s, 0.26 * s, 0.24 * s), K.paint(col))
+        c.drawOval(skia.Rect.MakeXYWH(0.5 * s, -0.6 * s, 0.16 * s, 0.12 * s), K.paint("#D9B48A"))
+        K.dot(c, 0.47 * s, -0.66 * s, 0.018 * s, K.INK)
+        ear = math.sin(g.t * 18) * 15 if g.since(d.get("ear", 99)) >= 0 else 0
+        with K.at(c, 0.38 * s, -0.7 * s, -30 + ear):
+            c.drawOval(skia.Rect.MakeXYWH(-0.12 * s, -0.04 * s, 0.12 * s, 0.07 * s), K.paint(K.shade(col, 0.2)))
+        K.poly(c, [(0.42 * s, -0.72 * s), (0.38 * s, -0.84 * s), (0.46 * s, -0.74 * s)], "#EDE3CF")
+        K.poly(c, [(0.56 * s, -0.72 * s), (0.6 * s, -0.84 * s), (0.6 * s, -0.72 * s)], "#EDE3CF")
+        K.seg(c, -0.46 * s, -0.5 * s, -0.56 * s, -0.25 * s, K.shade(col, 0.3), 0.025 * s)
+        c.restore()

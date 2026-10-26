@@ -98,7 +98,7 @@ def mountain_goal(c, g, el_t, d):
         K.poly(c, [(-130, -240), (-60, -360), (10, -280), (-40, -250)], K.PAPER)
         K.icon(c, "flag", -60, -420, 120, K.RED, 1, 0.5)
     K.pill(c, 280, -380, d.get("goal", "目标"), 50, g.acc, K.PAPER)
-    K.figure(c, -330, 300, 200, "stand", K.HERO, mood="worried" if k > 0 else "calm", hair="short")
+    K.figure(c, -330, 300, 220, "stand", K.HERO, mood="worried" if k > 0 else "calm", hair="short", role="worker")
 
 
 def tally(c, g, el_t, d):
@@ -179,7 +179,7 @@ def ship_mast(c, g, el_t, d):
     c.restore()
     if k > 0.15:
         K.pill(c, 260, -340, d.get("label", "桅杆尖头"), 44, g.acc, K.PAPER, clamp01((k - 0.15) / 0.2))
-    K.figure(c, -340, 120, 180, "point", K.HERO, hair="short", mood="happy")
+    K.figure(c, -360, 120, 200, "point", None, hair="short", mood="happy", role=d.get("role", "youth"))
 
 
 def sunrise(c, g, el_t, d):
@@ -191,6 +191,8 @@ def sunrise(c, g, el_t, d):
     K.dot(c, 0, y, 130, SUN)
     K.poly(c, [(-520, 330), (-200, 20), (-40, 150), (140, -20), (520, 330)], "#6E7F5A")
     K.poly(c, [(-520, 330), (-330, 170), (-150, 260), (520, 330)], K.shade("#6E7F5A", 0.25))
+    if d.get("watcher"):
+        K.figure(c, -200, 30, 170, "point", None, mood="happy", face=1, role=d["watcher"])
 
 
 def waves(c, g, el_t, d):
@@ -294,6 +296,7 @@ def three_groups(c, g, el_t, d):
         K.dot(c, 0, -360, 90, SUN, k)
     groups = d.get("groups", (("观望", 2, -360), ("中立", 4, 0), ("支持", 2, 360)))
     cols = (K.OTHER, K.GOLD, K.GREEN)
+    roles = d.get("roles")
     for i, (lab, n, x0) in enumerate(groups):
         st = fx.word_pop(g.since(d.get("b0", 0) + i))
         if st is None:
@@ -304,5 +307,18 @@ def three_groups(c, g, el_t, d):
             mood = "happy" if sun else "calm"
             pose = "cheer" if sun and i > 0 else "stand"
             K.figure(c, x + (-x0 * 0.15 * k), 260, 210, pose, cols[i], alpha=a, mood=mood,
-                     hair=("short", "bun", "long")[j % 3], face=1 if x < 0 else -1)
+                     hair=("short", "bun", "long")[j % 3], face=1 if x < 0 else -1,
+                     role=roles[i] if roles else ("worker", "worker_f")[j % 2])
         K.pill(c, x0, 340, lab, 40, cols[i], K.PAPER, a)
+
+
+def crowd_roles(c, g, el_t, d):
+    """一排古今人物：roles 依次循环取造型，spread 内均匀排开，轻微呼吸起伏，都朝向中心。"""
+    roles = d.get("roles", ("farmer", "scholar", "woman", "merchant", "youth", "soldier"))
+    n, s, spread = d.get("n", 6), d.get("s", 250), d.get("spread", 820)
+    moods = d.get("moods", ("calm", "smile", "flat", "open"))
+    for i in range(n):
+        x = -spread / 2 + spread * i / max(1, n - 1)
+        bob = 0.006 * math.sin(g.t * 2.4 + i)
+        K.figure(c, x, 0, s * (0.94 + 0.06 * (i % 2)), d.get("pose", "stand"), None, mood=moods[i % len(moods)],
+                 face=1 if x < 0 else -1, bob=bob, role=roles[i % len(roles)])

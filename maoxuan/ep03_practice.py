@@ -19,7 +19,9 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = "#3E7A5C"
 G = A.GROUND_Y
-ME = dict(hair="short")
+ME = dict(hair="short", role="worker")
+LISHOU = dict(role="scholar", color="#8A6A4A")   # “知识里手”
+XIUCAI = dict(role="scholar")                   # 秀才
 
 
 def build():
@@ -71,45 +73,48 @@ def build():
             Spark(540, 860, at=2, sfx="ding"),
         ], punch=0.035, flashes=[0, 1], shake=[0, 1]),
         S("听人说甜，不算", "原文 · 梨子的滋味", [
-            Custom(B.pear, x=540, y=760, at=0, enter="pop", s=1.0, sfx="pop"),
-            Bubble("听说很甜", 800, 460, 46, at=1, enter="pop", sfx="wood_high"),
-            Icon("cross", 800, 600, 100, color=K.RED, at=3, sfx="rim"),
+            Custom(B.pear, x=540, y=640, at=0, enter="pop", s=0.8, sfx="pop"),
+            Fig(860, G, 300, at=0, pose="point", mood="happy", face=-1, role="worker_f"),
+            Bubble("听说很甜", 800, 420, 46, at=1, enter="pop", sfx="wood_high"),
+            Fig(220, G, 300, at=2, pose="shrug", mood="worried", **ME, sfx="pop"),
+            Icon("cross", 220, 760, 90, color=K.RED, at=3, sfx="rim"),
         ]),
         S("咬一口，才知道", "原文 · 亲口吃一吃", [
-            Custom(B.pear, x=540, y=740, at=0, enter="none", s=1.0, bite=1, label="真知"),
+            Custom(B.pear, x=620, y=640, at=0, enter="none", s=0.8, bite=1, label="真知"),
+            Fig(250, G, 320, at=0, pose="reach", mood="happy", **ME),
         ], hits=[(1, "kick", 1.0, "咬"), (2, "ding", 0.9, "真知")], shake=[1], flashes=[1]),
         pops("一切真知 都从 【直接经验】 来", "原文 · 一切真知", size=120, flash=2,
              extra=[Rays(540, 780, 620, at=2, alpha=0.2)]),
         # ---- 知识里手 13–18
         S("书里嘲讽一种人", "原文 · 知识里手", [
-            Fig(540, G, 340, at=0, pose="proud", mood="happy", color="#7A6A55", hair="short"),
+            Fig(540, G, 340, at=0, pose="proud", mood="happy", **LISHOU),
             Label("知识里手", 540, 420, 48, at=1, sfx="pop"), Spark(540, 420, at=2, sfx="ding"),
         ], draw=A.ground),
         S("道听途说，一知半解", "原文 · 道听途说", [
-            Fig(540, G, 330, at=0, enter="none", pose="proud", mood="happy", color="#7A6A55", hair="short"),
+            Fig(540, G, 330, at=0, enter="none", pose="proud", mood="happy", **LISHOU),
             Bubble("听说……", 260, 500, 44, at=1, enter="pop", sfx="pop"),
             Bubble("据说……", 820, 520, 44, at=2, enter="pop", sfx="pop"),
             Label("一知半解", 540, 400, 44, at=3, sfx="rim", fill=K.INK2),
         ], draw=A.ground),
         S("便自封天下第一", "原文 · 自封为天下第一", [
-            Fig(540, G, 330, at=0, enter="none", pose="cheer", mood="happy", color="#7A6A55", hair="short"),
+            Fig(540, G, 330, at=0, enter="none", pose="cheer", mood="happy", **LISHOU),
             Icon("crown", 540, 430, 140, color=K.GOLD, at=1, sfx="ding"),
             Icon("cross", 540, 640, 200, color=K.RED, at=3, sfx="kick"),
         ], draw=A.ground, shake=[3]),
         S("秀才不出门？", "原文 · 秀才不出门", [
-            Fig(400, G, 320, at=0, pose="sit", mood="smile", color=K.OTHER, hair="bun"),
+            Fig(400, G, 320, at=0, pose="sit", mood="smile", **XIUCAI),
             Icon("book", 620, 760, 120, color=K.INK2, at=1, sfx="pop"),
             Bubble("全知天下事", 720, 500, 46, at=2, enter="pop", sfx="wood_high"),
         ], draw=A.ground),
         S("古代只是一句空话", "原文 · 只是一句空话", [
-            Fig(400, G, 320, at=0, enter="none", pose="sit", mood="worried", color=K.OTHER, hair="bun"),
+            Fig(400, G, 320, at=0, enter="none", pose="sit", mood="worried", **XIUCAI),
             Bubble("全知天下事", 720, 500, 46, at=0, enter="none",
                    moves=[(2, dict(alpha=0.2, dur=0.3, sfx="rim"))]),
             Icon("cross", 720, 500, 160, color=K.RED, at=2),
             Label("空话", 720, 680, 48, at=3, sfx="pop", fill=K.INK2),
         ], draw=A.ground),
         S("不入虎穴，焉得虎子", "原文 · 不入虎穴", [
-            Custom(B.cave, x=540, y=780, at=0, enter="fade", eyes=1, go=2),
+            Custom(B.cave, x=540, y=780, at=0, enter="fade", eyes=1, go=2, role="youth"),
         ], hits=[(0, "wood_low", 0.8, "山洞"), (1, "rim", 0.9, "眼睛"), (2, "tom", 0.8, "走进去")]),
         # ---- 考察团 19–24
         S("书里举了个例子", "书中例子 · 考察团", [
@@ -117,10 +122,12 @@ def build():
             Label("外来的考察团", 540, 1110, 46, at=3, sfx="pop", fill=K.INK2),
         ], hits=[(0, "wood_low", 0.8, "地图"), (1, "kick", 0.8, "图钉"), (2, "pop", 0.8, "地名")]),
         S("看街道，听说话", "原文 · 看到了街道、屋宇", [
-            Icon("house", 270, 700, 170, color=ACC, at=0, sfx="pop"),
-            Icon("eye", 540, 700, 170, color=K.INK2, at=1, sfx="pop"),
-            Icon("megaphone", 810, 700, 170, color=K.GOLD, at=2, sfx="pop"),
-            Label("各种印象", 540, 940, 46, at=3, sfx="ding"),
+            Icon("house", 270, 500, 150, color=ACC, at=0, sfx="pop"),
+            Icon("eye", 540, 500, 150, color=K.INK2, at=1, sfx="pop"),
+            Icon("megaphone", 810, 500, 150, color=K.GOLD, at=2, sfx="pop"),
+            Label("各种印象", 540, 680, 44, at=3, sfx="ding"),
+            Fig(380, G, 320, at=0, pose="point", mood="open", role="boss", color="#6B5A48"),
+            Fig(700, G, 310, at=0, pose="stand", mood="smile", face=-1, role="boss", color="#4F5D6B"),
         ]),
         S("这只是感性认识", "原文 · 认识的感性阶段", [
             Custom(B.leap, x=540, y=760, at=0, enter="fade", b0=0, leap=99),

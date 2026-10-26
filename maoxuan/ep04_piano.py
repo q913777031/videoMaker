@@ -21,8 +21,8 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = "#3D6E92"
 G = A.GROUND_Y
-ME = dict(hair="short")
-BOSS = dict(color=K.DARK, hair="short")
+ME = dict(hair="short", role="worker")
+BOSS = dict(hair="short", role="boss")
 KEYS = ["", "", "", "", "中心", "", "", "", "", ""]
 WORK = [("进度", "六成"), ("预算", "剩三成"), ("人手", "四人"), ("截止", "周五")]
 
@@ -110,9 +110,11 @@ def build():
                    seq=(0, 2, 4, 6, 4, 8, 9, 4), labels=KEYS),
         ], hits=[(0, "pop", 0.7, "点"), (1, "ding", 0.8, "中心"), (2, "ding", 0.8, "中心"), (3, "pop", 0.7, "点")]),
         S("弹得好坏，差别很大", "原文 · 调子差别很大", [
-            Card("乱按", 300, 700, 64, at=0, sfx="pop"), Card("有节奏", 780, 700, 64, at=1, sfx="pop"),
-            Icon("cross", 300, 920, 110, color=K.RED, at=2, sfx="rim"),
-            Icon("check", 780, 920, 110, color=K.GREEN, at=3, sfx="ding"),
+            Card("乱按", 280, 520, 60, at=0, sfx="pop"), Card("有节奏", 800, 520, 60, at=1, sfx="pop"),
+            Icon("cross", 280, 690, 100, color=K.RED, at=2, sfx="rim"),
+            Icon("check", 800, 690, 100, color=K.GREEN, at=3, sfx="ding"),
+            Fig(280, G, 320, at=0, pose="fist", mood="angry", **ME),
+            Fig(800, G, 320, at=1, pose="wave", mood="happy", face=-1, role="worker_f"),
         ]),
         # ---- 二次钩子：抓紧 20–25
         S("但光抓还不够", "原文 · 要“抓紧”", [

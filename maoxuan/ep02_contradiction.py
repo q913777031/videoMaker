@@ -18,7 +18,9 @@ from .common import BOOK, S, episode, outro, pops
 
 ACC = A.RED
 G = A.GROUND_Y
-ME = dict(hair="short")
+ME = dict(hair="short", role="worker")
+SONG = dict(role="hero")                      # 宋江（《水浒传》人物）
+ZHUANG = dict(role="youth", color="#8A6A4A")  # 祝家庄庄丁
 TASKS = ("回消息", "报销", "开会", "写周报", "对账", "改格式")
 
 
@@ -82,44 +84,60 @@ def build():
         pops("不能 【平均看待】", "原文 · 不能平均看待", size=140, flash=1,
              extra=[Rays(540, 780, 620, at=1, alpha=0.2)]),
         S("否则：如堕烟海", "原文 · 如堕烟海", [
-            Custom(B.fog, x=540, y=780, at=0, enter="fade", b0=1),
+            Custom(B.fog, x=540, y=780, at=0, enter="fade", b0=1, role="scholar"),
         ], hits=[(0, "wood_low", 0.7, "起雾"), (1, "rim", 0.7, "问号"), (2, "rim", 0.7, "问号"), (3, "rim", 0.7, "问号")]),
         S("找不到中心", "原文 · 找不到中心", [
             Icon("target", 540, 700, 280, color=ACC, at=0, sfx="pop"),
-            Fig(250, G, 290, at=1, pose="shrug", mood="worried", **ME, sfx="wood_high"),
+            Fig(250, G, 290, at=1, pose="shrug", mood="worried", role="scholar", sfx="wood_high"),
             Icon("cross", 540, 700, 200, color=K.RED, at=2, sfx="rim"),
         ], draw=A.ground),
         # ---- 三打祝家庄 16–24
         S("书里举了个例子", "书中例子", [
-            Icon("book", 540, 560, 200, color=K.INK2, at=0, sfx="wood_low"),
-            Card("《水浒传》|三打祝家庄", 540, 900, 54, at=1, sfx="pop"), Spark(540, 900, at=2, sfx="ding"),
+            Icon("book", 380, 520, 180, color=K.INK2, at=0, sfx="wood_low"),
+            Card("《水浒传》|三打祝家庄", 380, 800, 50, at=1, sfx="pop"), Spark(380, 800, at=2, sfx="ding"),
+            Fig(820, G, 340, at=1, pose="proud", mood="calm", face=-1, **SONG),
+            Label("宋江", 820, 700, 40, at=3, sfx="pop"),
         ]),
         S("宋江打祝家庄", "书中例子 · 三打祝家庄", [
-            Custom(B.villages, x=540, y=720, at=0, enter="pop", sfx="wood_low"),
-            Label("祝家庄", 540, 1130, 44, at=2, sfx="pop", fill=ACC),
+            Custom(B.villages, x=540, y=680, at=0, enter="pop", sfx="wood_low"),
+            Fig(150, G, 300, at=1, pose="point", mood="angry", **SONG, sfx="wood_high"),
+            Fig(940, G, 270, at=2, pose="fist", mood="angry", face=-1, **ZHUANG, sfx="pop"),
         ]),
         S("第一次：败", "书中例子 · 三打祝家庄", [
-            Custom(B.villages, x=540, y=720, at=0, enter="none", tries=[(1, False)]),
+            Custom(B.villages, x=540, y=680, at=0, enter="none", tries=[(1, False)]),
+            Fig(150, G, 300, at=0, enter="none", pose="point", mood="angry", **SONG,
+                moves=[(2, dict(pose="sad", mood="sad", dur=0.3))]),
+            Fig(940, G, 270, at=0, enter="none", pose="fist", mood="angry", face=-1, **ZHUANG,
+                moves=[(2, dict(pose="cheer", mood="happy", dur=0.25))]),
         ], hits=[(1, "wood_high", 0.8, "放箭"), (2, "rim", 0.9, "败")]),
         S("第二次：又败", "书中例子 · 三打祝家庄", [
-            Custom(B.villages, x=540, y=720, at=0, enter="none", tries=[(-9, False), (1, False)]),
+            Custom(B.villages, x=540, y=680, at=0, enter="none", tries=[(-9, False), (1, False)]),
+            Fig(150, G, 300, at=0, enter="none", pose="point", mood="angry", **SONG,
+                moves=[(2, dict(pose="cover", mood="sad", dur=0.3))]),
+            Fig(940, G, 270, at=0, enter="none", pose="cheer", mood="happy", face=-1, **ZHUANG),
         ], hits=[(1, "wood_high", 0.8, "放箭"), (2, "rim", 0.9, "又败")], shake=[2]),
         S("情况不明，方法不对", "原文 · 情况不明，方法不对", [
-            Card("情况不明", 300, 700, 56, at=0, sfx="pop"), Card("方法不对", 780, 700, 56, at=1, sfx="pop"),
-            Icon("cross", 300, 920, 110, color=K.RED, at=2, sfx="rim"),
-            Icon("cross", 780, 920, 110, color=K.RED, at=3, sfx="rim"),
+            Card("情况不明", 260, 560, 54, at=0, sfx="pop"), Card("方法不对", 820, 560, 54, at=1, sfx="pop"),
+            Icon("cross", 260, 740, 100, color=K.RED, at=2, sfx="rim"),
+            Icon("cross", 820, 740, 100, color=K.RED, at=3, sfx="rim"),
+            Fig(540, G, 340, at=0, pose="think", mood="worried", **SONG),
         ]),
         S("改从调查入手", "原文 · 从调查情形入手", [
-            Custom(A.footprints, x=540, y=800, at=0, enter="none", n=7, b0=0, step=0.5, label="盘陀路"),
+            Custom(A.footprints, x=540, y=760, at=0, enter="none", n=7, b0=0, step=0.5, label="盘陀路"),
+            Fig(170, G, 300, at=0, pose=K.walk(0.3), mood="open", **SONG),
         ], hits=[(0, "wood_high", 0.7, "迈步"), (1, "wood_high", 0.7, "迈步"), (2, "wood_high", 0.7, "迈步"),
                  (3, "ding", 0.9, "摸清盘陀路")]),
         S("拆散三庄联盟", "原文 · 拆散了联盟", [
-            Custom(B.villages, x=540, y=720, at=0, enter="none", tries=[(-9, False), (-8, False)], untie=1),
+            Custom(B.villages, x=540, y=680, at=0, enter="none", tries=[(-9, False), (-8, False)], untie=1),
+            Fig(150, G, 300, at=0, enter="none", pose="point", mood="open", **SONG,
+                moves=[(1, dict(pose="fist", mood="happy", dur=0.25))]),
         ], hits=[(0, "wood_low", 0.7, "三庄"), (1, "rim", 1.0, "绳断")], flashes=[1]),
         S("第三次：胜", "原文 · 第三次就打了胜仗", [
-            Custom(B.villages, x=540, y=720, at=0, enter="none", tries=[(-9, False), (-8, False), (1, True)],
+            Custom(B.villages, x=540, y=680, at=0, enter="none", tries=[(-9, False), (-8, False), (1, True)],
                    untie=-5),
-            Spark(540, 560, at=2, sfx="ding"),
+            Fig(150, G, 300, at=0, enter="none", pose="point", mood="angry", **SONG,
+                moves=[(2, dict(pose="cheer", mood="happy", dur=0.25))]),
+            Spark(540, 520, at=2, sfx="ding"),
         ], hits=[(1, "kick", 1.0, "中箭插旗")], shake=[1], flashes=[1]),
         pops("拆散联盟 才是 【关键】", "一句话", size=130, flash=2,
              extra=[Rays(540, 780, 620, at=2, alpha=0.2)]),
