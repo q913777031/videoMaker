@@ -94,8 +94,8 @@ def build():
         ], hits=[(0, "pop", 0.8, "拧"), (1, "pop", 0.8, "管里"), (2, "ding", 0.9, "变温")]),
         # ---- 车行 15–22
         S("书里有个车行", "书中例子 · 汽车经销商", [
-            Custom(A.lot, x=540, y=760, at=0, enter="fade", keys=[(0, 8)], title="车行库存"),
-            Fig(150, G + 40, 260, at=1, pose="wave", mood="smile", role="boss", color="#6E5038", sfx="pop"),
+            Custom(A.lot, x=640, y=740, at=0, enter="fade", keys=[(0, 8)], title="车行库存", scale=0.76),
+            Fig(160, G, 300, at=1, pose="wave", mood="smile", role="boss", color="#6E5038", sfx="pop"),
         ], hits=[(0, "wood_low", 0.8, "车场")]),
         S("车卖得快了", "书中例子 · 汽车经销商", [
             Custom(A.lot, x=540, y=760, at=0, enter="none", keys=[(0, 8), (1, 7), (2, 6), (3, 5)],

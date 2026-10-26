@@ -157,7 +157,7 @@ def build():
             Fig(330, G, 330, at=0, pose="stand", mood="worried", **ME,
                 moves=[(2, dict(pose="cover", dur=0.25, sfx="tom"))]),
             Custom(A.jar, x=760, y=800, at=0, enter="pop", l0=0.03, l1=0.03, label="应急金"),
-            Icon("cross", 760, 560, 100, color=K.RED, at=1, sfx="rim"),
+            Icon("cross", 930, 560, 100, color=K.RED, at=1, sfx="rim"),
         ], draw=A.ground, shake=[2]),
         # ---- 当下 30–35
         S("今天：钱来就花", "当下 · 现象", [

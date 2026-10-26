@@ -20,9 +20,9 @@ COLD = "#4F86B8"
 
 def _f(kind, u):
     if kind == "osc":                       # 围绕目标线衰减振荡
-        return 0.5 + 0.38 * math.exp(-2.2 * u) * math.sin(u * 4.2 * math.pi + math.pi) if u > 0 else 0.12
+        return 0.5 - 0.38 * math.exp(-2.2 * u) * math.cos(u * 4.2 * math.pi)
     if kind == "osc_big":                   # 反应更快：振荡更猛、更久
-        return 0.5 + 0.44 * math.exp(-0.6 * u) * math.sin(u * 5.0 * math.pi + math.pi)
+        return 0.5 - 0.42 * math.exp(-0.6 * u) * math.cos(u * 5.0 * math.pi)
     if kind == "smooth":                    # 等一等、看趋势：平稳逼近目标
         return 0.5 - 0.38 * math.exp(-4.5 * u)
     if kind == "s":                         # 有限环境中的增长：S 形
@@ -113,8 +113,8 @@ def shower(c, g, el_t, d):
     hh = 380 * temp
     K.rr(c, tx, ty + 190 - hh / 2, 34, hh, 17, col)
     K.dot(c, tx, ty + 220, 40, col)
-    K.text(c, "烫", tx + 80, ty - 170, 40, "bold", HOT)
-    K.text(c, "冷", tx + 80, ty + 170, 40, "bold", COLD)
+    K.text(c, "烫", tx - 80, ty - 170, 40, "bold", HOT)
+    K.text(c, "冷", tx - 80, ty + 170, 40, "bold", COLD)
     # 旋钮
     with K.at(c, -280, -60, (temp - 0.5) * 220):
         K.dot(c, 0, 0, 70, K.PAPER)
@@ -131,6 +131,14 @@ def lot(c, g, el_t, d):
     for b, v in keys:
         if g.since(b) >= 0:
             n = v
+    sc = d.get("scale", 1.0)
+    c.save()
+    c.scale(sc, sc)
+    _lot(c, g, d, n)
+    c.restore()
+
+
+def _lot(c, g, d, n):
     K.rr(c, 0, 20, 820, 470, 16, "#D8CDB8")
     K.text(c, d.get("title", "车场库存"), 0, -270, 44, "serif_black", K.INK)
     for i in range(12):
@@ -210,7 +218,6 @@ def staves(c, g, el_t, d):
     x0 = -n * bw / 2 + bw / 2
     level = min(h for _, h in items)
     low = min(range(n), key=lambda i: items[i][1])
-    K.rr(c, 0, H / 2 - level * H / 2 + 10, n * bw - 20, level * H, 8, "#7FB3D5", 0.85)
     for i, (name, h) in enumerate(items):
         x = x0 + i * bw
         hh = h * H
@@ -219,6 +226,10 @@ def staves(c, g, el_t, d):
         K.rr(c, x, H / 2 - hh / 2 + 10, bw - 14, hh, 8, col, 0.95)
         K.rr_stroke(c, x, H / 2 - hh / 2 + 10, bw - 14, hh, 8, K.shade(col, 0.35), 3)
         K.text(c, name, x, H / 2 - hh + 60, 34, "serif_black", K.PAPER)
+    K.rr(c, 0, H / 2 - level * H / 2 + 10, n * bw - 24, level * H, 8, "#5B8DB8", 0.55)
+    wy = H / 2 - level * H + 10
+    K.seg(c, -n * bw / 2 + 12, wy, n * bw / 2 - 12, wy, "#2F5F8A", 6, 0.9)
+    K.text(c, "水位", n * bw / 2 + 60, wy, 32, "bold", "#2F5F8A")
     K.seg(c, -n * bw / 2, H / 2 + 14, n * bw / 2, H / 2 + 14, K.INK2, 8)
     if d.get("tag"):
         lx = x0 + low * bw
@@ -296,3 +307,74 @@ def fridge(c, g, el_t, d):
             K.text(c, "冰箱规则", 0, -70, 34, "serif_black", K.INK, a)
             for j in range(3):
                 K.rr(c, 0, -10 + j * 50, 140, 12, 6, K.INK3, a)
+
+
+# ---------------------------------------------------------------- 推不动的大石头
+
+def rock(c, g, el_t, d):
+    """一块水墨大石：label 写在石上；shake 拍起轻微抖动（推不动）。"""
+    s = d.get("s", 300)
+    j = math.sin(g.t * 40) * 3 if g.since(d.get("shake", 99)) >= 0 else 0
+    p = skia.Path()
+    pts = [(-0.55, 0.0), (-0.6, -0.45), (-0.3, -0.8), (0.15, -0.85), (0.5, -0.6), (0.6, -0.15), (0.5, 0.0)]
+    p.moveTo(pts[0][0] * s + j, pts[0][1] * s)
+    for x, y in pts[1:]:
+        p.lineTo(x * s + j, y * s)
+    p.close()
+    c.drawPath(p, K.paint("#8E8A80"))
+    c.drawPath(p, K.paint(K.INK, 0.6, 6))
+    K.seg(c, -0.2 * s + j, -0.6 * s, 0.05 * s + j, -0.4 * s, K.INK, 4, 0.5)
+    if d.get("label"):
+        K.text(c, d["label"], j, -0.42 * s, s * 0.2, "serif_black", K.PAPER)
+
+
+# ---------------------------------------------------------------- 油田
+
+def derrick(c, g, el_t, d):
+    """油田：井架 + 抽油机点头；左侧地下储量条从 b0 到 b1 拍间下降，抽油越来越慢。"""
+    k = g.span(d.get("b0", 0), d.get("b1", 3))
+    for (x0, y0, x1, y1) in ((-60, 200, 0, -260), (60, 200, 0, -260), (-40, 80, 40, 80), (-25, -40, 25, -40)):
+        K.seg(c, x0, y0, x1, y1, K.INK2, 10)
+    speed = lerp(5.0, 1.2, k)
+    ang = math.sin(g.t * speed) * 16
+    with K.at(c, 200, 40, ang):
+        K.rr(c, 0, 0, 260, 30, 10, K.INK2)
+        K.rr(c, 120, 20, 40, 70, 10, K.INK2)
+    K.rr(c, 200, 140, 30, 200, 6, K.INK3)
+    K.seg(c, -460, 200, 460, 200, K.INK2, 8)
+    left = 1 - 0.8 * k
+    K.rr(c, -330, 200 + 130, 160, 220, 16, "#D8CDB8")
+    K.rr(c, -330, 200 + 130 + 110 - left * 110, 140, left * 210, 12, "#3B3A36")
+    K.text(c, "储量", -330, 470, 36, "bold", K.INK2)
+
+
+# ---------------------------------------------------------------- 渔场
+
+def fishery(c, g, el_t, d):
+    """渔场：海面上船数按 boats [(拍, 船数)] 增加，水下鱼数按 fish [(拍, 鱼数)] 减少。"""
+    def at(keys):
+        v = keys[0][1]
+        for b, n in keys:
+            if g.since(b) >= 0:
+                v = n
+        return v
+
+    nb, nf = at(d.get("boats", [(0, 1)])), at(d.get("fish", [(0, 12)]))
+    K.rr(c, 0, 130, 960, 420, 30, "#9CC0D8", 0.85)
+    for i in range(5):
+        y = -70 + i * 6
+        K.seg(c, -460, y + math.sin(g.t * 2 + i) * 4, 460, y + math.sin(g.t * 2 + i) * 4, "#6FA0C6", 3, 0.5)
+    for i in range(nb):
+        x = -360 + i * 150
+        bob = math.sin(g.t * 2.4 + i) * 6
+        K.poly(c, [(x - 60, -90 + bob), (x + 60, -90 + bob), (x + 40, -55 + bob), (x - 40, -55 + bob)], "#8A5A35")
+        K.seg(c, x, -90 + bob, x, -190 + bob, K.INK2, 5)
+        K.poly(c, [(x + 4, -185 + bob), (x + 50, -120 + bob), (x + 4, -120 + bob)], "#F3EBDA")
+    for i in range(nf):
+        fx_ = -380 + (i * 137) % 760 + math.sin(g.t * 1.5 + i) * 20
+        fy = 40 + (i * 71) % 260
+        f = 1 if i % 2 else -1
+        with K.at(c, fx_, fy):
+            c.drawOval(skia.Rect.MakeXYWH(-30, -14, 60, 28), K.paint("#E3A33B"))
+            K.poly(c, [(-30 * f, 0), (-52 * f, -16), (-52 * f, 16)], "#E3A33B")
+            K.dot(c, 16 * f, -4, 4, K.INK)

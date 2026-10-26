@@ -288,8 +288,8 @@ def ladder12(c, g, el_t, d):
     if m is not None and his and g.since(m) >= 0:
         i = 12 - his[0]
         y = 380 - i * rh - rh / 2 + 6
-        x = -160 + i * 26 + (w0 + i * 26) / 2 + 70
-        K.figure(c, x, y, 150, "cheer" if his[0] <= 3 else "point", None, mood="happy", face=-1, role="worker")
+        x = -160 + i * 26 - (w0 + i * 26) / 2 - 70
+        K.figure(c, x, y + rh / 2 - 6, 150, "cheer" if his[0] <= 3 else "point", None, mood="happy", face=1, role="worker")
     if d.get("arrow"):
         a = clamp01(g.since(d["arrow"]) / 0.4)
         K.arrow(c, (440, 360), (440, -330), K.GOLD, 12, a, a, 0, 34)

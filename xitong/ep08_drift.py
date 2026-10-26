@@ -30,12 +30,12 @@ def build():
         ], draw=A.ground, punch=0.025, flashes=[0]),
         S("忙了一周：半小时", "灵魂拷问", [
             Card("一小时", 540, 560, 60, at=0, enter="none"),
-            Icon("cross", 540, 560, 150, color=K.RED, at=1, sfx="rim"),
+            Icon("cross", 700, 540, 110, color=K.RED, at=1, sfx="rim"),
             Card("半小时", 540, 860, 60, at=2, sfx="pop"),
         ]),
         S("又累了：十分钟", "灵魂拷问", [
             Card("半小时", 540, 560, 60, at=0, enter="none"),
-            Icon("cross", 540, 560, 150, color=K.RED, at=1, sfx="rim"),
+            Icon("cross", 700, 540, 110, color=K.RED, at=1, sfx="rim"),
             Card("十分钟", 540, 860, 60, at=2, sfx="pop"),
         ]),
         S("后来：有空再说", "灵魂拷问", [
@@ -116,7 +116,7 @@ def build():
         S("目标再调低", "团队里也常见", [
             Fig(760, G, 340, at=0, pose="shrug", mood="flat", face=-1, **BOSS),
             Card("下季目标", 360, 600, 50, at=0, sfx="pop"),
-            Icon("cross", 360, 600, 120, color=K.RED, at=1, sfx="rim"),
+            Icon("cross", 520, 580, 100, color=K.RED, at=1, sfx="rim"),
             Card("再低一点", 360, 840, 50, at=2, sfx="tom"),
         ], draw=A.ground),
         S("没人觉得出了事", "团队里也常见", [

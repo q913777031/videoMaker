@@ -144,7 +144,7 @@ def coffee(c, g, el_t, d):
 # ---------------------------------------------------------------- 体重曲线：被拉回设定点
 
 def rebound(c, g, el_t, d):
-    """体重曲线（示意）：先降、再被拉回虚线“设定点”；b0→b1 拍间画出；drop_at 拍标出最低点。"""
+    """体重曲线（示意）：先降、再被拉回虚线“设定点”；b0→b1 拍间画出（kmax 截断，只画下降段）；drop_at 拍标出最低点。"""
     w, h = 820, 460
     K.seg(c, -w / 2, h / 2, w / 2, h / 2, K.INK2, 6)
     K.seg(c, -w / 2, h / 2, -w / 2, -h / 2, K.INK2, 6)
@@ -159,7 +159,7 @@ def rebound(c, g, el_t, d):
             return sp + 220 * math.sin(u / 0.4 * math.pi / 2)
         return sp + 220 * math.exp(-(u - 0.4) * 6) * math.cos((u - 0.4) * 3)
 
-    k = g.span(d.get("b0", 0), d.get("b1", 3), ease=lambda x: x)
+    k = min(g.span(d.get("b0", 0), d.get("b1", 3), ease=lambda x: x), d.get("kmax", 1.0))
     p = skia.Path()
     n = max(1, int(80 * k))
     for i in range(n + 1):
