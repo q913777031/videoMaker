@@ -249,7 +249,7 @@ def lever(c, g, el_t, d):
     rad = math.radians(ang)
     px = fxp + (-520) * math.cos(rad)
     py = 150 + (-520) * math.sin(rad)
-    K.figure(c, px - 30, min(262.0, py + 230), 260, "push" if k > 0 else "stand", None, mood="happy" if not wrong else "worried",
+    K.figure(c, px - 40, d.get("feet", 260), 260, "push" if k > 0 else "stand", None, mood="happy" if not wrong else "worried",
              role=d.get("role", "worker"))
     if d.get("label_small"):
         K.pill(c, px, py - 60, d["label_small"], 34, g.acc, K.PAPER)

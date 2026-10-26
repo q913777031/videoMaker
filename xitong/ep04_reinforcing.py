@@ -20,7 +20,7 @@ PEER = dict(role="worker_f", color="#D98E8A", hair="long")
 GOOD = ("学得多", "懂得多", "学得快")
 BAD = ("刷手机", "没精力", "更想刷")
 
-SQUARE_SHOT = 40
+SQUARE_SHOT = 15
 
 
 def build():

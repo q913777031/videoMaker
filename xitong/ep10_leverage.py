@@ -87,7 +87,7 @@ def build():
             Spark(540, 700, at=2, sfx="ding"),
         ], punch=0.035, flashes=[0], shake=[0]),
         S("小力气撬动大石头", "书中观点 · 杠杆点", [
-            Custom(A.lever, x=540, y=760, at=0, enter="fade", push=1, label="问题"),
+            Custom(A.lever, x=540, y=870, at=0, enter="fade", push=1, label="问题"),
         ], draw=A.ground, hits=[(0, "wood_low", 0.8, "杠杆"), (1, "kick", 0.9, "压下"), (2, "ding", 0.9, "撬起")],
             shake=[1]),
         # ---- 十二级 11–22
@@ -113,11 +113,11 @@ def build():
             Icon("question", 760, 480, 120, color=K.RED, at=2, sfx="rim"),
         ], draw=A.ground, punch=0.025, flashes=[2], hits=[(0, "tom", 0.8, "停")]),
         S("常常推反了方向", "书中观点 · 推反方向", [
-            Custom(A.lever, x=540, y=760, at=0, enter="fade", push=1, wrong=True, label="问题"),
+            Custom(A.lever, x=540, y=870, at=0, enter="fade", push=1, wrong=True, label="问题"),
         ], draw=A.ground, hits=[(0, "wood_low", 0.8, "杠杆"), (1, "kick", 0.9, "推反"), (2, "tom", 0.8, "石头压回")],
             shake=[1]),
         S("越用力，越糟", "书中观点 · 推反方向", [
-            Custom(A.lever, x=540, y=760, at=0, enter="none", push=-9, wrong=True, label="问题"),
+            Custom(A.lever, x=540, y=870, at=0, enter="none", push=-9, wrong=True, label="问题"),
             Icon("cross", 820, 440, 110, color=K.RED, at=1, sfx="rim"),
             Icon("cross", 260, 440, 90, color=K.RED, at=2, sfx="rim"),
         ], draw=A.ground),
@@ -180,7 +180,7 @@ def build():
                    sfx="pop"),
         ], draw=A.ground, hits=[(2, "shaker", 0.7, "写"), (3, "ding", 0.8, "写完")]),
         S("再找那根杠杆", "落到自己", [
-            Custom(A.lever, x=540, y=760, at=0, enter="fade", push=1, label="难题"),
+            Custom(A.lever, x=540, y=870, at=0, enter="fade", push=1, label="难题"),
             Spark(800, 560, at=2, sfx="ding"),
         ], draw=A.ground, hits=[(0, "wood_low", 0.8, "杠杆"), (1, "kick", 0.9, "撬起")], shake=[1]),
         # ---- 片尾 42

@@ -73,7 +73,7 @@ def bathtub(c, g, el_t, d):
             K.dot(c, w / 2 - 110, yy, sw * 0.3, K.PAPER, 0.6)
     K.ring(c, w / 2 - 110, bot - 8, 16, STEEL, 6)
     if d.get("in_label"):
-        K.pill(c, -w / 2 + 170, top - 270, d["in_label"], 42, K.GREEN, K.PAPER)
+        K.pill(c, -w / 2 + 170, top - 240, d["in_label"], 42, K.GREEN, K.PAPER)
     if d.get("out_label"):
         K.pill(c, w / 2 - 110, bot + 175, d["out_label"], 42, K.RED, K.PAPER)
     if d.get("label"):

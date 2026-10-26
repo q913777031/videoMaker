@@ -220,6 +220,8 @@ def _role(role, hair, color):
         else:
             role = "worker"
     spec = dict(ROLES.get(role, ROLES["worker"]))
+    if color == K.HERO and role in ("worker_f", "boss"):
+        color = None                    # Fig 默认色（主角蓝）不覆盖女同事与领导的默认服色
     if color is not None and role in ("worker", "worker_f", "boss"):
         spec["top"] = color
     elif color is not None and role not in ("immortal",):
