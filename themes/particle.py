@@ -86,9 +86,25 @@ def install(base_bg=None):
 
     orig = core.draw_frame
 
+    from adler import fx
+
+    def plain(cc, ep, T, caption, ui):
+        """与 core.draw_frame 相同，但不画闪白与首尾淡入淡出（它们会让整块舞台被当成内容）。"""
+        cc.drawImage(core.bg_image(ep.accent), 0, 0)
+        k = ep.shot_at(T)
+        s = ep.shots[k]
+        g = core._draw_shot(cc, ep, k, T - s.t0)
+        if caption:
+            core.draw_caption(cc, ep, s, g)
+        if ui:
+            core.draw_header(cc, ep, s, T, g)
+            core.draw_progress(cc, ep, T)
+        return g
+
     def draw_frame(c, ep, T, caption=True, ui=True):
-        A, aA = _snapshot(lambda cc: orig(cc, ep, T, caption, ui))
-        B, aB = _snapshot(lambda cc: orig(cc, ep, T, False, False))
+        holder = {}
+        A, aA = _snapshot(lambda cc: holder.setdefault("g", plain(cc, ep, T, caption, ui)))
+        B, aB = _snapshot(lambda cc: plain(cc, ep, T, False, False))
         out = _dark_bg().copy()
         # 舞台 → 粒子
         gy, gx, nx, ny, ph = _grid()
@@ -125,6 +141,15 @@ def install(base_bg=None):
             mb = aA[y0:y1, :, None]
             out[y0:y1] = out[y0:y1] * (1 - mb) + _neon(band) * mb
             out[y0:y1] += cv2.GaussianBlur(_neon(band) * mb, (0, 0), 6) * 0.35
+        g = holder["g"]
+        fl = 0.0
+        for it in s.flashes:
+            kb, pk = it if isinstance(it, tuple) else (it, 0.55)
+            fl = max(fl, fx.flash_alpha(g.since(kb), pk))
+        if fl > 0:
+            out += np.array([170, 230, 255], np.float32) * fl * 0.5
+        fade = max(1 - min(1.0, T / 0.4), min(1.0, max(0.0, (T - (core.END - 1.2)) / 1.1)))
+        out *= 1 - fade
         rgba = np.dstack([np.clip(out, 0, 255).astype(np.uint8), np.full((core.H, core.W), 255, np.uint8)])
         c.drawImage(skia.Image.fromarray(rgba, colorType=skia.kRGBA_8888_ColorType), 0, 0)
 
