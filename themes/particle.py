@@ -80,20 +80,56 @@ def _grid():
     return gy, gx, np.cos(ang) * rad, np.sin(ang) * rad, rng.random(gy.shape)
 
 
-def install(base_bg=None):
-    """切换为粒子风（只影响当前进程）。"""
+def _particles(B, aB, T, a=0.0, burst=0.0) -> np.ndarray:
+    """舞台（透明底 RGB + alpha）→ 粒子层 RGB（加色用）：粒子本体 + 辉光 + 聚合后的清晰霓虹轮廓。"""
     import cv2
 
-    orig = core.draw_frame
+    gy, gx, nx, ny, ph = _grid()
+    Bs = B[gy, gx]
+    m = np.clip(aB[gy, gx] * 1.3 - 0.15, 0, 1)
+    wob = 3.0 * np.sin(T * 3 + ph * 6.28)
+    py = gy + ny * a + (gy - 780) * 0.25 * burst + wob
+    px = gx + nx * a + (gx - 540) * 0.25 * burst + wob * 0.6
+    sel = m > 0.05
+    py, px = py[sel].astype(np.int32), px[sel].astype(np.int32)
+    ok = (py >= 0) & (py < core.H) & (px >= 0) & (px < core.W)
+    col = _neon(Bs[sel])[ok] * m[sel][ok, None]
+    acc = np.zeros((core.H, core.W, 3), np.float32)
+    np.add.at(acc, (py[ok], px[ok]), col)
+    out = cv2.GaussianBlur(acc, (0, 0), 1.3) * 5.6 + cv2.GaussianBlur(acc, (0, 0), 9) * 4.5
+    mB = np.clip(aB[TOP:BOTTOM, :, None] * 1.3 - 0.15, 0, 1)
+    out[TOP:BOTTOM] += _neon(B[TOP:BOTTOM]) * mB * 0.55 * (1 - a) * (1 - 0.6 * burst)
+    return out
+
+
+LIGHT = dict(INK="#EAF4FF", INK2="#AFC9E6", INK3="#7891B4")
+
+
+@functools.lru_cache(maxsize=1)
+def _dark_img() -> skia.Image:
+    d = _dark_bg()
+    rgba = np.dstack([d.astype(np.uint8), np.full((core.H, core.W), 255, np.uint8)])
+    return skia.Image.fromarray(rgba, colorType=skia.kRGBA_8888_ColorType)
+
+
+def install(B=None):
+    """切换为粒子风（只影响当前进程）。传入 adler.build 时，单讲横屏封面、合集图与系列横屏封面也切换为粒子风。"""
+    import cv2
+    from contextlib import contextmanager
 
     from adler import fx
+    from adler import kit as K
+
+    orig = core.draw_frame
+    orig_shot = core._draw_shot
+    dark_colors = {k: getattr(K, k) for k in LIGHT}
 
     def plain(cc, ep, T, caption, ui):
         """与 core.draw_frame 相同，但不画闪白与首尾淡入淡出（它们会让整块舞台被当成内容）。"""
         cc.drawImage(core.bg_image(ep.accent), 0, 0)
         k = ep.shot_at(T)
         s = ep.shots[k]
-        g = core._draw_shot(cc, ep, k, T - s.t0)
+        g = orig_shot(cc, ep, k, T - s.t0)
         if caption:
             core.draw_caption(cc, ep, s, g)
         if ui:
@@ -104,12 +140,7 @@ def install(base_bg=None):
     def draw_frame(c, ep, T, caption=True, ui=True):
         holder = {}
         A, aA = _snapshot(lambda cc: holder.setdefault("g", plain(cc, ep, T, caption, ui)))
-        B, aB = _snapshot(lambda cc: plain(cc, ep, T, False, False))
-        out = _dark_bg().copy()
-        # 舞台 → 粒子
-        gy, gx, nx, ny, ph = _grid()
-        Bs = B[gy, gx]
-        m = np.clip(aB[gy, gx] * 1.3 - 0.15, 0, 1)
+        B_, aB = _snapshot(lambda cc: plain(cc, ep, T, False, False))
         k = ep.shot_at(T)
         s = ep.shots[k]
         t = T - s.t0
@@ -120,22 +151,7 @@ def install(base_bg=None):
             dt = T - core.bt(s.b0 + kb)
             if dt >= 0:
                 burst = max(burst, math.exp(-dt * 5) * math.sin(min(dt * 9, math.pi)))
-        wob = 3.0 * np.sin(T * 3 + ph * 6.28)
-        py = gy + ny * a + (gy - 780) * 0.25 * burst + wob
-        px = gx + nx * a + (gx - 540) * 0.25 * burst + wob * 0.6
-        sel = m > 0.05
-        py, px = py[sel].astype(np.int32), px[sel].astype(np.int32)
-        ok = (py >= 0) & (py < core.H) & (px >= 0) & (px < core.W)
-        col = _neon(Bs[sel])[ok] * m[sel][ok, None]
-        acc = np.zeros((core.H, core.W, 3), np.float32)
-        np.add.at(acc, (py[ok], px[ok]), col)
-        dots = cv2.GaussianBlur(acc, (0, 0), 1.3) * 7.0
-        glow = cv2.GaussianBlur(acc, (0, 0), 9) * 9.0
-        out = out + dots * 0.8 + glow * 0.5
-        # 聚合完成后叠一层清晰霓虹轮廓，保证文字可读
-        mB = np.clip(aB[TOP:BOTTOM, :, None] * 1.3 - 0.15, 0, 1)
-        out[TOP:BOTTOM] += _neon(B[TOP:BOTTOM]) * mB * 0.55 * (1 - a) * (1 - 0.6 * burst)
-        # 页眉与字幕：清晰霓虹字
+        out = _dark_bg() + _particles(B_, aB, T, a, burst)
         for y0, y1 in ((0, TOP), (BOTTOM, core.H)):
             band = A[y0:y1]
             mb = aA[y0:y1, :, None]
@@ -153,4 +169,47 @@ def install(base_bg=None):
         rgba = np.dstack([np.clip(out, 0, 255).astype(np.uint8), np.full((core.H, core.W), 255, np.uint8)])
         c.drawImage(skia.Image.fromarray(rgba, colorType=skia.kRGBA_8888_ColorType), 0, 0)
 
+    def particle_shot(c, ep, k, t):
+        """封面用：把该镜头该时刻的舞台画成粒子，加色叠在当前画布上（坐标与原舞台一致）。"""
+        saved = {n: getattr(K, n) for n in LIGHT}
+        for n, v in dark_colors.items():
+            setattr(K, n, v)
+        try:
+            B_, aB = _snapshot(lambda cc: orig_shot(cc, ep, k, t))
+        finally:
+            for n, v in saved.items():
+                setattr(K, n, v)
+        rgb = _particles(B_, aB, ep.shots[k].t0 + t)
+        rgba = np.dstack([np.clip(rgb, 0, 255).astype(np.uint8), np.full((core.H, core.W), 255, np.uint8)])
+        c.drawImage(skia.Image.fromarray(rgba, colorType=skia.kRGBA_8888_ColorType), 0, 0,
+                    skia.SamplingOptions(), skia.Paint(BlendMode=skia.BlendMode.kPlus))
+        return core.G(c, ep, ep.shots[k], t)
+
+    @contextmanager
+    def cover_mode():
+        saved = (core.bg_image, core._draw_shot, {n: getattr(K, n) for n in LIGHT})
+        core.bg_image = lambda accent: _dark_img()
+        core._draw_shot = particle_shot
+        for n, v in LIGHT.items():
+            setattr(K, n, v)
+        try:
+            yield
+        finally:
+            core.bg_image, core._draw_shot = saved[0], saved[1]
+            for n, v in saved[2].items():
+                setattr(K, n, v)
+
+    def wrap(mod, name):
+        fn = getattr(mod, name)
+
+        def inner(*args, **kw):
+            with cover_mode():
+                return fn(*args, **kw)
+
+        setattr(mod, name, inner)
+
     core.draw_frame = draw_frame
+    wrap(core, "cover")
+    if B is not None:
+        for name in ("episode_square", "collage", "square_cover"):
+            wrap(B, name)

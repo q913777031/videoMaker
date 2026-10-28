@@ -12,9 +12,9 @@ import sys
 from adler import build as B
 from adler import core
 
-from . import ink
+from themes import piying
 
-ink.install()
+piying.install()                         # 2026-10-28 起改为皮影戏风（内含水墨人物骨架）
 
 core.SERIES.update(name="毛选", count="10讲", prefix="毛选", tagline="把难题拆开的方法论，今天还管用")
 B.PKG = "maoxuan"

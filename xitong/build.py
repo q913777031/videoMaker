@@ -11,8 +11,10 @@
 from adler import build as B
 from adler import core
 from maoxuan import ink
+from themes import particle
 
 ink.install()
+particle.install(B)                      # 2026-10-28 起改为粒子风（元件仍由水墨主题绘制，再整体粒子化）
 
 core.SERIES.update(name="系统之美", count="10讲", prefix="系统之美", tagline="看懂背后的结构，问题就好解了")
 B.PKG = "xitong"
