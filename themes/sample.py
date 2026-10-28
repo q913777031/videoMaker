@@ -1,4 +1,4 @@
-"""风格样片：用《系统之美》01 的钩子（镜头 1–4）与观点落版 + 弹簧（镜头 9–12）两段，按指定主题渲染约 17 秒样片。
+"""风格样片（不经过 xitong.build，主题由 themes.<名> 的 install() 决定）：用《系统之美》01 的钩子（镜头 1–4）与观点落版 + 弹簧（镜头 9–12）两段，按指定主题渲染约 17 秒样片。
 
 用法：
     python3 -m themes.sample piying        # → out/themes/piying.mp4 与 4 张单帧
@@ -35,10 +35,13 @@ def main():
     global _EP
     name = sys.argv[1]
     sys.argv = [sys.argv[0]]
-    import xitong.build  # noqa: F401  系列配置（含水墨主题，主题模块会在其上覆盖）
+    from adler import build as B
     from adler import core
     from engine import audio
-    from adler import build as B
+
+    core.SERIES.update(name="系统之美", count="10讲", prefix="系统之美", tagline="看懂背后的结构，问题就好解了")
+    B.PKG = "xitong"
+    B.MODS = {"01": "ep01_system"}
 
     importlib.import_module(f"themes.{name}").install()
     ep = B.load("01")

@@ -120,6 +120,9 @@ def install(B=None):
     from adler import fx
     from adler import kit as K
 
+    from maoxuan import ink
+
+    ink.install()                       # 元件先按水墨主题绘制，再整体粒子化
     orig = core.draw_frame
     orig_shot = core._draw_shot
     dark_colors = {k: getattr(K, k) for k in LIGHT}
