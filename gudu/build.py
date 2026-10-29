@@ -12,7 +12,8 @@ from adler import core
 from whiteboard import engine as wb
 
 wb.install(B)
-core.RULES.update(wb.SCENE_RULES)       # 白板场景节奏：每个场景 2 小节（≈4.3 秒），画完停住（见 CLAUDE.md「白板手绘节奏」）
+core.RULES.update(wb.SLOW_RULES)        # 慢速讲解节奏：14 个场景，每个 3 小节（≈6.4 秒），画完停 4 拍（见 CLAUDE.md「白板手绘节奏」）
+wb.HOLD_BEATS = 4
 
 core.SERIES.update(name="孤独是可耻的", count="10讲", prefix="孤独", tagline="孤单的时候，身体和脑子在发生什么")
 B.PKG = "gudu"

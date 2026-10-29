@@ -413,7 +413,7 @@ def camera(board, T):
     t = T - s.t0
     cur = board.views[j]
     prev = board.views[j - 1] if j > 0 else (cur[0], cur[1] - 120, cur[2] * 1.12)
-    k = ease_in_out(clamp01(t / (0.45 if s.bars == 1 else 0.7))) if prev != cur else 1.0
+    k = ease_in_out(clamp01(t / {1: 0.45, 2: 0.7}.get(s.bars, 1.1))) if prev != cur else 1.0
     cx, cy = lerp(prev[0], cur[0], k), lerp(prev[1], cur[1], k)
     z = math.exp(lerp(math.log(prev[2]), math.log(cur[2]), k))
     z *= 1 + 0.015 * clamp01(t / max(0.1, s.t1 - s.t0))
@@ -532,6 +532,7 @@ def cover(ep, path: str):
 
 
 SCENE_RULES = {"max_shot": 4.6, "min_beats": 3}   # 白板场景节奏：2 小节一个场景，每个场景至少 3 个拍点有画面事件
+SLOW_RULES = {"max_shot": 8.8, "min_beats": 4}    # 慢速讲解节奏：3 小节一个场景（≈6.4 秒，片头 2 小节、片尾 4 小节），画完停 4 拍
 HOLD_BEATS = 2      # 多小节场景：最后一笔至少比镜头结束早这么多拍（≈1 秒），画完停住让人看清
 
 
@@ -545,9 +546,10 @@ def hold_warnings(ep) -> list[str]:
         if s.bars < 2:
             continue
         ends = [it["k1"] for it in board.items if it["j"] == j and it["kind"] in ("path", "text")]
-        if ends and max(ends) > 4 * s.bars - HOLD_BEATS + 1e-9:
+        need = HOLD_BEATS if s.bars >= 3 else min(HOLD_BEATS, 2)
+        if ends and max(ends) > 4 * s.bars - need + 1e-9:
             hold = s.t1 - board.t_of(j, max(ends))
-            warns.append(f"镜头{j + 1}：最后一笔在第 {max(ends):.1f} 拍画完，只停留 {hold:.2f}s（至少 {HOLD_BEATS} 拍）")
+            warns.append(f"镜头{j + 1}：最后一笔在第 {max(ends):.1f} 拍画完，只停留 {hold:.2f}s（至少 {need} 拍）")
     return warns
 
 
