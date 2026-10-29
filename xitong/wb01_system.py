@@ -19,7 +19,7 @@ from engine.gfx import clamp01, ease_out
 from .common import BOOK, episode
 
 ACC = "#2F62B8"
-SQUARE_SHOT = 9
+SQUARE_SHOT = 8
 
 b = Board(size=(3600, 8600))
 
@@ -268,7 +268,7 @@ b.hit(len(b.shots) - 1, 8, "kick", 0.55, "原曲最后一击")
 def build():
     ep = episode(1, "system", "系统是什么", "换了三份工作，烦心事怎么都一样？", ACC, b.shots,
                  [f"{BOOK}第一章（转述）", "中译本：邱昭良译，浙江人民出版社 2012"],
-                 "换了三份工作|烦心事【一模一样】", 9,
+                 "换了三份工作|烦心事【一模一样】", 8,
                  ["书中观点均为转述：系统由要素、连接、功能或目标组成；开篇弹簧玩具演示行为来自结构；改变要素通常影响最小，"
                   "改变连接与目标影响更大；系统目标要从行为推断。出处：Donella H. Meadows, Thinking in Systems: A Primer "
                   "(2008)，中译本《系统之美》（邱昭良译，浙江人民出版社 2012）。",
