@@ -24,7 +24,7 @@ from .common import BOOK, episode
 ACC = "#5A6FA8"
 SQUARE_SHOT = 6
 
-b = Board(size=(3600, 10900))
+b = Board(size=(3600, 11800))
 
 
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None, j=None):
@@ -284,7 +284,7 @@ L(loop_arrow(1280, 9340, 130, 34, cw=False), 7, 8.0, GREEN, 9, sfx="kick")
 
 # ---------------------------------------------------------------- 收尾（场景 14，4 小节）：先拉远看全板，再推到评论区
 
-VIEW_FULL = (1800, 5000, 0.18)
+VIEW_FULL = (1800, 5500, 0.11)
 VIEW_COMMENT = (1800, 10550, 0.8)
 _now = [0.0]                                            # 相机取景时刻（build() 里由 ep.shot_at 记录）
 
