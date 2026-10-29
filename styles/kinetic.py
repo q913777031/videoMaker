@@ -131,7 +131,7 @@ def bar2(c, t, b):
         size += dt * 900
     for e in range(4, 0, -1):
         txt(c, "干劲十足", W / 2, 900 + e * 24, size * (1 - e * 0.04), LIME if e % 2 else PINK, 0.12 * (5 - e))
-    txt(c, "干劲十足", W / 2, 900, size, WHITE, stroke=None) if False else txt(c, "干劲十足", W / 2, 900, size, WHITE)
+    txt(c, "干劲十足", W / 2, 900, size, WHITE)
     if k == 3:
         fx.sparks(c, W / 2, 900, dt, [LIME, PINK, WHITE], n=22, reach=520)
     txt(c, "大家", W / 2, 420, 120, LIME, clamp01(seg.since(b, 0, t) / 0.1))
@@ -174,13 +174,6 @@ def bar4(c, t, b):
         # 被斜切后露出“是结构”
         k = ease_out(clamp01(d1 / 0.3))
         st = 0.7 + 0.3 * ease_out_back(clamp01(d1 / 0.3), 2.5)
-        c.save()
-        c.translate(W / 2, 1000)
-        c.scale(st, st)
-        gfx.rrect(c, 0, 0, 900, 400, 30, LIME)
-        txt(c, "是结构", 0, 0, 260, BG)
-        c.restore()
-        fx.sparks(c, W / 2, 1000, seg.since(b, 2, t), [LIME, PINK, WHITE], n=24, reach=560)
         for side in (-1, 1):
             c.save()
             p = skia.Path()
@@ -198,10 +191,18 @@ def bar4(c, t, b):
             c.clipPath(p, doAntiAlias=True)
             c.translate(side * 180 * k, side * 260 * k)
             c.rotate(side * 6 * k)
-            txt(c, top, W / 2, 800, size, WHITE, 1 - 0.85 * k)
+            txt(c, top, W / 2, 800, size, WHITE, 1 - 0.95 * k)
             c.restore()
         a = 1 - clamp01(d1 / 0.15)
-        gfx.rrect(c, W / 2, 800, 1400, 10, 5, PINK, a) if a > 0 else None
+        if a > 0:
+            gfx.rrect(c, W / 2, 800, 1400, 10, 5, PINK, a)
+        c.save()
+        c.translate(W / 2, 1000)
+        c.scale(st, st)
+        gfx.rrect(c, 0, 0, 900, 400, 30, LIME)
+        txt(c, "是结构", 0, 0, 260, BG)
+        c.restore()
+        fx.sparks(c, W / 2, 1000, seg.since(b, 2, t), [LIME, PINK, WHITE], n=24, reach=560)
     else:
         c.save()
         c.translate(W / 2, 800)
