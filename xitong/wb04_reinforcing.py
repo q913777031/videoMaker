@@ -192,7 +192,7 @@ b.hit(J(), 2, "ding")
 
 # ---------------------------------------------------------------- 书中观点（镜头 7–17）
 
-R1, R2 = 4150, 5150         # 两排区块中心
+R1, R2 = 4250, 5250         # 两排区块中心
 BX = (950, 2650)            # 两列区块中心
 
 b.shot("有本书讲过这个", "系统之美", view=(950, R1, 0.85))
@@ -205,7 +205,7 @@ L(bank(1260, R1 + 120, 340), 0, 1.0, sfx="wood_high")
 T("¥", 1260, R1 - 160, 80, GREEN, k0=1.0, k1=1.2, sfx="pop")
 T("存款 ¥10000", 1260, R1 + 220, 54, k0=2.0, sfx="pop")
 
-NL, NR = BX[1] - 400, BX[1] + 400
+NL, NR = BX[1] - 380, BX[1] + 380
 b.shot("钱越多，利息越多", "书中观点 · 越多越多", view=(BX[1], R1, 0.85), shake=[0], flashes=[0])
 L(loop_pair(NL, NR, R1), 0, 0.4, RED, 14)
 b.hit(J(), 0, "kick", 1.0, "drop：回路砸出")
@@ -225,41 +225,41 @@ L(underline(BX[1] - 200, BX[1] + 200, R1 - 295), 2, 2.5, RED, 8, sfx="ding")
 L(loop_icon(BX[1] + 330, R1 - 360, 45), 3, 3.5, RED, 8, sfx="wood_high")
 
 OX, OY = 420, R2 + 300       # 曲线坐标轴原点
-CX0, CY0, CX1, CY1 = OX + 20, OY - 40, OX + 1060, OY - 820
+CX0, CY0, CX1, CY1 = OX + 20, OY - 40, OX + 1060, OY - 700
 b.shot("前几年看不出来", "书中观点 · 先慢后快", view=(BX[0], R2, 0.85))
-L(axes(OX, OY, 1120, 900), 0, 0.7, BLACK, 8, sfx="wood_high")
-T("存款", OX + 110, OY - 870, 50, k0=0.5, k1=0.8)
+L(axes(OX, OY, 1120, 780), 0, 0.7, BLACK, 8, sfx="wood_high")
+T("存款", OX + 110, OY - 745, 50, k0=0.5, k1=0.8)
 T("时间", OX + 1070, OY + 60, 50, k0=0.7, k1=1.0)
 L(exp_curve(CX0, CY0, CX1, CY1, 4.0, 0, 0.6), 1, 2.4, BLACK, 11, sfx="wood_low")
-T("平平的", 700, OY - 230, 60, k0=3.0, sfx="pop")
+T("平平的", 900, OY - 260, 60, k0=3.0, sfx="pop")
 
 b.shot("后面越涨越快", "书中观点 · 先慢后快", view=(BX[0], R2, 0.85))
 L(exp_curve(CX0, CY0, CX1, CY1, 4.0, 0.6, 1.0), 0, 1.0, RED, 12, sfx="wood_high")
-T("越来越快", 1030, OY - 800, 60, RED, k0=2.0, sfx="pop")
-L(arrow((1290, OY - 480), (1410, OY - 700), 0.1, 34), 3, 3.4, RED, 8, sfx="ding")
+T("越来越快", 1030, OY - 640, 60, RED, k0=2.0, sfx="pop")
+L(arrow((1250, OY - 450), (1330, OY - 640), 0.1, 34), 3, 3.4, RED, 8, sfx="ding")
 
 b.shot("不少人这时放弃", "书中观点 · 先慢后快", view=(BX[0], R2, 0.85))
 L(stick(640, OY - 50, 0.45, "shrug"), 0, 0.5, BLUE, 8, sfx="pop")
 L(face(640, OY - 50, 0.45, "sad"), 0.5, 0.6, BLUE, 6)
-T("太慢了", 640, OY - 300, 54, BLUE, k0=1.0, sfx="pop")
+T("太慢了", 560, OY - 330, 54, BLUE, k0=1.0, sfx="pop")
 L(cross(640, OY - 120, 80), 2, 2.35, RED, 11, sfx="rim")
 
 b.shot("也能往坏处转", "书中观点 · 恶性循环", view=(BX[1], R2, 0.85))
-L(loop_pair(NL, NR, R2 - 50, 120), 0, 0.8, BLACK, 10, sfx="wood_high")
-L(circle(NL, R2 - 50, 120), 1, 1.3, RED, 9)
+L(loop_pair(NL, NR, R2 - 50, 110), 0, 0.8, BLACK, 10, sfx="wood_high")
+L(circle(NL, R2 - 50, 110), 1, 1.3, RED, 9)
 T("刷手机", NL, R2 - 50, 54, RED, k0=1.0, sfx="pop")
-L(circle(NR, R2 - 50, 120), 2, 2.3, RED, 9)
+L(circle(NR, R2 - 50, 110), 2, 2.3, RED, 9)
 T("没精力", NR, R2 - 50, 54, RED, k0=2.0, sfx="pop")
 
 b.shot("越累越想刷", "书中观点 · 恶性循环", view=(BX[1], R2, 0.85))
 T("越刷越累，越累越刷", BX[1], R2 + 300, 62, RED, k0=0, k1=1.6, sfx="pop")
-L(arrow((3060, R2 + 120), (3200, R2 + 420), -0.15, 36), 2, 2.4, RED, 9, sfx="rim")
+L(arrow((3000, R2 + 120), (3120, R2 + 430), -0.15, 36), 2, 2.4, RED, 9, sfx="rim")
 b.hit(J(), 3, "tom", 0.7)
 
-b.shot("好坏都会越滚越大", "书中观点 · 增强回路", view=(1800, 4650, 0.42), shake=[0])
-T("越多 → 越多", 1800, 3600, 120, RED, k0=0, k1=0.8, sfx="kick")
-L(arrow((1800, 5500), (1800, 4500), 0.08, 50), 2, 2.5, GREEN, 12, sfx="wood_high")
-L(arrow((3480, 4700), (3480, 5550), 0.08, 50), 3, 3.5, RED, 12, sfx="rim")
+b.shot("好坏都会越滚越大", "书中观点 · 增强回路", view=(1800, 4800, 0.42), shake=[0])
+T("越多 → 越多", 1800, 3760, 120, RED, k0=0, k1=0.8, sfx="kick")
+L(arrow((1700, 5600), (1700, 4700), 0.05, 50), 2, 2.5, GREEN, 12, sfx="wood_high")
+L(arrow((1900, 4700), (1900, 5600), 0.05, 50), 3, 3.5, RED, 12, sfx="rim")
 
 # ---------------------------------------------------------------- 身边的例子（镜头 18–28）
 
@@ -281,8 +281,8 @@ T("这个也帮下", 1300, 6380, 50, k0=3.4, k1=3.9)
 
 b.shot("做多了越来越熟", "例子 · 会做表的人", view=(cx, cy, 0.85))
 for n, (w, x) in enumerate((("做得多 →", 820), ("更熟练 →", 1080), ("找的更多", 1350))):
-    T(w, x, 6790, 50, RED if n == 2 else BLACK, k0=n, sfx="pop")
-L(arrow((1400, 6845), (760, 6845), -0.1, 34), 3, 3.5, RED, 7, sfx="ding")
+    T(w, x, 6760, 50, RED if n == 2 else BLACK, k0=n, sfx="pop")
+L(arrow((1400, 6810), (760, 6810), -0.08, 34), 3, 3.5, RED, 7, sfx="ding")
 
 cx, cy = CARDS[1]
 b.shot("每天跑一公里", "例子 · 跑步", view=(cx, cy, 0.85))
@@ -324,7 +324,7 @@ b.hit(J(), 3, "tom", 0.7)
 
 b.shot("都在自己转圈", "身边的例子", view=(1800, 6950, 0.42), shake=[0])
 for n, (x, y) in enumerate(CARDS):
-    L(loop_icon(x + 590, y - 330, 60), n, n + 0.5, GREEN if n < 2 else RED, 10,
+    L(loop_icon(x + (560 if x < 1800 else -560), y - 330, 60), n, n + 0.5, GREEN if n < 2 else RED, 10,
       sfx=("kick", "wood_high", "wood_high", "wood_high")[n])
 
 b.shot("小差别会放大", "身边的例子", view=(1800, 8150, 0.8))
@@ -385,7 +385,7 @@ T("学了就用 → 找你的更多", cx, 10350, 56, k0=0, k1=1.5, sfx="pop")
 L(underline(cx - 300, cx + 300, 10400, 10, 36), 2, 2.5, RED, 7, sfx="ding")
 
 cx, cy = SOL[3]
-b.shot("坏回路早点掐断", "第四步 · 掐断坏回路", view=(cx, cy, 0.85))
+b.shot("坏回路早点掐断", "第四步 · 掐断坏回路", view=(2450, cy, 0.85))
 T("④ 掐断坏回路", cx, 9760, 76, BLUE, k0=0, sfx="pop")
 L(loop_icon(2150, 9960, 60), 1, 1.4, RED, 9, sfx="wood_high")
 T("刷手机", 2360, 9960, 54, RED, k0=1.4, k1=1.8)

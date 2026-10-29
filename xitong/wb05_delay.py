@@ -298,7 +298,7 @@ L(stick(x - 380, y + 330, 0.8, "up"), 0, 0.6, sfx="wood_high")
 for n in range(3):
     L(P((x - 480, y + 120 + n * 60), (x - 580, y + 120 + n * 60)), 0.6 + n * 0.1, 0.7 + n * 0.1, BLUE, 6)
 L(scale_box(x + 250, y + 230), 1, 1.5, sfx="pop")
-T("还是 60kg", x + 250, y - 20, 64, RED, k0=2, sfx="rim")
+T("还是 60kg", x + 250, y + 90, 64, RED, k0=2, sfx="rim")
 
 b.shot("饿两顿，又暴吃", "例子 · 健身", view=(x, y, 0.85))
 L(bowl(x - 200, y - 200, 90), 0, 0.4, sfx="wood_high")
