@@ -375,8 +375,8 @@ L(stick(x - 300, y + 380, 0.5), 3, 3.4, BLUE, 8, sfx="pop")
 
 b.shot("爬到山顶往下看", "例子 · 升职", view=(x, y, 0.85))
 T("周末爬山", x + 300, y - 310, 56, k0=0, sfx="pop")
-L(peaks((x + 30, y + 330), (x + 300, y - 140), (x + 570, y + 330), snow=False), 1, 1.6, BLACK, 9, sfx="wood_high")
-L(stick(x + 300, y - 140, 0.35, "up"), 2, 2.3, BLUE, 7, sfx="pop")
+L(peaks((x + 30, y + 330), (x + 300, y - 60), (x + 570, y + 330), snow=False), 1, 1.6, BLACK, 9, sfx="wood_high")
+L(stick(x + 300, y - 60, 0.35, "up"), 2, 2.3, BLUE, 7, sfx="pop")
 L(join(*[rect(x + 120 + n * 50, y + 300, 26, 40, 3) for n in range(8)]), 3, 3.3, BLACK, 5, sfx="pop")
 T("楼像火柴盒", x + 300, y + 380, 46, k0=3.3)
 
