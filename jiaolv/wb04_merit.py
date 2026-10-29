@@ -18,7 +18,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, b
 from .common import BOOK, episode
 
 ACC = "#B8452F"
-SQUARE_SHOT = 16
+SQUARE_SHOT = 15
 
 b = Board(size=(3600, 10950))
 
