@@ -1,10 +1,10 @@
 """09 迈出第一步（白板手绘版）：想交朋友，第一步迈哪？
 
-节奏：21 个场景 × 2 小节（≈4.3 秒），每个场景前 6 拍画完、最后 2 拍停住让人看清（2026-10 观众反馈“切太快看不清”后改版）。
-叙事：切身问题开局（搬到新城市第三年，下班回出租屋，周末没人约；刷到一个读书会，想去又怕尴尬）→ 书中观点（亮书；
+节奏：14 个场景（2/3…/4 小节），每屏 ≈6.4 秒，画完停 2 秒。
+叙事：切身问题开局（搬到新城市第三年，周末没人约；刷到一个读书会，想去又怕尴尬）→ 书中观点（亮书；
 书末一章给的办法拼成 EASE 四个字母，本讲讲前两个：E 先迈一小步——帮个小忙、做志愿；A 有个计划——先挑低风险的小场合，
-大型聚会往后放；画成一级一级的台阶）→ 身边的例子（帮同事弄卡纸的打印机、借梯子给邻居、六个人的小读书会、
-孩子转学先约一个同学来家）→ 具体做法（每天帮一个小忙 / 报一次志愿 / 列场合清单从最不怕的排起 / 定好时间和退路）
+大型聚会往后放；画成一级一级的台阶）→ 身边的例子（帮同事弄卡纸的打印机、借梯子给邻居、六个人的小读书会）
+→ 具体做法（每天帮一个小忙 / 列场合清单从最不怕的排起 / 定好时间和退路）
 → 评论区互动，预告下一讲（后两个字母）。
 书中观点为转述：Cacioppo & Patrick, Loneliness: Human Nature and the Need for Social Connection (W. W. Norton, 2008)
 第 14 章（中译本第三部分“14 个体困境的解药”）；中译本《孤独是可耻的》，焦梦津译，中国人民大学出版社 2009。
@@ -17,21 +17,22 @@ import skia
 
 from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow, book, building, check, circle,
                                clock, cross, face, hands_at, join, marker, rect, scribble, stick, underline)
+from whiteboard import engine as wb
 from adler import kit as K
-from engine.gfx import clamp01, ease_out
+from engine.gfx import clamp01, ease_in_out, ease_out, lerp
 
 from .common import BOOK, episode
 
 ACC = "#3E7D6B"
-SQUARE_SHOT = 8
+SQUARE_SHOT = 6
 
 b = Board(size=(3600, 11700))
 
 
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None, j=None):
-    """在当前镜头写字：写字时长按字数估计（每字约 0.18 拍，至少 0.5 拍）。"""
+    """在当前镜头写字：写字时长按字数估计（每字约 0.25 拍，至少 0.8 拍）。"""
     jj = len(b.shots) - 1 if j is None else j
-    k1 = k0 + max(0.5, 0.18 * len(s)) if k1 is None else k1
+    k1 = k0 + max(0.8, 0.25 * len(s)) if k1 is None else k1
     b.text(jj, k0, k1, s, x, y, size, color, sfx=sfx)
 
 
