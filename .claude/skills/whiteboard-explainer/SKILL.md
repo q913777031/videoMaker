@@ -6,7 +6,7 @@ description: 用白板手绘引擎（whiteboard/engine.py）制作整讲 92.6 �
 # 白板手绘讲解（整讲）
 
 范例：`xitong/wb01_system.py`；引擎：`whiteboard/engine.py`；系列入口 `xitong/build.py` 中 `wb.install(B)`。
-配乐、卡点、交付格式照 CLAUDE.md（`music/bgm.m4a`、实测拍点、每讲 mp4 + cover.png + 标题与话题.txt + 横屏封面_1080x1080.png）。
+配乐、卡点、交付格式照 CLAUDE.md（`music/bgm.m4a`、实测拍点、每讲 mp4 + cover.png + 标题与话题.txt + 横屏封面_1080x1080.png；成片末尾接频道片尾 `brand/outro.mp4`，`--publish` 自动拼接）。
 
 ## 1. 叙事结构（42 个 1 小节镜头，约 92.6 秒）
 

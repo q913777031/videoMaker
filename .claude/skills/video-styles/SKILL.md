@@ -40,7 +40,7 @@ description: 本仓库所有可用的视频风格与视频形式目录：11 种�
 | 一镜到底长卷 | `styles.scroll` | 长卷连续平移、四层视差、场景终态留在卷上 | 仅样片 |
 | 漫画分格 | `styles.comic` | 斜切分格逐格推进、拟声字、跨格动作、翻页 | 仅样片 |
 
-把“仅样片”的形式做成整讲：照 `whiteboard/engine.py` 的做法写一个引擎——镜头仍用 `core.Shot(1, 字幕, 标签)` 承载字幕、页眉、音效、闪白、抖动，画面由引擎的 `draw_frame(c, ep, T)` 接管，`install(B)` 里替换 `core.draw_frame`、`core.cover` 与 `B.episode_square`，就能沿用 `--sheet / --verify / --publish` 全套流程与交付格式。
+把“仅样片”的形式做成整讲：照 `whiteboard/engine.py` 的做法写一个引擎——镜头仍用 `core.Shot(1, 字幕, 标签)` 承载字幕、页眉、音效、闪白、抖动，画面由引擎的 `draw_frame(c, ep, T)` 接管，`install(B)` 里替换 `core.draw_frame`、`core.cover` 与 `B.episode_square`，就能沿用 `--sheet / --verify / --publish` 全套流程与交付格式（含 `--publish` 自动接频道片尾）。不走 `adler/build.py` 的形式，成片放进 `videos/` 后运行 `python3 -m brand.append <目录>` 接片尾。
 
 ## 三、出样片的约定
 

@@ -117,6 +117,7 @@ BRAND = "Vibe知识大赏"              # 发布标题统一为「Vibe知识大�
 def publish(keys: list[str]):
     """交付到 videos/<PKG>/XX_概念/：只放成片、封面与“标题与话题.txt”（卡点表与出处留在 out/ 内部核验用）。
     系列多于 1 讲且本次交付全部讲时，另出系列合集图与 1080×1080 横屏封面。"""
+    from brand.append import append_outro
     eps = []
     for k in keys:
         ep = load(k)
@@ -127,6 +128,7 @@ def publish(keys: list[str]):
             shutil.rmtree(dst)
         dst.mkdir(parents=True)
         shutil.copy2(_video(k, ep), dst / _video(k, ep).name)
+        append_outro(dst / _video(k, ep).name)
         shutil.copy2(src / "cover.png", dst / "cover.png")
         (dst / "标题与话题.txt").write_text(f"{BRAND}｜{ep.title}\n{ep.hashtags}\n", encoding="utf-8")
         if square_shot(k) is not None:
