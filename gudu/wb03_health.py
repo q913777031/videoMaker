@@ -20,7 +20,7 @@ from engine.gfx import clamp01, ease_out
 from .common import BOOK, episode
 
 ACC = "#5B6FA8"
-SQUARE_SHOT = 16
+SQUARE_SHOT = 2
 
 b = Board(size=(3600, 10800))
 
@@ -404,7 +404,7 @@ b.hit(len(b.shots) - 1, 4, "kick", 0.55, "原曲最后一击")
 def build():
     ep = episode(3, "health", "孤独伤身", "一个人住久了，为什么总睡不好？", ACC, b.shots,
                  [f"{BOOK}第六章 · 孤独的磨损（转述）", "中译本：《孤独是可耻的》，焦梦津译，中国人民大学出版社 2009"],
-                 "一个人住久了|为什么总【睡不好】", 16,
+                 "一个人住久了|为什么总【睡不好】", 2,
                  ["书中观点均为转述：作者团队比较孤独与不孤独的人，发现孤独的人睡眠质量更差、夜里更容易短暂醒来，"
                   "压力反应和血压等指标更差；长期孤独让身体被慢慢磨损（第六章“孤独的磨损”）。上屏均为转述，不是逐字引文，"
                   "片中不给具体研究数字。出处：John T. Cacioppo & William Patrick, Loneliness: Human Nature and the Need for "

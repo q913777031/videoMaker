@@ -190,13 +190,13 @@ L(heart(DX, 2700, 110), 0, 0.7, RED, 10, sfx="pop")
 T("心里的感觉", DX, 2930, 64, RED, k0=1, sfx="pop")
 L(underline(2510, 2850, 2985, 10, 30), 2, 2.4, RED, 7, sfx="ding")
 
-b.shot("跟谁合得来", "书中观点 · 关系", view=(DX, 3200, 0.8))
-L(join(stick(2420, 3490, 0.65, "point"), stick(2940, 3490, 0.65, "up")), 0, 0.8, BLACK, 9, sfx="wood_high")
-L(join(face(2420, 3490, 0.65, "smile"), face(2940, 3490, 0.65, "smile")), 0.8, 1.0, BLACK, 6)
-L(join(arrow((2530, 3280), (2830, 3280), -0.1, 34), arrow((2830, 3330), (2530, 3330), -0.1, 34)), 1, 1.6, GREEN, 8,
+b.shot("跟谁合得来", "书中观点 · 关系", view=(DX, 3150, 0.8))
+L(join(stick(2420, 3430, 0.65, "point"), stick(2940, 3430, 0.65, "up")), 0, 0.8, BLACK, 9, sfx="wood_high")
+L(join(face(2420, 3430, 0.65, "smile"), face(2940, 3430, 0.65, "smile")), 0.8, 1.0, BLACK, 6)
+L(join(arrow((2530, 3245), (2830, 3245), -0.1, 34), arrow((2830, 3295), (2530, 3295), -0.1, 34)), 1, 1.6, GREEN, 8,
   sfx="pop")
-T("说得上话", DX, 3150, 58, GREEN, k0=1.6)
-T("关系好不好", DX, 3590, 60, BLUE, k0=2, sfx="pop")
+T("说得上话", DX, 3140, 58, GREEN, k0=1.6)
+T("关系好不好", DX, 3510, 56, BLUE, k0=2, sfx="pop")
 H(3, "ding", 0.6)
 
 b.shot("人多人少另一回事", "书中观点 · 人数", view=(DX, 3720, 0.8))
