@@ -291,7 +291,7 @@ CV = (1800, 6560, 0.42)
 scene("身边全是这种回路", "身边的例子", CV)
 for n, (x, y) in enumerate(CARDS):
     L(rect(x, y, 1500, 900, 40), n, n + 0.6, GREEN, 8, sfx="wood_high" if n % 2 == 0 else None)
-TAGS = [("工位", 620, 6210), ("早起", 2100, 6240), ("作业", 620, 7660), ("手机", 2100, 7640)]
+TAGS = [("工位", 620, 6210), ("早起", 2980, 5510), ("作业", 620, 7660), ("手机", 2100, 7640)]
 for n, (w, x, y) in enumerate(TAGS):
     T(w, x, y, 60, BLUE, k0=4 + n * 0.5, k1=4.4 + n * 0.5, sfx="pop" if n % 2 == 0 else None)
 
