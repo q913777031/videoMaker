@@ -138,7 +138,7 @@ def steam(x, y, n=3, gap=40, s=1.0) -> skia.Path:
     return join(*parts)
 
 
-def bowl(x, y, w=200) -> skia.Path:
+def bowl(x, y, w=200, chop=True) -> skia.Path:
     """一碗面：碗 + 面条 + 筷子。(x, y) 为碗口中点。"""
     body = skia.Path()
     body.moveTo(x - w / 2, y)
@@ -152,7 +152,7 @@ def bowl(x, y, w=200) -> skia.Path:
         q.quadTo(x + w * 0.2, y + 12 - i * 10, x + w * 0.35, y - 6 - i * 10)
         noodles.append(q)
     sticks = join(P((x + w * 0.1, y - 30), (x + w * 0.55, y - 150)), P((x + w * 0.2, y - 25), (x + w * 0.65, y - 130)))
-    return join(body, *noodles, sticks)
+    return join(body, *noodles, sticks) if chop else join(body, *noodles)
 
 
 def pop_fn(draw, x, y, size, color):
@@ -175,7 +175,7 @@ def star_fn(x, y, size, color=GOLD):
     return pop_fn(lambda c, xx, yy, s, col: K.star(c, xx, yy, s, col), x, y, size, color)
 
 
-def tear_fn(eyes, drop=90, r=9):
+def tear_fn(eyes, drop=45, r=12):
     """眼泪：从每只眼睛下方落下的蓝色泪滴。"""
 
     def fn(c, k, t):
@@ -337,7 +337,7 @@ L(stick(1250, 7600, 0.6), 2, 2.5, BLUE, 9, sfx="wood_high")
 T("……", 1250, 7240, 66, BLUE, k0=3, sfx="rim")
 
 b.shot("午休听段相声", "例子 · 职场", view=(950, 7350, 0.85))
-b.erase(J(), 0, 0.5, 650, 7300, 620, 760)
+b.erase(J(), 0, 0.5, 660, 7300, 600, 740)
 H(0, "shaker")
 L(phone(700, 7350, 260, 400), 1, 1.5, BLACK, 9, sfx="wood_high")
 T("相声", 700, 7240, 56, k0=2, sfx="pop")
@@ -355,7 +355,7 @@ L(stick(3000, 7600, 0.6), 3, 3.4, BLUE, 9, sfx="wood_high")
 T("我…", 3000, 7330, 56, BLUE, k0=3.4)
 
 b.shot("回家翻本小说", "例子 · 生活", view=(2650, 7350, 0.85))
-b.erase(J(), 0, 0.5, 2450, 7400, 580, 620)
+b.erase(J(), 0, 0.5, 2450, 7400, 580, 560)
 H(0, "shaker")
 L(book(2450, 7200, 360, 240), 1, 1.6, BLACK, 9, sfx="wood_low")
 T("主角开小面馆", 2450, 7450, 52, k0=2, sfx="pop")
@@ -391,7 +391,7 @@ b.shot("画了张晚饭桌", "例子 · 孩子", view=(2650, 8200, 0.85))
 L(rect(2550, 8390, 440, 300, 8), 0, 0.4, BLACK, 8, sfx="pop")
 L(join(P((2380, 8450), (2720, 8450)), P((2420, 8450), (2420, 8510)), P((2680, 8450), (2680, 8510)),
        circle(2440, 8395, 26), circle(2550, 8385, 30), circle(2660, 8400, 22),
-       bowl(2550, 8445, 60)), 1, 1.7, BLUE, 6, sfx="wood_high")
+       bowl(2480, 8448, 50, False), bowl(2620, 8448, 50, False)), 1, 1.7, BLUE, 6, sfx="wood_high")
 T("我家晚饭", 2550, 8290, 46, k0=2, sfx="pop")
 b.erase(J(), 2.4, 2.8, 3000, 8250, 240, 80)
 L(face(*KID[:2], KID[2], "smile"), 3, 3.2, BLUE, 7, sfx="ding")
