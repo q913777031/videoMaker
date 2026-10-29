@@ -38,8 +38,9 @@
 
 ## 频道片尾（强制，所有视频）
 
-- 每个交付视频末尾都接频道片尾 `brand/outro.mp4`（@Vibe哥 关注卡，4.3 秒，配乐取 `music/bgm.m4a` drop 段并卡点）。
+- 从 2026-10-29 起新交付的视频，末尾都接频道片尾 `brand/outro.mp4`（@Vibe哥 关注卡，4.3 秒，配乐取 `music/bgm.m4a` drop 段并卡点）。
 - 阿德勒引擎系列（含白板手绘等走 `adler/build.py` 的系列）：`--publish` 自动拼接。
 - 其他引擎：成片放进 `videos/` 后运行 `python3 -m brand.append <目录或文件>`；横屏视频自动等比缩放补黑边，无音轨视频自动补静音。
 - `brand/outro_applied.json` 记录已接过片尾的文件，重复运行会跳过，不会接两次；重新渲染覆盖后的成片会被重新接上。
+- 此前已交付的旧视频不补接。
 - 换头像：替换 `brand/avatar.png` 后运行 `python3 -m brand.outro` 重出片尾。
