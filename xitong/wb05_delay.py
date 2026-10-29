@@ -275,7 +275,7 @@ for n in range(3):
 T("又胖回来", x + 330, y - 300, 54, RED, k0=5, k1=5.6, sfx="rim")
 
 x, y = CARDS[2]
-scene("没考好，马上报班", "例子 · 家里", (x, y, 0.85))
+scene("没考好，马上报班", "例子 · 家里", (x, y + 80, 0.85))
 L(stick(x - 420, y + 330, 0.6, "down"), 0, 0.5, sfx="wood_high")
 L(face(x - 420, y + 330, 0.6, "sad"), 0.5, 0.6)
 L(doc(x - 50, y - 30, 260, 320, 0), 1, 1.4, sfx="pop")
@@ -288,7 +288,7 @@ L(arrow((x + 280, y + 210), (x - 320, y + 210), 0, 34), 5.3, 5.8, RED, 8)
 
 x, y = CARDS[3]
 TRAFFIC = [x - 480, x - 200, x + 80, x + 360]
-scene("前车一刹，后车更猛", "例子 · 开车", (x, y, 0.85), shake=[5])
+scene("前车一刹，后车更猛", "例子 · 开车", (x, y + 80, 0.85), shake=[5])
 L(P((x - 620, y + 260), (x + 620, y + 260)), 0, 0.3, BLACK, 7, sfx="wood_high")
 for n, cx in enumerate(TRAFFIC):
     L(car(cx, y + 250, 0.8), 0.3 + n * 0.15, 0.6 + n * 0.15)
