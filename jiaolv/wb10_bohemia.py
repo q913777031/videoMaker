@@ -219,7 +219,7 @@ def _snap_f(t, j_snap):
 def _xform(c, side, f):
     xo = RX + side * RL / 2
     c.translate(side * 45 * f, 0)
-    c.rotate(side * -14 * f * -1 if side < 0 else -14 * f, xo, RY)
+    c.rotate(-side * 14 * f, xo, RY)          # 两半绕各自外端下折，断口往下掉
 
 
 def ruler_fn(j_snap):

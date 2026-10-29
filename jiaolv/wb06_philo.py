@@ -234,7 +234,7 @@ H(3, "ding", 0.6)
 j9 = j8 + 1
 j16 = j8 + 8
 b.custom(j8, 1, 1.1, level_fn(j8, j9, j16))
-b.custom(j8, 3.6, 3.7, fall_fn("不行", 150, RED, STK[0], 2380, 2985, j9, 0))
+b.custom(j8, 3.6, 3.7, fall_fn("不行", 150, RED, STK[0], 2380, 2945, j9, 0))
 
 b.shot("一句差评，分就掉", "书中观点 · 身份", view=(2650, 2980, 0.85), shake=[0], flashes=[0])
 H(0, "kick", 1.0)

@@ -231,7 +231,7 @@ T("我建议……", 2450, 560, 60, BLUE, k0=1.4)
 for n, x in enumerate((2620, 2850, 3080)):
     L(stick(x, 1250, 0.55), 2 + n * 0.2, 2.3 + n * 0.2, BLACK, 8, sfx="wood_high" if n == 0 else None)
     L(face(x, 1250, 0.55, "flat"), 2.3 + n * 0.2, 2.4 + n * 0.2, BLACK, 7)
-T("……", 2850, 780, 70, k0=3, sfx="rim")
+T("……", 2850, 940, 70, k0=3, sfx="rim")
 
 b.shot("领导叫错你名字", "灵魂拷问", view=(950, 1800, 0.85))
 L(stick(650, 2150, 0.75, "point", tie=True), 0, 0.6, BLACK, 9, sfx="wood_high")
@@ -431,7 +431,7 @@ H(3, "shaker", 0.7)
 
 b.shot("气球都瘪了", "身边的例子", view=(1800, 6250, 0.355))
 for n, (x, y) in enumerate(CARDS):
-    T("瘪了", x - 120, y - 200, 100, RED, k0=n, sfx="pop")
+    T("瘪了", x - 330, y - 300, 90, RED, k0=n, sfx="pop")
 
 b.shot("缺的都是被看见", "身边的例子", view=(1800, 6250, 0.355), shake=[0])
 T("缺的都是被看见", 1800, 7250, 150, RED, k0=0, k1=0.8, sfx="kick")
