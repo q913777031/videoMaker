@@ -291,8 +291,9 @@ CV = (1800, 6560, 0.42)
 scene("身边全是这种回路", "身边的例子", CV)
 for n, (x, y) in enumerate(CARDS):
     L(rect(x, y, 1500, 900, 40), n, n + 0.6, GREEN, 8, sfx="wood_high" if n % 2 == 0 else None)
-for n, ((x, y), w) in enumerate(zip(CARDS, ("工位", "早起", "作业", "手机"))):
-    T(w, x - 330, y + 350, 70, BLUE, k0=4 + n * 0.5, k1=4.4 + n * 0.5, sfx="pop" if n % 2 == 0 else None)
+TAGS = [("工位", 620, 6210), ("早起", 2100, 6240), ("作业", 620, 7660), ("手机", 2100, 7640)]
+for n, (w, x, y) in enumerate(TAGS):
+    T(w, x, y, 60, BLUE, k0=4 + n * 0.5, k1=4.4 + n * 0.5, sfx="pop" if n % 2 == 0 else None)
 
 scene("工位收了又乱", "例子 · 工位", (950, 5890, 0.85))
 L(desk(780, 5940, 380), 0, 0.7, sfx="wood_high")
@@ -339,8 +340,8 @@ for n, (x, y) in enumerate(CARDS):
     dx, dy = x - 1800, y - 6560
     L(arrow((1800 + dx * 0.36, 6560 + dy * 0.36), (1800 + dx * 0.6, 6560 + dy * 0.6), 0.1, 40), 1 + n * 0.5,
       1.4 + n * 0.5, RED, 9, sfx="wood_high" if n % 2 == 0 else None)
-for n, (x, y) in enumerate(CARDS):
-    T("硬扛", x + 350, y + 330, 64, RED, k0=4 + n * 0.4, k1=4.35 + n * 0.4, sfx="pop" if n == 0 else None)
+for n, (w, x, y) in enumerate(TAGS):
+    L(underline(x - 70, x + 70, y + 45, 8, 30), 4 + n * 0.4, 4.3 + n * 0.4, RED, 7, sfx="pop" if n == 0 else None)
 
 # ---------------------------------------------------------------- 具体做法（场景 16–19）
 

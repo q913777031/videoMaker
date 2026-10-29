@@ -289,9 +289,9 @@ scene("身边到处是公地", "身边的例子", (1800, 4650, 0.42))
 T("身边的公地", 1800, 3770, 90, k0=0, sfx="pop")
 for n, (x, y) in enumerate(CARDS):
     L(rect(x, y, 1500, 900, 40), 1 + n, 1.45 + n, GREEN, 8, sfx="wood_high")
-    T(CARD_T[n], x, y - 330, 70, k0=1.5 + n, k1=1.5 + n + 0.18 * len(CARD_T[n]) + 0.1)
+    T(CARD_T[n], x, y - (330 if n < 2 else 270), 70, k0=1.5 + n, k1=1.5 + n + 0.18 * len(CARD_T[n]) + 0.1)
 
-scene("会议室开完没人收", "例子 · 会议室", (950, 4380, 0.85))
+scene("会议室开完没人收", "例子 · 会议室", (950, 4420, 0.85))
 L(oval(950, 4330, 820, 260), 0, 0.5, sfx="wood_low")
 for n, x in enumerate((700, 900, 1150)):
     L(join(rect(x, 4300, 50, 64, 8), P((x + 25, 4285), (x + 42, 4285), (x + 42, 4315), (x + 25, 4315))),
@@ -330,7 +330,7 @@ L(sink(2650, 5300), 0, 0.5, sfx="wood_low")
 for n in range(5):
     L(oval(2600 + (n % 2) * 30, 5270 - n * 34, 220, 44), 1 + n * 0.2, 1.2 + n * 0.2, BLACK, 7,
       sfx="wood_high" if n == 0 else None)
-L(stink(2600, 5080), 2, 2.5, GREEN, 6, sfx="shaker")
+L(stink(2410, 5240), 2, 2.5, GREEN, 6, sfx="shaker")
 for n, x in enumerate(FAM):
     L(stick(x, 5730, 0.55 if n < 2 else 0.42, "point"), 3 + n * 0.3, 3.4 + n * 0.3, sfx="wood_high" if n == 0 else None)
 for n in range(3):
