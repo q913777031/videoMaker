@@ -175,7 +175,7 @@ def star_fn(x, y, size, color=GOLD):
     return pop_fn(lambda c, xx, yy, s, col: K.star(c, xx, yy, s, col), x, y, size, color)
 
 
-def tear_fn(eyes, drop=45, r=12):
+def tear_fn(eyes, drop=22, r=10):
     """眼泪：从每只眼睛下方落下的蓝色泪滴。"""
 
     def fn(c, k, t):

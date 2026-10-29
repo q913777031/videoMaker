@@ -340,7 +340,7 @@ SOL = [(950, 7850), (2650, 7850), (950, 8700), (2650, 8700)]
 b.shot("觉得穷，这样办", "具体做法", view=(1800, 8250, 0.355))
 T("觉得穷，这样做", 1800, 7250, 130, k0=0, k1=1.2, sfx="pop")
 for n, (x, y) in enumerate(SOL):
-    L(rect(x, y, 1200, 780, 40), 1.4 + n * 0.4, 1.75 + n * 0.4, GREEN, 8, sfx="wood_high" if n in (1, 3) else None)
+    L(rect(x, y, 1200, 780, 40), 1.2 + n * 0.4, 1.55 + n * 0.4, GREEN, 8, sfx="wood_high" if n == 2 else None)
 
 b.shot("先看在跟谁比", "第一步 · 跟谁比", view=(950, 7850, 0.85))
 T("① 看清跟谁比", 950, 7560, 74, BLUE, k0=0, sfx="pop")
