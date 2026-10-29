@@ -16,7 +16,7 @@ import math
 import skia
 
 from whiteboard import engine as wb
-from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, bubble, check, circle, clock, cross,
+from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, bubble, check, circle, cross,
                                desk, face, join, rect, stick, underline)
 from adler import kit as K
 from engine.gfx import clamp01, ease_in_out, lerp
@@ -132,7 +132,7 @@ for n, x in enumerate((1600, 1760, 1920)):
     L(face(x, 1250, 0.6, "smile"), 2.3 + n * 0.3, 2.4 + n * 0.3)
 L(bubble(1760, 700, 440, 150, -1), 3, 3.4, BLACK, 8, sfx="pop")
 T("走，吃饭去", 1760, 700, 60, k0=3.4)
-T("没叫我", 700, 1250, 80, RED, k0=5, k1=5.75, sfx="rim")
+T("没叫我", 1250, 880, 80, RED, k0=5, k1=5.75, sfx="rim")
 L(face(1250, 1300, 0.75, "sad"), 5.75, 6.0, BLUE, 9)
 
 scene("群里没人回，真难受", "灵魂拷问", (2800, 2000, 0.85))
@@ -241,7 +241,8 @@ T("被冷落", V1[0] - 80, V1[1], 52, BLUE, k0=1.8, k1=2.55)
 L(circle(*V2), 3, 3.8, BLACK, 9, sfx="pop")
 T("身体疼", V2[0] + 80, V2[1], 52, k0=3.8, k1=4.55)
 b.custom(J(), 5, 5.8, overlap_fn(V1, V2), sfx="ding")
-T("疼，在喊你回人群", 2650, 5880, 84, RED, k0=6, k1=8.0, sfx="wood_high")
+T("疼，在喊你回人群", 2650, 5880, 84, RED, k0=5.8, k1=7.3)
+T("疼！", 3000, 4870, 70, RED, k0=7.3, k1=7.8)
 
 # ---------------------------------------------------------------- 身边的例子（场景 8–10）
 
