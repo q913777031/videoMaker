@@ -26,7 +26,7 @@ from .common import BOOK, episode
 ACC = "#3E7C8C"
 SQUARE_SHOT = 9
 
-b = Board(size=(3600, 13450))
+b = Board(size=(3600, 14000))
 
 
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None, j=None):
@@ -405,7 +405,7 @@ T("① 周末去看大东西", x, y - 300, 70, BLUE, k0=0, k1=1.2, sfx="pop")
 L(peaks((x - 520, y + 30), (x - 380, y - 150), (x - 300, y - 80), (x - 200, y - 190), (x - 80, y + 30), snow=False),
   1, 1.5, BLACK, 8, sfx="wood_high")
 L(waves(x - 50, x + 230, y - 70, 3, 50), 2, 2.4, BLUE, 7, sfx="pop")
-L(join(star(x + 380, y - 120, 50), star(x + 490, y - 30, 35), moon(x + 480, y - 160, 50)), 3, 3.4, BLACK, 7,
+L(join(star(x + 380, y - 120, 50), star(x + 490, y - 30, 35), moon(x + 520, y - 190, 45)), 3, 3.4, BLACK, 7,
   sfx="pop")
 
 b.shot("山海星星都行", "第一步 · 看大的", view=(x, y, 0.85))
