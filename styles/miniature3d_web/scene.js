@@ -224,25 +224,25 @@ function build() {
   scene.add(book);
   const spring = new THREE.Group();
   const rings = [];
-  for (let i = 0; i < 18; i++) {
-    const r = torus(0.28, 0.035, clay(i % 2 ? '#C0C6CE' : '#A8B0BA', 0.35, { metalness: 0.6 }));
+  for (let i = 0; i < 16; i++) {
+    const r = torus(0.3, 0.03, clay(i % 2 ? '#C0C6CE' : '#A8B0BA', 0.35, { metalness: 0.6 }));
     r.rotation.x = Math.PI / 2;
     spring.add(r);
     rings.push(r);
   }
   scene.add(spring);
   const hand = new THREE.Group();
-  const palm = mesh(new THREE.CapsuleGeometry(0.16, 0.16, 6, 14), clay('#F2CDA8', 0.75));
+  const palm = mesh(new THREE.CapsuleGeometry(0.11, 0.12, 6, 14), clay('#F2CDA8', 0.75));
   palm.rotation.z = Math.PI / 2;
-  const sleeve = cyl(0.17, 0.17, 1.6, clay('#4E86C4', 0.85));
-  sleeve.position.y = 0.95;
+  const sleeve = cyl(0.12, 0.12, 1.6, clay('#4E86C4', 0.85));
+  sleeve.position.y = 0.9;
   hand.add(palm, sleeve);
   scene.add(hand);
   // 立体字
-  const W1 = word3d('不是人的问题', { color: '#2E5E8C', side: '#1A3550', size: 1.25 });
+  const W1 = word3d('不是人的问题', { color: '#2E5E8C', side: '#1A3550', size: 1.0 });
   const W2 = word3d('是结构', { color: '#E2701D', side: '#8A3E10', size: 1.7 });
   const quote = ['行为', '藏在', '结构', '里'].map((s, i) => word3d(s, i === 2
-    ? { color: '#E2701D', side: '#8A3E10', size: 1.25 } : { color: '#2E5E8C', side: '#1A3550', size: 1.0 }));
+    ? { color: '#E2701D', side: '#8A3E10', size: 1.05 } : { color: '#2E5E8C', side: '#1A3550', size: 0.82 }));
   scene.add(W1, W2, ...quote);
   const glow = new THREE.PointLight('#FFB060', 0, 6);
   scene.add(glow);
@@ -289,7 +289,9 @@ function update(t) {
   s.say.position.set(bx + 0.4, 2.35, bz + 0.2);
   s.say.scale.setScalar(Math.max(0.001, sayK));
   s.say.quaternion.copy(s.camera.quaternion);
-  if (t > B(4, 0)) s.boss.visible = false; else s.boss.visible = true;
+  const away = easeIn(prog(t, B(2, 0), 0.3));
+  s.boss.visible = away < 1;
+  if (away > 0) s.boss.scale.setScalar(Math.max(0.001, 1 - away)); else s.boss.scale.setScalar(1);
   // ---- 工位上的人：小节 1 三个拍点依次替换；小节 2 跳起欢呼；小节 3 垂头
   for (let i = 0; i < 3; i++) {
     const x = [-2.2, 0, 2.2][i];
@@ -341,11 +343,11 @@ function update(t) {
   const rel = t - B(6, 1);
   let topY, len;
   if (rel < 0) {
-    topY = bookY + 0.2 + liftK * 1.5;
-    len = lerp(0.35, 1.25, liftK);
+    topY = bookY + 0.2 + liftK * 2.1;
+    len = lerp(0.35, 1.9, liftK);
   } else {
     const osc = Math.cos(rel * 9.5) * Math.exp(-rel * 1.6);
-    len = 0.75 + 0.5 * osc;
+    len = 1.0 + 0.85 * osc;
     topY = bookY + len + 0.08 + 0.15 * Math.max(0, osc);
   }
   s.spring.visible = t > B(5, 0) - 0.4;
@@ -358,7 +360,7 @@ function update(t) {
   s.hand.position.set(bookX, topY + 0.15 + handUp, bookZ);
   s.hand.scale.setScalar(easeOutBack(prog(t, B(5, 0) - 0.35, 0.35)));
   // ---- 金句：小节 7 逐词弹出
-  const qx = [-2.6, -0.9, 1.0, 2.6], qy = [4.2, 4.2, 4.0, 4.2];
+  const qx = [-0.85, 0.85, -0.55, 1.2], qy = [4.95, 4.95, 3.65, 3.65];
   s.quote.forEach((g, i) => {
     const k = easeOutBack(prog(t, B(7, i), 0.35), 2.4);
     g.visible = k > 0.001;
@@ -424,16 +426,16 @@ async function boot() {
   for (const f of ['500 32px NotoSansSC', '900 32px NotoSansSC', '900 32px NotoSerifSC']) await document.fonts.load(f);
   S = build();
   cam = camPath([
-    [0.0, [6.5, 5.2, 9.5], [0.6, 1.0, -0.3]],
-    [B(1, 0), [3.2, 3.4, 6.6], [0, 1.1, -0.8]],
-    [B(2, 0), [-2.8, 3.1, 6.0], [0, 1.3, -0.8]],
-    [B(3, 0), [-0.6, 2.8, 4.6], [0, 1.9, -2.2]],
-    [B(4, 0) - 0.05, [0.2, 3.0, 5.2], [0, 2.0, -1.5]],
-    [B(4, 0) + 0.45, [0.0, 7.2, 15.5], [0, 3.2, 0]],
-    [B(5, 0) + 0.2, [5.4, 2.9, 6.0], [2.7, 1.4, 1.9]],
-    [B(6, 1), [4.6, 2.5, 5.0], [2.7, 1.25, 1.9]],
-    [B(7, 0), [2.0, 4.6, 10.5], [0.2, 3.4, 0.6]],
-    [TLD.end, [-1.6, 4.8, 10.8], [0.2, 3.4, 0.6]],
+    [0.0, [8.5, 8.0, 14.5], [0.5, 0.6, -0.3]],
+    [B(1, 0), [4.4, 4.8, 9.2], [0, 1.0, -0.9]],
+    [B(2, 0), [-3.8, 4.4, 8.6], [0, 1.2, -0.9]],
+    [B(3, 0), [-0.5, 3.6, 7.4], [0, 1.6, -1.6]],
+    [B(4, 0) - 0.05, [0.2, 3.8, 8.0], [0, 1.8, -1.0]],
+    [B(4, 0) + 0.45, [0.0, 7.8, 18.5], [0, 3.0, 0]],
+    [B(5, 0) + 0.2, [7.0, 3.8, 8.6], [2.7, 1.7, 1.9]],
+    [B(6, 1), [6.2, 3.4, 7.8], [2.7, 1.6, 1.9]],
+    [B(7, 0), [0.6, 4.6, 13.2], [0.1, 3.3, 0.6]],
+    [TLD.end, [-1.2, 4.9, 13.6], [0.1, 3.3, 0.6]],
   ]);
   renderer.compile(S.scene, S.camera);
   window.AC.ready = true;

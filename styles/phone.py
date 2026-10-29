@@ -249,7 +249,11 @@ def book(c, t, bar):
         gfx.rrect(c, CX - (60 if j == 3 else 0), SY + 480 + j * 56, SW - 160 - (120 if j == 3 else 0), 18, 9, "#DCD2C2")
     # 插图框
     gfx.rrect(c, CX, SY + 1030, SW - 160, 760, 24, "#FFFFFF", 1, stroke=("#E3D9C6", 4))
+    c.save()
+    c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(CX - (SW - 160) / 2, SY + 650, SW - 160, 760), 24, 24),
+                doAntiAlias=True)
     slinky_art(c, CX, SY + 1150, t, seg.BARS[5], seg.BARS[6] if i >= 6 else None, t)
+    c.restore()
     hl = seg.since(seg.BARS[5], 2, t)
     if hl >= 0:
         w = (SW - 260) * ease_out(clamp01(hl / 0.3))
