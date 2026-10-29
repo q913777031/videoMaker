@@ -2,10 +2,10 @@
 
 节奏：21 个场景 × 2 小节（≈4.3 秒），每个场景前 6 拍画完、最后 2 拍停住让人看清（2026-10 观众反馈“切太快看不清”后改版）。
 叙事：打工人切身问题开局（项目告急，领导喊加人，一个月后人到了活儿早干完，又要裁人）→ 书中观点（先亮书；
-调水温忽冷忽热作生活类比；书中汽车经销商库存的例子：看销量、下订单、等到货都要时间，货到时车已堆满又砍单，
-库存来回振荡；反应越快振荡越凶，慢慢调、看平均趋势反而稳，画成一张库存曲线图）→ 身边的例子（数据一跌就改方案、
-健身几天没瘦就饿肚子、孩子一次没考好就报班、开车前车一刹后车越踩越狠）→ 具体做法（先问要等多久 / 看一周平均 /
-每次只拧一点 / 留点余量）→ 评论区互动。
+书中汽车经销商库存的例子：看销量、下订单、等到货都要时间，货到时车已堆满又砍单；画成库存曲线：反应越快振荡越凶，
+慢慢调反而稳；再用调水温忽冷忽热作生活类比）→ 身边的例子（数据一跌就改方案、减肥没瘦就饿肚子、孩子一次没考好就报班、
+开车前车一刹后车越踩越狠，收拢到“没等结果又动手”）→ 具体做法（先问要等多久 / 看一周平均 / 每次只拧一点 / 留点余量）→
+评论区互动。
 书中观点为转述（Meadows, Thinking in Systems, 2008；中译本《系统之美》，邱昭良译，浙江人民出版社 2012）；
 调水温为生活类比，例子与做法为现实场景示意与据书中思路整理的建议。
 """
@@ -15,7 +15,7 @@ import math
 import skia
 
 from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, building, check, circle, clock, cross,
-                               doc, face, hands_at, join, marker, node, rect, scribble, stick, underline)
+                               doc, face, hands_at, join, marker, rect, stick, underline)
 from engine.gfx import clamp01, ease_out
 
 from .common import BOOK, episode
