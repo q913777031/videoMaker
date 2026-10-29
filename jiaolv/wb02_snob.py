@@ -256,7 +256,7 @@ H(3, "tom", 0.6)
 
 CHAIN = [("怕被看低", 1000), ("看头衔", 1645), ("打分", 2180), ("给脸色", 2715)]
 CY = 5600
-b.shot("画成一张图", "书中观点 · 一张图", view=(1800, 4450, 0.38))
+b.shot("画成一张图", "书中观点 · 一张图", view=(1880, 4450, 0.38))
 for n, (w, x) in enumerate(CHAIN[1:]):
     T(w, x, CY, 110, RED if n == 2 else BLACK, k0=n, k1=n + 0.5, sfx="pop")
     if n < 2:
@@ -264,7 +264,7 @@ for n, (w, x) in enumerate(CHAIN[1:]):
           n + 0.55, n + 0.9, GREEN, 8)
 L(underline(2550, 2880, CY + 80), 3, 3.4, RED, 8, sfx="ding")
 
-b.shot("越怕的人越爱打分", "书中观点 · 一张图", view=(1800, 4450, 0.38), shake=[0])
+b.shot("越怕的人越爱打分", "书中观点 · 一张图", view=(1880, 4450, 0.38), shake=[0])
 T(CHAIN[0][0], CHAIN[0][1], CY, 110, RED, k0=0, k1=0.6, sfx="kick")
 L(arrow((1245, CY), (1455, CY), 0, 34), 1, 1.3, GREEN, 8, sfx="wood_high")
 L(ring(3110, 4800, 230, 230), 2, 2.4, RED, 8, sfx="wood_high")
