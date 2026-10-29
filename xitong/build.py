@@ -1,4 +1,4 @@
-"""《系统之美》系列：白板手绘形式（whiteboard/engine.py），沿用阿德勒引擎时间轴与交付流程，快节奏规则（每镜 ≤3 秒）。
+"""《系统之美》系列：白板手绘形式（whiteboard/engine.py），沿用阿德勒引擎时间轴与交付流程，场景节奏（每个场景 2 小节、画完停住）。
 
 用法：
     python3 -m xitong.build 01 --sheet     # 逐镜联系表
@@ -13,6 +13,7 @@ from adler import core
 from whiteboard import engine as wb
 
 wb.install(B)                            # 2026-10-29 起改为白板手绘形式（10 讲均为白板分镜 wbNN_*.py）
+core.RULES.update(wb.SCENE_RULES)       # 白板场景节奏：每个场景 2 小节（≈4.3 秒），画完停住（见 CLAUDE.md「白板手绘节奏」）
 
 core.SERIES.update(name="系统之美", count="10讲", prefix="系统之美", tagline="看懂背后的结构，问题就好解了")
 B.PKG = "xitong"

@@ -287,9 +287,10 @@ class Board:
         self.items: list = []
         self.ep = None
 
-    def shot(self, text: str, tag: str, view=None, punch=0.0, **kw) -> int:
+    def shot(self, text: str, tag: str, view=None, punch=0.0, bars=1, **kw) -> int:
+        """新镜头：bars=1 为 1 小节（≈2.1 秒）；bars=2 为一个“场景”（≈4.3 秒，画完要停住让人看清，见 HOLD_BEATS）。"""
         view = view or (self.views[-1] if self.views else (900, 900, 1.0))
-        self.shots.append(core.Shot(1, text, tag, [], text_beat=0, punch=punch, **kw))
+        self.shots.append(core.Shot(bars, text, tag, [], text_beat=0, punch=punch, **kw))
         self.views.append(view)
         return len(self.shots) - 1
 
@@ -338,8 +339,9 @@ class Board:
     # 时间
     def t_of(self, j, k):
         s = self.shots[j]
-        if k >= 4:
-            return s.t1 + (k - 4) * (s.t1 - core.bt(s.b0)) / 4
+        n = 4 * s.bars
+        if k >= n:
+            return s.t1 + (k - n) * (s.t1 - core.bt(s.b0)) / n
         i = int(math.floor(k))
         f = k - i
         a = core.bt(s.b0 + i)
@@ -411,7 +413,7 @@ def camera(board, T):
     t = T - s.t0
     cur = board.views[j]
     prev = board.views[j - 1] if j > 0 else (cur[0], cur[1] - 120, cur[2] * 1.12)
-    k = ease_in_out(clamp01(t / 0.45)) if prev != cur else 1.0
+    k = ease_in_out(clamp01(t / (0.45 if s.bars == 1 else 0.7))) if prev != cur else 1.0
     cx, cy = lerp(prev[0], cur[0], k), lerp(prev[1], cur[1], k)
     z = math.exp(lerp(math.log(prev[2]), math.log(cur[2]), k))
     z *= 1 + 0.015 * clamp01(t / max(0.1, s.t1 - s.t0))
@@ -529,10 +531,38 @@ def cover(ep, path: str):
     surf.makeImageSnapshot().save(path, skia.kPNG)
 
 
+SCENE_RULES = {"max_shot": 4.6, "min_beats": 3}   # 白板场景节奏：2 小节一个场景，每个场景至少 3 个拍点有画面事件
+HOLD_BEATS = 2      # 多小节场景：最后一笔至少比镜头结束早这么多拍（≈1 秒），画完停住让人看清
+
+
+def hold_warnings(ep) -> list[str]:
+    """多小节场景的停留检查：描线和写字要在场景结束前 HOLD_BEATS 拍画完（动态 custom 项不计）。"""
+    board = getattr(ep, "board", None)
+    if board is None:
+        return []
+    warns = []
+    for j, s in enumerate(ep.shots[:-1]):
+        if s.bars < 2:
+            continue
+        ends = [it["k1"] for it in board.items if it["j"] == j and it["kind"] in ("path", "text")]
+        if ends and max(ends) > 4 * s.bars - HOLD_BEATS + 1e-9:
+            hold = s.t1 - board.t_of(j, max(ends))
+            warns.append(f"镜头{j + 1}：最后一笔在第 {max(ends):.1f} 拍画完，只停留 {hold:.2f}s（至少 {HOLD_BEATS} 拍）")
+    return warns
+
+
 def install(B=None):
     """切换到白板引擎（只影响当前进程）：逐帧绘制、封面与单讲横屏封面都改由白板画面生成。"""
     core.draw_frame = draw_frame
     core.cover = cover
+    if not getattr(core.read_check, "_wb", False):
+        base = core.read_check
+
+        def read_check(ep):
+            return base(ep) + hold_warnings(ep)
+
+        read_check._wb = True
+        core.read_check = read_check
 
     def board_shot(c, ep, k, t):
         """单讲横屏封面取景：该镜头末尾的白板画面（无手）。"""
