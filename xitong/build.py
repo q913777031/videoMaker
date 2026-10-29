@@ -10,22 +10,20 @@
 
 from adler import build as B
 from adler import core
-from maoxuan import ink
-from themes import particle
+from whiteboard import engine as wb
 
-ink.install()
-particle.install(B)                      # 2026-10-28 起改为粒子风（元件仍由水墨主题绘制，再整体粒子化）
+wb.install(B)                            # 2026-10-29 起改为白板手绘形式（先出 01；02–10 需按白板分镜重写）
 
 core.SERIES.update(name="系统之美", count="10讲", prefix="系统之美", tagline="看懂背后的结构，问题就好解了")
 B.PKG = "xitong"
 B.OUT = B.ROOT / "out" / "xitong"
-B.MODS = {"01": "ep01_system", "02": "ep02_stock", "03": "ep03_balancing", "04": "ep04_reinforcing",
+B.MODS = {"01": "wb01_system", "02": "ep02_stock", "03": "ep03_balancing", "04": "ep04_reinforcing",
           "05": "ep05_delay", "06": "ep06_limits", "07": "ep07_commons", "08": "ep08_drift",
           "09": "ep09_addiction", "10": "ep10_leverage"}
 
 # 系列规划：(期号, 概念, 片名)
 PLAN = [
-    ("01", "系统是什么", "换了一批人，公司为什么还是老样子？"),
+    ("01", "系统是什么", "换了三份工作，烦心事怎么都一样？"),
     ("02", "存量与流量", "工资涨了，为什么还是存不下钱？"),
     ("03", "调节回路", "减肥为什么总会反弹？"),
     ("04", "增强回路", "为什么有人越学越快？"),
