@@ -1,5 +1,7 @@
 """07 公地悲剧（白板手绘版）：公司冰箱为什么总是乱糟糟？
 
+节奏：21 个场景 × 2 小节（≈4.3 秒），每个场景前 6 拍画完、最后 2 拍停住让人看清（2026-10 观众反馈“切太快看不清”后改版）。
+
 叙事：打工人切身问题开局（公司冰箱塞满没人认的饭盒，剩菜放了一周，谁都不收拾，自己也放了就走）→ 书中观点（哈丁的
 公共草场：每家多放一头牛，多赚的归自己，草被啃秃大家一起摊；画成一张图：好处一个人拿、代价大家摊、草场的状况传不到
 放牛的人那里，于是越放越多）→ 身边的例子（会议室开完不收、工作群刷屏、楼道堆杂物、家里水槽堆碗）→ 具体做法（书中三条路：
@@ -20,7 +22,7 @@ from engine.gfx import clamp01
 from .common import BOOK, episode
 
 ACC = "#A0663A"
-SQUARE_SHOT = 4
+SQUARE_SHOT = 1
 
 b = Board(size=(3600, 8600))
 
@@ -155,12 +157,12 @@ def stink(x, y) -> skia.Path:
 GRASS = [(x, y) for y in (3060, 3250, 3575) for x in range(410, 1640, 100)]
 
 
-def grass_fn(j_dry, j_gone):
-    """草场：画出时逐丛长出；j_dry 镜头里越啃越矮，j_gone 镜头前两拍啃光。"""
+def grass_fn(j_dry):
+    """草场：画出时逐丛长出；j_dry 场景第 0–2 拍越啃越矮，第 2–4 拍啃光。"""
 
     def fn(c, k, t):
-        h = 1.0 - 0.6 * clamp01((t - b.t_of(j_dry, 0)) / (b.t_of(j_dry, 4) - b.t_of(j_dry, 0)))
-        h -= 0.4 * clamp01((t - b.t_of(j_gone, 0)) / (b.t_of(j_gone, 2) - b.t_of(j_gone, 0)))
+        h = 1.0 - 0.6 * clamp01((t - b.t_of(j_dry, 0)) / (b.t_of(j_dry, 2) - b.t_of(j_dry, 0)))
+        h -= 0.4 * clamp01((t - b.t_of(j_dry, 2)) / (b.t_of(j_dry, 4) - b.t_of(j_dry, 2)))
         n = int(len(GRASS) * k)
         tip = None
         for (x, y) in GRASS[:n]:
@@ -174,285 +176,241 @@ def grass_fn(j_dry, j_gone):
     return fn
 
 
-# ---------------------------------------------------------------- 开局：公司冰箱（镜头 1–6）
+# ---------------------------------------------------------------- 开局：公司冰箱（场景 1–3）
+# 每个场景 2 小节（8 拍，≈4.3 秒）：第 0–6 拍画完，最后 2 拍停住让人看清。
+
+def scene(text, tag, view, **kw):
+    return b.shot(text, tag, view=view, bars=2, **kw)
+
 
 FX, FY = 1150, 1150                                  # 冰箱中心
-b.shot("打开公司冰箱", "灵魂拷问", view=(1000, 1100, 0.82), punch=0.02)
+scene("冰箱里全是无主饭盒", "灵魂拷问", (1000, 1100, 0.82), punch=0.02)
 L(fridge(FX, FY, 1.0, open_door=True), 0, 1.0, sfx="wood_low")
 T("公司冰箱", 620, 880, 64, k0=1.2)
 L(fridge_door(FX, FY), 2, 2.5, sfx="wood_high")
-
-b.shot("全是没人认的", "灵魂拷问", view=(1000, 1100, 0.82))
 BOXES = [(1060, 0), (1220, 0), (1060, 1), (1230, 1)]
 for n, (x, row) in enumerate(BOXES):
-    L(box(x, shelf_y(FY, row)), n * 0.25, n * 0.25 + 0.25, sfx="pop" if n == 0 else None)
-L(box(1110, shelf_y(FY, 2), 170, 110), 1.1, 1.5)
+    L(box(x, shelf_y(FY, row)), 3 + n * 0.25, 3.25 + n * 0.25, sfx="pop" if n == 0 else None)
+L(box(1110, shelf_y(FY, 2), 170, 110), 4.1, 4.5)
 for n, (x, row) in enumerate(BOXES[:3]):
-    T("？", x + 10, shelf_y(FY, row) - 100, 56, RED, k0=2 + n * 0.3, k1=2.2 + n * 0.3, sfx="pop" if n == 0 else None)
+    T("？", x + 10, shelf_y(FY, row) - 100, 56, RED, k0=5 + n * 0.3, k1=5.2 + n * 0.3, sfx="pop" if n == 0 else None)
 
-b.shot("上周的剩菜还在", "灵魂拷问", view=(1000, 1100, 0.82))
+scene("你也放了就走", "灵魂拷问", (1000, 1100, 0.82))
 T("剩菜", 1110, shelf_y(FY, 2) - 50, 48, k0=0, sfx="pop")
 L(stink(1110, shelf_y(FY, 2) - 120), 1, 1.6, GREEN, 6, sfx="shaker")
 T("放了7天", 1450, 800, 64, RED, k0=2, sfx="rim")
+L(stick(600, 1450, 0.85, "hold"), 3, 3.6, BLUE, sfx="wood_high")
+L(face(600, 1450, 0.85, "flat"), 3.6, 3.7, BLUE)
+L(box(1230, shelf_y(FY, 2), 100, 80), 4, 4.3, BLUE, sfx="pop")
+L(arrow((520, 1250), (370, 1250), 0.1, 34), 5, 5.4, GREEN, 8, sfx="wood_high")
 
 PEOPLE = (2350, 2700, 3050)
-b.shot("谁都不想收拾", "灵魂拷问", view=(2700, 1100, 0.82))
+scene("冰箱怎么总这样？", "灵魂拷问", (2700, 1250, 0.82), flashes=[4])
 for n, x in enumerate(PEOPLE):
     L(stick(x, 1420, 0.85, "shrug"), n * 0.3, n * 0.3 + 0.5, sfx="wood_high" if n == 0 else None)
     L(face(x, 1420, 0.85, "flat"), n * 0.3 + 0.5, n * 0.3 + 0.6)
 for n, x in enumerate(PEOPLE):
-    T(("谁放的？", "不认识", "不管了")[n], x, 1040, 56, RED if n == 2 else BLACK, k0=1.6 + n * 0.5,
-      k1=2.0 + n * 0.5, sfx="pop" if n in (0, 2) else None)
-L(underline(2970, 3130, 1075, 8, 26), 3.3, 3.6, RED, 6)
+    T(("谁放的？", "不认识", "不管了")[n], x, 1040, 56, RED if n == 2 else BLACK, k0=1 + n * 0.5,
+      k1=1.4 + n * 0.5, sfx="pop" if n in (0, 2) else None)
+L(underline(2970, 3130, 1075, 8, 26), 2.5, 2.8, RED, 6)
+T("怎么总这样？", 2700, 1680, 100, RED, k0=4, k1=5.2, sfx="kick")
+b.hit(J(), 5, "ding", 0.6)
 
-b.shot("你也放了就走", "灵魂拷问", view=(1000, 1100, 0.82))
-L(stick(600, 1450, 0.85, "hold"), 0, 0.6, BLUE, sfx="wood_high")
-L(face(600, 1450, 0.85, "flat"), 0.6, 0.7, BLUE)
-L(box(1230, shelf_y(FY, 2), 100, 80), 1, 1.3, BLUE, sfx="pop")
-L(arrow((520, 1250), (370, 1250), 0.1, 34), 2, 2.4, GREEN, 8, sfx="wood_high")
+# ---------------------------------------------------------------- 书中观点（场景 4–9）
 
-b.shot("冰箱怎么总这样？", "灵魂拷问", view=(1800, 1350, 0.42), flashes=[2])
-T("？", 1800, 1640, 400, RED, k0=0, k1=0.6, sfx="kick")
-T("怎么总这样", 1800, 1960, 110, k0=1.0, k1=2.0, sfx="pop")
-b.hit(J(), 2, "ding")
-
-# ---------------------------------------------------------------- 书中观点（镜头 7–17）
-
-b.shot("有本书讲过这个", "系统之美", view=(880, 2390, 0.9))
-L(book(750, 2380, 420, 280), 0, 1.0, sfx="wood_low")
-T("系统之美", 750, 2160, 80, GREEN, k0=1.0, sfx="pop")
-T("德内拉 · 梅多斯", 750, 2610, 46, k0=2.0, sfx="pop")
-
-j_field = b.shot("一片公共草场", "书中例子 · 公共草场", view=(1000, 3330, 0.8))
-j_dry, j_gone = j_field + 3, j_field + 4
-L(rect(1000, 3270, 1300, 700, 20), 0, 0.8, BLACK, 8, sfx="wood_high")
-b.custom(j_field, 1, 2.2, grass_fn(j_dry, j_gone), sfx="shaker")
-T("公共草场", 680, 2850, 64, k0=2.2)
-T("哈丁 · 1968", 1330, 2850, 50, k0=2.6)
+j_book = scene("书里有片公共草场", "系统之美 · 书中例子", (1000, 3070, 0.64))
+L(book(680, 2470, 330, 220), 0, 0.9, sfx="wood_low")
+T("系统之美", 1200, 2420, 80, GREEN, k0=1, sfx="pop")
+T("德内拉 · 梅多斯", 1200, 2530, 46, k0=1.8, k1=2.6)
+L(rect(1000, 3270, 1300, 700, 20), 3, 3.6, BLACK, 8, sfx="wood_high")
+b.custom(j_book, 4, 5, grass_fn(j_book + 2), sfx="shaker")
+T("公共草场 · 哈丁 1968", 1000, 2972, 44, k0=3.6, k1=4.9)
 for n, x in enumerate((600, 1000, 1400)):
-    L(cow(x, 3230, 0.8), 3 + n * 0.25, 3.25 + n * 0.25, sfx="wood_high" if n == 0 else None)
+    L(cow(x, 3230, 0.8), 5 + n * 0.25, 5.25 + n * 0.25, sfx="wood_high" if n == 0 else None)
 
 REDCOWS = (680, 1080, 1480)
-b.shot("每家都多放一头", "书中例子 · 公共草场", view=(1000, 3330, 0.8), shake=[0], flashes=[0])
+scene("多放一头，钱归自己", "书中例子 · 公共草场", (1000, 3400, 0.8), shake=[0], flashes=[0])
 for n, x in enumerate(REDCOWS):
     L(cow(x, 3540, 0.8), 0, 0.45, RED, 10)
 b.hit(J(), 0, "kick", 1.0, "红牛砸进草场")
 for n, x in enumerate(REDCOWS):
     T("+1", x - 230, 3440, 72, RED, k0=1 + n * 0.5, k1=1.3 + n * 0.5, sfx="tom" if n == 0 else None)
 b.hit(J(), 2, "tom", 0.7)
-
-b.shot("多赚的归自己", "书中例子 · 公共草场", view=(1000, 3330, 0.8))
 for n, x in enumerate(REDCOWS):
-    T("¥", x + 120, 3330, 64, GREEN, k0=n * 0.4, k1=n * 0.4 + 0.3, sfx="pop" if n == 0 else None)
-T("钱：归自己", 620, 3700, 64, GREEN, k0=2, sfx="pop")
+    T("¥", x + 120, 3330, 64, GREEN, k0=3 + n * 0.4, k1=3.3 + n * 0.4, sfx="pop" if n == 0 else None)
+T("钱：归自己", 620, 3700, 64, GREEN, k0=5, k1=5.8, sfx="pop")
 
-b.shot("草被啃得越来越秃", "书中例子 · 公共草场", view=(1000, 3330, 0.8))
+scene("最后谁都没草吃", "书中例子 · 公共草场", (1000, 3400, 0.8), shake=[4])
 b.hit(J(), 0, "shaker", 0.7, "草变矮")
-T("损失：大家摊", 1250, 3700, 64, RED, k0=2, sfx="rim")
-
-b.shot("最后谁都没草吃", "书中例子 · 公共草场", view=(1000, 3330, 0.8), shake=[2])
-b.hit(J(), 0, "shaker", 0.6, "草啃光")
-L(cross(1000, 3270, 300), 2, 2.5, RED, 14, sfx="tom")
-
-b.shot("书里叫公地悲剧", "书中观点", view=(2700, 2720, 0.82))
-T("公地悲剧", 2700, 2510, 120, RED, k0=0, k1=1.0, sfx="pop")
-T("书里的系统陷阱之一", 2700, 2650, 48, k0=1.2)
-L(underline(2450, 2950, 2580), 2, 2.5, RED, 8, sfx="ding")
+b.hit(J(), 2, "shaker", 0.6, "草啃光")
+L(cross(1000, 3270, 300), 4, 4.5, RED, 14, sfx="tom")
+T("损失：大家摊", 1080, 3700, 64, RED, k0=5, k1=6, sfx="rim")
 
 RES = (2700, 3070)
 ME = (2200, 2870)
-NB = [(3200, 2870), (2200, 3340), (3200, 3340)]
-b.shot("好处一个人拿", "书中观点 · 好处", view=(2700, 3090, 0.8))
-L(node(*RES, 115), 0, 0.5, GREEN, 9, sfx="wood_high")
-T("草场", RES[0], RES[1] + 18, 56, GREEN, k0=0.5)
-L(node(*ME, 80), 1, 1.4, RED, 9, sfx="pop")
-T("我", ME[0], ME[1] + 18, 56, RED, k0=1.4)
-L(arrow((2590, 3010), (2285, 2905), -0.15, 40), 2, 2.5, GREEN, 10, sfx="wood_high")
-T("好处全归我", 2470, 2790, 50, GREEN, k0=2.6)
+NB = [(3200, 2870), (2200, 3290), (3200, 3290)]
+VIEW_T = (2700, 3050, 0.8)
+scene("书里叫它公地悲剧", "书中观点 · 公地悲剧", VIEW_T)
+T("公地悲剧", 2700, 2510, 120, RED, k0=0, k1=0.8, sfx="pop")
+L(underline(2450, 2950, 2580), 1, 1.4, RED, 8, sfx="ding")
+T("书里的系统陷阱之一", 2700, 2650, 48, k0=1.5, k1=2.7)
+L(node(*RES, 115), 3, 3.4, GREEN, 9, sfx="wood_high")
+T("草场", RES[0], RES[1] + 18, 56, GREEN, k0=3.4, k1=3.8)
+L(node(*ME, 80), 4, 4.4, RED, 9, sfx="pop")
+T("我", ME[0], ME[1] + 18, 56, RED, k0=4.4, k1=4.7)
+L(arrow((2590, 3010), (2285, 2905), -0.15, 40), 5, 5.3, GREEN, 10, sfx="wood_high")
+T("好处全归我", 2470, 2790, 50, GREEN, k0=5.3, k1=6.0)
 
-b.shot("代价大家一起摊", "书中观点 · 代价", view=(2700, 3090, 0.8))
+scene("代价四家一起摊", "书中观点 · 代价", VIEW_T)
 for n, (x, y) in enumerate(NB):
-    L(node(x, y, 80), n * 0.3, n * 0.3 + 0.3, sfx="pop" if n == 0 else None)
-    T("邻居", x, y + 16, 46, k0=n * 0.3 + 0.3, k1=n * 0.3 + 0.5)
+    L(node(x, y, 80), n * 0.4, n * 0.4 + 0.3, sfx="pop" if n == 0 else None)
+    T("邻居", x, y + 16, 46, k0=n * 0.4 + 0.3, k1=n * 0.4 + 0.5)
 for n, (x, y) in enumerate([ME] + NB):
     dx, dy = x - RES[0], y - RES[1]
     d = math.hypot(dx, dy)
     a = (RES[0] + dx / d * 125, RES[1] + dy / d * 125)
     e = (x - dx / d * 90, y - dy / d * 90)
-    L(arrow(a, e, 0.12 if n else -0.12, 30), 2 + n * 0.2, 2.3 + n * 0.2, RED, 6, sfx="rim" if n == 0 else None)
-T("代价：四家分", 2700, 3290, 50, RED, k0=3.0, k1=3.6)
+    k = 3 + (n - 1) * 0.3 if n else 4                 # 先画到三家邻居，最后一笔指回“我”（手停在左上，不挡邻居）
+    L(arrow(a, e, 0.12 if n else -0.12, 30), k, k + 0.3, RED, 6, sfx={0: "wood_high", 1: "rim"}.get(n))
+T("代价：四家分", 2700, 3260, 50, RED, k0=2, k1=2.8, sfx="pop")
 
-b.shot("草少了没人急", "书中观点 · 反馈太弱", view=(2700, 3090, 0.8))
+scene("没人急，越放越多", "书中观点 · 反馈太弱", VIEW_T, shake=[5])
 L(dashed((2600, 3150), (2180, 2960), 0.25), 0, 1.0, BLUE, 5, sfx="wood_low")
-T("反馈太弱", 2330, 3170, 50, BLUE, k0=1.2)
-T("？", 2110, 3010, 64, BLUE, k0=2, k1=2.3, sfx="pop")
+T("反馈太弱？", 2330, 3170, 50, BLUE, k0=1, k1=1.9, sfx="pop")
+L(arrow((2140, 2760), (2260, 2760), 1.1, 30), 3, 3.6, RED, 8, sfx="wood_high")
+T("越放越多", 2700, 2895, 50, RED, k0=3.8, k1=4.6)
+L(scribble(RES[0], RES[1], 200, 200, 9), 5, 5.5, RED, 8, sfx="kick")
 
-b.shot("于是越放越多", "书中观点 · 用到衰败", view=(2700, 3090, 0.8), shake=[2])
-L(arrow((2140, 2760), (2260, 2760), 1.1, 30), 0, 0.6, RED, 8, sfx="wood_high")
-T("越放越多", 2700, 2895, 50, RED, k0=0.8)
-L(scribble(RES[0], RES[1], 200, 200, 9), 2, 2.5, RED, 8, sfx="kick")
-
-# ---------------------------------------------------------------- 身边的例子（镜头 18–28）
+# ---------------------------------------------------------------- 身边的例子（场景 10–15）
 
 CARDS = [(950, 4300), (2650, 4300), (950, 5300), (2650, 5300)]
-b.shot("身边到处是公地", "身边的例子", view=(1800, 4650, 0.42))
-T("身边的公地", 1800, 3760, 130, k0=0, sfx="pop")
+CARD_T = ("会议室", "工作群", "楼道", "家里水槽")
+scene("身边到处是公地", "身边的例子", (1800, 4650, 0.42))
+T("身边的公地", 1800, 3770, 90, k0=0, sfx="pop")
 for n, (x, y) in enumerate(CARDS):
-    L(rect(x, y, 1500, 900, 40), 1.5 + n * 0.5, 1.95 + n * 0.5, GREEN, 8, sfx="wood_high" if n in (1, 3) else None)
+    L(rect(x, y, 1500, 900, 40), 1 + n, 1.45 + n, GREEN, 8, sfx="wood_high")
+    T(CARD_T[n], x, y - 330, 70, k0=1.5 + n, k1=1.5 + n + 0.18 * len(CARD_T[n]) + 0.1)
 
-b.shot("会议室开完不收", "例子 · 会议室", view=(950, 4300, 0.85))
-T("会议室", 950, 3970, 70, k0=0, sfx="pop")
-L(oval(950, 4330, 820, 260), 0.6, 1.1)
+scene("会议室开完没人收", "例子 · 会议室", (950, 4480, 0.85))
+L(oval(950, 4330, 820, 260), 0, 0.5, sfx="wood_low")
 for n, x in enumerate((700, 900, 1150)):
     L(join(rect(x, 4300, 50, 64, 8), P((x + 25, 4285), (x + 42, 4285), (x + 42, 4315), (x + 25, 4315))),
       1 + n * 0.2, 1.2 + n * 0.2, sfx="wood_high" if n == 0 else None)
 L(doc(1030, 4370, 90, 110, 3), 1.7, 1.9)
 L(scribble(950, 4330, 600, 160, 9), 2, 2.6, RED, 6, sfx="shaker")
+L(stick(520, 4720, 0.75, "shrug"), 3, 3.6, BLUE, sfx="wood_high")
+L(face(520, 4720, 0.75, "sad"), 3.6, 3.7, BLUE)
+T("先收10分钟", 1150, 4560, 64, RED, k0=5, k1=5.9, sfx="rim")
 
-b.shot("下一拨人来收拾", "例子 · 会议室", view=(950, 4350, 0.85))
-L(stick(520, 4720, 0.75, "shrug"), 0, 0.6, BLUE, sfx="wood_high")
-L(face(520, 4720, 0.75, "sad"), 0.6, 0.7, BLUE)
-T("先收10分钟", 1100, 4620, 64, RED, k0=2, sfx="rim")
-
-b.shot("工作群天天刷屏", "例子 · 工作群", view=(2650, 4300, 0.85))
-T("工作群", 2650, 3970, 70, k0=0, sfx="pop")
-L(phone(2500, 4360), 0.6, 1.0)
+scene("要紧通知被刷没了", "例子 · 工作群", (2650, 4330, 0.85))
+L(phone(2500, 4360), 0, 0.4, sfx="wood_low")
 for n in range(5):
     side = -1 if n % 2 == 0 else 1
     L(rect(2500 + side * 40, 4160 + n * 72, 170, 44, 18), 1 + n * 0.15, 1.15 + n * 0.15, BLACK, 6,
       sfx="shaker" if n == 0 else None)
 T("99+", 2770, 4120, 70, RED, k0=2, sfx="pop")
+T("通知", 2500, 4530, 50, RED, k0=3, sfx="pop")
+L(arrow((2700, 4250), (2700, 4560), 0.0, 36), 3.5, 3.9, RED, 8)
+L(stick(3050, 4720, 0.75), 4, 4.5, BLUE, sfx="wood_high")
+L(face(3050, 4720, 0.75, "sad"), 4.5, 4.6, BLUE)
+T("没看到", 3050, 4400, 56, BLUE, k0=5, sfx="pop")
 
-b.shot("要紧通知沉底了", "例子 · 工作群", view=(2650, 4350, 0.85))
-T("通知", 2500, 4530, 50, RED, k0=0, sfx="pop")
-L(arrow((2700, 4250), (2700, 4560), 0.0, 36), 0.5, 0.9, RED, 8)
-L(stick(3050, 4720, 0.75), 1, 1.5, BLUE, sfx="wood_high")
-L(face(3050, 4720, 0.75, "sad"), 1.5, 1.6, BLUE)
-T("没看到", 3050, 4400, 56, BLUE, k0=2, sfx="pop")
-
-b.shot("楼道堆满杂物", "例子 · 楼道", view=(950, 5300, 0.85))
-T("楼道", 950, 4970, 70, k0=0, sfx="pop")
-L(join(P((420, 5080), (420, 5650)), P((420, 5650), (1480, 5650))), 0.5, 0.9)
+scene("楼道堆满，出口堵死", "例子 · 楼道", (950, 5380, 0.85))
+L(join(P((420, 5080), (420, 5650)), P((420, 5650), (1480, 5650))), 0, 0.4, sfx="wood_low")
 for n, (x, y, w, h) in enumerate(((560, 5580, 200, 140), (580, 5440, 160, 140), (780, 5590, 170, 120))):
     L(rect(x, y, w, h, 8), 1 + n * 0.2, 1.2 + n * 0.2, sfx="wood_high" if n == 0 else None)
 L(bike(1150, 5650, 0.85), 2, 2.6, sfx="wood_high")
+L(rect(1150, 5180, 280, 90, 10), 3, 3.4, GREEN, 7, sfx="pop")
+T("安全出口", 1150, 5196, 46, GREEN, k0=3.4, k1=4.1)
+L(cross(780, 5520, 180), 5, 5.4, RED, 12, sfx="rim")
 
-b.shot("消防通道被堵死", "例子 · 楼道", view=(950, 5300, 0.85))
-L(rect(1150, 5180, 280, 90, 10), 0, 0.4, GREEN, 7, sfx="pop")
-T("安全出口", 1150, 5196, 46, GREEN, k0=0.4)
-L(cross(780, 5520, 180), 2, 2.4, RED, 12, sfx="rim")
-
-b.shot("水槽里堆满碗", "例子 · 家里", view=(2650, 5300, 0.85))
-T("家里水槽", 2650, 4970, 70, k0=0, sfx="pop")
-L(sink(2650, 5300), 0.6, 1.1)
+FAM = (2200, 2650, 3100)
+scene("碗都等别人先洗", "例子 · 家里", (2650, 5350, 0.85))
+L(sink(2650, 5300), 0, 0.5, sfx="wood_low")
 for n in range(5):
     L(oval(2600 + (n % 2) * 30, 5270 - n * 34, 220, 44), 1 + n * 0.2, 1.2 + n * 0.2, BLACK, 7,
       sfx="wood_high" if n == 0 else None)
 L(stink(2600, 5080), 2, 2.5, GREEN, 6, sfx="shaker")
-
-FAM = (2200, 2650, 3100)
-b.shot("都等别人先洗", "例子 · 家里", view=(2650, 5400, 0.85))
 for n, x in enumerate(FAM):
-    L(stick(x, 5730, 0.55 if n < 2 else 0.42, "point"), n * 0.3, n * 0.3 + 0.4, sfx="wood_high" if n == 0 else None)
+    L(stick(x, 5730, 0.55 if n < 2 else 0.42, "point"), 3 + n * 0.3, 3.4 + n * 0.3, sfx="wood_high" if n == 0 else None)
 for n in range(3):
     x0, x1 = FAM[n], FAM[(n + 1) % 3]
     L(arrow((x0 + (70 if x1 > x0 else -70), 5480), (x1 + (-70 if x1 > x0 else 70), 5480), 0.18 if x1 > x0 else -0.12,
-            30), 2 + n * 0.3, 2.3 + n * 0.3, RED, 7, sfx="rim" if n == 0 else None)
+            30), 5 + n * 0.3, 5.3 + n * 0.3, RED, 7, sfx="rim" if n == 0 else None)
 
-b.shot("人都没那么坏", "身边的例子", view=(1800, 4800, 0.42))
-T("人都没那么坏", 1800, 5880, 110, k0=0, sfx="pop")
-b.hit(J(), 2, "wood_low")
-
-b.shot("账落不到个人头上", "身边的例子", view=(1800, 4800, 0.42), shake=[0])
-T("没人买单", 1800, 4810, 140, RED, k0=0, k1=0.6, sfx="kick")
+scene("账落不到个人头上", "身边的例子", (1800, 4800, 0.42), shake=[2])
+T("人都没那么坏", 1800, 5880, 110, k0=0, k1=1.2, sfx="pop")
+T("没人买单", 1800, 4810, 140, RED, k0=2, k1=2.6, sfx="kick")
 for n, (x, y) in enumerate(CARDS):
     L(arrow((1800 + (x - 1800) * 0.2, 4800 + (y - 4800) * 0.25), (1800 + (x - 1800) * 0.55, 4800 + (y - 4800) * 0.55),
-            0.1, 40), 1 + n * 0.5, 1.4 + n * 0.5, RED, 9, sfx="wood_high" if n % 2 == 0 else None)
+            0.1, 40), 3 + n * 0.5, 3.4 + n * 0.5, RED, 9, sfx="wood_high" if n % 2 == 0 else None)
 
-# ---------------------------------------------------------------- 具体做法（镜头 29–41）
+# ---------------------------------------------------------------- 具体做法（场景 16–19）
 
 SOL = [(950, 6750), (2650, 6750), (950, 7650), (2650, 7650)]
-b.shot("书里给了三条路", "具体做法", view=(1800, 7100, 0.42))
-T("书中三条路", 1800, 6230, 110, k0=0, k1=1.2, sfx="pop")
-for n, (x, y) in enumerate(SOL):
-    L(rect(x, y, 1500, 820, 40), 2 + n * 0.4, 2.35 + n * 0.4, GREEN, 8, sfx="wood_high" if n == 0 else None)
+scene("书里第一条：讲道理", "第一条 · 讲道理", (950, 6800, 0.85))
+L(rect(*SOL[0], 1500, 820, 40), 0, 0.5, GREEN, 8, sfx="wood_low")
+T("① 讲道理", 950, 6450, 80, BLUE, k0=1, sfx="pop")
+L(stick(520, 7060, 0.8, "point"), 2, 2.5, sfx="wood_high")
+L(face(520, 7060, 0.8, "smile"), 2.5, 2.6)
+L(rect(1080, 6720, 620, 160, 16), 3, 3.3, ORANGE, 8, sfx="wood_high")
+T("过期请带走", 1080, 6730, 56, k0=3.3, k1=4.0)
+T("坚持3天", 820, 6970, 60, k0=4, k1=4.7, sfx="pop")
+L(arrow((990, 6955), (1140, 6955), 0.0, 30), 4.8, 5.0, BLACK, 7)
+T("又乱了", 1290, 6970, 60, RED, k0=5, sfx="rim")
 
-b.shot("第一条：讲道理", "第一条 · 讲道理", view=(950, 6750, 0.85))
-T("① 讲道理", 950, 6450, 80, BLUE, k0=0, sfx="pop")
-L(stick(520, 7060, 0.8, "point"), 2, 2.6, sfx="wood_high")
-L(face(520, 7060, 0.8, "smile"), 2.6, 2.7)
-
-b.shot("冰箱门上贴张条", "第一条 · 讲道理", view=(950, 6750, 0.85))
-L(rect(1080, 6780, 620, 250, 16), 0, 0.6, ORANGE, 8, sfx="wood_high")
-T("过期饭菜会招虫", 1080, 6750, 54, k0=1, sfx="pop")
-T("请带回家", 1080, 6850, 54, RED, k0=2, sfx="pop")
-
-b.shot("光靠自觉管不久", "第一条 · 讲道理", view=(950, 6800, 0.85))
-T("坚持3天", 820, 7060, 60, k0=0, sfx="pop")
-L(arrow((990, 7045), (1140, 7045), 0.0, 30), 1, 1.3, BLACK, 7, sfx="wood_high")
-T("又乱了", 1290, 7060, 60, RED, k0=2, sfx="rim")
-
-b.shot("第二条：分到个人", "第二条 · 分到个人", view=(2650, 6750, 0.85))
-T("② 分到个人", 2650, 6450, 80, BLUE, k0=0, sfx="pop")
-L(join(rect(2650, 6830, 800, 420, 16), P((2250, 6760), (3050, 6760)), P((2250, 6900), (3050, 6900))), 2,
-  2.7, sfx="wood_high")
 ROWS = (6760, 6900, 7040)                         # 三格的底线
-
-b.shot("一人一格写名字", "第二条 · 分到个人", view=(2650, 6800, 0.85))
+scene("一人一格，各管各的", "第二条 · 分到个人", (2650, 6800, 0.85))
+L(rect(*SOL[1], 1500, 820, 40), 0, 0.5, GREEN, 8, sfx="wood_low")
+T("② 分到个人", 2650, 6450, 80, BLUE, k0=1, sfx="pop")
+L(join(rect(2650, 6830, 800, 420, 16), P((2250, 6760), (3050, 6760)), P((2250, 6900), (3050, 6900))), 2,
+  2.6, sfx="wood_high")
 for n, w in enumerate(("小王", "小李", "阿美")):
-    T(w, 2420, ROWS[n] - 50, 56, k0=n * 1.0, k1=n * 1.0 + 0.4, sfx="pop")
-
-b.shot("自己那格自己管", "第二条 · 分到个人", view=(2650, 6800, 0.85))
+    T(w, 2420, ROWS[n] - 50, 56, k0=3 + n * 0.35, k1=3.3 + n * 0.35, sfx="pop" if n == 0 else None)
 for n in range(3):
-    L(box(2700, ROWS[n] - 6, 110, 70), n * 0.3, n * 0.3 + 0.3, sfx="wood_high" if n == 0 else None)
+    L(box(2700, ROWS[n] - 6, 110, 70), 4 + n * 0.3, 4.3 + n * 0.3, sfx="wood_high" if n == 0 else None)
 for n in range(3):
-    L(check(2930, ROWS[n] - 45, 36), 2 + n * 0.3, 2.2 + n * 0.3, GREEN, 9, sfx="ding" if n == 0 else None)
+    L(check(2930, ROWS[n] - 45, 36), 5 + n * 0.25, 5.2 + n * 0.25, GREEN, 9, sfx="ding" if n == 0 else None)
 
 TB = (700, 7720)
-b.shot("第三条：定规矩", "第三条 · 定规矩", view=(950, 7650, 0.85))
-T("③ 一起定规矩", 950, 7340, 76, BLUE, k0=0, k1=1.2, sfx="pop")
+scene("定好规矩轮流看着", "第三条 · 定规矩", (950, 7800, 0.85))
+L(rect(*SOL[2], 1500, 820, 40), 0, 0.5, GREEN, 8, sfx="wood_low")
+T("③ 一起定规矩", 950, 7340, 76, BLUE, k0=1, k1=1.9, sfx="pop")
 for n, x in enumerate((520, 700, 880)):
     L(stick(x, 7720, 0.5), 2 + n * 0.25, 2.3 + n * 0.25, sfx="wood_high" if n == 0 else None)
-L(oval(*TB, 520, 90), 3, 3.4)
-
-b.shot("坐下来一起商量", "第三条 · 定规矩", view=(950, 7650, 0.85))
-for n, x in enumerate((520, 700, 880)):
-    L(bubble(x, 7460, 120, 64, -1 if n < 2 else 1), n, n + 0.3, BLACK, 6, sfx="pop")
-
-b.shot("没写名字周五清", "第三条 · 定规矩", view=(950, 7700, 0.85))
-T("没写名字，周五清空", 950, 7870, 58, RED, k0=0, k1=1.4, sfx="pop")
-L(underline(690, 1210, 7915), 2, 2.5, RED, 7, sfx="ding")
-
-b.shot("轮流值日看一眼", "第三条 · 定规矩", view=(950, 7650, 0.85))
-T("值日表", 1330, 7440, 56, k0=0, sfx="pop")
+L(oval(*TB, 520, 90), 2.8, 3.0)
+T("没写名字，周五清空", 950, 7870, 58, RED, k0=3, k1=4.2, sfx="pop")
+T("值日表", 1330, 7440, 56, k0=4.3, k1=4.8)
 for n, w in enumerate(("周一 小王", "周二 小李", "周三 阿美")):
-    T(w, 1330, 7530 + n * 75, 48, k0=1 + n * 0.5, k1=1.4 + n * 0.5, sfx="pop" if n in (0, 2) else None)
+    T(w, 1330, 7530 + n * 75, 48, k0=5 + n * 0.32, k1=5.3 + n * 0.32, sfx="pop" if n == 0 else None)
 
-b.shot("冰箱清爽多了", "回到冰箱", view=(2650, 7650, 0.85))
-L(fridge(2400, 7680, 0.8, open_door=True), 0, 0.8, sfx="wood_low")
+scene("冰箱清爽多了", "回到冰箱", (2650, 7820, 0.85))
+L(rect(*SOL[3], 1500, 820, 40), 0, 0.5, GREEN, 8, sfx="wood_low")
+L(fridge(2400, 7680, 0.8, open_door=True), 1, 1.8, sfx="wood_high")
 for n, w in enumerate(("小王", "小李", "阿美")):
-    T(w, 2400, shelf_y(7680, n, 0.8) - 26, 46, k0=1 + n * 0.25, k1=1.2 + n * 0.25, sfx="pop" if n == 0 else None)
-T("清爽！", 2930, 7560, 90, GREEN, k0=2, sfx="ding")
-L(check(2930, 7700, 60), 2.8, 3.1, GREEN, 10)
+    T(w, 2400, shelf_y(7680, n, 0.8) - 26, 46, k0=2 + n * 0.25, k1=2.2 + n * 0.25, sfx="pop" if n == 0 else None)
+T("清爽！", 2930, 7560, 90, GREEN, k0=3, sfx="ding")
+L(check(2930, 7700, 60), 4, 4.3, GREEN, 10, sfx="wood_high")
 
-b.shot("公共的也得有人管", "一句话", view=(1800, 4600, 0.235))
+scene("公共的也得有人管", "一句话", (1800, 4600, 0.235))
 b.hit(J(), 0, "cymbal", 0.5)
-b.hit(J(), 2, "ding")
+b.hit(J(), 2, "wood_high", 0.6)
+b.hit(J(), 4, "ding")
 
-b.shot("评论区聊聊", "评论区见", view=(1800, 8350, 0.8))
-T("你们公司的公地在哪？", 1800, 8250, 76, RED, k0=0.5, k1=1.8)
-T("下一讲：标准为什么越来越低？", 1800, 8420, 48, k0=2.0, k1=3.2)
+scene("评论区聊聊", "评论区见", (1800, 8350, 0.8))
 b.hit(J(), 0, "cymbal", 0.5)
+T("你们公司的公地在哪？", 1800, 8250, 76, RED, k0=1, k1=2.6)
 b.hit(J(), 1, "pop")
-b.hit(J(), 2, "wood_high", 0.7)
-b.hit(J(), 4, "kick", 0.55, "原曲最后一击")
+T("下一讲：标准为什么越来越低？", 1800, 8420, 48, k0=3, k1=4.5)
+b.hit(J(), 3, "wood_high", 0.7)
+b.hit(J(), 8, "kick", 0.55, "原曲最后一击")
 
 
 def build():
     ep = episode(7, "commons", "公地悲剧", "公司冰箱为什么总是乱糟糟？", ACC, b.shots,
                  [f"{BOOK}（Thinking in Systems: A Primer, 2008；转述）", "中译本：邱昭良译，浙江人民出版社 2012",
                   "Garrett Hardin, The Tragedy of the Commons, Science, 1968"],
-                 "好处归自己|代价【大家摊】", 10,
+                 "好处归自己|代价【大家摊】", 4,
                  ["书中观点均为转述：公地悲剧是书中列出的系统陷阱之一——每个使用者独享使用共享资源的好处，代价由所有人分摊，"
                   "资源状况反馈到使用者（决策者）那里太弱，资源被过度使用直至衰败；书中给出的出路有三条：教育与劝导、"
                   "把公地分给个人、共同商定规则并监督执行。出处：Donella H. Meadows, Thinking in Systems: A Primer (2008)，"
