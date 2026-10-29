@@ -1,4 +1,4 @@
-"""《孤独是可耻的》系列：白板手绘形式（whiteboard/engine.py），沿用阿德勒引擎时间轴与交付流程，快节奏规则（每镜 ≤3 秒）。
+"""《孤独是可耻的》系列：白板手绘形式（whiteboard/engine.py），沿用阿德勒引擎时间轴与交付流程，场景节奏（每个场景 2 小节、画完停住）。
 
 用法：
     python3 -m gudu.build 01 --sheet     # 逐镜联系表
@@ -12,6 +12,7 @@ from adler import core
 from whiteboard import engine as wb
 
 wb.install(B)
+core.RULES.update(wb.SCENE_RULES)       # 白板场景节奏：每个场景 2 小节（≈4.3 秒），画完停住（见 CLAUDE.md「白板手绘节奏」）
 
 core.SERIES.update(name="孤独是可耻的", count="10讲", prefix="孤独", tagline="孤单的时候，身体和脑子在发生什么")
 B.PKG = "gudu"
