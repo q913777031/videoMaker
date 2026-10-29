@@ -443,7 +443,7 @@ b.shot("把烦恼写纸上", "第三步 · 比一比", view=(x, y, 0.85))
 T("③ 写下来比一比", x, y - 300, 72, BLUE, k0=0, sfx="pop")
 L(rect(x - 330, y + 30, 300, 200, 8), 1, 1.4, BLACK, 8, sfx="wood_high")
 T("绩效排名", x - 330, y + 30, 54, RED, k0=2, sfx="pop")
-L(scribble(x - 330, y + 210, 200, 40, 5), 3, 3.3, BLACK, 5, sfx="pop")
+L(underline(x - 430, x - 230, y + 80, 8, 30), 3, 3.3, RED, 6, sfx="pop")
 
 b.shot("放在大照片旁", "第三步 · 比一比", view=(x, y, 0.85))
 L(frame(x + 250, y + 20, 520, 420), 0, 0.6, BLACK, 8, sfx="wood_high")
