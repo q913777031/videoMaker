@@ -8,7 +8,13 @@ description: 用白板手绘引擎（whiteboard/engine.py）制作整讲 92.6 �
 范例：`xitong/wb01_system.py`；引擎：`whiteboard/engine.py`；系列入口 `xitong/build.py` 中 `wb.install(B)`。
 配乐、卡点、交付格式照 CLAUDE.md（`music/bgm.m4a`、实测拍点、每讲 mp4 + cover.png + 标题与话题.txt + 横屏封面_1080x1080.png；成片末尾接频道片尾 `brand/outro.mp4`，`--publish` 自动拼接）。
 
-## 1. 叙事结构（42 个 1 小节镜头，约 92.6 秒）
+## 0. 节奏（强制，见 CLAUDE.md「白板手绘节奏」）
+
+- 每讲 21 个场景 × 2 小节（≈4.3 秒）：`b.shot(..., bars=2)`；系列 build.py 里 `core.RULES.update(wb.SCENE_RULES)`。
+- 场景前 6 拍画完，最后 2 拍停住让人看清（`hold_warnings` 检查）；一屏一件事，字幕概括这一屏。
+- 场景分配：1–3 开局 / 4 亮书 / 5 drop / 6–9 书中观点 / 10–15 例子 / 16–19 做法 / 20 拉远全板 / 21 评论区（下表为旧版 42 镜的内容顺序，照此合并）。
+
+## 1. 叙事结构（旧版 42 个 1 小节镜头；新版按上面合并成 21 个场景）
 
 | 镜头 | 段落 | 做法 |
 |---|---|---|
