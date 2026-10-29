@@ -1,0 +1,481 @@
+"""09 迈出第一步（白板手绘版）：想交朋友，第一步迈哪？
+
+叙事：切身问题开局（搬到新城市第三年，下班回出租屋，周末没人约；刷到一个读书会，想去又怕尴尬）→ 书中观点（亮书；
+书末一章给的办法拼成 EASE 四个字母，本讲讲前两个：E 先迈一小步——帮个小忙、做志愿；A 有个计划——先挑低风险的小场合，
+大型聚会往后放；画成一级一级的台阶）→ 身边的例子（帮同事弄卡纸的打印机、借梯子给邻居、六个人的小读书会、
+孩子转学先约一个同学来家）→ 具体做法（每天帮一个小忙 / 报一次志愿 / 列场合清单从最不怕的排起 / 定好时间和退路）
+→ 评论区互动，预告下一讲（后两个字母）。
+书中观点为转述：Cacioppo & Patrick, Loneliness: Human Nature and the Need for Social Connection (W. W. Norton, 2008)
+第 14 章（中译本第三部分“14 个体困境的解药”）；中译本《孤独是可耻的》，焦梦津译，中国人民大学出版社 2009。
+例子与做法为现实场景示意与据书中思路整理的建议。
+"""
+
+import math
+
+import skia
+
+from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow, book, building, check, circle,
+                               clock, cross, face, hands_at, join, marker, rect, scribble, stick, underline)
+from adler import kit as K
+from engine.gfx import clamp01, ease_out
+
+from .common import BOOK, episode
+
+ACC = "#3E7D6B"
+SQUARE_SHOT = 16
+
+b = Board(size=(3600, 10900))
+
+
+def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None, j=None):
+    """在当前镜头写字：写字时长按字数估计（每字约 0.18 拍，至少 0.5 拍）。"""
+    jj = len(b.shots) - 1 if j is None else j
+    k1 = k0 + max(0.5, 0.18 * len(s)) if k1 is None else k1
+    b.text(jj, k0, k1, s, x, y, size, color, sfx=sfx)
+
+
+def L(path, k0, k1, color=BLACK, width=10, sfx=None):
+    b.path(len(b.shots) - 1, k0, k1, path, color, width, sfx=sfx)
+
+
+def H(k, sfx, gain=0.8):
+    b.hit(len(b.shots) - 1, k, sfx, gain)
+
+
+# ---------------------------------------------------------------- 本讲画法
+
+def suitcase(x, y, w=170, h=200) -> skia.Path:
+    """行李箱：(x, y) 为箱体中心。"""
+    return join(rect(x, y, w, h, 18), P((x - 35, y - h / 2), (x - 35, y - h / 2 - 50), (x + 35, y - h / 2 - 50),
+                                        (x + 35, y - h / 2)),
+                P((x - w / 2 + 40, y - h / 2 + 30), (x - w / 2 + 40, y + h / 2 - 30)),
+                P((x + w / 2 - 40, y - h / 2 + 30), (x + w / 2 - 40, y + h / 2 - 30)))
+
+
+def house(x, y, w=420, h=300) -> skia.Path:
+    """小屋：(x, y) 为底边中点。"""
+    return join(P((x - w / 2, y), (x - w / 2, y - h), (x + w / 2, y - h), (x + w / 2, y)),
+                P((x - w / 2 - 40, y - h), (x, y - h - 190), (x + w / 2 + 40, y - h)),
+                P((x - 45, y), (x - 45, y - 150), (x + 45, y - 150), (x + 45, y)),
+                rect(x + w / 4 + 10, y - h + 90, 80, 70, 6))
+
+
+def phone(x, y, w=240, h=400) -> skia.Path:
+    return join(rect(x, y, w, h, 26), P((x - 25, y + h / 2 - 26), (x + 25, y + h / 2 - 26)))
+
+
+def calendar(x, y, w=560, h=440) -> skia.Path:
+    return join(rect(x, y, w, h, 16), P((x - w / 2, y - h / 2 + 100), (x + w / 2, y - h / 2 + 100)),
+                P((x, y - h / 2 + 100), (x, y + h / 2)),
+                P((x - w / 4, y - h / 2 - 30), (x - w / 4, y - h / 2 + 30)),
+                P((x + w / 4, y - h / 2 - 30), (x + w / 4, y - h / 2 + 30)))
+
+
+def bubble(x, y, w, h, tail=-1) -> skia.Path:
+    p = rect(x, y, w, h, 40)
+    p.moveTo(x + tail * w * 0.15, y + h / 2)
+    p.lineTo(x + tail * w * 0.3, y + h / 2 + 60)
+    p.lineTo(x + tail * w * 0.02, y + h / 2)
+    return p
+
+
+def heart(x, y, r=80) -> skia.Path:
+    p = skia.Path()
+    p.moveTo(x, y + r)
+    p.cubicTo(x - r * 1.6, y - r * 0.1, x - r * 0.7, y - r * 1.3, x, y - r * 0.45)
+    p.cubicTo(x + r * 0.7, y - r * 1.3, x + r * 1.6, y - r * 0.1, x, y + r)
+    return p
+
+
+def cup(x, y, s=1.0) -> skia.Path:
+    body = P((x - 55 * s, y - 70 * s), (x - 44 * s, y + 70 * s), (x + 44 * s, y + 70 * s), (x + 55 * s, y - 70 * s),
+             close=True)
+    return join(body, P((x - 52 * s, y - 40 * s), (x + 52 * s, y - 40 * s)))
+
+
+def ellipse(x, y, w, h) -> skia.Path:
+    p = skia.Path()
+    p.addOval(skia.Rect.MakeXYWH(x - w / 2, y - h / 2, w, h))
+    return p
+
+
+def printer(x, y, w=300, h=190) -> skia.Path:
+    return join(rect(x, y, w, h, 18), P((x - w / 2 + 50, y - h / 2), (x - w / 2 + 50, y - h / 2 - 70),
+                                        (x + w / 2 - 50, y - h / 2 - 70), (x + w / 2 - 50, y - h / 2)),
+                P((x - w / 2 + 40, y + 20), (x + w / 2 - 40, y + 20)), circle(x + w / 2 - 40, y - 40, 14))
+
+
+def ladder(x, y, h=440, w=130) -> skia.Path:
+    """梯子：(x, y) 为中心。"""
+    parts = [P((x - w / 2, y + h / 2), (x - w / 2 + 20, y - h / 2)), P((x + w / 2, y + h / 2), (x + w / 2 - 20, y - h / 2))]
+    for i in range(5):
+        yy = y - h / 2 + 50 + i * (h - 80) / 4
+        parts.append(P((x - w / 2 + 12, yy), (x + w / 2 - 12, yy)))
+    return join(*parts)
+
+
+def bag(x, y, w=150, h=140) -> skia.Path:
+    return join(P((x - w / 2, y - h / 2), (x - w / 2 + 15, y + h / 2), (x + w / 2 - 15, y + h / 2), (x + w / 2, y - h / 2)),
+                P((x - 30, y - h / 2), (x - 20, y - h / 2 - 50), (x + 20, y - h / 2 - 50), (x + 30, y - h / 2)))
+
+
+def door(x, y, w=220, h=380) -> skia.Path:
+    """门：(x, y) 为中心。"""
+    return join(rect(x, y, w, h, 8), circle(x + w / 2 - 40, y + 10, 12))
+
+
+def heads(pts, r=34) -> skia.Path:
+    return join(*(circle(x, y, r) for x, y in pts))
+
+
+def stairs(x0, y0, n, w, rise) -> skia.Path:
+    """台阶：从 (x0, y0) 起，n 级，每级宽 w、高 rise，向右上。"""
+    pts = [(x0, y0)]
+    x, y = x0, y0
+    for i in range(n):
+        x += w
+        pts.append((x, y))
+        if i < n - 1:
+            y -= rise
+            pts.append((x, y))
+    pts.append((x, y0))
+    return P(*pts, close=True)
+
+
+def slam(j, kb, s, x, y, size, color=RED):
+    """字母砸下：起拍时放大 1.8 倍，0.15 秒落定。"""
+
+    def fn(c, k, t):
+        t0 = b.t_of(j, kb)
+        if t < t0:
+            return None
+        sc = 1 + 0.8 * (1 - ease_out(clamp01((t - t0) / 0.15)))
+        K.text(c, s, x, y, size * sc, "hand", color, clamp01((t - t0) / 0.06))
+        return None
+
+    return fn
+
+
+def climber(j, spots, s=0.5):
+    """小人沿台阶往上跳：第 1、2、3 拍分别落到 spots[0..2]（脚底坐标）。"""
+
+    def fn(c, k, t):
+        ts = [b.t_of(j, n + 1) for n in range(len(spots))]
+        if t < ts[0]:
+            return None
+        i = max(n for n in range(len(spots)) if t >= ts[n])
+        x, y = spots[i]
+        if i + 1 < len(spots):
+            f = clamp01((t - (ts[i + 1] - 0.22)) / 0.22)
+            if f > 0:
+                (x0, y0), (x1, y1) = spots[i], spots[i + 1]
+                x, y = x0 + (x1 - x0) * f, y0 + (y1 - y0) * f - math.sin(f * math.pi) * 90
+        c.drawPath(stick(x, y, s, "up"), marker(BLUE, 8))
+        c.drawPath(face(x, y, s, "smile"), marker(BLUE, 6))
+        return None
+
+    return fn
+
+
+# ---------------------------------------------------------------- 开局：新城市第三年（镜头 1–6）
+
+b.shot("搬来这座城三年", "灵魂拷问", view=(950, 850, 0.85))
+L(join(building(520, 1150, 220, 320), building(760, 1150, 180, 260)), 0, 0.8, sfx="wood_high")
+L(suitcase(1240, 1080), 1, 1.5, sfx="pop")
+L(stick(1050, 1200, 0.9), 1.5, 1.9)
+L(face(1050, 1200, 0.9, "flat"), 1.9, 2.0)
+T("搬来第 3 年", 950, 500, 72, RED, k0=2, sfx="pop")
+T("新城市", 640, 1260, 52, k0=3, sfx="wood_high")
+
+b.shot("下班就回出租屋", "灵魂拷问", view=(2650, 850, 0.85))
+L(house(2370, 1220), 0, 0.8, sfx="wood_high")
+L(clock(3020, 640, 110), 1, 1.5, sfx="pop")
+L(hands_at(3020, 640, 110, 7, 0), 1.5, 1.7, RED, 10)
+T("19:00 到家", 3010, 840, 56, RED, k0=2, sfx="pop")
+L(stick(3000, 1250, 0.75), 3, 3.4, sfx="wood_high")
+L(face(3000, 1250, 0.75, "flat"), 3.4, 3.5)
+
+b.shot("周末没人约", "灵魂拷问", view=(950, 1750, 0.85))
+L(calendar(800, 1760), 0, 0.8, sfx="wood_high")
+T("周六", 660, 1610, 54, k0=1, sfx="pop")
+T("周日", 940, 1610, 54, k0=1.4)
+T("空", 660, 1850, 110, RED, k0=2, k1=2.3, sfx="rim")
+T("空", 940, 1850, 110, RED, k0=2.4, k1=2.7)
+L(phone(1350, 1760, 240, 380), 3, 3.4, sfx="pop")
+T("0 条消息", 1350, 1760, 46, k0=3.4)
+
+b.shot("刷到一个读书会", "灵魂拷问", view=(2650, 1750, 0.85))
+L(phone(2350, 1760, 320, 520), 0, 0.6, sfx="wood_high")
+T("周六读书会", 2350, 1620, 52, GREEN, k0=1, sfx="pop")
+T("欢迎新人", 2350, 1730, 46, k0=1.6)
+L(rect(2350, 1880, 200, 80, 20), 2, 2.3, GREEN, 7, sfx="pop")
+T("报名", 2350, 1880, 46, GREEN, k0=2.3, k1=2.6)
+L(stick(2880, 2150, 0.85, "hold"), 3, 3.5, sfx="wood_high")
+L(face(2880, 2150, 0.85, "smile"), 3.5, 3.6)
+
+b.shot("想去，又怕尴尬", "灵魂拷问", view=(2700, 1800, 0.85))
+L(bubble(3020, 1480, 400, 150), 0, 0.5, BLACK, 8, sfx="wood_high")
+T("去了说啥？", 3020, 1480, 52, k0=1, sfx="pop")
+T("怕尴尬", 3160, 1760, 60, RED, k0=2, sfx="rim")
+for n in range(3):
+    L(P((2790 - n * 30, 1840 + n * 20), (2770 - n * 30, 1880 + n * 20)), 3 + n * 0.15, 3.12 + n * 0.15, BLUE, 7,
+      sfx="shaker" if n == 0 else None)
+
+b.shot("第一步迈哪儿？", "灵魂拷问", view=(1800, 1300, 0.42), flashes=[0])
+T("？", 1800, 1300, 380, RED, k0=0, k1=0.6, sfx="kick")
+T("第一步迈哪", 1800, 2340, 110, k0=1.0, k1=2.0, sfx="pop")
+H(2, "ding")
+H(3, "wood_low", 0.6)
+
+# ---------------------------------------------------------------- 书中观点（镜头 7–17）
+
+b.shot("有本书讲过这个", "孤独是可耻的", view=(1050, 3050, 0.9))
+L(book(750, 3050, 420, 280), 0, 1.0, sfx="wood_low")
+T("孤独是可耻的", 750, 2810, 70, GREEN, k0=1.0, sfx="pop")
+T("卡乔波", 750, 3280, 50, k0=2.0, sfx="pop")
+L(underline(560, 940, 2870, 10, 30), 3, 3.4, GREEN, 7, sfx="wood_high")
+
+b.shot("最后一章给了办法", "书中观点 · 第十四章", view=(1050, 3050, 0.9))
+T("第 14 章", 1390, 2880, 64, RED, k0=0, sfx="pop")
+L(arrow((1000, 3050), (1230, 3050), 0, 40), 1, 1.4, GREEN, 8, sfx="wood_high")
+T("走出孤单的办法", 1400, 3060, 50, k0=1.5, k1=2.6)
+H(2, "pop")
+L(underline(1230, 1570, 3110, 10, 30), 3, 3.4, RED, 7, sfx="ding")
+
+EASE = [("E", 2200), ("A", 2500), ("S", 2800), ("E", 3100)]
+j_drop = b.shot("四步，拼成一个词", "书中观点 · 四个字母", view=(2650, 3050, 0.85), shake=[0], flashes=[0])
+for n, (ch, x) in enumerate(EASE):
+    b.custom(j_drop, n, n + 0.2, slam(j_drop, n, ch, x, 3000, 220),
+             sfx=("kick", "tom", "tom", "kick")[n], gain=1.0 if n == 0 else 0.75)
+H(0, "cymbal", 0.5)
+
+b.shot("这讲先说前两个", "书中观点 · 前两步", view=(2650, 3050, 0.85))
+L(circle(2200, 3000, 135), 0, 0.4, GREEN, 8, sfx="wood_high")
+L(circle(2500, 3000, 135), 1, 1.4, GREEN, 8, sfx="wood_high")
+T("这一讲", 2350, 3260, 56, GREEN, k0=2, sfx="pop")
+T("下一讲", 2950, 3260, 56, BLUE, k0=3, sfx="pop")
+
+b.shot("第一步，先伸手", "书中观点 · 先迈一小步", view=(950, 4000, 0.85))
+T("E · 先迈一小步", 950, 3620, 70, BLUE, k0=0, k1=1.0, sfx="pop")
+L(stick(580, 4350, 0.8, "point"), 1, 1.6, sfx="wood_high")
+L(face(580, 4350, 0.8, "smile"), 1.6, 1.7)
+L(arrow((540, 4420), (820, 4420), -0.08, 34), 2, 2.4, GREEN, 8, sfx="pop")
+H(3, "ding", 0.6)
+
+b.shot("帮个小忙就算", "书中观点 · 先迈一小步", view=(950, 4000, 0.85))
+L(cup(860, 4150, 0.6), 0, 0.4, BLACK, 8, sfx="pop")
+L(stick(1250, 4350, 0.8, "hold"), 1, 1.6, BLUE, sfx="wood_high")
+L(face(1250, 4350, 0.8, "smile"), 1.6, 1.7, BLUE)
+T("帮个小忙", 1050, 3800, 60, RED, k0=2, sfx="pop")
+H(3, "wood_high", 0.6)
+
+b.shot("做志愿也算", "书中观点 · 先迈一小步", view=(950, 4100, 0.85))
+L(heart(700, 4520, 60), 0, 0.5, RED, 8, sfx="wood_high")
+T("做志愿", 960, 4530, 60, k0=1, sfx="pop")
+T("也算", 1200, 4530, 60, RED, k0=2, sfx="pop")
+L(underline(860, 1280, 4590, 10, 30), 3, 3.3, RED, 6, sfx="ding")
+
+b.shot("第二步，有计划", "书中观点 · 有个计划", view=(2650, 4000, 0.85))
+T("A · 有个计划", 2650, 3620, 70, BLUE, k0=0, k1=1.0, sfx="pop")
+L(rect(2650, 3860, 200, 230, 14), 1, 1.4, BLACK, 8, sfx="wood_high")
+for n in range(3):
+    L(P((2590, 3800 + n * 55), (2720, 3800 + n * 55)), 1.4 + n * 0.12, 1.5 + n * 0.12, BLACK, 6)
+L(check(2600, 3800, 22), 2, 2.2, GREEN, 7, sfx="ding")
+L(check(2600, 3855, 22), 3, 3.2, GREEN, 7, sfx="pop")
+
+b.shot("先挑小场合", "书中观点 · 低风险", view=(2650, 4050, 0.85))
+L(ellipse(2330, 4250, 380, 120), 0, 0.5, BLACK, 8, sfx="wood_high")
+L(heads([(2190, 4150), (2330, 4120), (2470, 4150)]), 1, 1.4, BLUE, 7, sfx="pop")
+T("小场合", 2330, 4420, 56, k0=2, sfx="pop")
+L(check(2560, 4410, 36), 3, 3.25, GREEN, 9, sfx="ding")
+
+CROWD = [(2850 + c_ * 64 + (r % 2) * 30, 4110 + r * 56) for r in range(4) for c_ in range(5)]
+b.shot("大聚会往后放", "书中观点 · 低风险", view=(2650, 4050, 0.85))
+L(heads(CROWD, 22), 0, 0.8, BLACK, 5, sfx="shaker")
+T("大型聚会", 3000, 4420, 56, k0=1, sfx="pop")
+T("以后再说", 3000, 3990, 50, RED, k0=2, sfx="rim")
+H(3, "wood_low", 0.6)
+
+SX, SY, SW, SR = 1050, 5600, 500, 190
+SPOTS = [(SX + SW * (i + 0.5), SY - SR * i) for i in range(3)]
+j_st = b.shot("一级一级往上走", "书中观点 · 一张图", view=(1800, 5350, 0.65))
+L(stairs(SX, SY, 3, SW, SR), 0, 0.8, BLACK, 9, sfx="wood_high")
+b.custom(j_st, 1, 4, climber(j_st, SPOTS), sfx="pop")
+H(2, "pop")
+H(3, "ding")
+for n, w in enumerate(("帮小忙", "小场合", "常来往")):
+    T(w, SX + SW * (n + 0.5), SY + 75, 66, GREEN if n < 2 else BLUE, k0=n + 1.1, k1=n + 1.6)
+
+# ---------------------------------------------------------------- 身边的例子（镜头 18–28）
+
+CARDS = [(950, 6450), (2650, 6450), (950, 7400), (2650, 7400)]
+ZV = (1800, 6900, 0.355)
+b.shot("身边的例子", "身边的例子", view=ZV)
+T("身边的例子", 1800, 5920, 130, k0=0, sfx="pop")
+for n, (x, y) in enumerate(CARDS):
+    L(rect(x, y, 1200, 860, 40), 1.5 + n * 0.5, 1.95 + n * 0.5, GREEN, 8, sfx="wood_high" if n in (1, 3) else None)
+
+b.shot("同事打印机卡纸", "例子 · 职场", view=(950, 6450, 0.85))
+L(printer(1150, 6570), 0, 0.7, sfx="wood_high")
+L(scribble(1150, 6410, 160, 90, 6), 1, 1.4, RED, 7, sfx="shaker")
+L(stick(720, 6800, 0.75, "shrug"), 2, 2.5, sfx="pop")
+L(face(720, 6800, 0.75, "sad"), 2.5, 2.6)
+T("卡纸！", 1150, 6200, 64, RED, k0=3, sfx="rim")
+
+b.shot("帮一把，约上午饭", "例子 · 职场", view=(950, 6450, 0.85))
+L(stick(1430, 6800, 0.75, "point"), 0, 0.5, BLUE, sfx="wood_high")
+L(check(1150, 6570, 50), 1, 1.3, GREEN, 10, sfx="ding")
+L(bubble(720, 6210, 400, 130, tail=0.1), 2, 2.4, BLACK, 7, sfx="pop")
+T("一起吃午饭？", 720, 6210, 48, k0=2.4, k1=3.2)
+H(3, "wood_high", 0.6)
+
+b.shot("邻居来借梯子", "例子 · 生活", view=(2650, 6450, 0.85))
+L(door(2350, 6600), 0, 0.6, sfx="wood_high")
+L(stick(2620, 6800, 0.75, "point"), 1, 1.5, BLUE, sfx="pop")
+L(face(2620, 6800, 0.75, "smile"), 1.5, 1.6, BLUE)
+L(bubble(2700, 6200, 340, 120), 2, 2.4, BLACK, 7, sfx="pop")
+T("有梯子吗？", 2700, 6200, 46, k0=2.4, k1=3.0)
+L(ladder(3080, 6550), 3, 3.6, sfx="wood_high")
+
+b.shot("还回来一袋橘子", "例子 · 生活", view=(2650, 6450, 0.85))
+L(bag(2830, 6740), 0, 0.5, BLACK, 8, sfx="pop")
+L(heads([(2790, 6635), (2860, 6625), (2825, 6575)], 30), 1, 1.4, ORANGE, 8, sfx="pop")
+T("认识了", 2350, 6300, 56, GREEN, k0=2, sfx="ding")
+H(3, "wood_high", 0.6)
+
+TABLE = (950, 7510)
+SEATS = [(720, 7390), (850, 7355), (1050, 7355), (1180, 7390), (770, 7630), (1130, 7630)]
+b.shot("小读书会六个人", "例子 · 小场合", view=(950, 7400, 0.85))
+L(ellipse(*TABLE, 520, 150), 0, 0.6, BLACK, 8, sfx="wood_high")
+L(heads(SEATS), 1, 1.6, BLUE, 7, sfx="pop")
+T("周六 · 6 人", 950, 7120, 60, k0=2, sfx="pop")
+L(book(950, 7510, 140, 70), 3, 3.4, GREEN, 6, sfx="wood_high")
+
+b.shot("散场加了俩好友", "例子 · 小场合", view=(950, 7400, 0.85))
+L(phone(1370, 7430, 140, 230), 0, 0.5, BLACK, 7, sfx="wood_high")
+T("+2 好友", 1370, 7210, 54, GREEN, k0=1, sfx="pop")
+L(check(1370, 7430, 40), 2, 2.3, GREEN, 9, sfx="ding")
+
+b.shot("孩子转学没玩伴", "例子 · 家庭", view=(2650, 7400, 0.85))
+L(building(2350, 7700, 300, 380), 0, 0.8, sfx="wood_high")
+T("新学校", 2350, 7230, 56, k0=1, sfx="pop")
+L(stick(2850, 7660, 0.55), 2, 2.4, sfx="wood_high")
+L(face(2850, 7660, 0.55, "sad"), 2.4, 2.5)
+T("下课一个人", 2920, 7230, 52, RED, k0=3, sfx="rim")
+
+b.shot("先约一个同学来", "例子 · 家庭", view=(2650, 7400, 0.85))
+L(stick(3070, 7660, 0.55), 0, 0.4, BLUE, sfx="pop")
+L(face(3070, 7660, 0.55, "smile"), 0.4, 0.5, BLUE)
+T("周末来家玩", 2960, 7750, 50, k0=1, sfx="pop")
+L(heart(2960, 7410, 32), 2, 2.3, RED, 7, sfx="ding")
+H(3, "wood_high", 0.6)
+
+b.shot("都是小小一步", "身边的例子", view=ZV)
+for n, (x, y) in enumerate(CARDS):
+    T("小一步", x + 400, y - 340, 110, RED, k0=n, k1=n + 0.5, sfx="pop")
+
+b.shot("场子都不大", "身边的例子", view=ZV, shake=[0])
+T("小忙 · 小场合", 1800, 8020, 125, RED, k0=0, k1=0.8, sfx="kick")
+H(2, "ding")
+H(3, "wood_low", 0.6)
+
+# ---------------------------------------------------------------- 具体做法（镜头 29–41）
+
+SOL = [(950, 8900), (2650, 8900), (950, 9850), (2650, 9850)]
+SV = (1800, 9350, 0.355)
+b.shot("这周就能做", "具体做法", view=SV)
+T("这周就做这几件", 1800, 8330, 110, k0=0, k1=1.4, sfx="pop")
+for n, (x, y) in enumerate(SOL):
+    L(rect(x, y, 1200, 860, 40), 2 + n * 0.4, 2.35 + n * 0.4, GREEN, 8, sfx="wood_high" if n == 0 else None)
+
+b.shot("每天帮一个小忙", "第一件 · 帮小忙", view=(950, 9000, 0.85))
+T("① 每天帮个小忙", 950, 8590, 70, BLUE, k0=0, k1=1.0, sfx="pop")
+L(stick(640, 9220, 0.75, "hold"), 1, 1.5, sfx="wood_high")
+L(face(640, 9220, 0.75, "smile"), 1.5, 1.6)
+L(cup(745, 9050, 0.45), 2, 2.3, BLACK, 7, sfx="pop")
+
+b.shot("带杯水，扶下门", "第一件 · 帮小忙", view=(950, 9000, 0.85))
+for n, w in enumerate(("帮带杯水", "扶一下门", "递把雨伞")):
+    T(w, 1150, 8800 + n * 120, 56, k0=n, sfx="pop")
+T("一天一件", 1150, 9190, 56, RED, k0=3, sfx="ding")
+
+b.shot("报一次志愿", "第二件 · 做志愿", view=(2650, 9000, 0.85))
+T("② 报一次志愿", 2650, 8590, 70, BLUE, k0=0, k1=1.0, sfx="pop")
+L(heart(2330, 8920, 85), 1, 1.5, RED, 8, sfx="wood_high")
+T("社区图书馆", 2850, 8840, 56, k0=2, sfx="pop")
+T("整理书架", 2850, 8950, 52, k0=3, sfx="wood_high")
+
+b.shot("周末去两个钟头", "第二件 · 做志愿", view=(2650, 9000, 0.85))
+T("周六 9 点到 11 点", 2620, 9130, 54, RED, k0=0, k1=1.2, sfx="pop")
+L(check(3000, 9125, 36), 1.4, 1.7)
+H(1, "ding")
+T("有活干，不冷场", 2650, 9250, 52, GREEN, k0=2, sfx="pop")
+
+b.shot("列个场合清单", "第三件 · 列清单", view=(950, 9850, 0.85))
+T("③ 列个场合清单", 950, 9550, 70, BLUE, k0=0, k1=1.0, sfx="pop")
+L(rect(620, 9920, 220, 300, 14), 1, 1.5, BLACK, 8, sfx="wood_high")
+for n in range(4):
+    L(P((550, 9830 + n * 60), (700, 9830 + n * 60)), 2 + n * 0.12, 2.1 + n * 0.12, BLACK, 6, sfx="pop" if n == 0 else None)
+
+LIST = ("1 楼下打招呼", "2 小读书会", "3 同事聚餐", "4 大派对")
+b.shot("从最不怕的排起", "第三件 · 列清单", view=(950, 9850, 0.85))
+for n in range(3):
+    T(LIST[n], 1000, 9730 + n * 110, 52, k0=n, sfx="pop")
+L(underline(840, 1170, 9775, 8, 26), 3, 3.3, GREEN, 6, sfx="ding")
+
+b.shot("每周往下挪一格", "第三件 · 列清单", view=(950, 9850, 0.85))
+T(LIST[3], 1000, 10060, 52, BLUE, k0=0, sfx="pop")
+L(arrow((1230, 9720), (1230, 10060), -0.1, 34), 1, 1.4, GREEN, 8, sfx="wood_high")
+T("每周一格", 1390, 9900, 48, GREEN, k0=2, sfx="pop")
+H(3, "ding", 0.6)
+
+b.shot("定好时间和退路", "第四件 · 定时间", view=(2650, 9850, 0.85))
+T("④ 定好时间和退路", 2650, 9550, 66, BLUE, k0=0, k1=1.0, sfx="pop")
+L(clock(2350, 9840, 120), 1, 1.5, sfx="wood_high")
+L(hands_at(2350, 9840, 120, 3, 0), 2, 2.2, RED, 10, sfx="pop")
+L(door(3020, 9880), 3, 3.5, sfx="wood_high")
+
+b.shot("周六下午三点", "第四件 · 定时间", view=(2650, 9850, 0.85))
+T("周六 15:00", 2350, 10040, 54, RED, k0=0, sfx="pop")
+T("读书会", 2350, 10150, 52, k0=1, sfx="pop")
+H(2, "wood_high", 0.6)
+
+b.shot("待一小时就能走", "第四件 · 留退路", view=(2650, 9850, 0.85))
+T("待 1 小时", 2680, 9800, 50, k0=0, sfx="pop")
+T("想走就走", 2680, 9910, 50, GREEN, k0=1, sfx="pop")
+L(arrow((2960, 10090), (3200, 10090), 0, 34), 2, 2.3, GREEN, 8, sfx="wood_high")
+L(check(2680, 10020, 36), 3, 3.25, GREEN, 9, sfx="ding")
+
+b.shot("这周挑一件做", "具体做法", view=SV)
+for n, (x, y) in enumerate(SOL):
+    L(check(x + 480, y - 320, 50), n, n + 0.3, GREEN, 10, sfx="ding" if n % 2 else "pop")
+
+b.shot("小步走，不着急", "一句话", view=(1800, 5450, 0.235))
+H(0, "cymbal", 0.5)
+H(2, "ding")
+
+b.shot("评论区聊聊", "评论区见", view=(1800, 10650, 0.8))
+T("你这周先做哪件？", 1800, 10570, 80, RED, k0=0.5, k1=1.8)
+T("下一讲：交朋友，该找谁、怎么想？", 1800, 10730, 50, k0=2.0, k1=3.2)
+H(0, "cymbal", 0.5)
+H(1, "pop")
+H(2, "wood_high", 0.7)
+b.hit(len(b.shots) - 1, 4, "kick", 0.55, "原曲最后一击")
+
+
+def build():
+    ep = episode(9, "extend", "迈出第一步", "想交朋友，第一步迈哪？", ACC, b.shots,
+                 [f"{BOOK}第 14 章 · EASE 中的 Extend yourself 与 Action plan（转述）",
+                  "中译本：焦梦津译，中国人民大学出版社 2009（第三部分“14 个体困境的解药”）"],
+                 "想交朋友|第一步【迈哪】", 16,
+                 ["书中观点均为转述：书末第 14 章（中译本“个体困境的解药”）给出走出孤独的办法，作者用 EASE 四个字母概括；"
+                  "本讲讲前两个——Extend yourself（先迈一小步，比如做志愿、帮别人一个小忙）和 Action plan（有个计划，"
+                  "先从低风险的小场合开始，别一上来就去大型社交）；后两个 Selection、Expect the best 留到下一讲。"
+                  "出处：John T. Cacioppo & William Patrick, Loneliness: Human Nature and the Need for Social Connection "
+                  "(W. W. Norton, 2008)，中译本《孤独是可耻的》（约翰·卡乔波、威廉·帕特里克著，焦梦津译，中国人民大学出版社 "
+                  "2009）。上屏均为转述，不是逐字引文。",
+                  "搬到新城市三年、读书会、打印机卡纸、借梯子、六个人的读书会、孩子转学均为现实场景示意，不指向任何具体公司"
+                  "或个人；台阶图为对书中“先小后大”思路的通俗化示意；人数、时间为示意，不是数据。",
+                  "四件做法（每天帮一个小忙、报一次志愿、列场合清单从最不怕的排起、定好时间和退路）为据书中思路整理的建议。"],
+                 tags="#交朋友 #社交")
+    return b.attach(ep)
