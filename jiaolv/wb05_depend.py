@@ -1,5 +1,6 @@
 """05 制约因素（白板手绘版）：工作干得好好的，为什么还怕被裁？
 
+节奏：21 个场景 × 2 小节（≈4.3 秒），每个场景前 6 拍画完、最后 2 拍停住让人看清（2026-10 观众反馈“切太快看不清”后改版）。
 叙事：打工人切身问题开局（这个月绩效拿了优秀 → 听说部门要优化 → 名单上有没有我 → 半夜两点睡不着、躺着算房贷）→
 书中观点（亮书《身份的焦虑》+ 德波顿，第一部分第五章“制约因素”；你的地位拴在五样自己管不了的东西上：才华时灵时不灵、
 运气、雇主、雇主的利润、整体经济；画成一个被五根线吊着的小人，哪根一动你就晃，再拼也难踏实，所以会怕很正常）→
@@ -23,9 +24,10 @@ from engine.gfx import clamp01
 from .common import BOOK, episode
 
 ACC = "#5B6F8F"
-SQUARE_SHOT = 15
+SQUARE_SHOT = 8
 
-b = Board(size=(3600, 10200))
+D = 1150                         # 身边的例子及以后各段整体下移（给书中观点的大图留位置）
+b = Board(size=(3600, 10200 + D))
 
 
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None, j=None):
@@ -125,148 +127,6 @@ def spot_fn(x, y, r, color, alpha=1.0):
 
     return fn
 
-
-# ---------------------------------------------------------------- 开局：绩效挺好，还是怕（镜头 1–6）
-
-b.shot("绩效拿了个优秀", "灵魂拷问", view=(950, 850, 0.85))
-L(P((420, 1180), (1480, 1180)), 0, 0.4, BLACK, 6, sfx="wood_high")
-L(stick(1200, 1180, 0.75, "up"), 1, 1.6, sfx="pop")
-L(face(1200, 1180, 0.75, "smile"), 1.6, 1.75)
-L(doc(700, 860, 260, 320), 2, 2.6, BLACK, 9, sfx="wood_high")
-T("绩效", 700, 620, 60, k0=2.6)
-T("优秀", 960, 760, 90, RED, k0=3, k1=3.3, sfx="pop")
-
-b.shot("听说部门要优化", "灵魂拷问", view=(2650, 850, 0.85))
-L(phone(2650, 870, 560, 800), 0, 0.8, BLACK, 9, sfx="wood_high")
-T("小道消息", 2650, 560, 56, k0=0.8)
-L(rect(2620, 760, 440, 120, 40), 1, 1.3, BLUE, 8, sfx="pop")
-T("下个月要优化", 2620, 760, 56, BLUE, k0=1.3)
-L(rect(2680, 950, 380, 120, 40), 2, 2.3, BLACK, 8, sfx="pop")
-T("真的假的", 2680, 950, 56, k0=2.3)
-T("！", 3070, 640, 120, RED, k0=3, k1=3.3, sfx="rim")
-
-b.shot("名单上有我吗", "灵魂拷问", view=(950, 1800, 0.85))
-T("优化名单", 950, 1380, 66, RED, k0=0, sfx="pop")
-L(podium_list(900, 1560, 4, 420, 90), 0.8, 1.6, BLACK, 8, sfx="wood_high")
-for n, w in enumerate(("老周", "小林", "阿杰", "我")):
-    T(w, 900, 1560 + n * 106, 54, BLUE if n == 3 else BLACK, k0=1.6 + n * 0.2, k1=1.8 + n * 0.2)
-T("？", 1240, 1878, 100, RED, k0=3, k1=3.3, sfx="rim")
-L(stick(480, 2180, 0.6), 2, 2.4, BLUE, 9, sfx="pop")
-L(face(480, 2180, 0.6, "flat"), 2.4, 2.5, BLUE, 8)
-
-BED = (2650, 2080)
-HEAD = (2380, 1990)
-b.shot("半夜两点睡不着", "灵魂拷问", view=(2650, 1800, 0.85))
-L(join(rect(*BED, 760, 110, 16), P((2270, 2135), (2270, 2220)), P((3030, 2135), (3030, 2220))), 0, 0.6, BLACK, 9,
-  sfx="wood_high")
-L(join(circle(*HEAD, 55), P((2440, 2025), (2900, 1990), (3000, 2025))), 0.6, 1.0, BLACK, 9)
-L(clock(2260, 1430, 100), 1, 1.5, BLACK, 9, sfx="wood_low")
-L(hands_at(2260, 1430, 100, 2, 0), 1.5, 1.7, RED, 10)
-T("02:00", 2260, 1590, 60, RED, k0=2, sfx="pop")
-moon = skia.Path()
-moon.addArc(skia.Rect.MakeXYWH(2960, 1350, 140, 140), 60, 240)
-moon.quadTo(3010, 1420, 3065, 1471)
-L(moon, 2, 2.4, BLACK, 8)
-b.custom(J(), 3, 3.2, spot_fn(HEAD[0] - 18, HEAD[1] - 8, 7, BLACK), sfx="pop")
-b.custom(J(), 3, 3.2, spot_fn(HEAD[0] + 18, HEAD[1] - 8, 7, BLACK))
-
-b.shot("躺着算房贷", "灵魂拷问", view=(2650, 1750, 0.85))
-L(join(circle(2420, 1880, 18), circle(2470, 1830, 26)), 0, 0.3, BLACK, 7, sfx="pop")
-L(rect(2760, 1700, 720, 250, 60), 0.3, 0.8, BLACK, 8)
-T("房贷 ¥6800/月", 2760, 1650, 56, k0=1, sfx="pop")
-T("存款撑几个月？", 2760, 1750, 56, RED, k0=2, sfx="pop")
-L(scribble(2380, 1990, 150, 90, 6), 3, 3.4, RED, 6, sfx="shaker")
-
-b.shot("干得好，怎么还怕？", "灵魂拷问", view=(1800, 1300, 0.38), flashes=[1])
-T("活干得好好的", 1800, 250, 120, k0=0, k1=1.0, sfx="pop")
-T("为什么还怕？", 1800, 400, 130, RED, k0=1, k1=1.8, sfx="kick")
-H(3, "ding")
-
-# ---------------------------------------------------------------- 书中观点（镜头 7–17）
-
-b.shot("有本书讲过这个", "身份的焦虑", view=(1050, 3250, 0.9))
-L(book(800, 3250, 420, 280), 0, 1.0, sfx="wood_low")
-T("身份的焦虑", 800, 3000, 76, GREEN, k0=1.0, sfx="pop")
-T("阿兰 · 德波顿", 800, 3490, 52, k0=2.0, sfx="pop")
-T("第五章 制约因素", 800, 3590, 48, RED, k0=3.0, sfx="pop")
-
-AX = [2130, 2390, 2650, 2910, 3170]
-AY = 2990
-PX, PY, PS = 2650, 3720, 0.8
-NAMES = ["才华", "运气", "雇主", "利润", "经济"]
-
-j_bar = b.shot("地位拴在五样上", "书中观点 · 五根线", view=(2650, 3250, 0.85))
-j_drop = j_bar + 1
-j_lab = j_bar + 2                # 五个标签镜头：j_lab … j_lab+4
-j_jerk = j_bar + 7
-j_push = j_bar + 8
-L(P((2040, AY), (3260, AY)), 0, 0.5, BLACK, 14, sfx="wood_high")
-T("你的地位", 2290, 3660, 54, k0=2, sfx="pop")
-for n, x in enumerate(AX):
-    b.custom(J(), 3 + n * 0.12, 3.2 + n * 0.12, spot_fn(x, AY, 16, BLACK), sfx="pop" if n == 0 else None)
-
-
-def _attach(x, y, s, arms):
-    hy = y - 290 * s
-    if arms == "up":
-        lh, rh = (x - 80 * s, hy - 40 * s), (x + 80 * s, hy - 40 * s)
-        le, re = (x - 40 * s, hy + 20 * s), (x + 40 * s, hy + 20 * s)
-    else:
-        lh, rh = (x - 70 * s, hy + 170 * s), (x + 70 * s, hy + 170 * s)
-        le, re = (x - 35 * s, hy + 125 * s), (x + 35 * s, hy + 125 * s)
-    return [lh, le, (x, hy - 45 * s), re, rh]
-
-
-def _bump(t, tb, dur=0.4):
-    f = (t - tb) / dur
-    return math.sin(math.pi * f) if 0 <= f <= 1 else 0.0
-
-
-def puppet_fn(c, k, t):
-    """被五根线吊着的小人：镜头 8 画出，drop 时五根线同时绷上；标签镜头里当前那根加粗；
-    镜头 15 经济那根一抖，小人跟着晃；镜头 16 举手使劲往上蹦，还是被线拴着。"""
-    t_fig0, t_fig1 = b.t_of(j_bar, 1), b.t_of(j_bar, 2)
-    t_drop, t_jerk = b.t_of(j_drop, 0), b.t_of(j_jerk, 1)
-    t_up = b.t_of(j_push, 0)
-    dx = dy = 0.0
-    if t >= t_drop:
-        dx += 6 * math.sin((t - t_drop) * 2.4)
-    jo = 0.0
-    if t >= t_jerk:
-        d = t - t_jerk
-        dx += 70 * math.sin(d * 7) * math.exp(-d * 0.8)
-        jo = 60 * math.sin(d * 16) * math.exp(-d * 3)
-    for kb in (0, 1, 2):
-        dy -= 70 * _bump(t, b.t_of(j_push, kb))
-    arms = "up" if t >= t_up else "down"
-    m = "sad" if t >= t_jerk else "flat"
-    x, y = PX + dx, PY + dy
-    fig = join(stick(x, y, PS, arms), face(x, y, PS, m))
-    tip = None
-    if t < t_fig1:
-        part, tip = partial(fig, clamp01((t - t_fig0) / (t_fig1 - t_fig0)))
-        c.drawPath(part, marker(BLACK, 9))
-    else:
-        c.drawPath(fig, marker(BLACK, 9))
-    if t >= t_drop:
-        f = clamp01((t - t_drop) / 0.18)
-        for i, (px, py) in enumerate(_attach(x, y, PS, arms)):
-            ax = AX[i] + (jo if i == 4 else 0)
-            hl = b.t_of(j_lab + i, 0) <= t < b.t_of(j_lab + i, 4) or (i == 4 and b.t_of(j_jerk, 0) <= t < b.t_of(j_jerk, 4))
-            c.drawPath(P((ax, AY), (ax + (px - ax) * f, AY + (py - AY) * f)), marker(RED, 13 if hl else 7))
-            K.dot(c, ax, AY, 16, BLACK)
-    return tip
-
-
-b.custom(j_bar, 1, 2, puppet_fn, sfx="wood_high")
-
-b.shot("五样都由不得你", "书中观点 · 五根线", view=(2650, 3250, 0.85), shake=[0], flashes=[0])
-b.hit(J(), 0, "kick", 1.0, "五根线同时绷上")
-T("管不了！", 3110, 3380, 60, RED, k0=1, sfx="rim")
-H(2, "tom", 0.7)
-H(3, "tom", 0.5)
-
-
 def flicker_fn(x, y, ons):
     def fn(c, k, t):
         if any(a <= t < a2 for a, a2 in ons):
@@ -301,155 +161,6 @@ def wave_fn(x, y, t0, t_big):
     return fn
 
 
-for i, (cap, nm) in enumerate(zip(("才华时灵时不灵", "运气说变就变", "老板看不看重你", "公司赚不赚钱", "大环境好不好"), NAMES)):
-    x = AX[i]
-    b.shot(cap, f"书中观点 · {nm}", view=(2650, 3235 + (i % 2) * 30, 0.86 + 0.01 * i))
-    T(nm, x, 2930, 52, RED, k0=0, sfx="pop")
-    if i == 0:
-        L(bulb(x, 2770), 1, 1.5, BLACK, 8, sfx="wood_high")
-        b.custom(J(), 2, 2.2, flicker_fn(x, 2770, [(b.t_of(J(), 2), b.t_of(J(), 2.5)), (b.t_of(J(), 3), b.t_of(J(), 3.4))]),
-                 sfx="pop")
-        H(3, "pop", 0.6)
-    elif i == 1:
-        jj = J()
-        b.custom(jj, 1, 1.2, dice_fn(x, 2790, b.t_of(jj, 1), b.t_of(jj, 3)), sfx="wood_high")
-        H(2, "shaker")
-        H(3, "pop")
-    elif i == 2:
-        L(stick(x, 2860, 0.3, "down", tie=True), 1, 1.4, BLACK, 7, sfx="wood_high")
-        L(check(x + 85, 2760, 30), 2, 2.2, GREEN, 8, sfx="pop")
-        L(cross(x + 85, 2760, 34), 3, 3.25, RED, 9, sfx="rim")
-    elif i == 3:
-        L(chart(x, 2790), 1, 1.4, BLACK, 7, sfx="wood_high")
-        L(arrow((x - 55, 2750), (x + 65, 2825), 0.05, 30), 2, 2.4, RED, 8, sfx="rim")
-        T("亏", x + 70, 2740, 50, RED, k0=3, sfx="pop")
-    else:
-        jj = J()
-        b.custom(jj, 1, 1.2, wave_fn(x, 2790, b.t_of(jj, 1), b.t_of(jj, 2)), sfx="wood_high")
-        H(2, "shaker")
-        H(3, "tom", 0.6)
-
-b.shot("哪根一动你就晃", "书中观点 · 晃", view=(2650, 3250, 0.85), shake=[1])
-H(0, "wood_low", 0.6)
-H(1, "kick", 0.9)
-T("晃", 2300, 3480, 80, RED, k0=2, sfx="tom")
-H(3, "tom", 0.5)
-
-b.shot("再拼也难睡踏实", "书中观点 · 使劲", view=(2650, 3250, 0.85))
-for kb in (0, 1, 2):
-    H(kb, "pop" if kb != 1 else "wood_high", 0.7)
-T("使劲干", 3110, 3540, 54, k0=1)
-T("还是被拴着", 3110, 3680, 50, BLUE, k0=3, sfx="rim")
-
-b.shot("所以怕很正常", "书中观点 · 一张图", view=(1880, 3350, 0.38))
-L(arrow((1250, 3300), (1950, 3300), -0.12, 50), 0, 0.6, GREEN, 10, sfx="wood_high")
-T("五根线管不了 → 怕，很正常", 1880, 4150, 120, RED, k0=1, k1=2.6, sfx="pop")
-L(underline(1120, 2640, 4240), 3, 3.4, RED, 8, sfx="ding")
-
-# ---------------------------------------------------------------- 身边的例子（镜头 18–28）
-
-CARDS = [(950, 5300), (2650, 5300), (950, 6200), (2650, 6200)]
-b.shot("身边常有这种事", "身边的例子", view=(1800, 5750, 0.355))
-T("身边的例子", 1800, 4720, 130, k0=0, sfx="pop")
-for n, (x, y) in enumerate(CARDS):
-    L(rect(x, y, 1200, 820, 40), 1.5 + n * 0.5, 1.95 + n * 0.5, GREEN, 8, sfx="wood_high" if n in (1, 3) else None)
-
-b.shot("项目做得挺漂亮", "例子 · 项目被砍", view=(950, 5300, 0.85))
-L(stick(600, 5650, 0.75, "up"), 0, 0.6, sfx="wood_high")
-L(face(600, 5650, 0.75, "smile"), 0.6, 0.7)
-L(doc(1100, 5280, 230, 280), 1, 1.5, BLACK, 9, sfx="wood_high")
-L(check(1100, 5280, 70), 2, 2.3, GREEN, 12, sfx="ding")
-T("项目上线", 1100, 5040, 60, k0=3, sfx="pop")
-
-b.shot("整条业务被砍了", "例子 · 项目被砍", view=(950, 5300, 0.85), shake=[1])
-L(cross(1100, 5280, 160), 0, 0.4, RED, 14, sfx="rim")
-T("业务砍掉", 1100, 5530, 60, RED, k0=1, sfx="kick")
-mood(600, 5650, 0.75, "sad", 2, BLUE, sfx="wood_high")
-T("……", 600, 5300, 60, k0=3, sfx="pop")
-
-b.shot("来了个新领导", "例子 · 换领导", view=(2650, 5300, 0.85))
-L(stick(2650, 5650, 0.75, "point", tie=True), 0, 0.6, sfx="wood_high")
-L(face(2650, 5650, 0.75, "flat"), 0.6, 0.7)
-T("新领导", 2650, 5320, 56, k0=1, sfx="pop")
-L(stick(2300, 5650, 0.6), 2, 2.5, BLUE, 9, sfx="pop")
-T("我", 2300, 5370, 54, BLUE, k0=3, sfx="pop")
-
-b.shot("带来自己的人", "例子 · 换领导", view=(2650, 5300, 0.85))
-for n, x in enumerate((2870, 3010, 3150)):
-    L(stick(x, 5650, 0.5), n * 0.25, n * 0.25 + 0.4, BLACK, 8, sfx="wood_high" if n == 0 else None)
-T("老部下", 3010, 5410, 52, k0=1, sfx="pop")
-L(arrow((2240, 5560), (2100, 5560), 0.1, 30), 2, 2.4, RED, 9, sfx="rim")
-T("靠边站", 2300, 5000, 56, RED, k0=3, sfx="pop")
-
-b.shot("街角开了家面馆", "例子 · 小店", view=(950, 6200, 0.85))
-L(shop(780, 6250), 0, 0.8, BLACK, 9, sfx="wood_high")
-T("面馆", 780, 5990, 60, k0=1, sfx="pop")
-for n, x in enumerate((1170, 1320)):
-    L(stick(x, 6520, 0.5), 2 + n * 0.3, 2.4 + n * 0.3, BLACK, 8, sfx="pop" if n == 0 else None)
-T("排队", 1245, 6180, 52, k0=3, sfx="pop")
-
-b.shot("门口修路半年", "例子 · 小店", view=(950, 6200, 0.85))
-b.erase(J(), 0, 0.5, 1245, 6330, 330, 440)
-H(0, "shaker")
-L(barrier(1240, 6380, 280), 1, 1.6, RED, 9, sfx="wood_high")
-T("修路 6个月", 1240, 6170, 52, RED, k0=2, sfx="pop")
-T("没客人", 780, 6520, 52, BLUE, k0=3, sfx="rim")
-
-b.shot("老爸干了二十年", "例子 · 家里", view=(2650, 6200, 0.85))
-L(factory(2900, 6540), 0, 0.8, BLACK, 9, sfx="wood_high")
-L(stick(2350, 6540, 0.7), 1, 1.5, BLUE, 9, sfx="pop")
-L(face(2350, 6540, 0.7, "smile"), 1.5, 1.6, BLUE, 8)
-T("厂里 20年", 2400, 5980, 58, k0=2, sfx="pop")
-L(underline(2240, 2560, 6030), 3, 3.3, BLACK, 6, sfx="wood_high")
-
-b.shot("厂子说停就停", "例子 · 家里", view=(2650, 6200, 0.85), shake=[0])
-L(cross(2900, 6360, 150), 0, 0.4, RED, 14, sfx="kick")
-T("停产", 3170, 6080, 60, RED, k0=1, sfx="rim")
-mood(2350, 6540, 0.7, "sad", 2, BLUE, sfx="wood_high")
-T("……", 2350, 6200, 60, BLUE, k0=3, sfx="pop")
-
-b.shot("每件都连着一根线", "身边的例子", view=(1800, 5750, 0.355))
-for n, ((x, y), w) in enumerate(zip(CARDS, ("利润", "雇主", "运气", "经济"))):
-    T(w, x + 430, y - 320, 90, RED, k0=n, sfx="pop")
-
-b.shot("人没做错什么", "身边的例子", view=(1800, 5750, 0.355), shake=[0])
-T("人没做错什么", 1800, 6820, 150, RED, k0=0, k1=0.8, sfx="kick")
-H(2, "ding")
-
-# ---------------------------------------------------------------- 具体做法（镜头 29–41）
-
-SOL = [(950, 7850), (2650, 7850), (950, 8750), (2650, 8750)]
-b.shot("心里慌，这样做", "具体做法", view=(1800, 8300, 0.355))
-T("心里慌，这样做", 1800, 7250, 130, k0=0, k1=1.4, sfx="pop")
-for n, (x, y) in enumerate(SOL):
-    L(rect(x, y, 1200, 820, 40), 2 + n * 0.4, 2.35 + n * 0.4, GREEN, 8, sfx="wood_high" if n == 0 else None)
-
-b.shot("拿张纸分两栏", "第一步 · 分两栏", view=(950, 7850, 0.85))
-T("① 分两栏", 950, 7560, 76, BLUE, k0=0, sfx="pop")
-L(P((950, 7650), (950, 8200)), 1, 1.4, BLACK, 8, sfx="wood_high")
-T("能管的", 680, 7700, 60, GREEN, k0=2, sfx="pop")
-T("管不了", 1220, 7700, 60, RED, k0=3, sfx="pop")
-
-b.shot("能管的写左边", "第一步 · 分两栏", view=(950, 7880, 0.85))
-for n, w in enumerate(("手上的活", "学新本事", "每天睡够")):
-    T(w, 680, 7820 + n * 110, 52, k0=n, sfx="pop")
-L(check(870, 8040, 32), 3, 3.25, GREEN, 9, sfx="ding")
-
-b.shot("管不了的先放下", "第一步 · 分两栏", view=(950, 7880, 0.85))
-for n, w in enumerate(("裁员名单", "大行情")):
-    T(w, 1220, 7820 + n * 110, 52, k0=n * 0.5, k1=n * 0.5 + 0.4, sfx="pop" if n == 0 else None)
-L(join(P((1100, 7820), (1340, 7820)), P((1130, 7930), (1310, 7930))), 1, 1.4, RED, 8, sfx="rim")
-T("先放一放", 1220, 8060, 52, BLUE, k0=2, sfx="pop")
-H(3, "wood_low", 0.6)
-
-b.shot("给自己留缓冲", "第二步 · 留缓冲", view=(2650, 7850, 0.85))
-T("② 留缓冲", 2650, 7560, 76, BLUE, k0=0, sfx="pop")
-L(jar(2420, 7930), 1, 1.6, BLACK, 9, sfx="wood_high")
-T("存款", 2420, 8130, 50, k0=2, sfx="pop")
-L(circle(2420, 7670, 30), 3, 3.2, GREEN, 8, sfx="pop")
-T("¥", 2420, 7672, 40, GREEN, k0=3.2, k1=3.3)
-
-
 def fill_fn(x, y, w, h, beats):
     """罐子按拍一格格装满（每拍一格，绿色）。"""
 
@@ -465,69 +176,313 @@ def fill_fn(x, y, w, h, beats):
     return fn
 
 
-b.shot("先存半年开销", "第二步 · 留缓冲", view=(2650, 7850, 0.85))
-jj = J()
-b.custom(jj, 0, 0.3, fill_fn(2420, 7930, 220, 300, [b.t_of(jj, 0), b.t_of(jj, 1), b.t_of(jj, 2)]), sfx="pop")
-H(1, "pop")
-H(2, "pop")
-T("6个月开销", 2880, 7780, 56, RED, k0=1)
-L(check(2880, 7880, 36), 3, 3.25, GREEN, 9, sfx="ding")
+# ---------------------------------------------------------------- 开局：绩效挺好，还是怕（场景 1–3）
+# 每个场景 2 小节（8 拍，≈4.3 秒）：第 0–6 拍画完，最后 2 拍停住让人看清。
 
-b.shot("发了工资先存", "第二步 · 留缓冲", view=(2650, 7900, 0.85))
-T("发工资", 2880, 7990, 52, k0=0, sfx="pop")
-L(arrow((2880, 8030), (2880, 8110), 0.0, 26), 1, 1.3, GREEN, 8, sfx="wood_high")
-T("先存一笔", 2880, 8160, 52, GREEN, k0=2, sfx="pop")
-L(underline(2760, 3000, 8205), 3, 3.3, RED, 6, sfx="ding")
+def scene(text, tag, view, **kw):
+    return b.shot(text, tag, view=view, bars=2, **kw)
 
-b.shot("攒带得走的本事", "第三步 · 本事人脉", view=(950, 8750, 0.85))
-T("③ 本事和人脉", 950, 8460, 76, BLUE, k0=0, sfx="pop")
-L(stick(620, 9100, 0.65, "hold"), 1, 1.5, BLUE, 9, sfx="wood_high")
-L(doc(860, 8790, 150, 190), 2, 2.4, BLACK, 8, sfx="pop")
-T("作品", 860, 8640, 48, k0=2.4)
-T("走到哪都能用", 1150, 9000, 50, RED, k0=3, sfx="pop")
 
-b.shot("简历每季改一次", "第三步 · 本事人脉", view=(950, 8750, 0.85))
-L(doc(1220, 8720, 170, 210), 0, 0.5, BLACK, 8, sfx="wood_high")
-T("简历", 1220, 8560, 50, k0=0.5)
-T("每3个月改一次", 1150, 8890, 50, k0=1, k1=1.9)
-L(check(1400, 8720, 36), 2, 2.25, GREEN, 9, sfx="ding")
+scene("刚评优秀，就传要裁", "灵魂拷问", (1100, 750, 0.62))
+L(P((330, 1050), (1180, 1050)), 0, 0.3, BLACK, 6, sfx="wood_high")
+L(stick(560, 1050, 0.85, "up"), 0.3, 0.9)
+L(face(560, 1050, 0.85, "smile"), 0.9, 1.0)
+L(doc(920, 720, 300, 360, 0), 1, 1.5, BLACK, 9, sfx="wood_high")
+T("绩效", 920, 480, 70, k0=1.5, k1=1.9)
+T("优秀", 920, 730, 110, RED, k0=2, k1=2.5, sfx="pop")
+L(phone(1560, 720, 560, 640), 3, 3.6, BLACK, 9, sfx="wood_high")
+T("小道消息", 1560, 350, 66, k0=3.6, k1=4.0)
+L(rect(1560, 620, 500, 130, 40), 4, 4.3, BLUE, 8, sfx="pop")
+T("下个月要优化", 1560, 620, 64, BLUE, k0=4.3, k1=4.9)
+L(rect(1620, 820, 380, 130, 40), 5, 5.3, BLACK, 8, sfx="pop")
+T("真的假的", 1620, 820, 64, k0=5.3, k1=5.7)
+T("！", 1360, 820, 110, RED, k0=5.7, k1=6)
+
+HEAD = (2680, 1960)
+BED = (2950, 2050)
+scene("半夜两点，怕上名单", "灵魂拷问", (2500, 2100, 0.62))
+T("优化名单", 2000, 1500, 72, RED, k0=0, k1=0.7, sfx="pop")
+L(podium_list(2000, 1650, 4, 420, 90), 1, 1.6, BLACK, 8, sfx="wood_high")
+for n, w in enumerate(("老周", "小林", "阿杰", "我")):
+    T(w, 2000, 1650 + n * 106, 60, BLUE if n == 3 else BLACK, k0=1.6 + n * 0.2, k1=1.8 + n * 0.2)
+T("？", 2340, 1968, 110, RED, k0=3, k1=3.3, sfx="rim")
+L(join(rect(*BED, 760, 110, 16), P((BED[0] - 380, BED[1] + 55), (BED[0] - 380, BED[1] + 140)),
+       P((BED[0] + 380, BED[1] + 55), (BED[0] + 380, BED[1] + 140))), 4, 4.5, BLACK, 9, sfx="wood_high")
+L(join(circle(*HEAD, 55), P((HEAD[0] + 60, HEAD[1] + 35), (HEAD[0] + 520, HEAD[1]), (HEAD[0] + 620, HEAD[1] + 35))),
+  4.5, 4.9, BLACK, 9)
+L(clock(3150, 1600, 100), 5, 5.4, BLACK, 9, sfx="wood_low")
+L(hands_at(3150, 1600, 100, 2, 0), 5.4, 5.6, RED, 10)
+T("02:00", 3150, 1765, 64, RED, k0=5.6, k1=6)
+b.custom(J(), 6, 6.2, spot_fn(HEAD[0] - 18, HEAD[1] - 8, 7, BLACK), sfx="pop")
+b.custom(J(), 6, 6.2, spot_fn(HEAD[0] + 18, HEAD[1] - 8, 7, BLACK))
+
+scene("活干得好，为啥还怕", "灵魂拷问", (2500, 2100, 0.62), flashes=[5])
+L(join(circle(HEAD[0] + 30, HEAD[1] - 85, 18), circle(HEAD[0] + 60, HEAD[1] - 150, 26)), 0, 0.3, BLACK, 7, sfx="pop")
+L(rect(2700, 1640, 620, 230, 60), 0.3, 0.8, BLACK, 8)
+T("房贷 ¥6800/月", 2700, 1590, 60, k0=1, k1=1.9, sfx="pop")
+T("存款撑几个月？", 2700, 1700, 60, RED, k0=2, k1=2.9, sfx="pop")
+L(scribble(HEAD[0], HEAD[1], 150, 90, 6), 3, 3.4, RED, 6, sfx="shaker")
+T("活干得好好的", 2050, 2190, 84, k0=4, k1=4.8, sfx="pop")
+T("为什么还怕？", 2050, 2330, 96, RED, k0=5, k1=5.8, sfx="kick")
+
+# ---------------------------------------------------------------- 书中观点（场景 4–9）
+
+AY = 3480
+AX = [2130, 2390, 2650, 2910, 3170]
+PX, PY, PS = 2650, AY + 730, 0.8
+NAMES = ["才华", "运气", "雇主", "利润", "经济"]
+PV = (2650, AY + 260, 0.85)           # 五根线大图的固定视角
+
+j_bar = scene("有本书讲过这种怕", "身份的焦虑", (2310, AY + 370, 0.55))
+j_drop, j_l01, j_l23, j_jerk, j_push = j_bar + 1, j_bar + 2, j_bar + 3, j_bar + 4, j_bar + 5
+L(book(1550, AY + 310, 380, 260), 0, 0.8, sfx="wood_low")
+T("身份的焦虑", 1550, AY + 80, 72, GREEN, k0=1, sfx="pop")
+T("阿兰 · 德波顿", 1550, AY + 550, 56, k0=2, k1=2.6, sfx="pop")
+T("第五章 制约因素", 1550, AY + 650, 56, RED, k0=2.6, k1=3.0)
+L(P((2040, AY), (3260, AY)), 3, 3.5, BLACK, 14, sfx="wood_high")
+T("你的地位", 2290, PY - 60, 58, k0=5, k1=5.7, sfx="pop")
+for n, x in enumerate(AX):
+    b.custom(J(), 5.7 + n * 0.1, 5.9 + n * 0.1, spot_fn(x, AY, 16, BLACK))
+b.hit(J(), 6, "pop", 0.6)
+# 小人画在第 4–5 拍（puppet_fn 里），起笔配音效
+b.hit(J(), 4, "wood_high", 0.8)
+
+# 标签高亮窗口：(镜头, 起拍, 止拍)
+HL = [(j_l01, 0, 4), (j_l01, 4, 8), (j_l23, 0, 4), (j_l23, 4, 8), (j_jerk, 0, 8)]
+
+
+def _attach(x, y, s, arms):
+    hy = y - 290 * s
+    if arms == "up":
+        lh, rh = (x - 80 * s, hy - 40 * s), (x + 80 * s, hy - 40 * s)
+        le, re = (x - 40 * s, hy + 20 * s), (x + 40 * s, hy + 20 * s)
+    else:
+        lh, rh = (x - 70 * s, hy + 170 * s), (x + 70 * s, hy + 170 * s)
+        le, re = (x - 35 * s, hy + 125 * s), (x + 35 * s, hy + 125 * s)
+    return [lh, le, (x, hy - 45 * s), re, rh]
+
+
+def _bump(t, tb, dur=0.4):
+    f = (t - tb) / dur
+    return math.sin(math.pi * f) if 0 <= f <= 1 else 0.0
+
+
+def puppet_fn(c, k, t):
+    """被五根线吊着的小人：场景 4 第 4–5 拍画出；场景 5 drop 时五根线同时绷上；标签场景里当前那根加粗；
+    场景 8 第 3 拍经济那根一抖，小人跟着晃；场景 9 举手使劲往上蹦，还是被线拴着。"""
+    t_fig0, t_fig1 = b.t_of(j_bar, 4), b.t_of(j_bar, 5)
+    t_drop, t_jerk = b.t_of(j_drop, 0), b.t_of(j_jerk, 3)
+    t_up = b.t_of(j_push, 0)
+    dx = dy = 0.0
+    if t >= t_drop:
+        dx += 6 * math.sin((t - t_drop) * 2.4)
+    jo = 0.0
+    if t >= t_jerk:
+        d = t - t_jerk
+        dx += 70 * math.sin(d * 7) * math.exp(-d * 0.8)
+        jo = 60 * math.sin(d * 16) * math.exp(-d * 3)
+    for kb in (0, 1, 2):
+        dy -= 70 * _bump(t, b.t_of(j_push, kb))
+    arms = "up" if t >= t_up else "down"
+    m = "sad" if t >= t_jerk else "flat"
+    x, y = PX + dx, PY + dy
+    fig = join(stick(x, y, PS, arms), face(x, y, PS, m))
+    tip = None
+    if t < t_fig0:
+        return None
+    if t < t_fig1:
+        part, tip = partial(fig, clamp01((t - t_fig0) / (t_fig1 - t_fig0)))
+        c.drawPath(part, marker(BLACK, 9))
+    else:
+        c.drawPath(fig, marker(BLACK, 9))
+    if t >= t_drop:
+        f = clamp01((t - t_drop) / 0.18)
+        for i, (px, py) in enumerate(_attach(x, y, PS, arms)):
+            ax = AX[i] + (jo if i == 4 else 0)
+            jj, ka, kb = HL[i]
+            hl = b.t_of(jj, ka) <= t < b.t_of(jj, kb)
+            c.drawPath(P((ax, AY), (ax + (px - ax) * f, AY + (py - AY) * f)), marker(RED, 13 if hl else 7))
+            K.dot(c, ax, AY, 16, BLACK)
+    return tip
+
+
+b.custom(j_bar, 4, 5, puppet_fn)
+
+scene("五样都由不得你", "书中观点 · 五根线", PV, shake=[0], flashes=[0])
+b.hit(J(), 0, "kick", 1.0, "五根线同时绷上")
+T("管不了！", 3110, PY - 340, 64, RED, k0=1, sfx="rim")
+H(2, "tom", 0.7)
+H(3, "tom", 0.5)
+
+scene("才华运气，都说不准", "书中观点 · 才华 运气", PV)
+x0, x1 = AX[0], AX[1]
+T("才华", x0, AY - 60, 54, RED, k0=0, sfx="pop")
+L(bulb(x0, AY - 220), 1, 1.5, BLACK, 8, sfx="wood_high")
+b.custom(J(), 2, 2.2, flicker_fn(x0, AY - 220, [(b.t_of(J(), 2), b.t_of(J(), 2.5)), (b.t_of(J(), 3), b.t_of(J(), 3.4))]),
+         sfx="pop")
 H(3, "pop", 0.6)
+T("运气", x1, AY - 60, 54, RED, k0=4, sfx="pop")
+b.custom(J(), 5, 5.2, dice_fn(x1, AY - 200, b.t_of(J(), 5), b.t_of(J(), 6.5)), sfx="wood_high")
+H(6, "shaker")
 
-b.shot("老同事常联系", "第三步 · 本事人脉", view=(950, 8800, 0.85))
-b.erase(J(), 0, 0.5, 1200, 8800, 560, 460)
-H(0, "shaker")
-L(stick(1250, 9100, 0.6), 1, 1.4, BLACK, 9, sfx="wood_high")
-L(face(1250, 9100, 0.6, "smile"), 1.4, 1.5)
-L(rect(1150, 8740, 380, 110, 40), 2, 2.3, BLACK, 8, sfx="pop")
-T("最近咋样？", 1150, 8740, 50, k0=2.3)
-L(face(620, 9100, 0.65, "smile"), 3, 3.2, BLUE, 8, sfx="pop")
+scene("老板公司，你管不了", "书中观点 · 雇主 利润", PV)
+x2, x3 = AX[2], AX[3]
+T("雇主", x2, AY - 60, 54, RED, k0=0, sfx="pop")
+L(stick(x2, AY - 130, 0.3, "down", tie=True), 1, 1.4, BLACK, 7, sfx="wood_high")
+L(check(x2 + 85, AY - 230, 30), 2, 2.2, GREEN, 8, sfx="pop")
+L(cross(x2 + 85, AY - 230, 34), 3, 3.25, RED, 9, sfx="rim")
+T("利润", x3, AY - 60, 54, RED, k0=4, sfx="pop")
+L(chart(x3, AY - 200), 4.5, 4.9, BLACK, 7)
+L(arrow((x3 - 55, AY - 240), (x3 + 65, AY - 165), 0.05, 30), 5, 5.4, RED, 8, sfx="rim")
+T("亏", x3 + 70, AY - 250, 50, RED, k0=5.4, k1=5.9)
 
-STOOL_Y = 8680
-b.shot("别全押在工作上", "第四步 · 多几条腿", view=(2650, 8750, 0.85))
-T("④ 多几条腿", 2650, 8460, 76, BLUE, k0=0, sfx="pop")
-L(P((2280, STOOL_Y), (3020, STOOL_Y)), 1, 1.3, BLACK, 12, sfx="wood_high")
-L(P((2650, STOOL_Y), (2650, 8980)), 1.3, 1.5, BLACK, 12)
-T("工作", 2650, 9040, 50, k0=1.6)
-L(stick(2650, STOOL_Y - 10, 0.45), 2, 2.4, BLUE, 8, sfx="pop")
-T("一根腿，晃", 2950, 8580, 50, RED, k0=3, sfx="rim")
+scene("大环境一动你就晃", "书中观点 · 经济", PV, shake=[3])
+x4 = AX[4]
+T("经济", x4, AY - 60, 54, RED, k0=0, sfx="pop")
+b.custom(J(), 1, 1.2, wave_fn(x4, AY - 200, b.t_of(J(), 1), b.t_of(J(), 2)), sfx="wood_high")
+H(2, "shaker")
+H(3, "kick", 0.9)
+T("晃", 2300, AY + 490, 90, RED, k0=4, sfx="tom")
+H(5, "tom", 0.5)
 
-b.shot("多几条腿站得稳", "第四步 · 多几条腿", view=(2650, 8750, 0.85))
+scene("再拼也拴着，怕很正常", "书中观点 · 一张图", (2650, AY + 426, 0.7))
+for kb in (0, 1, 2):
+    H(kb, "pop" if kb != 1 else "wood_high", 0.7)
+T("使劲干", 3110, AY + 550, 58, k0=1.2, k1=1.8)
+T("还是被拴着", 3110, AY + 690, 54, BLUE, k0=3, sfx="rim")
+T("怕，很正常", 2650, AY + 1000, 110, RED, k0=4, k1=4.9, sfx="kick")
+L(underline(2380, 2920, AY + 1075), 5, 5.4, RED, 8, sfx="ding")
+
+# ---------------------------------------------------------------- 身边的例子（场景 10–15）
+
+CARDS = [(950, 5300 + D), (2650, 5300 + D), (950, 6200 + D), (2650, 6200 + D)]
+OV = (1800, 5750 + D, 0.355)
+scene("身边常有这种事", "身边的例子", OV)
+T("身边的例子", 1800, 4720 + D, 130, k0=0, sfx="pop")
+for n, (x, y) in enumerate(CARDS):
+    L(rect(x, y, 1200, 820, 40), 2 + n, 2.5 + n, GREEN, 8, sfx="wood_high" if n in (0, 2) else None)
+
+scene("项目漂亮，业务被砍", "例子 · 项目被砍", (950, 5300 + D, 0.85), shake=[3])
+L(stick(600, 5650 + D, 0.75, "up"), 0, 0.6, sfx="wood_high")
+L(face(600, 5650 + D, 0.75, "smile"), 0.6, 0.7)
+L(doc(1100, 5280 + D, 230, 280), 1, 1.5, BLACK, 9, sfx="wood_high")
+L(check(1100, 5280 + D, 70), 2, 2.3, GREEN, 12, sfx="ding")
+T("项目上线", 1100, 5040 + D, 60, k0=2.4, k1=3.0)
+L(cross(1100, 5280 + D, 160), 3, 3.4, RED, 14, sfx="rim")
+T("业务砍掉", 1100, 5530 + D, 60, RED, k0=4, k1=4.7, sfx="kick")
+mood(600, 5650 + D, 0.75, "sad", 5, BLUE, sfx="wood_high")
+
+scene("新领导带来自己人", "例子 · 换领导", (2650, 5300 + D, 0.85))
+L(stick(2650, 5650 + D, 0.75, "point", tie=True), 0, 0.6, sfx="wood_high")
+L(face(2650, 5650 + D, 0.75, "flat"), 0.6, 0.7)
+T("新领导", 2650, 5320 + D, 56, k0=1, sfx="pop")
+L(stick(2300, 5650 + D, 0.6), 2, 2.5, BLUE, 9, sfx="pop")
+T("我", 2300, 5370 + D, 54, BLUE, k0=2.5, k1=2.8)
+for n, x in enumerate((2870, 3010, 3150)):
+    L(stick(x, 5650 + D, 0.5), 3 + n * 0.25, 3.4 + n * 0.25, BLACK, 8, sfx="wood_high" if n == 0 else None)
+T("老部下", 3010, 5410 + D, 52, k0=4, k1=4.6, sfx="pop")
+L(arrow((2240, 5560 + D), (2100, 5560 + D), 0.1, 30), 5, 5.4, RED, 9, sfx="rim")
+T("靠边站", 2300, 5000 + D, 56, RED, k0=5.4, k1=5.95)
+
+scene("面馆门口修路半年", "例子 · 小店", (950, 6200 + D, 0.85))
+L(shop(780, 6250 + D), 0, 0.8, BLACK, 9, sfx="wood_high")
+T("面馆", 780, 5990 + D, 60, k0=1, sfx="pop")
+for n, x in enumerate((1170, 1320)):
+    L(stick(x, 6520 + D, 0.5), 2 + n * 0.3, 2.4 + n * 0.3, BLACK, 8, sfx="pop" if n == 0 else None)
+b.erase(J(), 3, 3.5, 1245, 6330 + D, 330, 440)
+H(3, "shaker")
+L(barrier(1240, 6380 + D, 280), 4, 4.6, RED, 9, sfx="wood_high")
+T("修路 6个月", 1240, 6170 + D, 52, RED, k0=4.6, k1=5.3)
+T("没客人", 780, 6520 + D, 52, BLUE, k0=5.4, k1=5.95)
+H(5, "rim", 0.6)
+
+scene("老爸的厂说停就停", "例子 · 家里", (2650, 6200 + D, 0.85), shake=[3])
+L(factory(2900, 6540 + D), 0, 0.8, BLACK, 9, sfx="wood_high")
+L(stick(2350, 6540 + D, 0.7), 1, 1.5, BLUE, 9, sfx="pop")
+L(face(2350, 6540 + D, 0.7, "smile"), 1.5, 1.6, BLUE, 8)
+T("厂里 20年", 2400, 5980 + D, 58, k0=2, k1=2.8, sfx="pop")
+L(cross(2900, 6360 + D, 150), 3, 3.4, RED, 14, sfx="kick")
+T("停产", 3170, 6080 + D, 60, RED, k0=4, sfx="rim")
+mood(2350, 6540 + D, 0.7, "sad", 5, BLUE, sfx="wood_high")
+
+scene("每件都连着一根线", "身边的例子", OV, shake=[4])
+for n, ((x, y), w) in enumerate(zip(CARDS, ("利润", "雇主", "运气", "经济"))):
+    T(w, x + 430, y - 320, 90, RED, k0=n, sfx="pop")
+T("人没做错什么", 1800, 6820 + D, 150, RED, k0=4, k1=5, sfx="kick")
+H(5, "ding")
+
+# ---------------------------------------------------------------- 具体做法（场景 16–19）
+
+SOL = [(950, 7850 + D), (2650, 7850 + D), (950, 8750 + D), (2650, 8750 + D)]
+
+scene("能管的管，管不了先放", "第一步 · 分两栏", (950, 7880 + D, 0.85))
+L(rect(*SOL[0], 1200, 820, 40), 0, 0.6, GREEN, 8, sfx="wood_high")
+T("① 分两栏", 950, 7560 + D, 76, BLUE, k0=1, sfx="pop")
+L(P((950, 7650 + D), (950, 8200 + D)), 1.8, 2.0, BLACK, 8)
+T("能管的", 680, 7700 + D, 60, GREEN, k0=2, k1=2.5, sfx="pop")
+T("管不了", 1220, 7700 + D, 60, RED, k0=2.5, k1=3.0)
+for n, w in enumerate(("手上的活", "学新本事")):
+    T(w, 680, 7830 + n * 110 + D, 52, k0=3 + n * 0.6, k1=3.55 + n * 0.6, sfx="pop" if n == 0 else None)
+for n, w in enumerate(("裁员名单", "大行情")):
+    T(w, 1220, 7830 + n * 110 + D, 52, k0=4.2 + n * 0.45, k1=4.6 + n * 0.45)
+H(4, "wood_low", 0.6)
+L(join(P((1100, 7830 + D), (1340, 7830 + D)), P((1130, 7940 + D), (1310, 7940 + D))), 5, 5.3, RED, 8, sfx="rim")
+T("先放一放", 1220, 8070 + D, 52, BLUE, k0=5.3, k1=5.95)
+
+scene("先存半年开销", "第二步 · 留缓冲", (2650, 7880 + D, 0.85))
+L(rect(*SOL[1], 1200, 820, 40), 0, 0.6, GREEN, 8, sfx="wood_high")
+T("② 留缓冲", 2650, 7560 + D, 76, BLUE, k0=1, sfx="pop")
+L(jar(2420, 7930 + D), 2, 2.6, BLACK, 9, sfx="wood_high")
+T("存款", 2420, 8130 + D, 50, k0=2.6, k1=2.95)
+jj = J()
+b.custom(jj, 3, 3.3, fill_fn(2420, 7930 + D, 220, 300, [b.t_of(jj, 3), b.t_of(jj, 4), b.t_of(jj, 5)]), sfx="pop")
+T("6个月开销", 2880, 7780 + D, 56, RED, k0=3.2, k1=4.0)
+H(4, "pop")
+T("发了工资先存", 2880, 7930 + D, 52, k0=4.2, k1=5.1)
+H(5, "pop")
+L(check(2880, 8060 + D, 40), 5.4, 5.7, GREEN, 9)
+H(6, "ding", 0.6)
+
+scene("攒本事，也攒人脉", "第三步 · 本事人脉", (950, 8780 + D, 0.85))
+L(rect(*SOL[2], 1200, 820, 40), 0, 0.6, GREEN, 8, sfx="wood_high")
+T("③ 本事和人脉", 950, 8460 + D, 76, BLUE, k0=1, sfx="pop")
+L(stick(560, 9100 + D, 0.65, "hold"), 2, 2.5, BLUE, 9, sfx="wood_high")
+L(face(560, 9100 + D, 0.65, "smile"), 2.5, 2.65, BLUE, 8)
+L(doc(800, 8790 + D, 150, 190), 3, 3.4, BLACK, 8, sfx="pop")
+T("作品", 800, 8640 + D, 48, k0=3.4, k1=3.8)
+L(stick(1300, 9100 + D, 0.6), 4, 4.4, BLACK, 9, sfx="wood_high")
+L(face(1300, 9100 + D, 0.6, "smile"), 4.4, 4.5)
+L(rect(1180, 8720 + D, 380, 110, 40), 5, 5.3, BLACK, 8, sfx="pop")
+T("最近咋样？", 1180, 8720 + D, 50, k0=5.3, k1=5.95)
+
+STOOL_Y = 8680 + D
+scene("多几条腿，站得稳", "第四步 · 多几条腿", (2650, 8780 + D, 0.85))
+L(rect(*SOL[3], 1200, 820, 40), 0, 0.6, GREEN, 8, sfx="wood_high")
+T("④ 多几条腿", 2650, 8460 + D, 76, BLUE, k0=1, sfx="pop")
+L(P((2280, STOOL_Y), (3020, STOOL_Y)), 2, 2.3, BLACK, 12, sfx="wood_high")
+L(P((2650, STOOL_Y), (2650, STOOL_Y + 300)), 2.3, 2.5, BLACK, 12)
+T("工作", 2650, STOOL_Y + 360, 50, k0=2.5, k1=2.8)
+L(stick(2650, STOOL_Y - 10, 0.45), 2.8, 3.0, BLUE, 8)
 for n, (x, w) in enumerate(((2330, "家人"), (2490, "朋友"), (2810, "爱好"), (2970, "存款"))):
-    L(P((x, STOOL_Y), (x, 8980)), n * 0.5, n * 0.5 + 0.2, GREEN, 12, sfx="wood_high" if n % 2 == 0 else None)
-    T(w, x, 9040 if n % 2 == 0 else 9100, 46, GREEN, k0=n * 0.5 + 0.2, k1=n * 0.5 + 0.45)
-L(check(3170, 8580, 40), 3, 3.25, GREEN, 10, sfx="ding")
+    L(P((x, STOOL_Y), (x, STOOL_Y + 300)), 3 + n * 0.5, 3.2 + n * 0.5, GREEN, 12,
+      sfx="wood_high" if n % 2 == 0 else None)
+    T(w, x, STOOL_Y + (360 if n % 2 == 0 else 420), 46, GREEN, k0=3.2 + n * 0.5, k1=3.45 + n * 0.5)
+L(check(3170, 8580 + D, 40), 5, 5.25, GREEN, 10, sfx="ding")
 
-b.shot("能管的先管好", "一句话", view=(1800, 5100, 0.235))
-H(0, "cymbal", 0.5)
-H(2, "ding")
+# ---------------------------------------------------------------- 收尾（场景 20–21）
 
-b.shot("评论区聊聊", "评论区见", view=(1800, 9780, 0.8))
-T("你给自己留了几条腿？", 1800, 9690, 76, RED, k0=0.5, k1=1.8)
-T("下一讲：别人一句话，为什么能堵你一整天？", 1800, 9850, 48, k0=2.0, k1=3.2)
+scene("能管的先管好", "一句话", (1800, 5900, 0.235))
 H(0, "cymbal", 0.5)
+H(2, "wood_high", 0.6)
+H(4, "ding")
+
+scene("评论区聊聊", "评论区见", (1800, 9780 + D, 0.8))
+H(0, "cymbal", 0.5)
+T("你给自己留了几条腿？", 1800, 9690 + D, 76, RED, k0=1, k1=2.6)
 H(1, "pop")
-H(2, "wood_high", 0.7)
-b.hit(J(), 4, "kick", 0.55, "原曲最后一击")
+T("下一讲：别人一句话，为什么能堵你一整天？", 1800, 9850 + D, 48, k0=3, k1=4.5)
+H(3, "wood_high", 0.7)
+b.hit(J(), 8, "kick", 0.55, "原曲最后一击")
 
 
 def build():
@@ -535,7 +490,7 @@ def build():
                  [f"{BOOK}第一部分“焦虑起因”第五章“制约因素”（转述）",
                   "原书：Alain de Botton, Status Anxiety, Hamish Hamilton / Pantheon, 2004",
                   "中译本：陈广兴、南治国译，上海译文出版社"],
-                 "干得好好的|为什么还【怕被裁】", 15,
+                 "干得好好的|为什么还【怕被裁】", 4,
                  ["书中观点均为转述：作者在第一部分第五章“制约因素”中指出，一个人的地位取决于几样自己控制不了的东西——"
                   "才华（时灵时不灵）、运气、雇主、雇主的利润和整体经济，所以再努力也难高枕无忧，为地位担心是可以理解的。"
                   "出处：Alain de Botton, Status Anxiety (Hamish Hamilton / Pantheon, 2004)，中译本《身份的焦虑》"
