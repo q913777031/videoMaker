@@ -1,4 +1,4 @@
-"""《系统之美》系列：复用阿德勒纸片引擎 + 《毛选》的彩色水墨主题，快节奏规则（每镜 ≤3 秒）。
+"""《系统之美》系列：白板手绘形式（whiteboard/engine.py），沿用阿德勒引擎时间轴与交付流程，快节奏规则（每镜 ≤3 秒）。
 
 用法：
     python3 -m xitong.build 01 --sheet     # 逐镜联系表
@@ -12,14 +12,14 @@ from adler import build as B
 from adler import core
 from whiteboard import engine as wb
 
-wb.install(B)                            # 2026-10-29 起改为白板手绘形式（先出 01；02–10 需按白板分镜重写）
+wb.install(B)                            # 2026-10-29 起改为白板手绘形式（10 讲均为白板分镜 wbNN_*.py）
 
 core.SERIES.update(name="系统之美", count="10讲", prefix="系统之美", tagline="看懂背后的结构，问题就好解了")
 B.PKG = "xitong"
 B.OUT = B.ROOT / "out" / "xitong"
-B.MODS = {"01": "wb01_system", "02": "ep02_stock", "03": "ep03_balancing", "04": "ep04_reinforcing",
-          "05": "ep05_delay", "06": "ep06_limits", "07": "ep07_commons", "08": "ep08_drift",
-          "09": "ep09_addiction", "10": "ep10_leverage"}
+B.MODS = {"01": "wb01_system", "02": "wb02_stock", "03": "wb03_balancing", "04": "wb04_reinforcing",
+          "05": "wb05_delay", "06": "wb06_limits", "07": "wb07_commons", "08": "wb08_drift",
+          "09": "wb09_addiction", "10": "wb10_leverage"}
 
 # 系列规划：(期号, 概念, 片名)
 PLAN = [
