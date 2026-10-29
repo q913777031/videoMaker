@@ -238,13 +238,13 @@ for n, x in enumerate(REDCOWS):
 b.hit(J(), 2, "tom", 0.7)
 for n, x in enumerate(REDCOWS):
     T("¥", x + 120, 3330, 64, GREEN, k0=3 + n * 0.4, k1=3.3 + n * 0.4, sfx="pop" if n == 0 else None)
-T("钱：归自己", 620, 3700, 64, GREEN, k0=5, k1=5.8, sfx="pop")
+T("钱：归自己", 620, 3665, 64, GREEN, k0=5, k1=5.8, sfx="pop")
 
 scene("最后谁都没草吃", "书中例子 · 公共草场", (1000, 3400, 0.8), shake=[4])
 b.hit(J(), 0, "shaker", 0.7, "草变矮")
 b.hit(J(), 2, "shaker", 0.6, "草啃光")
 L(cross(1000, 3270, 300), 4, 4.5, RED, 14, sfx="tom")
-T("损失：大家摊", 1080, 3700, 64, RED, k0=5, k1=6, sfx="rim")
+T("损失：大家摊", 1080, 3665, 64, RED, k0=5, k1=6, sfx="rim")
 
 RES = (2700, 3070)
 ME = (2200, 2870)
@@ -291,7 +291,7 @@ for n, (x, y) in enumerate(CARDS):
     L(rect(x, y, 1500, 900, 40), 1 + n, 1.45 + n, GREEN, 8, sfx="wood_high")
     T(CARD_T[n], x, y - 330, 70, k0=1.5 + n, k1=1.5 + n + 0.18 * len(CARD_T[n]) + 0.1)
 
-scene("会议室开完没人收", "例子 · 会议室", (950, 4480, 0.85))
+scene("会议室开完没人收", "例子 · 会议室", (950, 4380, 0.85))
 L(oval(950, 4330, 820, 260), 0, 0.5, sfx="wood_low")
 for n, x in enumerate((700, 900, 1150)):
     L(join(rect(x, 4300, 50, 64, 8), P((x + 25, 4285), (x + 42, 4285), (x + 42, 4315), (x + 25, 4315))),

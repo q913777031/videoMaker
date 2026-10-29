@@ -292,7 +292,7 @@ scene("身边全是这种回路", "身边的例子", CV)
 for n, (x, y) in enumerate(CARDS):
     L(rect(x, y, 1500, 900, 40), n, n + 0.6, GREEN, 8, sfx="wood_high" if n % 2 == 0 else None)
 for n, ((x, y), w) in enumerate(zip(CARDS, ("工位", "早起", "作业", "手机"))):
-    T(w, x - 530, y - 350, 70, BLUE, k0=4 + n * 0.5, k1=4.4 + n * 0.5, sfx="pop" if n % 2 == 0 else None)
+    T(w, x - 330, y + 350, 70, BLUE, k0=4 + n * 0.5, k1=4.4 + n * 0.5, sfx="pop" if n % 2 == 0 else None)
 
 scene("工位收了又乱", "例子 · 工位", (950, 5890, 0.85))
 L(desk(780, 5940, 380), 0, 0.7, sfx="wood_high")
