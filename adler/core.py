@@ -1001,7 +1001,9 @@ def read_check(ep: Episode) -> list[str]:
     快节奏规则（RULES["max_shot"] 启用时）：短字幕按 max(1.5, 汉字/5)，含数字或英文另加 0.5 秒；字幕可 keep 跨镜，
     按整组镜头计时；另检查每镜画面事件拍数（min_beats）与单条字幕字数（cap_max）。
     """
-    warns = []
+    from engine import wording
+
+    warns = wording.episode_warnings(ep)
     fast = bool(RULES["max_shot"])
     for i, s in enumerate(ep.shots):
         if RULES["min_beats"] and len(_shot_beats(s)) < RULES["min_beats"]:

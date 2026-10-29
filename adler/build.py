@@ -132,6 +132,15 @@ def publish(keys: list[str]):
         if square_shot(k) is not None:
             episode_square(k, dst / "横屏封面_1080x1080.png")
         print(dst)
+    from engine import wording
+
+    for k, ep in eps:
+        for w in wording.episode_warnings(ep) + [f"话题含 AI 腔用语：{h}" for h in wording.check(ep.hashtags)]:
+            print(f"  文案警告 ep{k}：{w}")
+    intro = ROOT / "videos" / PKG / "合集简介.txt"
+    if intro.exists():
+        for h in wording.check(intro.read_text(encoding="utf-8")):
+            print(f"  文案警告 合集简介：含 AI 腔用语：{h}")
     if len(MODS) > 1 and set(keys) == set(MODS):
         d = ROOT / "videos" / PKG
         collage(eps, d / "合集.png")
