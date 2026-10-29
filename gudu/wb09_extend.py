@@ -26,7 +26,7 @@ from .common import BOOK, episode
 ACC = "#3E7D6B"
 SQUARE_SHOT = 6
 
-b = Board(size=(3600, 12000))
+b = Board(size=(3600, 12300))
 
 
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None, j=None):
