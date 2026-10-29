@@ -338,7 +338,7 @@ scene("每次硬扛，目标没改", "身边的例子", CV, shake=[0])
 b.custom(J(), 0, 0.35, label_box(1800, 6560, "目标没改", 110, 560, 180), sfx="kick", gain=1.0)
 for n, (x, y) in enumerate(CARDS):
     dx, dy = x - 1800, y - 6560
-    L(arrow((1800 + dx * 0.36, 6560 + dy * 0.36), (1800 + dx * 0.6, 6560 + dy * 0.6), 0.1, 40), 1 + n * 0.5,
+    L(arrow((1800 + dx * 0.36, 6560 + dy * 0.36), (1800 + dx * 0.55, 6560 + dy * 0.55), 0.1, 40), 1 + n * 0.5,
       1.4 + n * 0.5, RED, 9, sfx="wood_high" if n % 2 == 0 else None)
 for n, (w, x, y) in enumerate(TAGS):
     L(underline(x - 70, x + 70, y + 45, 8, 30), 4 + n * 0.4, 4.3 + n * 0.4, RED, 7, sfx="pop" if n == 0 else None)
