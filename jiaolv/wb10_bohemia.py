@@ -302,22 +302,23 @@ H(5, "ding")
 
 # ---------------------------------------------------------------- 书中观点（场景 4–9）
 
+FIG = (2010, 2170, 2330)
 j_ruler = scene("书里有群波希米亚人", "身份的焦虑 · 波希米亚", (1800, 2950, 0.7))
 j_snap = j_ruler + 1
 L(book(1300, 2720, 360, 240), 0, 0.8, sfx="wood_low")
 T("身份的焦虑", 1300, 2520, 64, GREEN, k0=1, k1=1.8, sfx="pop")
 T("阿兰 · 德波顿", 1300, 2920, 44, k0=1.9, k1=2.6)
-for n, x in enumerate((1950, 2120, 2290)):
+for n, x in enumerate(FIG):
     L(stick(x, 2950, 0.55, hair=True), 2 + n * 0.3, 2.3 + n * 0.3, ACC, 9, sfx="wood_high" if n == 0 else None)
-T("第五章 波希米亚", 2120, 2600, 60, ACC, k0=3, k1=3.9, sfx="pop")
+T("第五章 波希米亚", 2170, 2600, 60, ACC, k0=3, k1=3.9, sfx="pop")
 b.custom(j_ruler, 4, 4.8, ruler_fn(j_snap), sfx="wood_high")
 b.custom(j_ruler, 5, 5.4, ruler_labels_fn(j_snap), sfx="pop")
-T("主流的尺子", 2420, 3120, 44, k0=5.4, k1=5.9)
+T("主流的尺子", 1750, 3000, 44, k0=5.4, k1=5.9)
 
 scene("他们不认这把尺", "书中观点 · 不认主流", (1800, 2950, 0.7), shake=[0], flashes=[0])
 b.hit(j_snap, 0, "kick", 1.0, "折尺")
 H(0, "shaker", 0.6)
-for n, x in enumerate((1950, 2120, 2290)):
+for n, x in enumerate(FIG):
     L(face(x, 2950, 0.55, "smile"), 1 + n * 0.25, 1.2 + n * 0.25, ACC, 8, sfx="pop" if n == 0 else None)
 T("不比这些", 1800, 3380, 72, RED, k0=3, k1=3.7, sfx="tom")
 L(underline(1640, 1960, 3440), 5, 5.4, RED, 8, sfx="ding")
@@ -373,9 +374,9 @@ T("解法⑤：波希米亚", 2650, 5080, 60, RED, k0=5, k1=5.9, sfx="ding")
 
 CARDS = [(950, 7900), (2650, 7900), (950, 8800), (2650, 8800)]
 scene("身边就有例子", "身边的例子", (1800, 8350, 0.34))
-T("身边的例子", 1800, 7050, 120, k0=0, k1=1.0, sfx="pop")
 for n, (x, y) in enumerate(CARDS):
-    L(rect(x, y, 1200, 820, 40), 1 + n, 1.5 + n, GREEN, 8, sfx="wood_high")
+    L(rect(x, y, 1200, 820, 40), n, n + 0.6, GREEN, 8, sfx="wood_high")
+H(4, "ding")
 
 scene("公司比职级，跑团比里程", "例子 · 职场", (950, 7900, 0.85))
 L(P((950, 7580), (950, 8230)), 0, 0.3, GREEN, 5)
