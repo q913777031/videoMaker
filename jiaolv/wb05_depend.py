@@ -459,7 +459,7 @@ L(rect(1180, 8720 + D + R + R2, 380, 110, 40), 5, 5.3, BLACK, 8, sfx="pop")
 T("最近咋样？", 1180, 8720 + D + R + R2, 50, k0=5.3, k1=5.95)
 
 STOOL_Y = 8680 + D + R + R2
-scene("多几条腿，站得稳", "第四步 · 多几条腿", (2650, STOOL_Y + 200, 0.85))
+scene("多几条腿，站得稳", "第四步 · 多几条腿", (2650, STOOL_Y + 170, 0.85))
 L(rect(*SOL[3], 1200, 820, 40), 0, 0.6, GREEN, 8, sfx="wood_high")
 T("④ 多几条腿", 2650, STOOL_Y - 220, 76, BLUE, k0=1, sfx="pop")
 L(P((2280, STOOL_Y), (3020, STOOL_Y)), 2, 2.3, BLACK, 12, sfx="wood_high")
