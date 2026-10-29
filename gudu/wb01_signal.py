@@ -248,7 +248,7 @@ L(check(2900, 3515, 40), 2, 2.3, GREEN, 10, sfx="ding")
 
 ME = (1620, 4450)               # 今天的“我们”
 b.shot("这份怕传到今天", "书中观点 · 进化", view=(2200, 3820, 0.7))
-T("活下来的人", 2700, 3640, 50, k0=0, sfx="pop")
+T("活下来的人", 2640, 3640, 50, k0=0, sfx="pop")
 L(arrow((2450, 3600), (1720, 4130), 0.1, 44), 1, 1.5, GREEN, 9, sfx="wood_high")
 L(stick(*ME, 0.75, "down"), 2, 2.4, BLACK, 10, sfx="pop")
 L(face(*ME, 0.75, "flat"), 2.4, 2.5)
@@ -260,7 +260,6 @@ VI = (2150, 4120, 0.8)
 b.shot("画成一张图", "书中观点 · 一张图", view=VI)
 for n in range(2):
     T(ROWS[n][0], RX, ROWS[n][1], 72, ROWS[n][2], k0=n, sfx="pop")
-T("身体的信号", RX, 3770, 56, GREEN, k0=2, sfx="wood_high")
 
 b.shot("孤独就去找人", "书中观点 · 一张图", view=VI)
 T(ROWS[2][0], RX, ROWS[2][1], 72, ROWS[2][2], k0=0, sfx="pop")
@@ -271,7 +270,7 @@ L(heart(ME[0], 4320, 38), 0, 0.3, RED, 8, sfx="pop")
 T("想人了", ME[0], 4110, 60, RED, k0=1, sfx="pop")
 L(arrow((ME[0] + 80, 4320), (RX - 250, 4315), 0.05, 34), 2, 2.4, RED, 8, sfx="wood_high")
 
-b.shot("饿了不丢人", "书中观点 · 一张图", view=(2150, 4170, 0.8))
+b.shot("饿了不丢人", "书中观点 · 一张图", view=(2100, 4170, 0.8))
 T("孤独也一样", RX, 4540, 64, k0=0, sfx="pop")
 L(check(RX + 260, 4535, 40), 2, 2.3, GREEN, 10, sfx="ding")
 

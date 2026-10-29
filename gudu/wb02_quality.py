@@ -13,7 +13,7 @@
 import skia
 
 from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, bubble, book, check, circle, clock, cross,
-                               desk, face, hands_at, join, rect, scribble, stick, underline)
+                               desk, face, hands_at, join, rect, stick, underline)
 
 from .common import BOOK, episode
 
