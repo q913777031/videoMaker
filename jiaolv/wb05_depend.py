@@ -404,7 +404,7 @@ L(underline(2240, 2560, 6030), 3, 3.3, BLACK, 6, sfx="wood_high")
 
 b.shot("厂子说停就停", "例子 · 家里", view=(2650, 6200, 0.85), shake=[0])
 L(cross(2900, 6360, 150), 0, 0.4, RED, 14, sfx="kick")
-T("停产", 3200, 6100, 60, RED, k0=1, sfx="rim")
+T("停产", 3170, 6080, 60, RED, k0=1, sfx="rim")
 mood(2350, 6540, 0.7, "sad", 2, BLUE, sfx="wood_high")
 T("……", 2350, 6200, 60, BLUE, k0=3, sfx="pop")
 
