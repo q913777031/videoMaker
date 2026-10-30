@@ -332,7 +332,7 @@ L(bubble(1900, 4990, 520, 140, 1), 0, 0.4, BLACK, 8, sfx="wood_high")
 T("收到，马上看", 1900, 4990, 58, k0=0.4, k1=2.0)
 L(cross(2290, 4990, 44), 2, 2.6, RED, 11, sfx="rim")
 for n, (x, y) in enumerate(DOTS):
-    b.custom(J(), 3, 3.4, dot_anim(J(), [(3, x, y), (7, x - 60, 5200), (8, x - 260, 4980)], 34, str(n + 1), gone=8.1),
+    b.custom(J(), 3, 3.4, dot_anim(J(), [(3, x, y), (7, x - 60, 5200), (8, x - 480, 5120)], 34, str(n + 1), gone=8.1),
              sfx="ding" if n == 0 else None)
 L(bubble(1900, 5340, 560, 140, 1), 4, 4.4, BLUE, 8, sfx="pop")
 T("收到，周四给你", 1900, 5340, 58, BLUE, k0=4.3, k1=5.9)
