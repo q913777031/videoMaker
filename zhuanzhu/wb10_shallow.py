@@ -28,7 +28,7 @@ from .common import BOOK, episode
 ACC = "#3A7D6B"
 SQUARE_SHOT = 3                 # 场景 4：一天的时间块砸进日程表 + 小周举手
 
-b = Board(size=(3900, 9400))
+b = Board(size=(4000, 9400))
 
 BLUE_FILL, ORANGE_FILL, GREEN_FILL = "#C9D9F2", "#F7D9B8", "#CFE9D8"
 
@@ -371,7 +371,7 @@ T("准点下班", 1950, 6440, 130, GREEN, k0=7, k1=8.0, sfx="ding")
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：第 0 拍拉远看全板，第 4 拍推到评论区
 
-j_end = scene("这一季讲完了", "评论区见", (1950, 4700, 0.105), bars=4)
+j_end = scene("这一季讲完了", "评论区见", (2000, 4700, 0.105), bars=4)
 H(0, "cymbal", 0.5)
 H(2, "wood_high", 0.6)
 b.move(j_end, 4, (1950, 8600, 0.85), dur=1.1)
