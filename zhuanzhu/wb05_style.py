@@ -24,7 +24,7 @@ from engine.gfx import clamp01, ease_out
 from .common import BOOK, episode
 
 ACC = "#2F7F8C"
-SQUARE_SHOT = 3                 # 场景 4：四条日历拍上白板 + 小红点
+SQUARE_SHOT = 10                # 场景 11：小周 + 每天一块蓝的课表
 
 b = Board(size=(3600, 8200))
 GREY = "#B9BEC6"

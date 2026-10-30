@@ -244,15 +244,16 @@ H(8, "shaker", 0.6, "小红点被挡回去")
 DAY = [("9:00 专注 · 写方案", 1770, 2005, BLUE_FILL, BLUE), ("11:00 回消息", 2005, 2123, ORANGE_FILL, ORANGE),
        ("12:00 午饭", 2123, 2299, GREEN_FILL, GREEN), ("13:30 专注 · 写方案", 2299, 2534, BLUE_FILL, BLUE),
        ("15:30 开会", 2534, 2652, ORANGE_FILL, ORANGE), ("16:30 杂事一起干", 2652, 2770, ORANGE_FILL, ORANGE)]
-j_drop = scene("一天排成块", "改写 · 一天排成块", (3250, 2300, 0.75), shake=[0, 6], flashes=[0])
+DAY = [(s, 1780 + (y0 - 1770) * 0.91, 1780 + (y1 - 1770) * 0.91, f, e) for s, y0, y1, f, e in DAY]   # 压到 1780–2690，竖版封面也装得下
+j_drop = scene("一天排成块", "改写 · 一天排成块", (3250, 2400, 0.75), shake=[0, 6], flashes=[0])
 H(0, "cymbal", 0.5)
 for n, (s, y0, y1, fill, edge) in enumerate(DAY):
     b.custom(j_drop, n, n + 0.2, slam_block(j_drop, n, 3380, (y0 + y1) / 2, 700, y1 - y0, fill, edge, s),
              sfx="kick" if n == 0 else "tom", gain=1.0 if n == 0 else 0.75)
-b.custom(j_drop, 6, 6.2, slam_block(j_drop, 6, 3380, 2835, 700, 104, RED, RED, "17:30 下班", "#FFFFFF", 62),
+b.custom(j_drop, 6, 6.2, slam_block(j_drop, 6, 3380, 2745, 700, 96, RED, RED, "17:30 下班", "#FFFFFF", 62),
          sfx="kick", gain=1.0)
-L(zhou(2800, 2760, 0.85, "up"), 7, 7.8, BLUE, 9, sfx="pop")
-L(face(2800, 2760, 0.85, "smile"), 7.8, 8.0, BLUE, 8)
+L(zhou(2800, 2740, 0.85, "up"), 7, 7.8, BLUE, 9, sfx="pop")
+L(face(2800, 2740, 0.85, "smile"), 7.8, 8.0, BLUE, 8)
 
 # ---------------------------------------------------------------- 书里的办法：排时间、重排（场景 5–6）
 
