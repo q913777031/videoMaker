@@ -26,10 +26,17 @@ WORDS = [
 ]
 
 
+# 专名（书名、系列名）里的词不算套话，检查前先去掉
+ALLOW = ["深度工作", "Deep Work"]
+
+
 def check(text: str) -> list[str]:
-    """返回命中的句式或套话（去重，按出现顺序）。"""
+    """返回命中的句式或套话（去重，按出现顺序）。书名号里的书名与 ALLOW 中的专名不参与检查。"""
     if not text:
         return []
+    text = re.sub(r"《[^》]*》", "", text)
+    for w in ALLOW:
+        text = text.replace(w, "")
     hits = []
     for pat, name in PATTERNS:
         if re.search(pat, text):

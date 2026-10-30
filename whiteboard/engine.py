@@ -284,6 +284,7 @@ class Board:
         self.BW, self.BH = size
         self.shots: list = []
         self.views: list = []
+        self.moves: dict = {}          # 场景内运镜：{镜头号: [(拍, 视角, 时长秒)]}
         self.items: list = []
         self.ep = None
 
@@ -293,6 +294,15 @@ class Board:
         self.shots.append(core.Shot(bars, text, tag, [], text_beat=0, punch=punch, **kw))
         self.views.append(view)
         return len(self.shots) - 1
+
+    def move(self, j, k, view, dur=1.1):
+        """场景内运镜：第 j 个镜头第 k 拍起用 dur 秒移到新视角 (cx, cy, z)（如先拉远看全板、再推近评论区，或推近看细节）。"""
+        self.moves.setdefault(j, []).append((k, view, dur))
+        self.moves[j].sort(key=lambda m: m[0])
+
+    def end_view(self, j):
+        """镜头 j 结束时的视角（有场景内运镜时取最后一段的目标）。"""
+        return self.moves[j][-1][1] if self.moves.get(j) else self.views[j]
 
     def _hit(self, j, k0, sfx, gain=0.8, note=""):
         if sfx:
@@ -412,10 +422,19 @@ def camera(board, T):
     s = ep.shots[j]
     t = T - s.t0
     cur = board.views[j]
-    prev = board.views[j - 1] if j > 0 else (cur[0], cur[1] - 120, cur[2] * 1.12)
+    prev = board.end_view(j - 1) if j > 0 else (cur[0], cur[1] - 120, cur[2] * 1.12)
+
+    def mix(a, b, k):
+        return lerp(a[0], b[0], k), lerp(a[1], b[1], k), math.exp(lerp(math.log(a[2]), math.log(b[2]), k))
+
     k = ease_in_out(clamp01(t / {1: 0.45, 2: 0.7}.get(s.bars, 1.1))) if prev != cur else 1.0
-    cx, cy = lerp(prev[0], cur[0], k), lerp(prev[1], cur[1], k)
-    z = math.exp(lerp(math.log(prev[2]), math.log(cur[2]), k))
+    view = mix(prev, cur, k)
+    for kb, target, dur in board.moves.get(j, []):
+        t0 = board.t_of(j, kb)
+        if T < t0:
+            break
+        view = mix(view, target, ease_in_out(clamp01((T - t0) / dur)))
+    cx, cy, z = view
     z *= 1 + 0.015 * clamp01(t / max(0.1, s.t1 - s.t0))
     sx = sy = 0.0
     for it in s.shake:
