@@ -403,22 +403,22 @@ H(7, "shaker", 0.6)
 scene("一句话，错在哪", "开局 · 错在哪", (1750, 1000, 0.62))
 L(qmark(1810, 790, 1.15), 0, 0.9, RED, 14, sfx="tom")
 T("明明迟到过", 1750, 470, 84, k0=2, k1=3.25, sfx="pop")
-T("为啥吵起来？", 1750, 1620, 76, RED, k0=4, k1=5.5, sfx="pop")
+T("为啥吵起来？", 1750, 1540, 76, RED, k0=4, k1=5.5, sfx="pop")
 L(join(anger(BOSS[0] + 95, 1140), anger(MATE[0] - 95, 1140)), 6, 6.8, RED, 8, sfx="rim")
 
 # ---------------------------------------------------------------- drop（场景 4）：放大镜扣在“总”字上
 
-DROP = (1800, 2150)
-scene("评论混进来了", "非暴力沟通 · 书中观点", (1800, 2380, 0.85), shake=[0], flashes=[0])
-b.move(J(), 0, (1800, 2380, 0.85), dur=0.12)      # drop：镜头几乎硬切到位，放大镜扣下那一下就在画面里
+DROP = (1800, 2190)
+scene("评论混进来了", "非暴力沟通 · 书中观点", (1800, 2420, 0.85), shake=[0], flashes=[0])
+b.move(J(), 0, (1800, 2420, 0.85), dur=0.12)      # drop：镜头几乎硬切到位，放大镜扣下那一下就在画面里
 C(0, 0.5, magnifier_fn(*DROP, SAY, 200, 1), sfx="kick")
 ZX = char_x(SAY, DROP[0], 200, 1)
 L(circle(ZX, DROP[1], 200), 1, 1.6, RED, 14, sfx="rim")
-L(arrow((ZX - 170, DROP[1] + 200), (1420, 2500), 0.15, 36), 2, 2.8, RED, 9, sfx="wood_high")
-T("评论", 1400, 2600, 96, RED, k0=3, k1=3.8, sfx="pop")
-L(rect(1400, 2600, 280, 150, 18), 3.8, 4.4, RED, 8)
-T("听着像批评", 2000, 2580, 72, k0=5, k1=6.25, sfx="pop")
-T("就会反驳", 2000, 2730, 76, RED, k0=7, k1=8, sfx="tom")
+L(arrow((ZX - 170, DROP[1] + 200), (1420, 2540), 0.15, 36), 2, 2.8, RED, 9, sfx="wood_high")
+T("评论", 1400, 2640, 96, RED, k0=3, k1=3.8, sfx="pop")
+L(rect(1400, 2640, 280, 150, 18), 3.8, 4.4, RED, 8)
+T("听着像批评", 2000, 2620, 72, k0=5, k1=6.25, sfx="pop")
+T("就会反驳", 2000, 2770, 76, RED, k0=7, k1=8, sfx="tom")
 
 # ---------------------------------------------------------------- 亮书 + 书中观点（场景 5–6）
 
@@ -434,7 +434,7 @@ C(6, 6.8, fill_fn(CX[0], FC[1], CARD_W / 4, CARD_H, BLUE), sfx="ding")
 T("观察", CX[0], FC[1] + 75, 50, BLUE, k0=7, k1=7.8, sfx="pop")
 
 CAM = (1380, 4660)
-GV = (2250, 4600)
+GV = (2220, 4600)
 scene("只说看到的", "书中观点 · 观察和评论", (1800, 4850, 0.85))
 L(stick(1800, 5330, 0.6, hair=True), 0, 0.8, BLACK, 9, sfx="wood_high")
 L(camcorder(*CAM), 1, 1.9, BLUE, 9, sfx="wood_low")
@@ -453,40 +453,33 @@ BW_, BH_ = 360, 150             # 按钮
 
 
 def quiz(cx, cy, n, q, size=64):
-    """题卡骨架：外框 + 题号 + 题目泡泡 + 两颗按钮；返回两颗按钮中心。"""
+    """题卡：外框 + 题号（第 0 拍）、题目泡泡（第 1 拍）、两颗按钮（第 4 拍）、倒数两拍（第 5–7 拍）；返回两颗按钮中心。"""
     L(rect(cx, cy, 1080, 960, 30), 0, 0.8, BLACK, 8, sfx="wood_high")
-    T(f"第 {n} 题", cx - 380, cy - 400, 56, k0=0.8, k1=1.6)
-    L(bubble(cx, cy - 190, 900, 190, -1), 2, 2.4, BLACK, 8, sfx="pop")
-    T(q, cx, cy - 190, size, k0=2.4, k1=2.4 + max(0.8, 0.25 * len(q)))
+    T(f"第 {n} 题", cx - 380, cy - 400, 56, k0=0, k1=0.8)
+    L(bubble(cx, cy - 190, 900, 190, -1), 1, 1.4, BLACK, 8, sfx="pop")
+    T(q, cx, cy - 190, size, k0=1.4, k1=1.4 + max(0.8, 0.25 * len(q)))
     bo, bp = (cx - 230, cy + 110), (cx + 230, cy + 110)
+    L(join(rect(*bo, BW_, BH_, 75), rect(*bp, BW_, BH_, 75)), 4, 4.5, BLACK, 8, sfx="wood_low")
+    T("观察", bo[0], bo[1], 66, BLUE, k0=4.2, k1=5)
+    T("评论", bp[0], bp[1], 66, RED, k0=4.2, k1=5)
+    countdown(cx, cy + 340)
     return bo, bp
 
 
-def buttons(bo, bp, k):
-    L(join(rect(*bo, BW_, BH_, 75), rect(*bp, BW_, BH_, 75)), k, k + 0.8, BLACK, 8, sfx="wood_low")
-    T("观察", bo[0], bo[1], 66, BLUE, k0=k + 0.8, k1=k + 1.6)
-    T("评论", bp[0], bp[1], 66, RED, k0=k + 0.8, k1=k + 1.6)
-
-
-def countdown(cx, cy, k=5):
-    C(k, k + 2, count_fn(cx, cy + 340), sfx="shaker")
+def countdown(x, y, k=5, size=130):
+    C(k, k + 2, count_fn(x, y, size), sfx="shaker")
     H(k + 1, "shaker", 0.7)
 
 
 Q1 = (1100, 6200)
 scene("第一题，猜猜看", "小测验 · 第一题", (*Q1, 0.85))
 bo, bp = quiz(*Q1, 1, "他很懒", 80)
-buttons(bo, bp, 3.4)
-H(4, "wood_low", 0.6)
-countdown(*Q1)
 L(rect(*bp, BW_ + 50, BH_ + 50, 95), 7, 7.6, RED, 12, sfx="rim")
 L(cross(bp[0] + 230, bp[1] - 100, 34), 7.4, 7.9, RED, 10)
 
 Q2 = (2500, 6200)
 scene("第二题", "小测验 · 第二题", (*Q2, 0.85))
-bo, bp = quiz(*Q2, 2, "他这周有 3 天没交日报", 58)
-buttons(bo, bp, 4)
-countdown(*Q2, 5.5)
+bo, bp = quiz(*Q2, 2, "他这周3天没交日报", 62)
 L(rect(*bo, BW_ + 50, BH_ + 50, 95), 7, 7.6, BLUE, 12, sfx="ding")
 L(check(bo[0] - 250, bo[1] - 100, 40), 7.3, 7.9, GREEN, 11)
 
@@ -494,28 +487,24 @@ Q3 = (1100, 7500)
 Q3S = "她老是不回消息"
 scene("第三题", "小测验 · 第三题", (*Q3, 0.85))
 bo, bp = quiz(*Q3, 3, Q3S, 66)
-buttons(bo, bp, 4)
-countdown(*Q3, 5.5)
 lx = (char_x(Q3S, Q3[0], 66, 1) + char_x(Q3S, Q3[0], 66, 2)) / 2
 L(join(oval(lx, Q3[1] - 190, 190, 110), rect(*bp, BW_ + 50, BH_ + 50, 95)), 7, 7.8, RED, 10, sfx="rim")
 
 Q4 = (2500, 7500)
+PIV = (Q4[0], Q4[1] - 250)
+LP, RP = (PIV[0] - 300, PIV[1] + 170), (PIV[0] + 300, PIV[1] + 190)
 scene("第四题", "小测验 · 第四题", (*Q4, 0.85))
 L(rect(*Q4, 1080, 960, 30), 0, 0.8, BLACK, 8, sfx="wood_high")
-T("第 4 题", Q4[0] - 380, Q4[1] - 400, 56, k0=0.8, k1=1.6)
-T("哪句是观察？", Q4[0] + 80, Q4[1] - 400, 60, k0=1.6, k1=3.1)
-H(2, "pop")
-PIV = (Q4[0], Q4[1] - 250)
-L(scale_beam(*PIV), 3, 3.9, BLACK, 8, sfx="wood_low")
-LP, RP = (PIV[0] - 300, PIV[1] + 170), (PIV[0] + 300, PIV[1] + 190)
-L(join(rect(*LP, 380, 220, 18), rect(*RP, 400, 260, 18)), 4, 4.6, BLACK, 7, sfx="pop")
-T("领导偏心", LP[0], LP[1], 64, k0=4.6, k1=5.6)
-T("这个月 3 个项目", RP[0], RP[1] - 45, 50, k0=5, k1=6.2)
-T("都给了同一个人", RP[0], RP[1] + 40, 50, k0=6.2, k1=7.4)
-H(5, "wood_high", 0.6)
-C(6, 7, count_fn(Q4[0], Q4[1] + 360, 110), sfx="shaker")
-T("评论 ✗", LP[0], Q4[1] + 230, 60, RED, k0=7, k1=7.8, sfx="rim")
-T("观察 ✓", RP[0], Q4[1] + 230, 60, BLUE, k0=7, k1=7.8)
+T("第 4 题", Q4[0] - 380, Q4[1] - 400, 56, k0=0, k1=0.8)
+L(join(scale_beam(*PIV), rect(*LP, 380, 220, 18), rect(*RP, 400, 260, 18)), 1, 1.8, BLACK, 8, sfx="wood_low")
+T("领导偏心", LP[0], LP[1], 64, k0=2, k1=2.9, sfx="pop")
+T("这个月3个项目", RP[0], RP[1] - 45, 50, k0=3, k1=4, sfx="pop")
+T("都给了同一人", RP[0], RP[1] + 40, 50, k0=4, k1=5, sfx="wood_high")
+countdown(Q4[0], Q4[1] - 400, size=110)
+T("评论", LP[0] - 30, Q4[1] + 230, 64, RED, k0=7, k1=7.8, sfx="rim")
+L(cross(LP[0] + 80, Q4[1] + 230, 26), 7.2, 7.8, RED, 9)
+T("观察", RP[0] - 30, Q4[1] + 230, 64, BLUE, k0=7, k1=7.8)
+L(check(RP[0] + 85, Q4[1] + 230, 32), 7.2, 7.8, GREEN, 10)
 
 # ---------------------------------------------------------------- 书中观点 + 做法（场景 11–12）
 

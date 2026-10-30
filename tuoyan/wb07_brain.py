@@ -28,7 +28,7 @@ from .common import BOOK, episode
 ACC = "#3B7EA1"
 SQUARE_SHOT = 3                 # 场景 4（drop）：保安拉警报、门“砰”关上，小周站在门外
 
-b = Board(size=(3600, 5200))
+b = Board(size=(3600, 5600))
 
 
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None):

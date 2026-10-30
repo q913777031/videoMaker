@@ -139,7 +139,8 @@ def draw_pao(c, x, y, rx, ry, color, lens, mood, tail=0, rot=0.0, k=1.0, txt=Tru
     """画一只小泡（k<1 时轮廓逐段描出，返回笔尖）。"""
     out = pao_outline(x, y, rx, ry, tail)
     if rot:
-        m = skia.Matrix.RotateRad(rot, skia.Point(x, y))
+        m = skia.Matrix()
+        m.setRotate(math.degrees(rot), x, y)
         out.transform(m)
     part, tip = wb.partial(out, k)
     c.drawPath(part, wb.marker(color, width))
@@ -435,7 +436,7 @@ def drop_fn(c, k, T):
             if sc <= 0.02:
                 continue
             rot = (x - x0) / 90
-            draw_pao(c, x, y, 95 * sc, 72 * sc, RED, [l * sc for l in lens_m], "frown", rot=rot, txt=False, width=8,
+            draw_pao(c, x, y, 85 * sc, 85 * sc, RED, [l * sc for l in lens_m], "frown", rot=rot, txt=False, width=8,
                      s=max(0.4, sc * 0.75))
         if merge > 0:
             g = ease_out(merge)
@@ -515,7 +516,6 @@ for i in range(4):
     b.custom(J(), 0.2 * i, 0.2 * i + 0.6, drawer_fn(i))
     H(1 + 2 * i, "wood_low")
     T(KINDS[i], CAB[0] + PULL - 40, SLOTS[i], 60, RED, k0=1.2 + 2 * i, k1=2.0 + 2 * i)
-    H(2 + 2 * i, "pop") if i < 3 else None
 
 # ---------------------------------------------------------------- 故事继续（场景 7–8）
 
@@ -594,8 +594,8 @@ L(card_frame(*CARD), 0, 0.8, BLACK, 10, sfx="wood_low")
 for i in range(4):
     L(ICONS[i](cell_x(CARD[0], CARD[2], i), ICON_Y, 1.0), 1 + i, 1.8 + i, BLACK, 8, sfx="pop")
 for i in range(4):
-    T(LABELS[i], cell_x(CARD[0], CARD[2], i), LAB_Y, 56, BLUE, k0=5 + 0.75 * i - (0.0 if i < 3 else 0.05),
-      k1=5.8 + 0.75 * i - (0.0 if i < 3 else 0.05), sfx="pop" if i == 0 else None)
+    T(LABELS[i], cell_x(CARD[0], CARD[2], i), LAB_Y, 56, BLUE, k0=5 + 0.73 * i, k1=5.8 + 0.73 * i,
+      sfx="pop" if i == 0 else None)
 
 # ---------------------------------------------------------------- 重说（场景 11–12）
 
