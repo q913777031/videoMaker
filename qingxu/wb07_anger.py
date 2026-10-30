@@ -184,14 +184,13 @@ def finger(x, y, s=1.0) -> skia.Path:
 
 
 def scale(x, y, s=1.0) -> tuple:
-    """天平：返回（支架，横梁 + 两个托盘），(x, y) 为支点；右边往下沉。"""
+    """天平：返回（支架，横梁 + 两只吊篮），(x, y) 为支点；右边往下沉。左篮 150×110，右篮 300×170（两行字）。"""
     stand = join(P((x, y), (x, y + 550 * s)), P((x - 160 * s, y + 550 * s), (x + 160 * s, y + 550 * s)),
                  circle(x, y, 16 * s))
     lx, ly, rx, ry = x - 400 * s, y - 80 * s, x + 400 * s, y + 80 * s
-    beam = [P((lx, ly), (rx, ry))]
-    for cx, cy, drop in ((lx, ly, 150 * s), (rx, ry, 220 * s)):
-        tray = cy + drop
-        beam += [P((cx - 150 * s, tray), (cx, cy), (cx + 150 * s, tray)), P((cx - 170 * s, tray), (cx + 170 * s, tray))]
+    beam = [P((lx, ly), (rx, ry)),
+            P((lx, ly), (lx, ly + 40 * s)), rect(lx, ly + 95 * s, 220 * s, 110 * s, 14 * s),
+            P((rx, ry), (rx, ry + 50 * s)), rect(rx, ry + 135 * s, 300 * s, 170 * s, 14 * s)]
     return stand, join(*beam)
 
 
@@ -222,11 +221,11 @@ def press_fn(bx, by, msg):
                            K.paint(RED, 1, 9))
         off = 260 * (1 - ease_out(clamp01(k / 0.55)))
         th = skia.Path()
-        th.addRoundRect(skia.Rect.MakeXYWH(bx - 70 + 40, by - 330 - off + 30, 150, 330), 75, 75)
+        th.addRoundRect(skia.Rect.MakeXYWH(bx - 75, by - 330 - off + 30, 150, 330), 75, 75)
         c.drawPath(th, K.paint("#FFFFFF"))
         c.drawPath(th, K.paint(BLACK, 1, 9))
         nail = skia.Path()
-        nail.addRoundRect(skia.Rect.MakeXYWH(bx - 32 + 40, by - 115 - off + 30, 74, 70), 20, 20)
+        nail.addRoundRect(skia.Rect.MakeXYWH(bx - 37, by - 115 - off + 30, 74, 70), 20, 20)
         c.drawPath(nail, K.paint(BLACK, 1, 6))
         return None
 
@@ -265,12 +264,13 @@ L(join(arrow((2420, 2880), (1180, 2880), 0, 42), P((2300, 2855), (2300, 2905)), 
 T("18:00", 2300, 2800, 60, k0=6, k1=6.8, sfx="pop")
 T("15:02", 1850, 2800, 60, RED, k0=6.8, k1=7.6)
 
-BTN = (2250, 3850)
+BTN = (2150, 3850)
 scene("就是这一下", "倒带 · 按下发送", (1800, 3750, 0.8), shake=[0], flashes=[0])
+b.move(J(), 0, (1800, 3750, 0.8), dur=0.25)      # drop：镜头几乎硬切到位，按下那一下就在画面里
 b.custom(J(), 0, 0.5, press_fn(*BTN, "你自己看看你干的好事"), sfx="kick")
 L(star(*BTN, 200, 290), 1, 1.8, RED, 8, sfx="wood_low")
-L(join(P((BTN[0] - 210, BTN[1] - 30), (BTN[0] - 330, BTN[1] - 90), (BTN[0] - 420, BTN[1] - 20), (BTN[0] - 560, BTN[1] - 110)),
-       P((BTN[0] - 210, BTN[1] + 40), (BTN[0] - 360, BTN[1] + 100), (BTN[0] - 470, BTN[1] + 50), (BTN[0] - 640, BTN[1] + 120))),
+L(join(P((BTN[0] - 160, BTN[1] - 80), (BTN[0] - 300, BTN[1] - 125), (BTN[0] - 420, BTN[1] - 100), (BTN[0] - 600, BTN[1] - 175)),
+       P((BTN[0] - 160, BTN[1] + 80), (BTN[0] - 320, BTN[1] + 125), (BTN[0] - 450, BTN[1] + 100), (BTN[0] - 640, BTN[1] + 175))),
   2, 2.8, BLACK, 7, sfx="rim")
 T("已发送", 1650, 3400, 120, RED, k0=3, k1=3.8, sfx="pop")
 T("就是这一下", 1800, 4180, 100, RED, k0=5, k1=6.25, sfx="ding")
@@ -325,9 +325,9 @@ T("这次生气有用吗？", 1800, 8150, 70, k0=0, k1=2, sfx="pop")
 stand, beam = scale(*SC)
 L(stand, 2, 2.8, BLACK, 9, sfx="wood_high")
 L(beam, 3, 3.9, BLACK, 8, sfx="wood_low")
-T("出气", 1400, 8420, 60, k0=4, k1=4.8, sfx="pop")
-T("关系僵", 2200, 8580, 58, RED, k0=5, k1=5.8, sfx="pop")
-T("事没解决", 2200, 8650, 58, RED, k0=6, k1=7, sfx="pop")
+T("出气", 1400, 8415, 60, k0=4, k1=4.8, sfx="pop")
+T("关系僵", 2200, 8582, 56, RED, k0=5, k1=5.8, sfx="pop")
+T("事没解决", 2200, 8650, 56, RED, k0=6, k1=7, sfx="pop")
 L(arrow((2420, 8520), (2420, 8720), 0, 34), 7, 7.8, RED, 9, sfx="ding")
 
 HZ = (1300, 10450)
@@ -370,7 +370,7 @@ T("他就是不靠谱", COL[0], ROW_Y, 54, RED, k0=6.5, k1=8)
 
 scene("圈出“就是”改掉", "第二步 · 圈出来改", (1800, 12560, 0.88))
 hole = skia.Path()
-hole.addOval(skia.Rect.MakeXYWH(COL[0] - 54 - 75, ROW_Y - 45, 150, 90))
+hole.addOval(skia.Rect.MakeXYWH(COL[0] - 27 - 75, ROW_Y - 45, 150, 90))
 L(hole, 0, 0.7, RED, 7, sfx="rim")
 T("乱贴标签", COL[1], ROW_Y, 54, k0=1, k1=2, sfx="pop")
 T("这次没打招呼", COL[2], ROW_Y, 54, BLUE, k0=3, k1=4.5, sfx="pop")
