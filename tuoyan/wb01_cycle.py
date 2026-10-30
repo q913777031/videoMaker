@@ -122,9 +122,10 @@ def bolt(x, y, s=1.0) -> skia.Path:
     return P((x + 25 * s, y - 80 * s), (x - 30 * s, y + 5 * s), (x + 12 * s, y + 5 * s), (x - 22 * s, y + 80 * s))
 
 
-def sweat(x, y) -> skia.Path:
-    """额头三道慌张短线。"""
-    return join(P((x - 70, y - 30), (x - 100, y - 60)), P((x, y - 50), (x, y - 90)), P((x + 70, y - 30), (x + 100, y - 60)))
+def sweat(x, y, s=1.0) -> skia.Path:
+    """头两边的慌张短线。"""
+    return join(P((x - 70 * s, y), (x - 105 * s, y - 30 * s)), P((x - 75 * s, y + 40 * s), (x - 115 * s, y + 40 * s)),
+                P((x + 70 * s, y), (x + 105 * s, y - 30 * s)), P((x + 75 * s, y + 40 * s), (x + 115 * s, y + 40 * s)))
 
 
 def pin(x, y, r=34) -> skia.Path:
@@ -160,7 +161,10 @@ def monster_path(x, y, s=1.0, arms="down") -> tuple[skia.Path, float, float, flo
     parts = [body, circle(cx - 0.33 * R, ey, 0.17 * R), circle(cx + 0.33 * R, ey, 0.17 * R),
              P((cx - 0.5 * R, y + 0.02 * R), (cx - 0.2 * R, y + 0.02 * R)),
              P((cx + 0.2 * R, y + 0.02 * R), (cx + 0.5 * R, y + 0.02 * R))]
-    if arms == "open":
+    if arms == "raise":
+        hl, hr = (cx - 1.25 * R, cy - 0.6 * R), (cx + 1.12 * R, cy - 0.62 * R)
+        parts += [P((cx - 0.98 * R, cy - 0.1 * R), hl), P((cx + 0.98 * R, cy - 0.15 * R), hr)]
+    elif arms == "open":
         hl, hr = (cx - 1.5 * R, cy - 0.55 * R), (cx + 1.5 * R, cy - 0.55 * R)
         parts += [P((cx - 0.98 * R, cy - 0.1 * R), hl), P((cx + 0.98 * R, cy - 0.1 * R), hr)]
     else:
@@ -229,28 +233,28 @@ T("圈", 3290, 870, 120, RED, k0=4, sfx="ding")
 T("拖延的人在绕圈", 3040, 1290, 60, k0=5, sfx="pop")
 
 # drop：周四深夜，明天怪兽一下顶到天花板
-ROOM = dict(wall=2760, ceil=2190, floor=2900, right=3600)
-MB = (3270, ROOM["floor"])      # 大怪兽脚底
-ZN = (2880, ROOM["floor"])      # 缩在墙角的小周
+ROOM = dict(wall=2700, ceil=2340, floor=2980, right=3600)
+MB = (3290, ROOM["floor"])      # 大怪兽脚底
+ZN = (2810, ROOM["floor"])      # 缩在墙角的小周
 
 
 def burst_fn(c, k, t):
-    s = lerp(0.6, 2.15, 1 - (1 - k) ** 3)
-    draw_monster(c, *MB, s, "open", 1.0)
+    s = lerp(0.6, 2.0, 1 - (1 - k) ** 3)
+    draw_monster(c, *MB, s, "raise", 1.0)
     return None
 
 
-scene("周四夜里慌了", "周四深夜", (3080, 2520, 0.85), shake=[0, (1, 18.0)], flashes=[0])
+scene("周四夜里慌了", "周四深夜", (3080, 2580, 0.85), shake=[0, (1, 18.0)], flashes=[0])
 L(join(P((ROOM["wall"], ROOM["floor"]), (ROOM["wall"], ROOM["ceil"]), (ROOM["right"], ROOM["ceil"])),
        P((ROOM["wall"], ROOM["floor"]), (ROOM["right"], ROOM["floor"]))), 0, 0.5, BLACK, 9)
 b.custom(J(), 0, 1, burst_fn, sfx="kick")
 H(1, "tom", 0.9)
-L(join(clock(2900, 2350, 80), hands_at(2900, 2350, 80, 11, 0)), 2, 2.9, BLACK, 8, sfx="wood_high")
-T("23:00", 2900, 2500, 60, RED, k0=3, sfx="pop")
+L(join(clock(2800, 2445, 70), hands_at(2800, 2445, 70, 11, 0)), 2, 2.9, BLACK, 8, sfx="wood_high")
+T("23:00", 2800, 2580, 56, RED, k0=3, sfx="pop")
 L(stick(*ZN, 0.5, "shrug"), 5, 5.8, BLUE, 8, sfx="wood_low")
 L(face(*ZN, 0.5, "sad"), 5.8, 6.0, BLUE, 7)
-T("慌", 2890, 2640, 76, RED, k0=6, sfx="rim")
-L(sweat(ZN[0], ZN[1] - 190), 7, 7.6, BLUE, 7, sfx="pop")
+T("慌", 2790, 2700, 64, RED, k0=6, sfx="rim")
+L(sweat(ZN[0], ZN[1] - 150, 0.6), 7, 7.6, BLUE, 7, sfx="pop")
 
 ZC = (2950, 4520)               # 小周（骂自己）
 scene("我怎么又这样", "周四深夜 · 骂自己", (3040, 4000, 0.85))
@@ -282,8 +286,8 @@ L(face(*ZF, 0.8, "smile"), 5.8, 6.0)
 L(note(720, 3810, 400, 170), 6, 6.4, ORANGE, 9, sfx="pop")
 T("再也不拖了", 715, 3800, 56, k0=6.4)
 
-scene("下周又从头来", "下一个任务", (560, 2450, 0.55))
-L(arrow((230, 3300), (230, 1650), 0.06, 80), 0, 1.0, GREEN, 14, sfx="wood_high")
+scene("下周又从头来", "下一个任务", (560, 2550, 0.55))
+L(arrow((230, 3330), (230, 1730), 0.06, 80), 0, 1.0, GREEN, 14, sfx="wood_high")
 L(doc(640, 2370, 220, 280), 2, 2.9, BLACK, 9, sfx="wood_low")
 T("下个任务", 640, 2110, 90, k0=3, sfx="pop")
 T("这次早点开始", 640, 2700, 86, BLUE, k0=5, sfx="pop")
@@ -331,7 +335,7 @@ for i, s in enumerate(STATIONS):
 
 ZI = (1590, 2700)               # 圈里的小周
 DOC = (2060, 2600)
-M0, M1 = (1810, 2700), (2300, 2965)       # 怪兽：挡在中间 → 跳到“还有时间”那站
+M0, M1 = (1810, 2700), (2350, 2990)       # 怪兽：挡在中间 → 跳到“还有时间”那站
 
 
 def guard_fn(c, k, t):
@@ -352,7 +356,7 @@ def guard_fn(c, k, t):
     return draw_monster(c, x, y, s, arms, k)
 
 
-scene("拖着能躲一会儿", "书中观点 · 拖延在挡着", (1800, 2480, 0.78))
+scene("拖着能躲一会儿", "书中观点 · 拖延在挡着", (1800, 2470, 0.7))
 L(stick(*ZI, 0.6, "down"), 0, 0.9, sfx="wood_high")
 L(face(*ZI, 0.6, "flat"), 0.9, 1.0)
 L(doc(*DOC, 160, 200), 1, 1.8, BLACK, 8, sfx="wood_low")
