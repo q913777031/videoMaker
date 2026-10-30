@@ -101,15 +101,10 @@ def ring_arc(x, y, r, start=-60, sweep=300) -> skia.Path:
 
 
 def cloud(x, y, w=460, h=220) -> skia.Path:
-    p = skia.Path()
-    bumps = [(-0.36, 0.05, 0.2), (-0.15, -0.22, 0.24), (0.15, -0.22, 0.24), (0.36, 0.02, 0.2)]
-    p.moveTo(x - w / 2, y + h / 2)
-    for bx, by, br in bumps:
-        cxp, cyp = x + bx * w, y + by * h
-        p.quadTo(cxp - br * w * 1.1, cyp - br * h * 1.6, cxp, cyp - br * h * 1.2)
-        p.quadTo(cxp + br * w * 1.1, cyp - br * h * 1.6, cxp + br * w * 0.9, cyp + br * h * 0.4)
-    p.lineTo(x + w / 2, y + h / 2)
-    p.close()
+    """乌云：圆角底 + 三个鼓包取并集的外轮廓；字写在 (x, y + 0.2h) 附近。"""
+    p = rect(x, y + 0.2 * h, w, 0.6 * h, 0.3 * h)
+    for bx, by, br in ((-0.22, -0.02, 0.32), (0.08, -0.14, 0.42), (0.3, 0.04, 0.28)):
+        p = skia.Op(p, circle(x + bx * w, y + by * h, br * h), skia.PathOp.kUnion_PathOp)
     return p
 
 
@@ -170,6 +165,8 @@ def monster_path(x, y, s=1.0, arms="down") -> tuple[skia.Path, float, float, flo
     else:
         hl, hr = (cx - 1.3 * R, cy + 0.55 * R), (cx + 1.28 * R, cy + 0.2 * R)
         parts += [P((cx - 0.95 * R, cy + 0.25 * R), hl), P((cx + 0.97 * R, cy + 0.05 * R), hr)]
+    if arms == "raise":                                  # 举手慌叫时日历页不画
+        return join(*parts), cx, cy, R
     px, py = hr[0] + 0.25 * R, hr[1] - 0.12 * R          # 日历页
     pw, ph = 0.42 * R, 0.5 * R
     parts += [rect(px, py, pw, ph, 0.05 * R), P((px - pw / 2, py - ph / 2 + 0.13 * R), (px + pw / 2, py - ph / 2 + 0.13 * R))]
@@ -219,10 +216,10 @@ L(stick(*ZT, 0.8, "hold"), 1, 1.8, sfx="wood_high")
 L(face(*ZT, 0.8, "smile"), 1.8, 2.0)
 L(phone(ZT[0] + 108, ZT[1] - 180), 2, 2.6, BLUE, 8, sfx="pop")
 T("周二周三", 2120, 560, 56, k0=3, sfx="pop")
-L(join(cross(2064, 560, 34), cross(2176, 560, 34)), 4, 4.5, RED, 9, sfx="rim")
-L(bubble(1520, 800, 400, 150, -1), 5, 5.3, BLACK, 8, sfx="pop")
-T("还有四天", 1520, 800, 60, k0=5.3, k1=6.3)
-b.custom(J(), 7, 8, monster_fn(2240, 1400, 0.6), sfx="tom")
+L(P((1990, 562), (2250, 552)), 4, 4.5, RED, 9, sfx="rim")
+b.custom(J(), 5, 6, monster_fn(2240, 1400, 0.6), sfx="tom")
+L(bubble(1520, 800, 400, 150, -1), 6, 6.3, BLACK, 8, sfx="pop")
+T("还有四天", 1520, 800, 60, k0=6.3, k1=7.3)
 
 scene("书里画了个圈", "拖延心理学 · 书中观点", (3040, 900, 0.85))
 L(book(2830, 860, 380, 260), 0, 0.9, sfx="wood_low")
@@ -233,13 +230,13 @@ T("圈", 3290, 870, 120, RED, k0=4, sfx="ding")
 T("拖延的人在绕圈", 3040, 1290, 60, k0=5, sfx="pop")
 
 # drop：周四深夜，明天怪兽一下顶到天花板
-ROOM = dict(wall=2700, ceil=2340, floor=2980, right=3600)
+ROOM = dict(wall=2720, ceil=2370, floor=2980, right=3600)
 MB = (3290, ROOM["floor"])      # 大怪兽脚底
-ZN = (2810, ROOM["floor"])      # 缩在墙角的小周
+ZN = (2830, ROOM["floor"])      # 缩在墙角的小周
 
 
 def burst_fn(c, k, t):
-    s = lerp(0.6, 2.0, 1 - (1 - k) ** 3)
+    s = lerp(0.6, 1.9, 1 - (1 - k) ** 3)
     draw_monster(c, *MB, s, "raise", 1.0)
     return None
 
@@ -249,11 +246,11 @@ L(join(P((ROOM["wall"], ROOM["floor"]), (ROOM["wall"], ROOM["ceil"]), (ROOM["rig
        P((ROOM["wall"], ROOM["floor"]), (ROOM["right"], ROOM["floor"]))), 0, 0.5, BLACK, 9)
 b.custom(J(), 0, 1, burst_fn, sfx="kick")
 H(1, "tom", 0.9)
-L(join(clock(2800, 2445, 70), hands_at(2800, 2445, 70, 11, 0)), 2, 2.9, BLACK, 8, sfx="wood_high")
-T("23:00", 2800, 2580, 56, RED, k0=3, sfx="pop")
+L(join(clock(2820, 2470, 70), hands_at(2820, 2470, 70, 11, 0)), 2, 2.9, BLACK, 8, sfx="wood_high")
+T("23:00", 2820, 2600, 56, RED, k0=3, sfx="pop")
 L(stick(*ZN, 0.5, "shrug"), 5, 5.8, BLUE, 8, sfx="wood_low")
 L(face(*ZN, 0.5, "sad"), 5.8, 6.0, BLUE, 7)
-T("慌", 2790, 2700, 64, RED, k0=6, sfx="rim")
+T("慌", 2810, 2710, 64, RED, k0=6, sfx="rim")
 L(sweat(ZN[0], ZN[1] - 150, 0.6), 7, 7.6, BLUE, 7, sfx="pop")
 
 ZC = (2950, 4520)               # 小周（骂自己）
@@ -262,7 +259,7 @@ L(stick(*ZC, 0.85, "down"), 0, 0.9, sfx="wood_high")
 L(face(*ZC, 0.85, "sad"), 0.9, 1.0)
 L(cloud(2950, 3900, 480, 230), 1, 1.9, BLUE, 9, sfx="pop")
 L(rain(2950, 4040), 2, 2.6, BLUE, 7, sfx="shaker")
-T("我怎么回事", 2950, 3920, 58, k0=3, sfx="pop")
+T("我怎么回事", 2950, 3955, 58, k0=3, sfx="pop")
 T("又拖了", 3330, 4250, 64, RED, k0=5, sfx="rim")
 L(bolt(3240, 4100, 0.6), 6, 6.6, RED, 9, sfx="tom")
 
@@ -273,7 +270,7 @@ L(face(1800, 4540, 0.6, "flat"), 1.8, 2.0)
 T("熬夜赶", 1450, 3770, 64, k0=2, sfx="pop")
 T("交白卷", 2150, 3770, 64, k0=3, sfx="pop")
 L(oval(1450, 3800, 300, 190), 5, 5.8, RED, 9, sfx="ding")
-L(cross(2150, 3770, 60), 6, 6.6, RED, 10, sfx="rim")
+L(P((2040, 3772), (2260, 3762)), 6, 6.5, RED, 10, sfx="rim")
 
 ZF = (720, 4520)                # 小周（发誓）
 scene("赶完发誓再也不拖", "周五凌晨 · 交了", (560, 4000, 0.85))
@@ -295,7 +292,7 @@ L(underline(400, 880, 2775), 7, 7.8, RED, 9, sfx="rim")
 
 # ---------------------------------------------------------------- 正中：书里的圈（场景 9–13）
 
-C, RR = (1800, 2420), 450
+C, RR = (1800, 2720), 450
 STATIONS = ["早点开始", "得开始了", "要是不开始", "还有时间", "我有毛病", "做不做", "再也不拖"]
 LS = 68                         # 站名字号（全圈视角 z≈0.62 时屏上 ≈42px）
 
@@ -327,15 +324,15 @@ def big_ring() -> skia.Path:
     return join(*parts)
 
 
-scene("圈上有七站", "书中观点 · 拖延的圈", (1800, 2440, 0.62))
+scene("圈上有七站", "书中观点 · 拖延的圈", (1830, 2740, 0.62))
 L(big_ring(), 0, 1.0, BLACK, 10, sfx="wood_high")
 for i, s in enumerate(STATIONS):
     x, y = label_pos(i)
     T(s, x, y, LS, BLUE if i == 3 else (RED if i == 6 else BLACK), k0=1 + i, sfx="ding" if i == 3 else "pop")
 
-ZI = (1590, 2700)               # 圈里的小周
-DOC = (2060, 2600)
-M0, M1 = (1810, 2700), (2350, 2990)       # 怪兽：挡在中间 → 跳到“还有时间”那站
+ZI = (1590, 3000)               # 圈里的小周
+DOC = (2060, 2900)
+M0, M1 = (1810, 3000), (2350, 3290)       # 怪兽：挡在中间 → 跳到“还有时间”那站
 
 
 def guard_fn(c, k, t):
@@ -356,37 +353,37 @@ def guard_fn(c, k, t):
     return draw_monster(c, x, y, s, arms, k)
 
 
-scene("拖着能躲一会儿", "书中观点 · 拖延在挡着", (1800, 2470, 0.7))
+scene("拖着能躲一会儿", "书中观点 · 拖延在挡着", (1867, 2770, 0.7))
 L(stick(*ZI, 0.6, "down"), 0, 0.9, sfx="wood_high")
 L(face(*ZI, 0.6, "flat"), 0.9, 1.0)
 L(doc(*DOC, 160, 200), 1, 1.8, BLACK, 8, sfx="wood_low")
 T("方案", DOC[0], DOC[1] - 150, 62, k0=2, sfx="pop")
 b.custom(J(), 3, 4, guard_fn, sfx="tom")
-T("替你挡着", 1800, 2185, 72, RED, k0=5, sfx="ding")
+T("替你挡着", 1800, 2485, 72, RED, k0=5, sfx="ding")
 
-J_HERE = scene("先认出你在哪站", "做法一 · 认出在哪站", (1800, 2520, 0.64))
+J_HERE = scene("先认出你在哪站", "做法一 · 认出在哪站", (1830, 2820, 0.64))
 H(0, "wood_low")
 H(1, "tom", 0.9)
-L(pin(ZI[0], 2465), 2, 2.8, RED, 9, sfx="pop")
-T("你在这", ZI[0], 2330, 66, RED, k0=3, sfx="pop")
-L(arrow((1660, 2730), (1965, 2800), -0.12, 34), 5, 5.9, GREEN, 9, sfx="wood_high")
+L(arrow((1660, 3030), (1965, 3100), -0.12, 34), 2, 2.9, GREEN, 9, sfx="wood_high")
+L(pin(ZI[0], 2765), 3, 3.8, RED, 9, sfx="pop")
+T("你在这", ZI[0], 2630, 66, RED, k0=5, sfx="pop")
 
 ST4 = label_pos(3)
-scene("在还有时间那站动", "做法二 · 先动一小块", (1800, 2520, 0.64))
-L(oval(ST4[0] + 60, ST4[1] - 10, 560, 250), 0, 0.9, RED, 9, sfx="ding")
-L(arrow((2330, 3010), (2370, 3110), 0.2, 30), 1, 1.6, GREEN, 9, sfx="wood_high")
-L(note(2400, 3195, 320, 140), 2, 2.4, ORANGE, 9, sfx="pop")
-T("先写标题", 2390, 3185, 62, k0=2.4, k1=3.4)
-L(check(2595, 3130, 40), 4, 4.5, GREEN, 10, sfx="pop")
+scene("在还有时间那站动", "做法二 · 先动一小块", (1830, 2820, 0.64))
+L(oval(2200, ST4[1] - 10, 640, 270), 0, 0.9, RED, 9, sfx="ding")
+L(arrow((2140, ST4[1] + 125), (2110, ST4[1] + 215), 0.2, 30), 1, 1.6, GREEN, 9, sfx="wood_high")
+L(note(2100, ST4[1] + 290, 320, 140), 2, 2.4, ORANGE, 9, sfx="pop")
+T("先写标题", 2090, ST4[1] + 280, 62, k0=2.4, k1=3.4)
+L(check(2300, ST4[1] + 225, 40), 4, 4.5, GREEN, 10, sfx="pop")
 
 GAP = (C[0], C[1] + RR)
-J_CUT = scene("圈就松了一截", "做法二 · 圈断开了", (1800, 2520, 0.6))
+J_CUT = scene("圈就松了一截", "做法二 · 圈断开了", (1830, 2820, 0.62))
 b.erase(J(), 0, 0.6, GAP[0], GAP[1], 90, 80)
 H(0, "shaker")
 L(P((GAP[0] - 70, GAP[1] - 80), (GAP[0] + 70, GAP[1] + 80)), 1, 1.5, RED, 11, sfx="rim")
 H(2, "tom", 0.7)
-T("断开一个口", 1450, 3090, 66, RED, k0=4, sfx="pop")
-L(arrow((1660, 2735), (GAP[0] + 10, GAP[1] + 120), -0.25, 34), 6, 6.9, GREEN, 9, sfx="wood_high")
+T("断开一个口", 1450, 3390, 66, RED, k0=4, sfx="pop")
+L(arrow((1660, 3035), (GAP[0] + 10, GAP[1] + 120), -0.25, 34), 6, 6.9, GREEN, 9, sfx="wood_high")
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，第 4 拍推到评论区
 
