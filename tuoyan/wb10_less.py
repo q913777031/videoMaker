@@ -280,10 +280,12 @@ J2 = J()
 L(zhou(ZX, ZY, ZS, "hold", "frown"), 0, 0.9, sfx="wood_high")
 b.custom(J(), 1, 1.9, big_monster_fn, sfx="wood_low")
 b.custom(J(), 2, 2.8, big_belly_fn, sfx="pop")
-L(bubble(ZX, 800, 460, 130, 1), 3, 3.6, BLACK, 9, sfx="pop")
-T("我怎么又拖了", ZX, 800, 64, k0=3.6, k1=5.1)
-T("越学越拖", ZX, 590, 80, RED, k0=6, k1=7, sfx="ding")
-L(underline(ZX - 160, ZX + 160, 650, 10, 32), 7, 7.8, RED, 8, sfx="rim")
+T("越学越拖", ZX, 590, 80, RED, k0=3, k1=4, sfx="ding")
+L(bubble(ZX, 800, 460, 130, 1), 4, 4.6, BLACK, 9, sfx="pop")
+T("我怎么又拖了", ZX, 800, 64, k0=4.6, k1=6.1)
+L(underline(ZX - 160, ZX + 160, 650, 10, 32), 6.2, 6.9, RED, 8)
+L(join(P((2850, 820), (2900, 790)), P((2870, 900), (2940, 900)), P((2850, 980), (2900, 1010))), 7, 7.6, BLACK, 8,
+  sfx="shaker")
 
 # ---------------------------------------------------------------- 书中观点（场景 3–6）
 
