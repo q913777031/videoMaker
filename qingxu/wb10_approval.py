@@ -73,14 +73,20 @@ def cloud(x, y, w, h, bumps=10) -> skia.Path:
     return P(*pts, close=True)
 
 
-def ring(x, y, w, h, n=34) -> skia.Path:
-    """乌云的涂黑边：沿云边来回折的一圈短线。"""
+def ring(x, y, w, h, n=64) -> skia.Path:
+    """乌云的涂黑边：沿云边来回密密折的一圈短线。"""
     pts = []
     for i in range(n * 2 + 1):
         a = i / (n * 2) * 2 * math.pi
-        r = 0.9 if i % 2 == 0 else 0.76
+        r = 0.9 if i % 2 == 0 else 0.8
         pts.append((x + w / 2 * r * math.cos(a), y + h / 2 * r * math.sin(a)))
     return P(*pts)
+
+
+def tail(x0, y0, x1, y1) -> skia.Path:
+    """念头云的小尾巴：从云 (x0, y0) 往脑袋 (x1, y1) 排两个小圈。"""
+    return join(circle(x0 + (x1 - x0) * 0.35, y0 + (y1 - y0) * 0.35, 22),
+                circle(x0 + (x1 - x0) * 0.7, y0 + (y1 - y0) * 0.7, 13))
 
 
 def badge(x, y, s=1.0) -> skia.Path:
@@ -243,8 +249,8 @@ Z1 = (C1[0] + 350, 1330)
 body, mouth = zhou(*Z1, 0.75)
 L(body, 3, 3.8, BLACK, 9, sfx="wood_high")
 L(face(*Z1, 0.75, "sad"), 3.8, 4.0, BLACK, 8)
-L(cloud(Z1[0], 760, 400, 210), 4, 4.7, BLACK, 8, sfx="pop")
-L(ring(Z1[0], 760, 400, 210, 26), 5, 5.6, BLACK, 5, sfx="shaker")
+L(join(cloud(Z1[0], 760, 400, 210), tail(Z1[0], 880, Z1[0] - 10, 1060)), 4, 4.7, BLACK, 8, sfx="pop")
+L(ring(Z1[0], 760, 400, 210, 44), 5, 5.6, BLACK, 5, sfx="shaker")
 T("他不满意了", Z1[0], 762, 54, RED, k0=4.7, k1=6.0)
 
 C2 = (X0 + 650, 1000)
@@ -258,8 +264,8 @@ L(lamp(C2[0] + 230, 1130, 0.8), 2, 2.9, BLACK, 8, sfx="wood_low")
 CK = (C2[0] + 300, 640)
 L(join(clock(*CK, 85), hands_at(*CK, 85, 1, 0)), 3, 3.9, BLACK, 8, sfx="wood_high")
 T("凌晨一点", CK[0], 800, 52, RED, k0=4, k1=5, sfx="pop")
-L(cloud(Z2[0], 760, 420, 210), 5, 5.7, BLACK, 8, sfx="pop")
-L(ring(Z2[0], 760, 420, 210, 26), 6, 6.6, BLACK, 5, sfx="shaker")
+L(join(cloud(Z2[0], 760, 420, 210), tail(Z2[0], 880, Z2[0] - 10, 1060)), 5, 5.7, BLACK, 8, sfx="pop")
+L(ring(Z2[0], 760, 420, 210, 44), 6, 6.6, BLACK, 5, sfx="shaker")
 T("得让他满意", Z2[0], 762, 54, RED, k0=6.6, k1=7.9)
 
 # ---------------------------------------------------------------- 亮书：往下挖（场景 3）
@@ -278,7 +284,7 @@ L(arrow((X0, GY - 170), (X0, GY + 180), 0.0, 44), 7, 7.9, RED, 10, sfx="ding")
 
 # ---------------------------------------------------------------- ★ drop：钻头一口气穿过四层土（场景 4）
 
-FINAL4 = (X0, 7000, 0.4)
+FINAL4 = (X0, 7300, 0.55)
 J4 = scene("挖到底了", "往下挖 · 一口气到底", FINAL4, shake=[0, 4], flashes=[0])
 STOPS = [GY, YT[1], YT[2], YT[3], ROCK_TOP]     # 第 0–4 拍钻头尖所在深度
 BIT = 260
@@ -370,15 +376,15 @@ for i, (thought, size, icon) in enumerate(LAYERS):
     L(arrow((X0, yt + 790), (X0, yt + 990), 0.0, 40), 7.3, 8.0, BLUE, 9)
 
 yt = YT[3]
-scene("没人认可就不值钱", "往回走 · 第 4 层", (X0, yt + 700, 0.85))
+scene("没人认可就不值钱", "往回走 · 第 4 层", (X0, 6900, 0.62))
 layer_label(4, yt + 300)
 layer_icon("tag", X0 + 500, yt + 330)
 L(cloud(X0, yt + 380, 620, 340), 2, 2.9, BLACK, 8, sfx="wood_high")
-T("没人认可", X0, yt + 330, 62, RED, k0=3, k1=4, sfx="pop")
-T("我就一文不值", X0, yt + 430, 62, RED, k0=4, k1=5.5)
+T("没人认可", X0, yt + 330, 66, RED, k0=3, k1=4, sfx="pop")
+T("我就一文不值", X0, yt + 430, 66, RED, k0=4, k1=5.5)
 L(ring(X0, yt + 380, 620, 340), 5.5, 6.0, BLACK, 9)
 L(arrow((X0, yt + 600), (X0, ROCK_TOP - 20), 0.0, 46), 6, 6.9, RED, 11, sfx="ding")
-T("到底了", X0 + 190, 7150, 56, RED, k0=7, k1=7.9, sfx="tom")
+T("到底了", X0 + 190, 7150, 66, RED, k0=7, k1=7.9, sfx="tom")
 H(5, "shaker")
 
 # ---------------------------------------------------------------- 书中观点：沉默的假设、认同上瘾（场景 9–10）
@@ -411,7 +417,7 @@ H(7, "rim")
 # ---------------------------------------------------------------- 换一句自己信的话（场景 11）
 
 WC = (X0 + 620, 7150)
-scene("换一块垫脚石", "换一句话 · 白云", (X0 + 300, 7600, 0.7))
+scene("换一块垫脚石", "换一句话 · 白云", (X0 + 380, 7600, 0.7))
 L(P((X0 - 420, 7585), (X0 + 420, 7575)), 0, 0.7, BLUE, 12, sfx="rim")
 L(arrow((X0 + 420, 7380), (WC[0] - 240, WC[1] + 60), -0.25, 36), 1, 1.8, BLUE, 9, sfx="wood_high")
 L(cloud(*WC, 460, 280), 2, 2.9, BLUE, 8, sfx="pop")
