@@ -212,6 +212,7 @@ L(zhou(2300, CY + 400, 0.75, "hold"), 5, 5.8, BLUE, 9, sfx="wood_high")
 L(face(2300, CY + 400, 0.75, "smile"), 5.8, 6.0, BLUE, 8)
 L(join(doc(2460, CY + 120, 150, 190), star(2460, CY + 40, 34)), 6, 6.8, BLUE, 8, sfx="pop")
 T("他的大功", 2330, CY - 250, 62, BLUE, k0=7, k1=8, sfx="ding")
+park(8.0, (2390, CY - 250), (2560, CY + 470))
 
 CY = 4950
 R1, R2 = CY - 260, CY + 280
