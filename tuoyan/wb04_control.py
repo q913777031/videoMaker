@@ -360,22 +360,23 @@ T("他拽一下，我挪一下", 1500, 3270, 60, RED, k0=5, k1=7.25, sfx="pop")
 LX, RX, MX = 1150, 1850, 1500
 R1, ROW = 5000, 1150
 ROWS = [R1 + i * ROW for i in range(4)]
-DIV = (MX, 3600, ROWS[-1] + 300)
+DIV = (MX, 3690, ROWS[-1] + 300)
 
-scene("改一句话试试", "改写 · 换个说法", (1500, 4150, 0.8))
-T("心里原话", LX, 3680, 64, k0=0, k1=1, sfx="pop")
-L(underline(LX - 140, LX + 140, 3745, 10, 36), 1, 1.7, BLACK, 7, sfx="wood_high")
-T("改写后", RX, 3680, 64, BLUE, k0=2, k1=2.8, sfx="pop")
-L(underline(RX - 110, RX + 110, 3745, 10, 36), 3, 3.7, BLUE, 7, sfx="wood_high")
-b.custom(J(), 4, 5, divider_fn(*DIV), sfx="wood_low")
-L(arrow((1220, 3950), (1600, 3950), -0.12, 40), 5, 5.8, GREEN, 10, sfx="ding")
-L(dashed_box(RX + 40, 3950, 380, 150), 6, 6.8, BLUE, 7, sfx="pop")
-T("？", RX + 40, 3950, 80, BLUE, k0=7, k1=7.8, sfx="pop")
+scene("改一句话试试", "改写 · 换个说法", (1500, 4300, 0.8))
+T("心里原话", LX, 3760, 64, k0=0, k1=1, sfx="pop")
+L(underline(LX - 140, LX + 140, 3825, 10, 36), 1, 1.7, BLACK, 7, sfx="wood_high")
+T("改写后", RX, 3760, 64, BLUE, k0=2, k1=2.8, sfx="pop")
+L(underline(RX - 110, RX + 110, 3825, 10, 36), 3, 3.7, BLUE, 7, sfx="wood_high")
+b.custom(J(), 4, 5, divider_fn(MX, DIV[1], R1 - 850), sfx="wood_low")   # 绳子分段往下垂：每屏只垂到本屏这一组
+L(arrow((1220, 4030), (1600, 4030), -0.12, 40), 5, 5.8, GREEN, 10, sfx="ding")
+L(dashed_box(RX + 40, 4030, 380, 150), 6, 6.8, BLUE, 7, sfx="pop")
+T("？", RX + 40, 4030, 80, BLUE, k0=7, k1=7.8, sfx="pop")
 
 
 def row(r, left, right, cap, tag):
     """一组改写的前半：左栏原话 → 红线划掉 → 绿箭头 → 右栏蓝字（right 可以是两行）。返回本镜序号。"""
     j = scene(cap, tag, (1500, r + 50, 0.8))
+    b.custom(j, 0, 0.8, divider_fn(MX, r - 850, r + 300))
     T(left, LX, r - 300, 64, k0=0, sfx="pop")
     L(strike(LX, r - 300, K.text_w(left, 64, "hand")), 2, 2.6, RED, 10, sfx="rim")
     L(arrow((1370, r - 300), (1600, r - 300), -0.1, 30), 3, 3.7, GREEN, 9, sfx="wood_high")
@@ -396,6 +397,7 @@ L(face(1700, r + 250, 0.6, "smile"), 7.8, 8)
 
 r = ROWS[1]
 j9 = scene("先报个时间", "改写二 · 报时间", (1500, r + 50, 0.8))
+b.custom(j9, 0, 0.8, divider_fn(MX, r - 850, r + 300))
 T("别催了", LX, r - 300, 64, k0=0, k1=0.8, sfx="pop")
 L(strike(LX, r - 300, K.text_w("别催了", 64, "hand")), 1, 1.6, RED, 10, sfx="rim")
 L(arrow((1300, r - 300), (1570, r - 300), -0.1, 30), 2, 2.7, GREEN, 9, sfx="wood_high")
