@@ -25,7 +25,7 @@ from .common import BOOK, episode
 ACC = "#3B6FB6"
 SQUARE_SHOT = 9                 # 场景 10：两根柱子对比 + 小周
 
-b = Board(size=(6600, 9800))
+b = Board(size=(6600, 10300))
 
 
 def J():
@@ -296,7 +296,7 @@ L(circle(XZ, VY, 95), 7, 7.8, RED, 10, sfx="ding")
 scene("一本讲专注的书", "《深度工作》", (5650, 4050, 0.85))
 L(book(5450, 4060, 440, 300), 0, 0.9, BLACK, 9, sfx="wood_low")
 T("《深度工作》", 5450, 3700, 72, GREEN, k0=1, k1=2.5, sfx="pop")
-L(stick(6000, 4200, 0.7, "point"), 3, 3.8, BLACK, 9, sfx="wood_high")
+L(stick(6000, 4200, 0.7), 3, 3.8, BLACK, 9, sfx="wood_high")
 L(rect(6000, 4330, 380, 90, 12), 4, 4.8, BLACK, 8, sfx="wood_low")
 T("卡尔·纽波特", 6000, 4330, 54, k0=5, k1=6.5, sfx="pop")
 
@@ -412,6 +412,39 @@ T("不被打断？", 2000, 8860, 72, RED, k0=6, k1=7.25, sfx="pop")
 C(8, 8.4, reddot_fn([(J(), 8, 2560, 8530, "1")], r=40), sfx="ding")
 T("下一讲：回条消息，怎么半天回不了神？", 2000, 9180, 46, k0=9, k1=13.5, sfx="wood_high")
 b.hit(J(), 16, "kick", 0.55, "原曲最后一击")
+
+
+# ---------------------------------------------------------------- 整体下移
+# 场景 4 起的内容整体下移 DY，让场景 13 拉远看全板时，开局三屏的内容不进画面上沿和页眉带。
+
+DY = 500
+
+
+def _shift_fn(fn):
+    def g(c, k, t):
+        c.save()
+        c.translate(0, DY)
+        tip = fn(c, k, t)
+        c.restore()
+        return (tip[0], tip[1] + DY) if tip else tip
+
+    return g
+
+
+for _it in b.items:
+    if _it["j"] < 3:
+        continue
+    if _it["kind"] == "path":
+        _it["path"] = skia.Path(_it["path"])
+        _it["path"].offset(0, DY)
+    elif _it["kind"] == "text":
+        _it["y"] += DY
+    elif _it["kind"] == "erase":
+        _x, _y, _w, _h = _it["rect"]
+        _it["rect"] = (_x, _y + DY, _w, _h)
+    else:
+        _it["fn"] = _shift_fn(_it["fn"])
+b.views[3:] = [(v[0], v[1] + DY, v[2]) for v in b.views[3:]]
 
 
 def build():
