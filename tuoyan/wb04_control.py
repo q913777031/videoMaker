@@ -119,8 +119,8 @@ def flat_phone(x, y) -> skia.Path:
 def cloud(x, y, w, h, tail) -> skia.Path:
     """想法云：圆角框 + 一串小圆点指向 tail=(x, y)。"""
     tx, ty = tail
-    return join(rect(x, y, w, h, h / 2), circle(x + (tx - x) * 0.55, y + h / 2 + (ty - y - h / 2) * 0.35, 22),
-                circle(x + (tx - x) * 0.82, y + h / 2 + (ty - y - h / 2) * 0.72, 13))
+    return join(rect(x, y, w, h, h / 2), circle(x + (tx - x) * 0.4, y + h / 2 + (ty - y - h / 2) * 0.22, 22),
+                circle(x + (tx - x) * 0.62, y + h / 2 + (ty - y - h / 2) * 0.5, 13))
 
 
 def flag(x, y) -> skia.Path:
@@ -225,7 +225,7 @@ def rope_path(a, b, off, n=48, ticks=True) -> skia.Path:
 
 # ---------------------------------------------------------------- 拔河绳（场景 3 描出，场景 4 第 0 拍绷直）
 
-RA, RB = (970, 2880), (2030, 2880)      # 两只手握绳处
+RA, RB = (1020, 2880), (1980, 2880)      # 两只手握绳处
 SAG = 110
 
 
@@ -326,15 +326,15 @@ j4 = j3 + 1
 b.custom(j3, 6, 6.9, tug_fn(j3, j4), sfx="wood_high")
 T("谁说了算？", 1500, 3150, 70, RED, k0=7, k1=8, sfx="ding")
 
-LEAD, LEAD_HEAD = puller(860, 3050, 0.9, 1, RA, tie=True)
-ZHOU, ZHOU_HEAD = puller(2140, 3050, 0.9, -1, RB, badge=True)
+LEAD, LEAD_HEAD = puller(920, 3050, 0.9, 1, RA, tie=True)
+ZHOU, ZHOU_HEAD = puller(2080, 3050, 0.9, -1, RB, badge=True)
 
 scene("拖着就是不服", "书中观点 · 争主导权", (1500, 2660, 0.68), shake=[0], flashes=[0])
 b.custom(J(), 0, 0.25, pop_in_fn([LEAD, ZHOU], BLACK, 10), sfx="kick")
 L(knot(1500, 2880), 1, 1.6, BLACK, 9, sfx="tom")
 T("拖", 1500, 2740, 120, RED, k0=2, k1=2.8, sfx="ding")
-T("领导", 790, 2660, 56, k0=3, k1=3.8, sfx="pop")
-T("小周", 2210, 2660, 56, BLUE, k0=4, k1=4.8, sfx="pop")
+T("领导", 860, 2660, 56, k0=3, k1=3.8, sfx="pop")
+T("小周", 2140, 2660, 56, BLUE, k0=4, k1=4.8, sfx="pop")
 L(strain(1500, 2880), 5, 5.8, RED, 8, sfx="shaker")
 L(lean_face(LEAD_HEAD, 0.9), 6, 6.6, BLACK, 7, sfx="wood_high")
 L(lean_face(ZHOU_HEAD, 0.9), 6.6, 7.2, BLACK, 7)
@@ -348,8 +348,8 @@ L(flag(2780, 3050), 5, 5.9, BLACK, 9, sfx="wood_low")
 T("认输", 2900, 2880, 60, RED, k0=6, k1=6.8, sfx="rim")
 
 scene("节奏还在他手里", "书中观点 · 被牵着走", (1500, 2660, 0.68))
-L(skid(2140, 3050), 0, 0.7, BLACK, 7, sfx="shaker")
-L(arrow((1960, 2790), (1680, 2790), 0.12, 34), 1, 1.8, RED, 9, sfx="wood_high")
+L(skid(2080, 3050), 0, 0.7, BLACK, 7, sfx="shaker")
+L(arrow((1900, 2790), (1660, 2790), 0.12, 34), 1, 1.8, RED, 9, sfx="wood_high")
 L(clock(1180, 2650, 70), 2, 2.8, BLACK, 8, sfx="tom")
 L(hands_at(1180, 2650, 70, 12, 50), 3, 3.4, RED, 8, sfx="pop")
 T("节奏", 1180, 2785, 50, k0=4, k1=4.8, sfx="pop")
@@ -416,7 +416,7 @@ b.custom(j11, 7, 7.3, stamp_fn(1880, r + 160, 62, "小周"), sfx="kick")
 # ---------------------------------------------------------------- 绳子松了 / 拉远看两栏（场景 12–13）
 
 R5 = ROWS[-1] + ROW
-scene("绳子松了", "改写之后", (1450, R5 + 50, 0.85))
+scene("绳子松了", "改写之后", (1420, R5 + 50, 0.85))
 L(stick(950, R5 + 300, 0.9, "down", tie=True), 0, 0.9, BLACK, 9, sfx="wood_high")
 L(face(950, R5 + 300, 0.9, "smile"), 0.9, 1.1)
 L(zhou(1650, R5 + 300, 0.9, "down"), 1, 1.9, BLACK, 9, sfx="wood_high")
@@ -425,8 +425,8 @@ L(P((1013, R5 + 192), (1040, R5 + 285), (1100, R5 + 292), (1300, R5 + 288), (150
     (1587, R5 + 192)), 2, 2.9, BLACK, 11, sfx="wood_low")
 T("交付时间 16:00", 1300, R5 + 210, 54, GREEN, k0=3, k1=4.5, sfx="pop")
 T("不拽了", 1300, R5 - 230, 80, k0=5, k1=5.8, sfx="ding")
-L(monster(1990, R5 + 180, 90, "cross"), 6, 6.8, BLACK, 8, sfx="wood_low")
-T("明天", 1990, R5 + 198, 46, RED, k0=7, k1=7.8, sfx="pop")
+L(monster(1950, R5 + 180, 85, "cross"), 6, 6.8, BLACK, 8, sfx="wood_low")
+T("明天", 1950, R5 + 196, 46, RED, k0=7, k1=7.8, sfx="pop")
 
 COLS = (1500, (DIV[1] + DIV[2]) / 2, 0.176)
 scene("四句放一起看", "两栏对照", COLS)

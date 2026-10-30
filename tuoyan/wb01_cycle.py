@@ -167,7 +167,7 @@ def monster_path(x, y, s=1.0, arms="down") -> tuple[skia.Path, float, float, flo
         parts += [P((cx - 0.95 * R, cy + 0.25 * R), hl), P((cx + 0.97 * R, cy + 0.05 * R), hr)]
     if arms == "raise":                                  # 举手慌叫时日历页不画
         return join(*parts), cx, cy, R
-    px, py = hr[0] + 0.25 * R, hr[1] - 0.12 * R          # 日历页
+    px, py = (hr[0], hr[1] - 0.2 * R) if arms == "open" else (hr[0] + 0.25 * R, hr[1] - 0.12 * R)   # 日历页
     pw, ph = 0.42 * R, 0.5 * R
     parts += [rect(px, py, pw, ph, 0.05 * R), P((px - pw / 2, py - ph / 2 + 0.13 * R), (px + pw / 2, py - ph / 2 + 0.13 * R))]
     return join(*parts), cx, cy, R
@@ -330,9 +330,9 @@ for i, s in enumerate(STATIONS):
     x, y = label_pos(i)
     T(s, x, y, LS, BLUE if i == 3 else (RED if i == 6 else BLACK), k0=1 + i, sfx="ding" if i == 3 else "pop")
 
-ZI = (1590, 3000)               # 圈里的小周
-DOC = (2060, 2900)
-M0, M1 = (1810, 3000), (2350, 3290)       # 怪兽：挡在中间 → 跳到“还有时间”那站
+ZI = (1560, 3000)               # 圈里的小周
+DOC = (2085, 2900)
+M0, M1 = (1830, 3000), (2350, 3290)       # 怪兽：挡在中间 → 跳到“还有时间”那站
 
 
 def guard_fn(c, k, t):
@@ -340,11 +340,11 @@ def guard_fn(c, k, t):
     ta, tb = b.t_of(J_HERE, 0), b.t_of(J_HERE, 1)
     tc, td = b.t_of(J_CUT, 2), b.t_of(J_CUT, 3)
     if t < ta:
-        x, y, s, arms = *M0, 0.8, "open"
+        x, y, s, arms = *M0, 0.72, "open"
     elif t < tb:
         f = ease_in_out(clamp01((t - ta) / (tb - ta)))
         x, y = lerp(M0[0], M1[0], f), lerp(M0[1], M1[1], f) - 260 * 4 * f * (1 - f)
-        s, arms = lerp(0.8, 0.6, f), "down"
+        s, arms = lerp(0.72, 0.6, f), "down"
     elif t < tc:
         x, y, s, arms = *M1, 0.6, "down"
     else:
@@ -356,17 +356,18 @@ def guard_fn(c, k, t):
 scene("拖着能躲一会儿", "书中观点 · 拖延在挡着", (1867, 2770, 0.7))
 L(stick(*ZI, 0.6, "down"), 0, 0.9, sfx="wood_high")
 L(face(*ZI, 0.6, "flat"), 0.9, 1.0)
-L(doc(*DOC, 160, 200), 1, 1.8, BLACK, 8, sfx="wood_low")
-T("方案", DOC[0], DOC[1] - 150, 62, k0=2, sfx="pop")
+L(join(doc(*DOC, 140, 180, lines=0), P((DOC[0] - 45, DOC[1] + 25), (DOC[0] + 45, DOC[1] + 25)),
+       P((DOC[0] - 45, DOC[1] + 60), (DOC[0] + 30, DOC[1] + 60))), 1, 1.8, BLACK, 8, sfx="wood_low")
+T("方案", DOC[0] - 5, DOC[1] - 30, 56, k0=2, sfx="pop")
 b.custom(J(), 3, 4, guard_fn, sfx="tom")
 T("替你挡着", 1800, 2485, 72, RED, k0=5, sfx="ding")
 
 J_HERE = scene("先认出你在哪站", "做法一 · 认出在哪站", (1830, 2820, 0.64))
 H(0, "wood_low")
 H(1, "tom", 0.9)
-L(arrow((1660, 3030), (1965, 3100), -0.12, 34), 2, 2.9, GREEN, 9, sfx="wood_high")
+L(arrow((1630, 3030), (1965, 3100), -0.12, 34), 2, 2.9, GREEN, 9, sfx="wood_high")
 L(pin(ZI[0], 2765), 3, 3.8, RED, 9, sfx="pop")
-T("你在这", ZI[0], 2630, 66, RED, k0=5, sfx="pop")
+T("你在这", ZI[0], 2595, 66, RED, k0=5, sfx="pop")
 
 ST4 = label_pos(3)
 scene("在还有时间那站动", "做法二 · 先动一小块", (1830, 2820, 0.64))
@@ -383,7 +384,7 @@ H(0, "shaker")
 L(P((GAP[0] - 70, GAP[1] - 80), (GAP[0] + 70, GAP[1] + 80)), 1, 1.5, RED, 11, sfx="rim")
 H(2, "tom", 0.7)
 T("断开一个口", 1450, 3390, 66, RED, k0=4, sfx="pop")
-L(arrow((1660, 3035), (GAP[0] + 10, GAP[1] + 120), -0.25, 34), 6, 6.9, GREEN, 9, sfx="wood_high")
+L(arrow((1630, 3035), (GAP[0] + 10, GAP[1] + 120), -0.25, 34), 6, 6.9, GREEN, 9, sfx="wood_high")
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，第 4 拍推到评论区
 
