@@ -104,7 +104,7 @@ def figure(x, y, s=0.8, side=1, tie=False, hair=False) -> skia.Path:
     hy = y - 290 * s
     sh = hy + 80 * s
     parts = [circle(x, hy, 45 * s), P((x, hy + 45 * s), (x, y - 120 * s)),
-             P((x - 55 * s, y), (x, y - 120 * s), (x + 55 * s, y)), P((x, sh), (x - side * 70 * s, hy + 170 * s))]
+             P((x - 55 * s, y), (x, y - 120 * s), (x + 55 * s, y)), P((x, sh), (x + side * 70 * s, hy + 170 * s))]
     if tie:
         parts.append(P((x, hy + 50 * s), (x - 12 * s, hy + 100 * s), (x, hy + 120 * s), (x + 12 * s, hy + 100 * s),
                        close=True))
