@@ -28,7 +28,7 @@ from .common import BOOK, episode
 ACC = "#C84B3C"
 SQUARE_SHOT = 3                 # 场景 4（drop）：红字等式 + 小周举着方案
 
-b = Board(size=(3600, 6600))
+b = Board(size=(3700, 7300))
 
 
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None):
@@ -205,8 +205,8 @@ T("嗯嗯", 3150, 960, 56, BLUE, k0=7, k1=7.8, sfx="pop")
 
 # ---------------------------------------------------------------- 书中观点：一个等式（场景 3–7）
 
-b.shot("书里写了个等式", "拖延心理学 · 书中观点", (1800, 2650, 0.75), bars=3)
-L(book(1300, 2350, 340, 230), 0, 0.9, sfx="wood_low")
+b.shot("书里写了个等式", "拖延心理学 · 书中观点", (1830, 2650, 0.75), bars=3)
+L(book(1350, 2350, 340, 230), 0, 0.9, sfx="wood_low")
 T("《拖延心理学》", 2050, 2330, 68, GREEN, k0=1, k1=2.75, sfx="pop")
 T("博克和袁", 2050, 2440, 56, k0=3, k1=4, sfx="pop")
 L(corners(1830, EQY, 1400, 280), 5, 5.9, BLUE, 8, sfx="wood_high")
@@ -233,19 +233,18 @@ belly(*MON, k0=5, k1=5.8, sfx="pop")
 T("输不起", 1450, 3520, 90, RED, k0=6, k1=6.8, sfx="ding")
 L(underline(1320, 1580, 3580, 10, 30), 7, 7.8, RED, 7, sfx="rim")
 
-b.shot("拖着就没真比过", "书中观点 · 拖到最后", (2050, 2930, 0.75), bars=3)
+b.shot("拖着就没真比过", "书中观点 · 拖到最后", (2080, 2930, 0.7), bars=3)
 L(plank(EQ["=2"], EQY), 0, 0.9, ORANGE, 10, sfx="wood_low")
 T("没时间", EQ["=2"], 3150, 64, RED, k0=1, k1=1.8, sfx="pop")
 L(join(clock(EQ["=2"], 2640, 75), hands_at(EQ["=2"], 2640, 75, 11, 55)), 2, 2.9, BLACK, 8, sfx="wood_high")
 L(rays(EQ["=2"], 2640, 92, 120, 6, -90), 4, 4.7, RED, 6, sfx="shaker")
 L(underline(EQ["=2"] - 100, EQ["=2"] + 100, 3195, 8, 25), 5, 5.7, RED, 7, sfx="ding")
-T("结果差，怪时间", 2540, 3200, 52, BLUE, k0=6, k1=7.75, sfx="pop")
 
 b.shot("我本来能做好", "书中观点 · 本来能行", (2150, 2850, 0.8), bars=3)
-b.custom(J(), 0, 1.5, glow_fn(2350, 2600, 230), sfx="ding")
+b.custom(J(), 0, 1.5, glow_fn(2350, 2600, 170), sfx="ding")
 L(bubble(2350, 2600, 360, 140, -1), 1, 1.8, BLUE, 8, sfx="pop")
 T("本来能行", 2350, 2600, 64, BLUE, k0=2, k1=3, sfx="pop")
-L(rays(2350, 2600, 215, 250, 10, 0), 4, 4.8, ORANGE, 6, sfx="wood_high")
+L(rays(2350, 2600, 195, 225, 10, 0), 4, 4.8, ORANGE, 6, sfx="wood_high")
 L(P((EQ["能力"] - 140, EQY + 105), (EQ["能力"] + 140, EQY + 105)), 6, 6.6, BLUE, 8, sfx="pop")
 T("没被考过", EQ["能力"], EQY + 160, 52, BLUE, k0=6.6, k1=7.6)
 
@@ -270,12 +269,12 @@ L(doc(2450, 4700, 340, 440, 6), 0, 0.9, BLACK, 9, sfx="wood_high")
 T("简历", 2450, 4410, 56, k0=1, k1=1.8, sfx="pop")
 for n, (cx, cy) in enumerate(((2400, 4570), (2480, 4720), (2390, 4860))):
     L(circle(cx, cy, 42), 2 + n, 2.6 + n, RED, 7, sfx="pop" if n < 2 else "rim")
-T("改了半年", 3000, 4500, 60, RED, k0=5, k1=6, sfx="pop")
-L(envelope(3000, 4780), 6, 6.8, BLACK, 9, sfx="wood_high")
-T("没寄出", 3000, 4960, 60, k0=7, k1=7.8, sfx="rim")
+L(envelope(3000, 4780), 5, 5.8, BLACK, 9, sfx="wood_high")
+T("没寄出", 3000, 4960, 60, k0=6, k1=6.8, sfx="rim")
+T("改了半年", 3000, 4500, 60, RED, k0=7, k1=8, sfx="pop")
 
 b.shot("背后是同一个等式", "例子 · 同一个等式", (1800, 3700, 0.33), bars=3)
-L(arrow((850, 4360), (1160, 3010), 0, 60), 1, 1.9, GREEN, 14, sfx="wood_high")
+L(arrow((850, 4360), (1140, 2960), 0, 60), 1, 1.9, GREEN, 14, sfx="wood_high")
 L(arrow((2600, 4380), (2480, 3010), 0, 60), 2, 2.9, GREEN, 14, sfx="wood_high")
 T("同一个等式", 1800, 4200, 130, RED, k0=4, k1=5.25, sfx="pop")
 L(underline(1480, 2120, 4300, 16, 50), 6, 6.8, RED, 12, sfx="ding")
@@ -291,16 +290,16 @@ T("我这个人", EQ["我"], 3075, 56, BLUE, k0=4, k1=5, sfx="pop")
 T("这一次", EQ["这份方案"], 3075, 56, BLUE, k0=5, k1=5.8, sfx="pop")
 L(join(P((1590, 3300), (1770, 3360)), P((1590, 3360), (1770, 3300))), 6, 6.7, RED, 10, sfx="rim")
 
-b.shot("先交个能用的", "第二步 · 先交再改", (2650, 3250, 0.7), bars=3)
-NX, NY = 2950, 3450
+b.shot("先交个能用的", "第二步 · 先交再改", (2970, 3110, 0.8), bars=3)
+NX, NY = 3000, 3330
 b.custom(J(), 0, 0.5, note_fn(NX, NY, 300, 220))
 L(rect(NX, NY, 300, 220, 8), 0, 0.9, ORANGE, 8, sfx="wood_high")
 T("先交", NX, NY - 50, 60, k0=1, k1=1.8, sfx="pop")
 T("七十分版", NX, NY + 45, 60, RED, k0=2, k1=3, sfx="pop")
-L(arrow((NX - 160, NY - 70), (ZX + 95, 3230), 0.1, 34), 4, 4.8, GREEN, 9, sfx="wood_high")
-L(check(ZX, 3215, 40), 5, 5.6, GREEN, 10, sfx="ding")
-L(loop_arrow(NX - 70, 3690), 6, 6.6, BLUE, 8, sfx="pop")
-T("再改", NX + 40, 3690, 60, BLUE, k0=6.6, k1=7.4)
+L(arrow((NX - 165, NY - 60), (2490, 3010), 0.1, 34), 4, 4.8, GREEN, 9, sfx="wood_high")
+L(check(NX + 230, NY - 60, 40), 5, 5.6, GREEN, 10, sfx="ding")
+L(loop_arrow(NX - 70, 3610), 6, 6.6, BLUE, 8, sfx="pop")
+T("再改", NX + 50, 3610, 60, BLUE, k0=6.6, k1=7.4)
 
 b.shot("说事别说人", "第三步 · 说事别说人", (700, 3100, 0.85), bars=3)
 L(rect(600, 3100, 440, 560, 14), 0, 0.9, BLACK, 9, sfx="wood_high")
@@ -313,15 +312,16 @@ L(check(760, 3320, 36), 7, 7.6, GREEN, 9, sfx="ding")
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，再推到评论区
 
-FAR = (1800, 3300, 0.15)
+FAR = (1850, 3500, 0.15)
 COMMENT = (1800, 5800, 0.8)
 b.shot("你在拖哪件事", "评论区见", FAR, bars=4)
 b.move(J(), 4, COMMENT, dur=1.1)
 H(0, "cymbal", 0.5)
 H(2, "ding")
 H(4, "wood_high", 0.6)
-T("你在拖哪件事？", 1800, 5700, 76, RED, k0=6, k1=8, sfx="pop")
-T("下一讲：做得太好，怕以后都得这么好", 1800, 5860, 50, k0=9, k1=13.5, sfx="wood_high")
+L(bubble(1800, 5680, 720, 170, -1), 5, 5.8, BLUE, 8, sfx="pop")
+T("你在拖哪件事？", 1800, 5680, 76, RED, k0=6, k1=8, sfx="pop")
+T("下一讲：做得太好，怕以后都得这么好", 1800, 5930, 50, k0=9, k1=13.5, sfx="wood_high")
 b.hit(J(), 16, "kick", 0.55, "原曲最后一击")
 
 
