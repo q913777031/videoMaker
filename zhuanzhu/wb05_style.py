@@ -81,9 +81,8 @@ def tower(x, y, w=180, h=420) -> skia.Path:
     parts.append(P(*cren))
     parts.append(join(P((x - 22, top + 140), (x - 22, top + 90), (x + 22, top + 90), (x + 22, top + 140)),
                       P((x - 22, top + 140), (x + 22, top + 140))))
-    for i, yy in enumerate((top + 220, top + 300, y - 40)):
-        dx = 30 if i % 2 else -30
-        parts.append(P((x - w / 2 + 30, yy), (x + dx, yy)))
+    for yy in (top + 210, top + 290):
+        parts.append(P((x - w / 2, yy), (x + w / 2, yy)))
     parts.append(P((x - 30, y), (x - 30, y - 80), (x + 30, y - 80), (x + 30, y)))
     return join(*parts)
 
@@ -202,9 +201,8 @@ def scene(text, tag, view, bars=3, **kw):
 scene("先打个勾", "自测 · 先打个勾", (880, 1250, 0.72), bars=2)
 L(rect(880, 1250, 1040, 1150, 30), 0, 0.9, BLACK, 10, sfx="wood_high")
 L(join(rect(880, 675, 240, 70, 14), circle(880, 640, 18)), 1, 1.6, BLACK, 9, sfx="pop")
-T("先打个勾", 880, 800, 84, RED, k0=2, k1=3, sfx="pop")
-L(join(*[rect(BX, y, 80, 80, 8) for y in ROWS]), 3, 4.6, BLACK, 8, sfx="wood_high")
-H(4, "wood_low", 0.6)
+L(join(*[rect(BX, y, 80, 80, 8) for y in ROWS]), 2, 2.9, BLACK, 8, sfx="wood_high")
+T("先打个勾", 880, 800, 84, RED, k0=3, k1=4, sfx="pop")
 C(5, 5.4, red_dot([(5, 1450, 760)], "1"), sfx="ding")
 
 scene("能断联吗", "自测 · 第一、二题", (880, 1200, 0.82))
@@ -237,6 +235,7 @@ L(book(2850, 690, 300, 200), 0, 0.9, BLACK, 9, sfx="wood_low")
 T("《深度工作》", 2850, 870, 58, GREEN, k0=1, sfx="pop")
 for n, name in enumerate(("断联", "分段", "每天定时", "见缝插针")):
     T(name, LX, ROWS[n], 66, BLUE, k0=3 + n, sfx="pop")
+L(underline(2690, 3010, 910, 8, 32), 7, 7.6, GREEN, 6)
 
 # ---------------------------------------------------------------- 四种逐个讲（场景 6–9，区块 C）
 
@@ -331,8 +330,8 @@ L(underline(2660, 3080, 6100), 7.3, 7.9, RED, 8)
 scene("对一下", "自测 · 对一下", (1440, 1250, 0.6))
 for n, y in enumerate(ROWS):
     L(arrow((BX + 70, y), (SX0 - 25, y), 0.0, 30), n, n + 0.8, GREEN, 8, sfx="wood_high")
-T("勾哪条，看哪种", 1440, 1950, 76, k0=4, sfx="pop")
-L(oval(SCX, ROWS[2], 780, 200), 6, 6.9, RED, 9, sfx="ding")
+L(oval(SCX, ROWS[2], 780, 200), 4, 4.9, RED, 9, sfx="ding")
+T("勾哪条，看哪种", 1440, 1950, 76, k0=6, sfx="pop")
 
 # ---------------------------------------------------------------- 打工人：每天定时（场景 11–12，区块 D）
 

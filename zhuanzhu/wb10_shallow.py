@@ -21,7 +21,7 @@ import skia
 from adler import kit as K
 from engine.gfx import clamp01, ease_out
 from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow, book, bubble, check, circle, clock,
-                               cross, face, hands_at, join, marker, rect, stick, underline)
+                               cross, face, hands_at, join, marker, rect, stick)
 
 from .common import BOOK, episode
 
@@ -204,10 +204,6 @@ def fly_card(j, kb, label, p0, p1, rot=0.0, w=210, h=92, size=50):
     return fn
 
 
-def stack(n, x, y, w, h, tail) -> skia.Path:
-    return bubble(x, y, w, h, tail)
-
-
 # ---------------------------------------------------------------- 开局：一句原话（场景 1–3）
 # 场景 1 为 2 小节（第 0–6 拍画完），场景 2–13 为 3 小节（12 拍：第 0–8 拍画完，最后 4 拍停住），场景 14 为 4 小节。
 
@@ -237,10 +233,11 @@ L(bubble(3250, 640, 880, 400, 1), 0, 0.9, BLUE, 9, sfx="wood_high")
 T("周三 3 点或 4 点", 3250, 540, 62, k0=1, k1=2.8, sfx="pop")
 T("聊 15 分钟", 3250, 650, 62, k0=3, k1=4.4, sfx="pop")
 T("你选一个", 3250, 760, 62, BLUE, k0=5, k1=6.0, sfx="pop")
-b.custom(J(), 6, 7.2, dot_anim(J(), [(6, 3790, 330), (7, 3700, 430)], 44, "1"), sfx="ding")
+b.custom(J(), 6, 6.4, dot_anim(J(), [(6, 3800, 330), (7, 3690, 400), (8, 3830, 250)], 44, "1", gone=8.1))
+L(check(2960, 1080, 60), 6, 6.6, GREEN, 12, sfx="ding")
+T("一条就约上", 3330, 1080, 64, GREEN, k0=6.6, k1=7.9)
 H(7, "rim", 0.8, "小红点撞上改写后的消息")
-L(check(2960, 1080, 60), 7, 7.6, GREEN, 12, sfx="tom")
-T("一条就约上", 3330, 1080, 64, GREEN, k0=7.4, k1=8.0)
+H(8, "shaker", 0.6, "小红点被挡回去")
 
 # ---------------------------------------------------------------- drop：一天排成块（场景 4）
 
@@ -274,8 +271,8 @@ L(rect(490, 2040, 400, 130, 10), 1, 1.3, BLUE, 9, sfx="pop")
 T("写方案", 490, 2040, 58, BLUE, k0=1.2, k1=2.0)
 L(rect(490, 2220, 400, 110, 10), 2, 2.3, ORANGE, 9, sfx="pop")
 T("回消息", 490, 2220, 58, ORANGE, k0=2.2, k1=3.0)
-b.custom(J(), 3, 3.4, dot_anim(J(), [(3, 690, 1990)], 44, "1"), sfx="ding")
-b.erase(J(), 4, 4.8, 490, 2010, 470, 230)
+b.custom(J(), 3, 3.4, dot_anim(J(), [(3, 680, 2030)], 40, "1"), sfx="ding")
+b.erase(J(), 4, 4.8, 500, 2040, 500, 160)
 H(4, "shaker", 0.8, "擦掉被打乱的一块")
 L(arrow((720, 2050), (720, 2520), -0.3, 40), 5, 5.8, GREEN, 9, sfx="pop")
 L(rect(490, 2540, 400, 130, 10), 6, 6.3, BLUE, 9, sfx="wood_high")
@@ -297,13 +294,12 @@ T("6 个月", 1050, 4020, 50, k0=7.2, k1=8.0)
 
 scene("浮活打包", "书中做法 · 浮活打包", (1950, 3800, 0.85))
 T("上手越快，越浅", 1950, 3400, 64, k0=0, k1=1.75, sfx="pop")
-L(underline(1740, 2190, 3450, 10, 30), 2, 2.6, RED, 7, sfx="rim")
-L(carton(2150, 3960, 500, 260), 3, 3.8, BLACK, 9, sfx="wood_high")
-T("杂事箱", 2150, 3990, 62, ORANGE, k0=4, k1=4.8, sfx="pop")
+L(carton(2150, 3960, 500, 260), 2, 2.8, BLACK, 9, sfx="wood_high")
+T("杂事箱", 2150, 3990, 62, ORANGE, k0=3, k1=3.8, sfx="pop")
 for n, (s, p1, rot) in enumerate((("填表", (2030, 3800), -12), ("报销", (2170, 3780), 6), ("群通知", (2300, 3805), 14))):
-    b.custom(J(), 4.6 + n, 5 + n, fly_card(J(), 5 + n, s, (1620, 3640), p1, rot))
-    H(5 + n, "tom" if n < 2 else "pop", 0.75, f"卡片落箱：{s}")
-T("攒一块，一起干", 1950, 4230, 60, GREEN, k0=8, k1=8.0 + 0.0001)
+    b.custom(J(), 3.6 + n, 4 + n, fly_card(J(), 4 + n, s, (1620, 3640), p1, rot))
+    H(4 + n, "tom" if n < 2 else "kick", 0.75, f"卡片落箱：{s}")
+T("攒一块，一起干", 1950, 4230, 60, GREEN, k0=7, k1=8.0, sfx="ding")
 
 scene("跟上级对一下", "书中做法 · 跟上级对一下", (3250, 3800, 0.85))
 L(zhou(2900, 4260, 0.75, "point"), 0, 0.8, BLUE, 9, sfx="wood_high")
@@ -336,18 +332,13 @@ L(bubble(1900, 4990, 520, 140, 1), 0, 0.4, BLACK, 8, sfx="wood_high")
 T("收到，马上看", 1900, 4990, 58, k0=0.4, k1=2.0)
 L(cross(2290, 4990, 44), 2, 2.6, RED, 11, sfx="rim")
 for n, (x, y) in enumerate(DOTS):
-    b.custom(J(), 3, 3.4, dot_anim(J(), [(3, x, y), (7, x - 60, 5240)], 34, str(n + 1), gone=8),
+    b.custom(J(), 3, 3.4, dot_anim(J(), [(3, x, y), (7, x - 60, 5200), (8, x - 260, 4980)], 34, str(n + 1), gone=8.1),
              sfx="ding" if n == 0 else None)
 L(bubble(1900, 5340, 560, 140, 1), 4, 4.4, BLUE, 8, sfx="pop")
 T("收到，周四给你", 1900, 5340, 58, BLUE, k0=4.3, k1=5.9)
 L(check(2310, 5340, 50), 6, 6.6, GREEN, 12, sfx="ding")
 H(7, "rim", 0.8, "小红点撞上改写后的消息")
 H(8, "shaker", 0.6, "小红点被挡回去")
-
-
-def bounce_off(j, x, y):
-    """小红点撞上改写后的消息被弹开：第 7 拍落在泡泡上，第 8 拍弹回左上方淡出（由 dot_anim 的 gone 处理淡出）。"""
-    return None
 
 
 scene("有的不用回", "书中做法 · 不回也行", (650, 5300, 0.85))
@@ -371,8 +362,8 @@ L(face(1950, 7700, 1.4, "smile"), 2.9, 3.1, BLUE, 12)
 L(join(*[rect(1260, y, 300, 150, 30) for y in WALL]), 4, 4.6, BLUE, 12, sfx="pop")
 L(join(*[check(1260, y, 45) for y in WALL]), 4.6, 5.0, GREEN, 12)
 for n, y in enumerate(WALL):
-    b.custom(J(), 4.6, 5, dot_anim(J(), [(4.6, 820, y - 40), (5, 1060, y), (6, 840, y + 160)], 70, ("9", "99", "99+")[n],
-                                   gone=6.2), sfx=None)
+    b.custom(J(), 4.4, 5, dot_anim(J(), [(4.4, 800, y - 40), (5, 1060, y), (6, 840, y + 160)], 70, ("9", "99", "99+")[n],
+                                   gone=6.2))
 H(5, "rim", 0.9, "小红点撞墙")
 H(6, "shaker", 0.7, "小红点被挡回去")
 T("准点下班", 1950, 6440, 130, GREEN, k0=7, k1=8.0, sfx="ding")
