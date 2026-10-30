@@ -325,7 +325,8 @@ T("各挪一点就好", MID, 10500, 90, GREEN, k0=6, k1=7.5, sfx="pop")
 J13 = scene("两个人都交了", "结果 · 都交了", (MID, 11550, 0.7))
 FD = (MID, 11850)
 L(folder(*FD), 0, 1, BLACK, 10, sfx="wood_low")
-L(join(lin(1200, 12150, 0.65, "up", "smile"), zhou(2400, 12150, 0.65, "up", "smile")), 1, 2, BLUE, 8, sfx="pop")
+L(lin(1300, 12150, 0.65, "up", "smile"), 1, 1.5, BLUE, 8, sfx="pop")
+L(zhou(2300, 12150, 0.65, "up", "smile"), 1.5, 2, BLACK, 8)
 T("季度总结", FD[0], 11930, 64, k0=2, k1=3, sfx="pop")
 
 
@@ -346,11 +347,11 @@ def fly_fn(x0, y0, x1, y1, k0, color, rot):
     return fn
 
 
-b.custom(J13, 3, 4, fly_fn(1250, 11780, 1745, 11760, 3, BLUE, -10), sfx="wood_high")
+b.custom(J13, 3, 4, fly_fn(1380, 11800, 1745, 11760, 3, BLUE, -10), sfx="wood_high")
 H(4, "ding")
-b.custom(J13, 5, 6, fly_fn(2350, 11780, 1855, 11760, 5, BLACK, 10), sfx="wood_high")
+b.custom(J13, 5, 6, fly_fn(2220, 11800, 1855, 11760, 5, BLACK, 10), sfx="wood_high")
 H(6, "ding")
-T("两份都交了", FD[0], 11250, 90, GREEN, k0=7, k1=8, sfx="pop")
+T("两份都交了", FD[0], 11420, 90, GREEN, k0=7, k1=8, sfx="pop")
 
 # ---------------------------------------------------------------- 收尾（场景 14，4 小节）：拉远看全板 → 推到评论区
 
