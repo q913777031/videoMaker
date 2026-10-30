@@ -165,6 +165,24 @@ def cabinet(x, y, w=700, h=380) -> skia.Path:
                 P((x + w / 2 - 40, y + h / 2), (x + w / 2 - 40, y + h / 2 + 50)))
 
 
+def stuck_fn(x, y, w=110, h=46):
+    """小红点被抽屉缝夹住：缝下露出半个扁红身子和两条乱蹬的小腿。"""
+
+    def fn(c, k, t):
+        p = skia.Path()
+        p.addArc(skia.Rect.MakeXYWH(x - w / 2, y - h * k, w, 2 * h * k), 0, 180)
+        c.drawPath(p, K.paint(RED))
+        if k > 0.5:
+            kick = 10 * math.sin(t * 18)
+            for d in (-1, 1):
+                fx, fy = x + d * 32, y + h + 40
+                K.seg(c, x + d * 18, y + h * 0.8, fx + d * kick * 0.5, fy, BLACK, 6)
+                K.seg(c, fx + d * kick * 0.5, fy, fx + d * (22 + kick * 0.5), fy, BLACK, 6)
+        return None
+
+    return fn
+
+
 def pegboard(x, y, w=720, h=560) -> skia.Path:
     parts = [rect(x, y, w, h, 12)]
     for i in range(6):
@@ -229,7 +247,7 @@ L(circle(720, 2850, 190), 2, 2.9, BLACK, 10, sfx="wood_high")
 L(join(circle(655, 2800, 10), circle(785, 2800, 10), zipper(630, 790, 2920)), 3, 3.9, BLACK, 8, sfx="shaker")
 L(bubble(1250, 2700, 540, 170, -1), 5, 5.5, BLUE, 8, sfx="pop")
 T("告别帖：我先撤了", 1250, 2700, 50, BLUE, k0=5.5, k1=7.0)
-L(cross(1250, 2700, 120), 7, 7.8, RED, 12, sfx="rim")
+L(cross(1500, 2590, 55), 7, 7.6, RED, 12, sfx="rim")
 
 # ---------------------------------------------------------------- drop（场景 4）：日历哗哗撕到第 30 页
 
@@ -315,8 +333,8 @@ T("你不在，有人在乎吗？", 2600, 5840, 64, k0=6, k1=8.0, sfx="pop")
 scene("那就别回", "书中自测 · 到期", (1000, R4, 0.85))
 T("两问都是：没有", 1000, 4960, 72, k0=0, k1=1.75, sfx="pop")
 L(cabinet(900, 5420), 2, 2.9, BLACK, 10, sfx="wood_low")
-L(join(P((1085, 5422), (1078, 5480), (1058, 5482)), P((1115, 5422), (1122, 5480), (1142, 5482))), 3, 3.5, RED, 8, sfx="pop")
-T("叮……", 1240, 5300, 50, GREY, k0=3.5, k1=4.3)
+b.custom(J(), 3, 3.4, stuck_fn(1100, 5420), sfx="pop")
+T("叮……", 1250, 5320, 56, RED, k0=3.4, k1=4.2)
 L(join(P((570, 5250), (1230, 5590)), P((1230, 5250), (570, 5590))), 4, 4.8, RED, 12, sfx="rim")
 L(padlock(900, 5440, 1.0), 5, 5.8, BLACK, 10, sfx="tom")
 T("别再装回来", 1000, 5840, 72, RED, k0=6, k1=7.25, sfx="ding")

@@ -132,7 +132,10 @@ def reddot_fn(keys, r=46, hop=90):
 
     def fn(c, k, T):
         ks = [(b.t_of(j, kk), x, y, n) for j, kk, x, y, n in keys]
-        i = max(n for n, key in enumerate(ks) if key[0] <= T + 1e-6) if T >= ks[0][0] - 1e-6 else 0
+        i = 0
+        for n, key in enumerate(ks):
+            if key[0] <= T:
+                i = n
         t_i, x, y, num = ks[i]
         lift = 0.0
         if i + 1 < len(ks) and T > ks[i + 1][0] - JUMP:
