@@ -288,9 +288,10 @@ L(rays(620, 2450, 200, 5, 55), 7, 7.8, RED, 8, sfx="shaker")
 NAMES = ("非黑即白", "以偏概全", "心理过滤", "否定正面", "妄下结论")
 scene("中了很正常", "回到自测卡", VC)
 for n, nm in enumerate(NAMES):
-    T(nm, NAMEX, ROWS[n], 64, k0=n, k1=n + 1, sfx="pop")
-T("中了几个？", CARD[0], 3070, 72, RED, k0=5, k1=6.25, sfx="kick")
-T("查想法，不查病", CARD[0], 3180, 56, BLUE, k0=6.25, k1=8)
+    T(nm, NAMEX, ROWS[n], 64, k0=n, k1=n + 0.9, sfx="pop")
+T("中了几个？", 2430, 3060, 72, RED, k0=5, k1=6.1, sfx="kick")
+T("查想法，不查病", 3000, 3060, 56, BLUE, k0=6.1, k1=7.6)
+L(P((2600, 3115), (2260, 3115)), 7.6, 8.0, RED, 7)
 H(7, "ding")
 
 FIX = ("改掉那一处", "这次没过", "也看看好评", "我也出了力", "去问一句")
@@ -298,17 +299,31 @@ scene("每种换个说法", "每格一朵白云", VC)
 L(join(*[cloud(WCX, ry, 360, 140) for ry in ROWS]), 0, 0.9, BLUE, 7, sfx="wood_high")
 for n, s in enumerate(FIX):
     k = 1 + 1.5 * n
-    T(s, WCX, ROWS[n], 46, BLUE, k0=k, sfx="pop" if abs(k - round(k)) < 1e-9 else None)
+    T(s, WCX, ROWS[n], 50, BLUE, k0=k, sfx="pop" if abs(k - round(k)) < 1e-9 else None)
 
-scene("对一对是哪格", "做法 · 心里一沉时", (2520, 2520, 0.68))
+scene("对一对是哪格", "做法 · 心里一沉时", (2500, 2520, 0.62))
 L(zhou(1900, 3000, 0.7, "point"), 0, 0.8, BLACK, 9, sfx="wood_high")
 L(face(1900, 3000, 0.7, "sad"), 0.8, 1.0)
-L(cloud(1900, 2560, 300, 170, tail=(1900, 2760)), 1, 1.6, BLACK, 8, sfx="pop")
-L(dark(1900, 2560, 300, 170), 1.6, 2.0, BLACK, 5)
-T("又搞砸了", 1900, 2560, 50, RED, k0=2, k1=3, sfx="pop")
+L(cloud(1910, 2560, 360, 180, tail=(1900, 2760)), 1, 1.6, BLACK, 8, sfx="pop")
+L(dark(1910, 2560, 360, 180), 1.6, 2.0, BLACK, 5)
+T("又搞砸了", 1910, 2560, 56, RED, k0=2, k1=3, sfx="pop")
 L(arrow((1990, 2440), (2110, 2160), -0.25, 34), 3, 3.8, RED, 8, sfx="wood_high")
 L(oval(NAMEX, ROWS[0], 330, 110), 4, 4.8, RED, 9, sfx="ding")
 L(check(BOXX, ROWS[0], 38), 5, 5.6, RED, 11, sfx="rim")
+
+# 每个场景画完，手移到画面右下角歇着（不挡住刚写的字）；动态 custom 项不计入停留检查
+
+
+def _park(x, y):
+    def fn(c, k, t):
+        return (x, y)
+
+    return fn
+
+
+for _j, (_vx, _vy, _vz) in enumerate(b.views):
+    _k = 6.0 if b.shots[_j].bars == 2 else 8.0
+    b.custom(_j, _k, _k + 0.3, _park(_vx + 460 / _vz, _vy + 440 / _vz))
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，再推到评论区
 
