@@ -19,7 +19,7 @@ import skia
 
 from whiteboard import engine as wb
 from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow, book, bubble, check, circle, cross,
-                               desk, doc, face, join, partial, rect, stick, underline)
+                               doc, face, join, partial, rect, stick, underline)
 from adler import kit as K
 from engine.gfx import clamp01, ease_in_out, lerp
 
@@ -149,7 +149,7 @@ def lying(x, y, s=0.55) -> skia.Path:
     p = zhou(0, 0, s, "down", "flat")
     m = skia.Matrix.RotateDeg(-90)
     p.transform(m)
-    p.offset(x - 150 * s, y - 50 * s)
+    p.offset(x + 170 * s, y - 70 * s)
     return p
 
 
@@ -367,7 +367,7 @@ for i, (k, y) in enumerate(((0, STEPS[1][1]), (1, STEPS[2][1]), (2, STEPS[3][1])
     L(P((right_slope_x(y) + 30, y), (STEPS[i + 1][0], y)), k, k + 0.5, RED, 14, sfx="kick")
 L(stairs(STAIR_PTS), 3, 3.9, RED, 12, sfx="wood_high")
 b.erase(J(), 4, 4.8, 1045, 2680, 290, 540)                 # 山脚下的旧小周和“好累”擦掉，小周站上台阶
-b.custom(J(), 4, 6, lambda c, k, t: None, sfx="shaker")    # 怪兽滚下山（monster_actor 按时间演）
+H(4, "shaker")                                             # 怪兽滚下山（monster_actor 按时间演）
 b.custom(J(), 5, 5.9, zhou_actor, sfx="wood_high")
 T("第一级", 1050, 2560, 70, RED, k0=6, k1=6.8, sfx="pop")
 L(arrow((1150, 2610), (1330, 2700), 0.2, 34), 7, 7.7, GREEN, 9, sfx="ding")
@@ -395,8 +395,7 @@ L(P((LX - 310, R - 30), (LX + 310, R - 50)), 4, 4.5, RED, 10, sfx="rim")
 b.custom(J(), 5, 5.5, fill_fn(RX, R - 40, 220, 150))
 L(note(RX, R - 40, 220, 150, 2), 5, 5.9, ORANGE, 8, sfx="wood_high")
 T("先挑一个", RX, R + 110, 72, BLUE, k0=6, k1=7, sfx="pop")
-L(check(RX, R + MARK, 55), 7.2, 7.8, GREEN, 12)
-H(7, "ding")
+L(check(RX, R + MARK, 55), 7, 7.6, GREEN, 12, sfx="ding")
 
 b.shot("第一步要很小", "对照三 · 第一步", VR(2), bars=3)
 R = ROWS[2]
@@ -405,21 +404,19 @@ T("这周弄完报告", LX, R + 110, 70, k0=1, k1=2.5, sfx="pop")
 L(cross(LX, R + MARK - 20, 50), 3, 3.5, RED, 11, sfx="rim")
 L(P((RX - 210, R + 20), (RX - 90, R + 20), (RX - 90, R - 5), (RX + 30, R - 5), (RX + 30, R - 70), (RX + 150, R - 70),
     (RX + 150, R - 135), (RX + 210, R - 135)), 4, 4.9, BLACK, 10, sfx="wood_high")
-L(circle(RX - 150, R + 5, 55), 5, 5.6, RED, 7, sfx="pop")
+L(check(RX, R + MARK - 20, 55), 5, 5.6, GREEN, 12, sfx="ding")
 T("打开文档", RX, R + 110, 70, BLUE, k0=6, k1=6.9, sfx="pop")
 T("列个提纲", RX, R + 200, 70, BLUE, k0=7, k1=7.9, sfx="pop")
-L(check(RX, R + MARK - 20, 55), 7, 7.6, GREEN, 12)
 
 b.shot("别等有感觉", "对照四 · 先动手", VR(3), bars=3)
 R = ROWS[3]
 L(lying(LX - 40, R + 40), 0, 0.9, BLACK, 9, sfx="wood_low")
 L(bolt(LX + 220, R - 110, 0.9), 1, 1.8, ORANGE, 8, sfx="wood_high")
-T("等状态来了", LX, R + 150, 72, k0=2, k1=3.25, sfx="pop")
-L(cross(LX - 60, R + MARK, 50), 3.5, 4, RED, 11)
-H(4, "rim")
-L(zhou(RX - 150, R + 70, 0.55, "point", "smile"), 5, 5.9, BLACK, 9, sfx="wood_high")
-L(doc(RX + 60, R - 30, 130, 160, 3), 6, 6.7, BLUE, 8, sfx="pop")
-T("先做一会儿", RX, R + 150, 72, BLUE, k0=6.7, k1=7.95)
+T("等状态来了", LX, R + 150, 72, k0=2, k1=3, sfx="pop")
+L(cross(LX - 60, R + MARK, 50), 3, 3.5, RED, 11, sfx="rim")
+L(zhou(RX - 150, R + 70, 0.55, "point", "smile"), 4, 4.9, BLACK, 9, sfx="wood_high")
+L(doc(RX + 60, R - 30, 130, 160, 3), 5, 5.7, BLUE, 8, sfx="pop")
+T("先做一会儿", RX, R + 150, 72, BLUE, k0=6, k1=7, sfx="pop")
 L(check(RX + 40, R + MARK, 55), 7, 7.6, GREEN, 12, sfx="ding")
 
 # ---------------------------------------------------------------- 台阶特写：会卡住，每一步都算（场景 9–10）
@@ -431,15 +428,15 @@ L(stone(1960, 9350), 2, 2.8, BLACK, 10, sfx="tom")
 T("会卡住", 1950, 9480, 72, RED, k0=3, k1=3.8, sfx="pop")
 L(arrow((1600, 9240), (2230, 9070), -0.35, 40), 4, 4.9, GREEN, 10, sfx="wood_high")
 T("绕过去，接着走", 1880, 8880, 70, GREEN, k0=5, k1=6.75, sfx="pop")
-L(flag(2480, 9150), 7, 7.7, RED, 9, sfx="ding")
+L(flag(2520, 9150), 7, 7.7, RED, 9, sfx="ding")
 
 b.shot("每一步都算数", "书中观点 · 走一步记一步", VS, bars=3)
 for n, (cx, cy) in enumerate(((1550, 9665), (1950, 9650), (2350, 9300))):
     L(check(cx, cy, 45), n, n + 0.6, GREEN, 11, sfx="ding")
 T("走一步，记一步", SX, 9880, 72, k0=3, k1=4.75, sfx="pop")
 L(cup(2350, 9150), 5, 5.8, ORANGE, 8, sfx="wood_high")
-T("奖励一下", 2500, 8880, 64, ORANGE, k0=6, k1=7, sfx="pop")
-L(sparks(2350, 9080, 120, 160, 5, -90, 120), 7, 7.6, ORANGE, 6, sfx="pop")
+T("奖励一下", 2380, 8800, 64, ORANGE, k0=6, k1=7, sfx="pop")
+L(sparks(2350, 9080, 110, 140, 5, -90, 100), 7, 7.6, ORANGE, 6, sfx="pop")
 
 # ---------------------------------------------------------------- 拉远看四对（场景 11）
 
@@ -471,9 +468,8 @@ H(1, "wood_high")
 H(2, "pop")
 L(check(STEP_TOP[0][0], STEP_TOP[0][1] - 60, 40), 3, 3.6, GREEN, 10, sfx="ding")
 L(check(STEP_TOP[1][0] - 20, STEP_TOP[1][1] - 60, 40), 4, 4.6, GREEN, 10, sfx="ding")
-T("一级一级来", 2300, 1950, 72, GREEN, k0=5, k1=6.25, sfx="pop")
-L(underline(2130, 2470, 2010, 9, 30), 6.5, 7.2, GREEN, 7)
-H(7, "shaker")
+T("一级一级来", 2300, 1950, 72, GREEN, k0=5, k1=6, sfx="pop")
+L(underline(2130, 2470, 2010, 9, 30), 6, 6.7, GREEN, 7, sfx="ding")
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，再推到评论区
 

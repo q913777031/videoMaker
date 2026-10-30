@@ -330,7 +330,7 @@ T("排班表", 2080, 2830, 50, BLUE, k0=2, k1=2.8, sfx="pop")
 for n, w in enumerate(("计划", "开工", "坚持")):
     T(w, 1960 + n * 120, 2925, 50, k0=3 + n, k1=3.8 + n, sfx="pop")
 
-b.shot("警报一响他就慌", "书中观点 · 楼上也乱了", (1900, 2950, 0.7), bars=3)
+b.shot("警报一响他就慌", "书中观点 · 楼上也乱了", (1790, 2950, 0.7), bars=3)
 b.custom(J(), 0, 9, rings_fn, sfx="shaker")
 b.erase(J(), 1, 2, 1890, 2877, 860, 235)
 H(1, "tom")
@@ -339,7 +339,7 @@ L(join(stick(*BOSS, 0.6, "up"), face(*BOSS, 0.6, "sad")), 3, 3.9, BLACK, 9, sfx=
 T("乱了", 2380, 2830, 70, RED, k0=5, k1=5.8, sfx="pop")
 L(sweat(1660, 2790), 6, 6.6, BLUE, 6, sfx="pop")
 
-b.shot("楼可以改", "书中观点 · 大脑会变", (2150, 3000, 0.6), bars=3)
+b.shot("楼可以改", "书中观点 · 大脑会变", (2190, 3000, 0.58), bars=3)
 L(stairs(2000, HG, 6, 75, 100), 0, 0.9, BLACK, 9, sfx="wood_high")
 for n, (fx_, fy) in enumerate(((2112, 3388), (2187, 3288), (2262, 3188))):
     L(join(foot(fx_ - 14, fy), foot(fx_ + 14, fy - 4)), 2 + n, 2.6 + n, GREEN, 7, sfx="pop")
@@ -364,7 +364,7 @@ L(breath(1075, 3390, 850, 3300), 3, 3.9, BLUE, 8, sfx="shaker")
 T("慢慢呼气", 880, 3175, 56, BLUE, k0=4, k1=5, sfx="pop")
 L(heart(1100, 3480, 18), 6, 6.6, RED, 7, sfx="ding")
 
-b.shot("给楼上递张单", "做法三 · 写下一步", (1700, 2950, 0.7), bars=3)
+b.shot("给楼上递张单", "做法三 · 写下一步", (1780, 2950, 0.7), bars=3)
 b.erase(J(), 0, 0.8, BOSS[0], 2880, 260, 230)
 b.erase(J(), 0, 0.8, 2380, 2830, 180, 100)
 H(0, "tom")
@@ -385,8 +385,8 @@ L(join(P((2050, 3085), (2170, 3135)), P((2050, 3135), (2170, 3085))), 1, 1.6, RE
 b.erase(J(), 2, 2.8, 1055, 3436, 470, 312)
 H(2, "tom")
 L(join(*[foot(x, 3585 - (i % 2) * 14) for i, x in enumerate(range(1180, 1990, 90))],
-       foot(2037, 3492), foot(2112, 3392)), 3, 3.9, GREEN, 6, sfx="wood_high")
-L(zhou(2190, 3300, 0.5, "up", "smile"), 4, 4.9, BLACK, 8, sfx="pop")
+       foot(2037, 3492)), 3, 3.9, GREEN, 6, sfx="wood_high")
+L(zhou(2112, 3400, 0.5, "up", "smile"), 4, 4.9, BLACK, 8, sfx="pop")
 T("呼噜", 1935, 3330, 50, BLUE, k0=6, k1=6.8, sfx="ding")
 
 b.shot("整栋楼看一眼", "全楼一览", (1850, 3050, 0.42), bars=3)
