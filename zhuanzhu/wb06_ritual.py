@@ -16,7 +16,7 @@ import math
 import skia
 
 from whiteboard import engine as wb
-from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, building, check, circle, clock, desk,
+from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow, book, building, check, circle, clock, desk,
                                face, hands_at, join, rect, stick, underline)
 from adler import kit as K
 from engine.gfx import clamp01, ease_in_out, ease_out, lerp
@@ -263,7 +263,7 @@ T("先干活", 800, 955, 56, BLUE, k0=2.4, k1=3.2)
 L(stick(1170, 1390, 0.4, "up"), 4, 4.8, RED, 8, sfx="wood_high")
 L(say(1220, 955, 320, 110, -1), 5, 5.4, RED, 7, sfx="pop")
 T("就看一眼", 1220, 955, 56, RED, k0=5.4, k1=6.4)
-L(bolt(1005, 1290, 0.8), 7, 7.8, ORANGE if False else RED, 9, sfx="rim")
+L(bolt(1005, 1290, 0.8), 7, 7.8, RED, 9, sfx="rim")
 
 # ---------------------------------------------------------------- 专注小屋（场景 3–4）
 
@@ -278,7 +278,8 @@ j3 = scene("给专注一间屋", "比喻 · 专注小屋", (1800, 3060, 0.72))
 L(HOUSE, 0, 0.9, BLACK, 10, sfx="wood_low")
 L(ROOF, 1, 1.9, BLACK, 10, sfx="wood_high")
 L(P((DL, GY), (DL, DT), (DR, DT), (DR, GY)), 2, 2.8, BLACK, 10, sfx="wood_high")
-L(join(rect(WIN[0], WIN[1], WIN[2], WIN[3], 8), P((WIN[0], WIN[1] - WIN[3] / 2), (WIN[0], WIN[1] + WIN[3] / 2))),
+L(join(rect(WIN[0], WIN[1], WIN[2], WIN[3], 8), P((WIN[0] - WIN[2] / 2 - 25, WIN[1] + WIN[3] / 2 + 14),
+                                                  (WIN[0] + WIN[2] / 2 + 25, WIN[1] + WIN[3] / 2 + 14))),
   4, 4.8, BLACK, 9, sfx="wood_high")
 L(zhou(1600, GY, 0.75), 5, 5.9, BLACK, 9, sfx="pop")
 T("专注小屋", 1800, 2720, 76, GREEN, k0=6, k1=7, sfx="pop")
@@ -347,7 +348,6 @@ def stars_fn(c, k, t):
     return None
 
 
-ORANGE = wb.ORANGE
 C(3, 3.6, stars_fn, sfx="ding")
 BU = (WIN[0] - 120, WIN[1] - 20)
 L(bust(*BU, 0.9), 5, 5.8, BLUE, 8, sfx="pop")
@@ -428,10 +428,9 @@ C(6, 6.8, phone_drop_fn, sfx="tom")
 L(check(1745, 3335, 26), 7, 7.6, GREEN, 8, sfx="ding")
 
 scene("屋里放补给", "定规矩 · 靠什么撑", (2400, 3400, 0.85))
-L(cup(2240, 3255, 0.8), 0, 0.8, BLACK, 8, sfx="wood_high")
-L(glass(2300, 3255, 0.75), 1, 1.7, BLUE, 8, sfx="pop")
-L(nuts(2240, 3230, 0.0001), 1.7, 1.8, BLACK, 1)          # 占位（不可见），保持描线顺序
-L(nuts(2120 + 180, 3110, 0.7), 2, 2.8, BLACK, 7, sfx="wood_high")
+L(cup(2150, 3262, 0.7), 0, 0.8, BLACK, 8, sfx="wood_high")
+L(glass(2222, 3268, 0.7), 1, 1.7, BLUE, 8, sfx="pop")
+L(nuts(2300, 3290, 0.7), 2, 2.8, BLACK, 7, sfx="wood_high")
 T("咖啡 · 水 · 坚果", 2150, 3395, 46, k0=3, k1=4.5, sfx="pop")
 L(dashes((WR, GY + 20), (2650, 3640), (2950, 3890), 9), 5, 5.8, GREEN, 9, sfx="wood_low")
 L(join(tree(2820, 3700, 0.8), tree(3080, 3830, 0.65)), 6, 6.8, GREEN, 8, sfx="pop")
