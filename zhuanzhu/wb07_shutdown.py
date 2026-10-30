@@ -427,7 +427,7 @@ C(7, 8, thread_fn(tangle(*TH, n=7, amp=30), J_DROP, 1.6), sfx="shaker")
 
 # ---------------------------------------------------------------- drop（场景 4）：停工完毕
 
-scene("停工完毕", "停工完毕", (1200, 950, 0.56), shake=[0], flashes=[0])
+scene("停工完毕", "停工完毕", (1000, 1120, 0.72), shake=[0], flashes=[0])
 assert J() == J_DROP
 C(-0.25, 0, stamp_fn(LIST[0], LIST[1]))
 H(0, "kick", 1.0)
@@ -435,7 +435,7 @@ L(scissors(502, 924, 1.0), 1, 1.6, RED, 9, sfx="rim")
 L(wind(DOT[0] - 110, DOT[1] - 10, 110), 2, 2.8, BLUE, 8, sfx="shaker")
 H(3, "tom")
 L(smoke(DOT[0], DOT[1] + 30, 170), 4, 4.8, GREY, 7, sfx="wood_low")
-T("Zzz", 1760, 950, 90, BLUE, k0=5, sfx="pop")
+T("Zzz", 1650, 960, 80, BLUE, k0=5, sfx="pop")
 
 # ---------------------------------------------------------------- 书中观点（场景 5–9）
 
@@ -502,7 +502,7 @@ for n in range(2):
     bx, by = row_box(*CL, 3, n)
     L(check(bx, by, 44), 3 + n, 3.5 + n, GREEN, 10, sfx="pop")
 bx, by = row_box(*CL, 3, 2)
-T("明天", bx + 170, by - 2, 56, BLUE, k0=5, sfx="pop")
+T("明天", bx + 170, by - 42, 52, BLUE, k0=5, sfx="pop")
 L(envelope(3270, 6200), 6, 6.8, sfx="wood_low")
 T("都有着落", 2950, 6690, 64, GREEN, k0=7, sfx="ding")
 
