@@ -259,13 +259,13 @@ L(join(P((AX0, AY + 60), (AX0, AY + 100), (AX1, AY + 100), (AX1, AY + 60)), P((2
 T("12 小时", 2850, AY + 230, 96, RED, k0=6, k1=7.5, sfx="tom")
 
 scene("方案才写一页", "灵魂拷问", (2850, 2300, 0.85))
-L(doc(2700, 2300, 520, 680, lines=0), 0, 0.9, BLACK, 9, sfx="wood_high")
-T("方案", 2700, 2060, 64, k0=1, k1=1.8, sfx="pop")
-L(P((2510, 2180), (2890, 2180)), 2, 2.8, BLACK, 8, sfx="wood_low")
-L(P((2510, 2260), (2780, 2260)), 3, 3.6, BLACK, 8, sfx="wood_low")
-zhou(3260, 2620, 0.6, 4, arms="shrug", mood="sad")
-T("1 页", 2700, 2480, 96, RED, k0=5, k1=5.8, sfx="pop")
-L(oval(2700, 2480, 170, 95), 6, 6.9, RED, 9, sfx="rim")
+L(doc(2800, 2300, 520, 680, lines=0), 0, 0.9, BLACK, 9, sfx="wood_high")
+T("方案", 2800, 2060, 64, k0=1, k1=1.8, sfx="pop")
+L(P((2610, 2180), (2990, 2180)), 2, 2.8, BLACK, 8, sfx="wood_low")
+L(P((2610, 2260), (2880, 2260)), 3, 3.6, BLACK, 8, sfx="wood_low")
+zhou(2340, 2620, 0.6, 4, arms="shrug", mood="sad")
+T("1 页", 2800, 2480, 96, RED, k0=5, k1=5.8, sfx="pop")
+L(oval(2800, 2480, 170, 95), 6, 6.9, RED, 9, sfx="rim")
 
 # ---------------------------------------------------------------- drop：式子塌了（场景 4）
 
@@ -323,13 +323,13 @@ L(underline(LX - 150, LX + 150, 6515, 10, 30), 6, 6.8, BLUE, 8, sfx="ding")
 scene("时间乘专注", "书中观点 · 式子", VF)
 b.erase(J(), 0, 0.9, 2000, 4680, 1800, 440)
 H(0, "shaker")
+T("书里给的式子", 2000, 3990, 80, GREEN, k0=1, k1=2.5, sfx="ding")
 L(join(rect(XT, 4580, 420, 60, 10), *[P((XT - 180 + n * 60, 4555), (XT - 200 + n * 60, 4605)) for n in range(7)]),
-  1, 1.9, BLACK, 8, sfx="wood_high")
-T("坐多久", XT, 4700, 72, k0=2, k1=2.8, sfx="pop")
-L(dial(XZ, 4660, 140), 3, 3.9, BLACK, 8, sfx="wood_low")
-C(4, 4.8, needle_fn(XZ, 4660, 140), sfx="tom")
-T("多投入", XZ, 4760, 72, k0=5, k1=5.8, sfx="pop")
-T("书里给的式子", 2000, 3990, 80, GREEN, k0=6, k1=7.5, sfx="ding")
+  3, 3.9, BLACK, 8, sfx="wood_high")
+T("坐多久", XT, 4700, 72, k0=4, k1=4.8, sfx="pop")
+L(dial(XZ, 4660, 140), 5, 5.9, BLACK, 8, sfx="wood_low")
+C(6, 6.8, needle_fn(XZ, 4660, 140), sfx="tom")
+T("多投入", XZ, 4760, 72, k0=7, k1=7.8, sfx="pop")
 
 # ---------------------------------------------------------------- 小红点：一叮就碎（场景 9–10）
 
@@ -353,16 +353,16 @@ T("拼不回", BX, 6500, 76, RED, k0=6, k1=7, sfx="tom")
 
 BASE = 6450
 scene("少坐也能多干", "示意 · 两根柱子", (2850, 6100, 0.85))
-L(P((2250, BASE), (3380, BASE)), 0, 0.9, BLACK, 9, sfx="wood_low")
+T("成果（示意）", 2850, 5710, 60, k0=0, k1=1.4, sfx="ding")
+L(P((2250, BASE), (3380, BASE)), 1.5, 2.0, BLACK, 9)
+zhou(2350, BASE, 0.55, 2, arms="point", mood="smile")
 L(join(*[rect(2650 + (-14, 10, -6)[n], BASE - 45 - n * 82, 200 - n * 30, 66, 6) for n in range(3)]),
-  1, 1.9, BLACK, 8, sfx="wood_high")
-T("12 小时 碎块", 2650, BASE + 85, 50, k0=2, k1=3.5, sfx="pop")
+  3, 3.9, BLACK, 8, sfx="wood_high")
+T("12 小时 碎块", 2650, BASE + 85, 50, k0=4, k1=5.4, sfx="pop")
 TALL = rect(3120, BASE - 300, 200, 600, 8)
-L(TALL, 3, 3.9, BLUE, 10, sfx="wood_high")
-C(4, 4.8, fill_fn(TALL, "#CFE0F7", 1.0), sfx="tom")
-T("4 小时 整块", 3120, BASE + 85, 50, BLUE, k0=5, k1=6.5, sfx="pop")
-T("成果（示意）", 2850, 5710, 60, k0=6, k1=7.25, sfx="ding")
-zhou(2350, BASE, 0.55, 7, arms="point", mood="smile")
+L(TALL, 5, 5.9, BLUE, 10, sfx="wood_high")
+C(6, 6.8, fill_fn(TALL, "#CFE0F7", 1.0), sfx="tom")
+T("4 小时 整块", 3120, BASE + 85, 50, BLUE, k0=7, k1=8, sfx="pop")
 
 # ---------------------------------------------------------------- 做法（场景 11–12）
 
