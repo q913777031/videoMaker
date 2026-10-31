@@ -261,7 +261,7 @@ def pao_fn(x, y, w, h, words="", size=64, tail=-1, retract=None, spike=46):
             m.quadTo(x, ey + lerp(-26, 30, r), x + 38, ey)
             c.drawPath(m, K.paint(color, a, 8))
             if words:
-                K.text(c, words, x, y + h * 0.18, size, "hand", RED, a * (1 - r))
+                K.text(c, words, x, y + h * 0.28, size, "hand", RED, a * (1 - r))
         return tip
 
     return fn
@@ -304,7 +304,7 @@ C(phone_fn, 3, 4.2, sfx="kick")
 L(join(P((SOFA[0] - 200, 1070), (SOFA[0] - 175, 1020)), P((SOFA[0] - 130, 1050), (SOFA[0] - 130, 990)),
        P((SOFA[0] - 60, 1070), (SOFA[0] - 85, 1020))), 4.2, 4.9, BLACK, 7)
 H(4, "pop")
-C(pao_fn(1250, 720, 300, 160, "哼！", 66), 5, 5.8, sfx="rim")
+C(pao_fn(1250, 700, 320, 210, "哼！", 60), 5, 5.8, sfx="rim")
 
 MAN2 = (2350, 1330)
 scene("他报了周末球赛", "结局", (XR, R1, Z))
@@ -399,11 +399,11 @@ def light_fn(c, k, t):
 
 
 C(light_fn, 7, 7.6, sfx="ding")
-T("请求", CELLS[3], 5790, 50, ACC, k0=7, k1=7.8)
+T("请求", 1480, 5610, 50, ACC, k0=7, k1=7.8)
 
 scene("说你要什么", "书中观点 · 第六章", (XR, R4, Z))
 C(pao_fn(2650, 5100, 560, 230, "别总加班", 64), 0, 0.9, sfx="wood_high")
-L(P((2490, 5145), (2810, 5140)), 2, 2.6, BLACK, 9, sfx="rim")
+L(P((2490, 5166), (2810, 5160)), 2, 2.6, BLACK, 9, sfx="rim")
 L(arrow((2650, 5290), (2650, 5420), 0, 36), 3, 3.7, BLACK, 9, sfx="wood_high")
 L(bubble(2650, 5530, 560, 150, -1), 4, 4.6, BLUE, 8, sfx="pop")
 T("多陪我吃晚饭", 2650, 5530, 60, BLUE, k0=4.6, k1=6.1)
@@ -416,8 +416,8 @@ T("哪天？几点？", 2650, 6400, 70, k0=0, k1=1.5, sfx="pop")
 L(calendar(2650, 6800, 840, 360, cols=7, rows=2, head=110), 2, 2.9, BLACK, 7, sfx="wood_high")
 for i, d in enumerate(DAYS):
     T(d, DX[i], 6675, 50, k0=3 + 0.12 * i, k1=3.3 + 0.12 * i, sfx="pop" if i == 0 else None)
-L(circle(DX[2], 6740, 72), 4, 4.7, RED, 9, sfx="ding")
-L(circle(DX[4], 6740, 72), 5, 5.7, RED, 9, sfx="ding")
+L(circle(DX[2], 6792, 56), 4, 4.7, RED, 9, sfx="ding")
+L(circle(DX[4], 6792, 56), 5, 5.7, RED, 9, sfx="ding")
 T("七点前到家", 2700, 7110, 64, BLUE, k0=6, k1=7.25, sfx="pop")
 L(join(clock(2410, 7110, 48), hands_at(2410, 7110, 48, 7, 0)), 7.3, 8.0, BLACK, 7)
 H(7, "wood_high")
