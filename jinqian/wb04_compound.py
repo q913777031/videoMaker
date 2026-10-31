@@ -24,7 +24,7 @@ from engine.gfx import clamp01, ease_in_out, lerp
 from .common import BOOK, episode
 
 ACC = "#3A7CA5"                 # 本讲主色：冰川蓝
-SQUARE_SHOT = 3                 # 场景 4：冰川变成的曲线翘起 + 小猪罐
+SQUARE_SHOT = 7                 # 场景 8：曲线起点的小孩 + 钟表“他的秘诀是时间”
 
 b = Board(size=(4600, 5500))
 

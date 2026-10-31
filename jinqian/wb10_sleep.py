@@ -25,7 +25,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow,
 from .common import BOOK, episode
 
 ACC = "#3B4A8C"                 # 本讲主色：夜里的靛蓝
-SQUARE_SHOT = 3                 # 场景 4（drop）：床上的小王 + 剪掉锯齿线换成平线 + 月亮变 zZ
+SQUARE_SHOT = 0                 # 场景 1：半夜躺床上看手机的小王
 
 b = Board(size=(3600, 9600))
 
