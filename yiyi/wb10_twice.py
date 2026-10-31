@@ -295,8 +295,11 @@ def blur_eye_fn(x, y, w=200):
 def tree(x, y, s=1.0) -> skia.Path:
     """小树：(x, y) 为树根。"""
     crown = skia.Path()
-    crown.addOval(skia.Rect.MakeXYWH(x - 85 * s, y - 280 * s, 170 * s, 170 * s))
-    return join(P((x, y), (x, y - 120 * s)), P((x, y - 70 * s), (x + 40 * s, y - 110 * s)), crown)
+    crown.moveTo(x - 20 * s, y - 130 * s)
+    crown.cubicTo(x - 130 * s, y - 120 * s, x - 120 * s, y - 230 * s, x - 60 * s, y - 230 * s)
+    crown.cubicTo(x - 60 * s, y - 320 * s, x + 60 * s, y - 320 * s, x + 60 * s, y - 230 * s)
+    crown.cubicTo(x + 130 * s, y - 230 * s, x + 130 * s, y - 120 * s, x + 20 * s, y - 130 * s)
+    return join(P((x - 20 * s, y), (x - 20 * s, y - 130 * s)), P((x + 20 * s, y), (x + 20 * s, y - 130 * s)), crown)
 
 
 def us_map(x, y, w=520, h=260) -> skia.Path:
