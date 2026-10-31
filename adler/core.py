@@ -969,7 +969,7 @@ def build_audio(ep: Episode) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[d
     music_d, sfx = music_d * gain, sfx * gain
     mix = music_d + sfx
     a = np.abs(mix)
-    knee, ceil = 0.6, 0.84
+    knee, ceil = 0.6, 0.8
     over = a > knee
     mix[over] = np.sign(mix[over]) * (knee + (ceil - knee) * np.tanh((a[over] - knee) / (ceil - knee)))
     return mix.astype(np.float32), music_d.astype(np.float32), sfx.astype(np.float32), out
