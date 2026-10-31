@@ -377,7 +377,7 @@ S("回报更高，起步晚", "书中例子 · 西蒙斯", (3000, 1550, 0.36))
 L(poly([(SIM0 + (CX1 - SIM0) * i / 60, sim_y(SIM0 + (CX1 - SIM0) * i / 60)) for i in range(61)]), 0, 1.0, BLUE, 12,
   sfx="wood_high")
 L(stick(4050, 1700, 0.6, "shrug"), 1, 1.9, BLUE, 9, sfx="wood_high")
-T("西蒙斯", 4050, 1330, 110, BLUE, k0=2, k1=2.8, sfx="pop")
+T("西蒙斯", 4100, 1410, 110, BLUE, k0=2, k1=2.8, sfx="pop")
 T("起步晚", 2700, 2720, 110, BLUE, k0=4, k1=4.8, sfx="pop")
 L(join(arrow((3830, sim_y(CX1) - 30), (3830, 160), 0, 50), P((3770, sim_y(CX1)), (3890, sim_y(CX1)))), 6, 6.8, RED, 10,
   sfx="rim")
