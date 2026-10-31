@@ -28,7 +28,7 @@ from .common import BOOK, episode
 ACC = "#C8503C"
 SQUARE_SHOT = 8                 # 场景 9：一天时间轴上四个带刺小泡，各贴一类标签
 
-b = Board(size=(3600, 9000))
+b = Board(size=(3600, 9600))
 
 
 def J():
@@ -358,9 +358,9 @@ ZHOU = (900, 1400)
 PAO1 = Pao(1250, 830, 230, 130, tail=-1, n=12, L=46)
 
 scene("小周的一天", "小周的一天", (1000, 1000, 0.85), bars=2)
-L(clock_face(560, 800, 110), 0, 0.9, BLACK, 9, sfx="wood_high")
-L(hands_at(560, 800, 110, 7, 30), 1, 1.4, RED, 9, sfx="pop")
-T("07:30", 560, 1000, 60, RED, k0=1.4, k1=2.2)
+L(clock_face(520, 800, 110), 0, 0.9, BLACK, 9, sfx="wood_high")
+L(hands_at(520, 800, 110, 7, 30), 1, 1.4, RED, 9, sfx="pop")
+T("07:30", 520, 1000, 60, RED, k0=1.4, k1=2.2)
 L(stick(*ZHOU, 0.85), 2, 2.8, BLACK, 10, sfx="wood_high")
 L(face(*ZHOU, 0.85, "smile"), 2.8, 3.0)
 T("小周 · 打工人", ZHOU[0], 1470, 54, k0=3, k1=4.5, sfx="pop")
@@ -550,9 +550,9 @@ def ball_fn(c, k, T):
     else:
         f = ease_in_out(clamp01((T - t8) / (b.t_of(J_KICK, 9) - t8)))
         x, y = lerp(x1 - 10, SIGN[0] - 70, f), lerp(y1, SIGN[1] + 285, f * f)
-    c.drawCircle(x, y, 46, K.paint("#FFFFFF"))
-    c.drawCircle(x, y, 46, wb.marker(BLUE, 8))
-    K.text(c, "选择", x, y, 32, "hand", BLUE)
+    c.drawCircle(x, y, 62, K.paint("#FFFFFF"))
+    c.drawCircle(x, y, 62, wb.marker(BLUE, 8))
+    K.text(c, "选择", x, y, 46, "hand", BLUE)
     return None
 
 
@@ -560,8 +560,8 @@ b.custom(J(), 6.9, 7.0, ball_fn)
 H(7, "wood_high")
 H(8, "tom")
 
-PAO4 = Pao(2650, 4810, 250, 130, tail=-1, n=12, L=46)
-BANG = (3110, 4800)
+PAO4 = Pao(2560, 4810, 250, 130, tail=-1, n=12, L=46)
+BANG = (3000, 4800)
 scene("晚上：今晚必须来", "晚上 · 小周的一天", (2650, 5000, 0.85))
 L(join(stick(2250, 5450, 0.75, "hold"), face(2250, 5450, 0.75, "flat")), 0, 0.9, BLACK, 10, sfx="wood_high")
 L(phone(2370, 5265), 1, 1.8, BLUE, 8, sfx="pop")
@@ -576,7 +576,7 @@ L(padlock(BANG[0] + 120, BANG[1] + 10), 7, 7.8, BLACK, 8, sfx="wood_low")
 LINE_Y = 5420
 DOTS = [500, 830, 1160, 1490]
 MINI = [Pao(x, 5175, 118, 82, tail=-1, n=9, L=34, txt=False) for x in DOTS]
-scene("四句话，四根刺", "回看这一天", (1000, 5150, 0.8))
+scene("四句话，四根刺", "回看这一天", (1000, 5150, 0.72))
 L(join(arrow((360, LINE_Y), (1650, LINE_Y), 0.0, 40), *[circle(x, LINE_Y, 14) for x in DOTS]), 0, 0.8, BLACK, 9,
   sfx="wood_low")
 for i, p in enumerate(MINI):
@@ -586,10 +586,11 @@ for i, p in enumerate(MINI):
 
 # ---------------------------------------------------------------- 书里的四步（场景 10）
 
-CARD = (1000, 6480, 270, 300)
+DY = 600                        # 四步与改写整体下移，拉远回看时间轴时不露出下面的卡片
+CARD = (1000, 6480 + DY, 270, 300)
 ICON_Y = CARD[1] - 40
 LAB_Y = CARD[1] + 100
-scene("书里给了四步", "书中观点 · 第一章", (1000, 6650, 0.85))
+scene("书里给了四步", "书中观点 · 第一章", (1000, 6650 + DY, 0.85))
 L(card_frame(*CARD), 0, 0.8, BLACK, 10, sfx="wood_low")
 for i in range(4):
     L(ICONS[i](cell_x(CARD[0], CARD[2], i), ICON_Y, 1.0), 1 + i, 1.8 + i, BLACK, 8, sfx="pop")
@@ -600,31 +601,31 @@ for i in range(4):
 # ---------------------------------------------------------------- 重说（场景 11–12）
 
 REWRITE = ("碗放两天了", "我有点烦", "想厨房干净点", "今晚能洗吗？")
-PAO5 = Pao(1340, 6960, 165, 115, tail=-1, n=8, L=50, txt=False)
-scene("早上那句，重说", "据书中思路 · 改写", (1000, 6900, 0.85))
+PAO5 = Pao(1340, 6960 + DY, 165, 115, tail=-1, n=8, L=50, txt=False)
+scene("早上那句，重说", "据书中思路 · 改写", (1000, 6900 + DY, 0.85))
 PAO5.draw(J(), 0, 0.4)
 PAO5.grow(J(), 0, dur=0.3, sfx="rim")
 for i in range(4):
     b.custom(J(), 2 * i, 2 * i + 0.5, fill_fn(cell_x(CARD[0], CARD[2], i), CARD[1], CARD[2] - 24, CARD[3] - 24))
-    T(REWRITE[i], 760, 6770 + i * 125, 58, BLUE, k0=2 * i, sfx="pop")
+    T(REWRITE[i], 760, 6770 + DY + i * 125, 58, BLUE, k0=2 * i, sfx="pop")
     PAO5.retract(J(), 1 + 2 * i, (i, i + 4), sfx="shaker" if i < 3 else "ding")
 
-SH = (2650, 6880, 380, 260)
-PAO6 = Pao(2650, 6520, 240, 115, tail=0, base=BLUE, mood="smile")
-scene("上午那句，重说", "据书中思路 · 改写", (2650, 6950, 0.85))
-T("你看看人家小李", 2650, 6520, 64, RED, k0=0, k1=1.75, sfx="pop")
-b.erase(J(), 2, 2.8, 2650, 6520, 560, 120)
+SH = (2650, 6880 + DY, 380, 260)
+PAO6 = Pao(2650, 6520 + DY, 240, 115, tail=0, base=BLUE, mood="smile")
+scene("上午那句，重说", "据书中思路 · 改写", (2650, 6950 + DY, 0.85))
+T("你看看人家小李", 2650, 6520 + DY, 64, RED, k0=0, k1=1.75, sfx="pop")
+b.erase(J(), 2, 2.8, 2650, 6520 + DY, 560, 120)
 H(2, "shaker")
 L(sheet(*SH), 3, 3.9, BLACK, 9, sfx="wood_high")
 L(join(*[circle(*cell_of(*SH, r, cc), 32) for r, cc in ((0, 2), (1, 1), (2, 2))]), 4, 4.8, RED, 8, sfx="rim")
-L(join(stick(2290, 7130, 0.7, "point"), face(2290, 7130, 0.7, "smile"),
-       mirror(stick(3010, 7130, 0.6, "point"), 3010), face(3010, 7130, 0.6, "smile")), 5, 5.9, BLACK, 9, sfx="pop")
+L(join(stick(2290, 7130 + DY, 0.7, "point"), face(2290, 7130 + DY, 0.7, "smile"),
+       mirror(stick(3010, 7130 + DY, 0.6, "point"), 3010), face(3010, 7130 + DY, 0.6, "smile")), 5, 5.9, BLACK, 9, sfx="pop")
 PAO6.draw(J(), 6, 6.5, sfx="pop")
 T("一起看一遍？", PAO6.x, PAO6.y + 26, 56, BLUE, k0=6.5, k1=8.0)
 
 # ---------------------------------------------------------------- 回到时间轴（场景 13）
 
-scene("刺少了，话还在", "回看这一天", (1000, 5130, 0.72))
+scene("刺少了，话还在", "回看这一天", (1000, 5130, 0.66))
 for i, p in enumerate(MINI):
     p.retract(J(), 1 + i, range(9), sfx="pop" if i < 3 else "ding")
 T("同一天，换个说法", 1000, 4830, 72, BLUE, k0=5, k1=7, sfx="pop")
@@ -632,17 +633,17 @@ L(underline(720, 1280, 4900), 7, 7.8, BLUE, 8, sfx="wood_high")
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：第 0 拍拉远看全板，第 4 拍推到评论区
 
-COMMENT = (1800, 8250, 0.8)
-PAO7 = Pao(1330, 7820, 120, 80, tail=1, base=BLUE, mood="smile", txt=False)
-scene("评论区聊聊", "评论区见", (1800, 4500, 0.105), bars=4)
+COMMENT = (1800, 8850, 0.8)
+PAO7 = Pao(1330, 8420, 120, 80, tail=1, base=BLUE, mood="smile", txt=False)
+scene("评论区聊聊", "评论区见", (1800, 4800, 0.1), bars=4)
 b.move(J(), 4, COMMENT, dur=1.1)
 H(0, "cymbal", 0.5)
 H(2, "ding")
 H(4, "wood_high", 0.6)
-L(rect(1800, 8250, 1160, 480, 30), 6, 6.8, BLACK, 9, sfx="wood_high")
+L(rect(1800, 8850, 1160, 480, 30), 6, 6.8, BLACK, 9, sfx="wood_high")
 PAO7.draw(J(), 6.8, 7.2)
-T("你今天说过哪句带刺的话？", 1800, 8150, 62, RED, k0=7, k1=9.75, sfx="pop")
-T("下一讲：“你总迟到”，为啥一说就炸？", 1800, 8340, 50, k0=10, k1=13.5, sfx="wood_high")
+T("你今天说过哪句带刺的话？", 1800, 8750, 62, RED, k0=7, k1=9.75, sfx="pop")
+T("下一讲：“你总迟到”，为啥一说就炸？", 1800, 8940, 50, k0=10, k1=13.5, sfx="wood_high")
 b.hit(J(), 16, "kick", 0.55, "原曲最后一击")
 
 

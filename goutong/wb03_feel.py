@@ -188,12 +188,6 @@ def four_card(x, y, cell=180) -> skia.Path:
     return join(*parts)
 
 
-def finger(x, y, s=1.0) -> skia.Path:
-    """指向对方的手：拳头 + 伸出的食指（朝右）+ 袖口。"""
-    return join(rect(x - 20 * s, y + 15 * s, 110 * s, 90 * s, 28 * s), rect(x + 95 * s, y - 15 * s, 130 * s, 30 * s, 15 * s),
-                P((x - 75 * s, y - 35 * s), (x - 75 * s, y + 65 * s)), P((x - 105 * s, y - 35 * s), (x - 105 * s, y + 65 * s)))
-
-
 def stick_chest(x, y, s=1.0) -> skia.Path:
     """手按胸口的小人：(x, y) 为脚底。"""
     hy = y - 290 * s
@@ -292,7 +286,7 @@ T("越说越远", 2700, 1190, 72, RED, k0=7, k1=8, sfx="kick")
 
 # ---------------------------------------------------------------- drop：大泡泡裂开，掉出“想法”（场景 4）
 
-BX, BY, BW, BH = 2700, 2250, 900, 340
+BX, BY, BW, BH = 2700, 2250, 800, 340
 BIG = join(pao(BX, BY, BW, BH, -1), spikes(BX, BY, BW, BH, -1, 45), pface(BX, BY - 95, 1.4))
 CRACK = [(BX, 1985), (BX - 30, 2060), (BX + 28, 2140), (BX - 26, 2220), (BX + 30, 2300), (BX - 24, 2380),
          (BX + 20, 2450), (BX, 2530)]
@@ -333,8 +327,8 @@ def split_fn(c, k, Tm):
     else:
         for sign in (-1, 1):
             c.save()
-            c.translate(sign * 130 * sp, 20 * sp)
-            c.rotate(sign * 7 * sp, BX, CRACK[-1][1])
+            c.translate(sign * 80 * sp, 20 * sp)
+            c.rotate(sign * 6 * sp, BX, CRACK[-1][1])
             c.clipPath(_side(sign), skia.ClipOp.kIntersect, True)
             body(c)
             c.restore()
@@ -409,11 +403,11 @@ T("我有点失落", RX, 5380, 56, BLUE, k0=6.6, k1=7.85)
 scene("被忽视，算哪种", "对照二 · 书中观点", (1800, 6700, 0.85))
 bad(6500)
 T("我被忽视了", LX, 6540, 56, RED, k0=1, k1=2.25, sfx="pop")
-L(finger(1440, 6930, 0.9), 3, 3.8, BLACK, 8, sfx="wood_high")
-L(cross(1500, 6935, 95), 4, 4.6, RED, 12, sfx="rim")
-good(6500, 5, 5.7)
-T("我很委屈", RX, 6540, 56, BLUE, k0=5.7, k1=6.7)
-L(join(stick_chest(2120, 7130, 0.62), heart(2129, 6982, 14)), 7, 7.9, BLUE, 8, sfx="wood_high")
+L(join(stick(1400, 7150, 0.62, "point"), face(1400, 7150, 0.62, "sad")), 3, 3.8, BLACK, 8, sfx="wood_high")
+L(cross(1440, 6990, 120), 4, 4.6, RED, 12, sfx="rim")
+L(join(stick_chest(2120, 7150, 0.62), heart(2129, 7002, 14)), 5, 5.9, BLUE, 8, sfx="wood_high")
+good(6500, 6, 6.6)
+T("我很委屈", RX, 6540, 56, BLUE, k0=6.6, k1=7.6)
 
 scene("骂自己也一样", "对照三 · 说出感受", (1800, 8100, 0.85))
 bad(7900)
@@ -479,7 +473,7 @@ def pick_fn(c, k, Tm):
 b.custom(J(), 0, 1, pick_fn, sfx="wood_high")
 H(1, "pop")
 L(ellipse(*PICK, 470, 250), 2, 2.8, RED, 9, sfx="ding")
-T("最准的一个", PICK[0], 10890, 60, BLUE, k0=3, k1=4.25, sfx="pop")
+T("最准的一个", PICK[0], 11395, 60, BLUE, k0=3, k1=4.25, sfx="pop")
 
 # ---------------------------------------------------------------- 再说因为什么：刺缩回去（场景 12）
 

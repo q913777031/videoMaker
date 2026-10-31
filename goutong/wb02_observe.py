@@ -302,11 +302,11 @@ def gavel(x, y, s=1.0) -> skia.Path:
     a = math.radians(-35)
     ux, uy = math.cos(a), math.sin(a)          # 锤头长轴
     vx, vy = -uy, ux
-    hl, hw = 120 * s, 50 * s
+    hl, hw = 80 * s, 48 * s
     head = P(*[(x + ux * hl * i + vx * hw * j, y + uy * hl * i + vy * hw * j) for i, j in ((-1, -1), (1, -1), (1, 1), (-1, 1))],
              close=True)
-    handle = P((x + vx * hw, y + vy * hw), (x + vx * 330 * s, y + vy * 330 * s))
-    base = rect(x - 150 * s, y + 200 * s, 220 * s, 50 * s, 10 * s)
+    handle = P((x + vx * hw, y + vy * hw), (x + vx * 290 * s, y + vy * 290 * s))
+    base = rect(x - ux * hl - 10 * s, y - uy * hl + 95 * s, 220 * s, 50 * s, 10 * s)
     return join(head, handle, base)
 
 
@@ -342,7 +342,7 @@ def cage(x, y, w, h) -> skia.Path:
     top.moveTo(x0, y0 + 60)
     top.quadTo(x, y0 - 90, x1, y0 + 60)
     parts = [top, P((x0 - 30, y1), (x1 + 30, y1)), P((x0, y0 + 60), (x1, y0 + 60)), circle(x, y0 - 48, 22)]
-    n = 7
+    n = 5
     for i in range(n + 1):
         bx = x0 + w * i / n
         parts.append(P((bx, y0 + 60 - (0 if i in (0, n) else 40 * math.sin(math.pi * i / n))), (bx, y1)))
@@ -444,8 +444,8 @@ T("九点二十到", CAM[0], 4900, 62, BLUE, k0=3, k1=4.25, sfx="pop")
 L(P((1800, 4390), (1800, 5020)), 4.4, 4.9, BLACK, 6)
 L(gavel(*GV), 5, 5.9, BLACK, 9, sfx="wood_high")
 T("评论", 2220, 4440, 70, RED, k0=6, k1=6.8, sfx="pop")
-T("懒", 2100, 4950, 120, RED, k0=7, k1=7.6, sfx="tom")
-L(bang(2100, 4950, 80), 7.6, 8, RED, 7)
+T("懒", 2144, 4960, 120, RED, k0=7, k1=7.6, sfx="tom")
+L(bang(2144, 4960, 80), 7.6, 8, RED, 7)
 
 # ---------------------------------------------------------------- 小测验（场景 7–10）：四张题卡排成田字
 
@@ -475,20 +475,20 @@ Q1 = (1100, 6200)
 scene("第一题，猜猜看", "小测验 · 第一题", (*Q1, 0.85))
 bo, bp = quiz(*Q1, 1, "他很懒", 80)
 L(rect(*bp, BW_ + 50, BH_ + 50, 95), 7, 7.6, RED, 12, sfx="rim")
-L(cross(bp[0] + 230, bp[1] - 100, 34), 7.4, 7.9, RED, 10)
+L(cross(bp[0], Q1[1] + 340, 50), 7.4, 7.9, RED, 12)
 
 Q2 = (2500, 6200)
 scene("第二题", "小测验 · 第二题", (*Q2, 0.85))
 bo, bp = quiz(*Q2, 2, "他这周3天没交日报", 62)
 L(rect(*bo, BW_ + 50, BH_ + 50, 95), 7, 7.6, BLUE, 12, sfx="ding")
-L(check(bo[0] - 250, bo[1] - 100, 40), 7.3, 7.9, GREEN, 11)
+L(check(bo[0], Q2[1] + 340, 60), 7.3, 7.9, GREEN, 12)
 
 Q3 = (1100, 7500)
 Q3S = "她老是不回消息"
 scene("第三题", "小测验 · 第三题", (*Q3, 0.85))
 bo, bp = quiz(*Q3, 3, Q3S, 66)
 lx = (char_x(Q3S, Q3[0], 66, 1) + char_x(Q3S, Q3[0], 66, 2)) / 2
-L(join(oval(lx, Q3[1] - 190, 190, 110), rect(*bp, BW_ + 50, BH_ + 50, 95)), 7, 7.8, RED, 10, sfx="rim")
+L(join(oval(lx + 8, Q3[1] - 190, 215, 115), rect(*bp, BW_ + 50, BH_ + 50, 95)), 7, 7.8, RED, 10, sfx="rim")
 
 Q4 = (2500, 7500)
 PIV = (Q4[0], Q4[1] - 250)
@@ -510,9 +510,9 @@ L(check(RP[0] + 85, Q4[1] + 230, 32), 7.2, 7.8, GREEN, 10)
 
 WY = 8820
 scene("总、老、从来", "书中观点 · 露馅的词", (1800, 8880, 0.85))
-T("总", 1460, WY, 120, RED, k0=0, k1=0.8, sfx="pop")
-T("老", 1780, WY, 120, RED, k0=1, k1=1.8, sfx="pop")
-T("从来", 2130, WY, 120, RED, k0=2, k1=2.8, sfx="pop")
+T("总", 1400, WY, 120, RED, k0=0, k1=0.8, sfx="pop")
+T("老", 1600, WY, 120, RED, k0=1, k1=1.8, sfx="pop")
+T("从来", 2000, WY, 100, RED, k0=2, k1=2.8, sfx="pop")
 L(cage(1800, 8780, 1000, 380), 3, 4.2, BLACK, 8, sfx="wood_high")
 L(padlock(2300, 8900, 0.9), 5, 5.6, BLACK, 8, sfx="rim")
 T("一用就像评论", 1800, 9180, 72, k0=6, k1=7.5, sfx="pop")
@@ -533,7 +533,7 @@ T("共 2 次", WK[0], 10330, 72, BLUE, k0=7, k1=8, sfx="ding")
 
 PB = (1800, 11120, 820, 340)
 PB_TAIL = (1490, 11480)
-BOSS2, MATE2 = (1400, 11820), (2350, 11820)
+BOSS2, MATE2 = (1400, 11820), (2200, 11820)
 scene("再说一遍", "再说一遍 · 改写", (1800, 11360, 0.85))
 L(join(stick(*BOSS2, 0.75, "point", tie=True), face(*BOSS2, 0.75, "flat"), stick(*MATE2, 0.75, hair=True)), 0, 0.9, BLACK,
   9, sfx="wood_high")
