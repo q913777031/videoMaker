@@ -199,7 +199,8 @@ b.move(J(), 10.0, V4, dur=0.75)
 
 LC, LR = (2650, 2900), 320
 NODES = [(-90, "怕"), (30, "出汗"), (150, "更怕")]
-DOC = (2650, 3040)               # 圈里年轻医生的脚底
+DOC = (2650, 3075)               # 圈里年轻医生的脚底
+DS = 0.7                         # 医生小人的大小
 CUT = -30                        # 场景 7 剪断的位置（度）
 
 
@@ -259,8 +260,8 @@ def sweat_fn(c, k, t):
     f = clamp01((t - t_dry) / 0.5)
     if f >= 1:
         return None
-    hy = DOC[1] - 290 * 0.55
-    for dx, dy, s in ((-55, -5, 0.8), (58, -15, 0.8), (52, 45, 0.6)):
+    hy = DOC[1] - 290 * DS
+    for dx, dy, s in ((-62, -5, 0.9), (66, -15, 0.9), (60, 50, 0.7)):
         path = drop(DOC[0] + dx, hy + dy + 60 * f, s * (0.4 + 0.6 * ease_in_out(k)))
         c.drawPath(path, K.paint(BLUE, 1 - f, 6))
     return None
@@ -270,8 +271,8 @@ scene("绕成一个圈", "书中病例 · 怕出汗", V4, shake=[0], flashes=[0]
 J4 = J()
 b.custom(J4, 0, 0.5, loop_fn, sfx="kick")
 H(1, "shaker", 0.6)
-L(stick(*DOC, 0.55, "down"), 2, 2.8, BLACK, 8, sfx="wood_high")
-L(face(*DOC, 0.55, "frown"), 2.8, 3.0, BLACK, 7)
+L(stick(*DOC, DS, "down"), 2, 2.8, BLACK, 8, sfx="wood_high")
+L(face(*DOC, DS, "frown"), 2.8, 3.0, BLACK, 7)
 b.custom(J4, 3, 3.6, sweat_fn, sfx="pop")
 T("怕出汗的年轻医生", 2650, 2330, 64, k0=5, k1=7, sfx="pop")
 H(7, "ding", 0.6)
@@ -301,9 +302,9 @@ scene("这毛病松开了", "书中病例 · 后来", V4)
 J7 = J()
 L(scissors(_ang_pt(CUT)[0] + 120, _ang_pt(CUT)[1] - 20, 1.1), 1, 1.8, BLACK, 8, sfx="rim")
 H(3, "shaker")
-b.erase(J7, 4, 4.6, DOC[0], DOC[1] - 90, 170, 230)
-L(stick(*DOC, 0.55, "up"), 5, 5.8, BLACK, 8, sfx="wood_high")
-L(face(*DOC, 0.55, "smile"), 5.8, 6.0, BLACK, 7)
+b.erase(J7, 4, 4.6, DOC[0], DOC[1] - 115, 200, 280)
+L(stick(*DOC, DS, "up"), 5, 5.8, BLACK, 8, sfx="wood_high")
+L(face(*DOC, DS, "smile"), 5.8, 6.0, BLACK, 7)
 T("很快就松开了", 2650, 3330, 66, RED, k0=6, k1=7.5, sfx="ding")
 
 # ---------------------------------------------------------------- 书中观点：矛盾意向（场景 8）

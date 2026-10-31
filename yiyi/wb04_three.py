@@ -323,9 +323,9 @@ for n, (x, y, _) in enumerate(SIGNS):
 H(8, "shaker", 0.6, "罗盘还在乱转")
 
 scene("书里给了三条路", "活出生命的意义 · 书中观点", (1850, 5080, 0.8))
-L(book(2360, 5410, 260, 170), 0, 0.9, BLACK, 9, sfx="wood_low")
-T("弗兰克尔", 2360, 5160, 46, k0=1, k1=2.0, sfx="pop")
-T("活出生命的意义", 2360, 5235, 46, GREEN, k0=2, k1=3.75, sfx="pop")
+L(book(2340, 5410, 260, 170), 0, 0.9, BLACK, 9, sfx="wood_low")
+T("弗兰克尔", 2340, 5160, 46, k0=1, k1=2.0, sfx="pop")
+T("活出生命的意义", 2340, 5235, 44, GREEN, k0=2, k1=3.75, sfx="pop")
 for n, (a, z) in enumerate(CRACKS):
     L(crack(a, z), 5 + n, 5.8 + n, BLACK, 6, sfx=["wood_high", "wood_low", "wood_high"][n])
 
