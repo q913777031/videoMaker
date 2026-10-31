@@ -63,40 +63,40 @@ DROP = 32
 COMMA = 0.25
 HOLD = 1.55
 MIN_BEATS = 10
-INTRO_BEATS = 6
+INTRO_BEATS = 8                   # 四字逐拍落定（第 0–3 拍）后整体停留约 2 秒，再用 1.3 秒缓推到小李
 EXTRA_HOLD = {12: 1.0}            # “麻烦就会找上你”之后大球砸下（强拍），再多停一会儿
 
 core.SERIES.update(name="丰田模式", count="第一季", prefix="丰田")
 
-# 旁白：(整句, 字幕[按逗号分句；None = 并入下一条], 与同屏上一句的间隔秒)
+# 旁白：(整句, 字幕[按顺序拼起来等于整句（不计标点）；按字的位置换算出现时刻], 与同屏上一句的间隔秒)
 LINES = [
-    ("同一个问题，返工第三遍了。", ["同一个问题", "【返工】第三遍了"], 0.0),
-    ("补了又坏，坏了又补，人都快麻了。", [None, "补了又坏，坏了又补", "人都快【麻了】"], 0.5),
-    ("丰田偏偏反着来：", ["丰田偏偏【反着来】"], 0.0),
-    ("工人一看到毛病，马上拉一下绳。", ["工人一看到毛病", "马上【拉】一下绳"], 0.35),
+    ("同一个问题，已经返工第三遍了。", ["同一个问题", "已经【返工】第三遍了"], 0.0),
+    ("补了又坏，坏了又补，人都快麻了。", ["补了又坏，坏了又补", "人都快【麻了】"], 0.5),
+    ("丰田的做法，正好反过来：", ["丰田的做法，正好【反过来】"], 0.0),
+    ("工人一发现毛病，马上拉一下头顶的绳子。", ["工人一发现毛病", "马上【拉】一下头顶的绳子"], 0.35),
     ("黄灯一亮，组长立刻赶过来帮忙。", ["黄灯一亮", "【组长】立刻赶过来帮忙"], 0.0),
-    ("能在这个工位里修好，线就照常走；", ["能在这个工位里修好", "线就照常走"], 0.0),
-    ("修不完，就让整条线停下来，先把它修好。", ["修不完", "就让整条线【停下来】", "先把它【修好】"], 0.7),
+    ("如果在这个工位里能修好，生产线照常往前走；", ["如果在这个工位里", "能修好，生产线照常往前走"], 0.0),
+    ("要是修不完，就让整条线停下来，先把问题修好。", ["要是修不完", "就让整条线【停下来】", "先把问题【修好】"], 0.7),
     ("停线多亏啊，为什么还要停？", ["停线多亏啊", "为什么还要停？"], 0.0),
-    ("因为不停，带毛病的车就会往下走。", ["因为不停", "带毛病的车就会往下走"], 0.0),
-    ("后面每个工位，都在它上面接着装。", ["后面每个工位", "都在它上面接着装"], 0.45),
-    ("等到最后才发现，只能拆开，再装一遍。", ["等到最后才发现", None, "只能拆开，再装一遍"], 0.0),
+    ("因为不停的话，带毛病的车会继续往下走。", ["因为不停的话", "带毛病的车", "会继续往下走"], 0.0),
+    ("后面每个工位，都在它上面接着装零件。", ["后面每个工位", "都在它上面接着装零件"], 0.45),
+    ("等到最后才发现，只能拆开，重新装一遍。", ["等到最后才发现", "只能拆开，重新装一遍"], 0.0),
     ("这就是返工。", ["这就是【返工】"], 0.75),
-    ("所以丰田宁可停一下，也要把问题当场亮出来，在源头修好。", ["所以丰田宁可停一下", "也要把问题当场亮出来", "在【源头】修好"], 0.0),
+    ("所以丰田宁可停一下，也要当场把问题摆出来，在源头修好。", ["所以丰田宁可停一下", "也要当场把问题摆出来", "在【源头】修好"], 0.0),
     ("我们身边，这种事天天都有。", ["我们身边", "这种事【天天都有】"], 0.0),
-    ("表里一个数对不上，先糊过去，月底对账全乱了。", ["表里一个数对不上", "先糊过去", "月底对账【全乱了】"], 0.6),
-    ("方案里有个坑，想着先交了再说，到了客户那，坑越挖越大。", ["方案里有个坑", "想着先交了再说", None, "到了客户那，坑越挖越大"], 0.0),
-    ("牙有点疼，先忍一忍，结果拖成了根管。", [None, "牙有点疼，先忍一忍", "结果拖成了【根管】"], 0.0),
-    ("遇到问题，先应付一下，先盖住，它就一路往下走，越滚越大。", ["遇到问题", None, "先应付一下，先盖住", "它就一路往下走", "【越滚越大】"], 0.0),
+    ("报表里有个数对不上，先糊弄过去，到月底对账就全乱了。", ["报表里有个数对不上", "先糊弄过去", "到月底对账就【全乱了】"], 0.0),
+    ("方案里有个漏洞，想着先交了再说，到了客户那里，漏洞越来越大。", ["方案里有个漏洞", "想着先交了再说", "到了客户那里", "漏洞【越来越大】"], 0.0),
+    ("牙有点疼，先忍一忍，结果拖到要做根管。", ["牙有点疼，先忍一忍", "结果拖到要做【根管】"], 0.0),
+    ("遇到问题先应付、先遮住，它就会一路往下走，越滚越大。", ["遇到问题先应付、先遮住", "它就会一路往下走", "【越滚越大】"], 0.0),
     ("你怕麻烦，麻烦就会找上你。", ["你怕麻烦", "麻烦就会【找上你】"], 0.8),
-    ("所以下次发现问题，先停一停。", ["所以下次发现问题", "先【停一停】"], 0.0),
-    ("第一，当场说出来，拉上同事一起看五分钟。", [None, "第一，当场说出来", "拉上同事一起看五分钟"], 0.6),
-    ("第二，在源头修，别在后面打补丁。", [None, "第二，在【源头】修", "别在后面打补丁"], 0.0),
-    ("第三，跟团队说好：喊停的人，不挨骂。", ["第三", "跟团队说好：喊停的人", "【不挨骂】"], 0.0),
+    ("所以，下次发现问题，先停一停。", ["所以，下次发现问题", "先【停一停】"], 0.0),
+    ("第一，当场说出来，拉上同事一起看五分钟。", ["第一，当场说出来", "拉上同事一起看五分钟"], 0.6),
+    ("第二，从源头上修，别在后面打补丁。", ["第二，从【源头】上修", "别在后面打补丁"], 0.0),
+    ("第三，跟团队约好：喊停的人，不挨骂。", ["第三，跟团队约好", "喊停的人，【不挨骂】"], 0.0),
     ("早一点停下来，后面就少一点返工，你也能早点下班。", ["早一点停下来", "后面就少一点返工", "你也能【早点下班】"], 0.0),
-    ("你最近在先应付哪件事？", ["你最近在先应付哪件事？"], 0.0),
-    ("评论区说说，别一个人扛着。", ["评论区说说", "别一个人扛着"], 0.6),
-    ("下一讲：活儿做得越多，为什么越乱？", ["下一讲：活儿做得越多", "为什么越乱？"], 0.6),
+    ("你手上有没有一个问题，一直想着以后再说？", ["你手上有没有一个问题", "一直想着以后再说？"], 0.0),
+    ("写在评论区吧，别一个人扛着。", ["写在评论区吧", "别一个人扛着"], 0.6),
+    ("下一讲：活儿越做越多，为什么反而越乱？", ["下一讲：活儿越做越多", "为什么反而越乱？"], 0.6),
 ]
 # 每屏：(旁白句序号, 页眉标签, 白板区块)
 SCREENS = [
@@ -122,7 +122,7 @@ NOTES = [
     "“不停线 → 带毛病的车一路往下装 → 最后拆开再装 = 返工”“宁可停一下，当场亮出来，源头修好”为对原则 5 的通俗化转述。",
     "身边的例子（对账、方案、牙疼）与三条做法为据书中思路整理的示意；牙疼只画简笔牙齿，不涉及医疗建议。"
     "小李、小王、老张为虚构人物；“第三遍”“五分钟”“18:00”为示意，不是数据。",
-    "下一讲拟题：02 拉动 · 只做下一步要的——“活儿做得越多，为什么越乱？”（原则 3：使用拉动式生产方式以避免生产过剩）。",
+    "下一讲拟题：02 拉动 · 只做下一步要的——“活儿越做越多，为什么反而越乱？”（原则 3：使用拉动式生产方式以避免生产过剩）。",
 ]
 
 # ---------------------------------------------------------------- 旁白：合成、补逗号停顿
@@ -212,11 +212,11 @@ def _schedule(T_arr):
     st[3] = T_arr[DROP] - DUR_L[3] - 0.03
     s1 = s2 - MIN_BEATS
     while True:
-        t0 = T_arr[s1] - 0.3                                  # 第 1 句在片头最后半拍就进，镜头推向小李
+        t0 = T_arr[s1] + 0.2                                  # 第 1 句在镜头从片头缓推向小李时进
         if t0 + DUR_L[0] + LINES[1][2] + DUR_L[1] + HOLD <= T_arr[s2]:
             break
         s1 -= 2
-    st[0] = T_arr[s1] - 0.3
+    st[0] = T_arr[s1] + 0.2
     st[1] = st[0] + DUR_L[0] + LINES[1][2]
     s0 = s1 - INTRO_BEATS
     if s0 < 0:
@@ -339,7 +339,7 @@ def kb(j, t_local, lo=0, strong=False):
 
 # ---------------------------------------------------------------- 白板布局（取景按 872×900 的竖屏舞台框住每屏内容）
 
-b = Board(size=(4400, 10600))
+b = Board(size=(4800, 10600))
 VI = (3300, 760, 0.7)
 VA = (1125, 810, 0.67)
 VB = (1112, 1790, 0.63)
@@ -347,7 +347,7 @@ VB2 = (1292, 1800, 0.52)
 VQ = (3300, 1900, 0.8)
 VC = (1200, 3290, 0.53)
 VD = (870, 4280, 0.84)
-VS = (1400, 5590, 0.5)
+VS1, VS2, VS3, VS4 = (1150, 4930, 0.72), (2250, 5190, 0.72), (3350, 5450, 0.72), (3790, 5640, 0.6)
 VF1, VF2, VF3 = (1035, 6575, 0.71), (1078, 7590, 0.61), (1100, 8600, 0.76)
 VH = (3300, 3300, 0.72)
 VG = (1150, 9785, 0.88)
@@ -521,6 +521,21 @@ def draw_li(c, x, y, s, mood="flat", back=False, squash=1.0, bag=False, alpha=1.
 INTRO_CH = "丰田模式"
 INTRO_X = [2880, 3160, 3440, 3720]
 INTRO_Y = 690
+
+
+def intro_char(ch, x, j, k):
+    """片头大字：落下（比砸字柔和：1.5 倍缩到 1，小回弹），落定后整体轻微呼吸。"""
+    def fn(c, kk, T):
+        dt = T - tb(j, k)
+        if dt < 0:
+            return None
+        sc = lerp(1.5, 1.0, ease_out(clamp01(dt / 0.14))) if dt < 0.14 else \
+            1.0 + 0.04 * math.exp(-(dt - 0.14) * 7) * math.sin((dt - 0.14) * 22)
+        sc *= 1 + 0.012 * math.sin((T - tb(j, 4)) * 2.6) if T > tb(j, 4) else 1
+        with K.at(c, x, INTRO_Y, 0, sc):
+            K.text(c, ch, 0, 0, 250, "hand", RED, clamp01(dt / 0.08))
+        return None
+    return fn
 
 # ---------------------------------------------------------------- 第 1 屏：返工圈
 
@@ -800,8 +815,11 @@ def flow_car_fn(c, k, T):
         if T >= ts:
             dt = T - ts
             ang = (-2.3, -1.57, -0.8)[i]
-            bx += math.cos(ang) * 260 * ease_out(clamp01(dt / 0.5))
-            by += math.sin(ang) * 260 * ease_out(clamp01(dt / 0.5)) + 300 * max(0, dt - 0.3) ** 2
+            bx += math.cos(ang) * 230 * ease_out(clamp01(dt / 0.5))
+            by += math.sin(ang) * 230 * ease_out(clamp01(dt / 0.5))
+            sc *= 1 - clamp01((dt - 0.5) / 0.4)
+            if sc <= 0:
+                continue
         with K.at(c, bx, by, (i - 1) * 8, sc):
             c.drawRoundRect(skia.Rect.MakeXYWH(-30, -22, 60, 44), 6, 6, K.paint(K.tint(PARTS[i], 0.6)))
             c.drawRoundRect(skia.Rect.MakeXYWH(-30, -22, 60, 44), 6, 6, wb.marker(PARTS[i], 7))
@@ -868,54 +886,38 @@ def sheet_icon(x, y) -> skia.Path:
     return join(*parts)
 
 
-# ---------------------------------------------------------------- 第 10–13 屏：雪球（之字形斜坡）
+# ---------------------------------------------------------------- 第 10–13 屏：雪球（一条宽的单向斜坡，三站各一屏）
 
-RAMP = [(650, 5150), (1900, 5320), (1950, 5500), (700, 5680), (650, 5860), (1900, 6040), (2000, 6070)]
-LI = (2080, 6090, 0.75)            # 小李站在坡底
-SNOW = {}                          # 分镜里填：keys = [(时刻函数, 坡上位置 0–1, 半径)], patches, turn, hit
-
-
-def _ramp_len():
-    segs = [math.hypot(b_[0] - a[0], b_[1] - a[1]) for a, b_ in zip(RAMP, RAMP[1:])]
-    return segs, sum(segs)
+SL0, SL1 = (450, 4980), (4300, 5910)
+ST_SNOW = [1150, 2250, 3350]
+END_X = 3880
+LI = (4180, 5895, 0.8)            # 小李站在坡底右侧
+SNOW = {}                          # 分镜里填：keys = [(时刻函数, 坡上横坐标, 半径)], patches, li, turn, hit
 
 
-def ramp_at(u):
-    segs, tot = _ramp_len()
-    d = u * tot
-    for (a, b_), L in zip(zip(RAMP, RAMP[1:]), segs):
-        if d <= L:
-            f = d / L if L else 0
-            return lerp(a[0], b_[0], f), lerp(a[1], b_[1], f)
-        d -= L
-    return RAMP[-1]
+def slope_y(x):
+    return SL0[1] + (x - SL0[0]) * (SL1[1] - SL0[1]) / (SL1[0] - SL0[0])
 
 
-def ramp_u(x, seg):
-    """第 seg 段上横坐标 x 处的坡上位置 u。"""
-    segs, tot = _ramp_len()
-    a, b_ = RAMP[seg], RAMP[seg + 1]
-    f = (x - a[0]) / (b_[0] - a[0])
-    return (sum(segs[:seg]) + f * segs[seg]) / tot
-
-
-def ramp_path() -> skia.Path:
-    return P(*RAMP[:-1])
+def slope_path() -> skia.Path:
+    parts = [P(SL0, SL1)]
+    for x in range(SL0[0] + 60, SL1[0], 120):                 # 坡下的短斜线（地面）
+        parts.append(P((x, slope_y(x) + 8), (x - 40, slope_y(x - 40) + 48)))
+    return join(*parts)
 
 
 def ball_state(T):
-    keys = [(f(), u, r) for f, u, r in SNOW["keys"]]
+    keys = [(f(), x, r) for f, x, r in SNOW["keys"]]
     if T < keys[0][0]:
         return None
     i = max(n for n, k_ in enumerate(keys) if k_[0] <= T)
-    t, u, r = keys[i]
-    if i + 1 < len(keys) and keys[i + 1][1] != u and T >= keys[i + 1][0] - 0.45:
-        t2, u2, _ = keys[i + 1]
-        u = lerp(u, u2, ease_in_out(clamp01((T - (t2 - 0.45)) / 0.45)))
+    t, x, r = keys[i]
+    if i + 1 < len(keys) and keys[i + 1][1] != x and T >= keys[i + 1][0] - 0.6:
+        t2, x2, _ = keys[i + 1]
+        x = lerp(x, x2, ease_in_out(clamp01((T - (t2 - 0.6)) / 0.6)))
     r0 = keys[i - 1][2] if i else 0.0
     rr = lerp(r0, r, pop_scale(T - t, 0.3))
-    x, y = ramp_at(u)
-    return x, y - rr, rr, (u * 2400) / max(rr, 1)
+    return x, slope_y(x) - rr, rr, x / max(rr, 1)
 
 
 def ball_fn(c, k, T):
@@ -926,23 +928,23 @@ def ball_fn(c, k, T):
     hit = SNOW["hit"]()
     if T >= hit - 0.3:                          # 最后一扑：从坡底扑到小李身上
         f = ease_in_out(clamp01((T - (hit - 0.3)) / 0.3))
-        x = lerp(x, LI[0] - 30, f)
-        y = lerp(y, LI[1] - r * 0.85, f)
+        x = lerp(x, LI[0] - 60, f)
+        y = lerp(y, LI[1] - r * 0.95, f)
     c.drawCircle(x, y, r, K.paint("#E8E9EE"))
     with K.at(c, x, y, math.degrees(roll)):
         for i in range(3):
             c.drawArc(skia.Rect.MakeXYWH(-r * (0.8 - i * 0.2), -r * (0.8 - i * 0.2), r * (1.6 - i * 0.4), r * (1.6 - i * 0.4)),
                       30 + i * 70, 120, False, wb.marker("#9AA0AC", 5))
     c.drawCircle(x, y, r, wb.marker(BLACK, 9))
-    K.text(c, "问题", x, y, max(44.0, r * 0.62), "hand", RED)
-    for f_, ang in SNOW["patches"]:
-        tp = f_()
+    patches = [(f_(), ang) for f_, ang in SNOW["patches"]]
+    for tp, ang in patches:
         if T >= tp:
             sc = pop_scale(T - tp)
-            with K.at(c, x + math.cos(ang) * r * 0.55, y + math.sin(ang) * r * 0.55, math.degrees(ang) + 20, sc):
-                pw, ph = max(40.0, r * 0.7), max(26.0, r * 0.4)
+            with K.at(c, x + math.cos(ang) * r * 0.62, y + math.sin(ang) * r * 0.62, math.degrees(ang) + 20, sc):
+                pw, ph = max(46.0, r * 0.62), max(30.0, r * 0.36)
                 c.drawRoundRect(skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), 6, 6, K.paint("#F4D9A8"))
                 c.drawRoundRect(skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), 6, 6, wb.marker(ORANGE, 5))
+    K.text(c, "问题", x, y, max(56.0, r * 0.5), "hand", RED)       # 字画在补丁上面，不被遮住
     return None
 
 
@@ -963,15 +965,15 @@ def li_fn(c, k, T):
         draw_li(c, x, y, s, "sad", back=back, squash=squash)
     if back and T < hit:
         bs = pop_scale(T - SNOW["turn"]())
-        with K.at(c, x + 70, y - 330, 0, bs):
-            c.drawRoundRect(skia.Rect.MakeXYWH(-80, -42, 160, 84), 30, 30, K.paint("#FFFFFF"))
-            c.drawRoundRect(skia.Rect.MakeXYWH(-80, -42, 160, 84), 30, 30, wb.marker(BLACK, 6))
-            K.text(c, "算了…", 0, 0, 46, "hand", BLACK)
-    if T >= hit:                                       # 被砸中：几颗星星
+        with K.at(c, x + 20, y - 420, 0, bs):
+            c.drawRoundRect(skia.Rect.MakeXYWH(-130, -60, 260, 120), 40, 40, K.paint("#FFFFFF"))
+            c.drawPath(bubble(0, 0, 260, 120, -1), wb.marker(BLACK, 7))
+            K.text(c, "算了…", 0, 0, 76, "hand", BLACK)
+    if T >= hit:
         dt = T - hit
         for i in range(4):
             a = i / 4 * 2 * math.pi + dt * 4
-            K.star(c, x + math.cos(a) * 90, y - 140 + math.sin(a) * 30, 18, YELLOW, clamp01(1.5 - dt))
+            K.star(c, x + math.cos(a) * 100, y - 150 + math.sin(a) * 34, 22, YELLOW, clamp01(1.5 - dt))
     return None
 
 
@@ -992,6 +994,44 @@ def home_li_fn(j, k):
     return fn
 
 
+# ---------------------------------------------------------------- 相机：切屏移动 1.3 秒缓入缓出（只影响本进程）
+
+MOVE_S = 1.3
+
+
+def camera(board, T):
+    ep_ = board.ep
+    j_ = ep_.shot_at(T)
+    s_ = ep_.shots[j_]
+    t_ = T - s_.t0
+    cur = board.views[j_]
+    prev = board.end_view(j_ - 1) if j_ > 0 else cur
+
+    def mix(a, z, k):
+        return lerp(a[0], z[0], k), lerp(a[1], z[1], k), math.exp(lerp(math.log(a[2]), math.log(z[2]), k))
+
+    k = ease_in_out(clamp01(t_ / MOVE_S)) if prev != cur else 1.0
+    view = mix(prev, cur, k)
+    for kb_, target, dur in board.moves.get(j_, []):
+        t0_ = board.t_of(j_, kb_)
+        if T < t0_:
+            break
+        view = mix(view, target, ease_in_out(clamp01((T - t0_) / dur)))
+    cx, cy, z = view
+    z *= 1 + 0.012 * clamp01(t_ / max(0.1, s_.t1 - s_.t0))
+    sx = sy = 0.0
+    for it in s_.shake:
+        kb_, amp = it if isinstance(it, tuple) else (it, 14.0)
+        dt = T - core.bt(s_.b0 + kb_)
+        if 0 <= dt < 0.3:
+            a = amp * math.exp(-dt * 14)
+            sx += a * math.sin(dt * 90)
+            sy += a * math.cos(dt * 77)
+    return cx, cy, z, sx, sy
+
+
+wb.camera = camera
+
 # ---------------------------------------------------------------- 分镜
 
 def scene(j, view):
@@ -1003,18 +1043,17 @@ def scene(j, view):
 # 屏 0：黄金 3 秒——“丰田模式”四个大字逐拍砸下
 j = scene(0, VI)
 for i, (ch, x, sfx) in enumerate(zip(INTRO_CH, INTRO_X, ("rim", "clap", "tom", "kick"))):
-    b.custom(j, i, i + 0.3, slam_text(ch, x, INTRO_Y, 250, RED, j, i), sfx=sfx, gain=0.95)
-b.shots[j].shake = [(3, 16.0)]
-b.shots[j].flashes = [(3, 0.3)]
-b.path(j, 3.3, 3.8, wb.underline(2780, 3820, 860, 16, 50), RED, 12)
-b.custom(j, 4, 4.3, pop_text("精益制造的14项原则", 3300, 960, 64, BLACK, j, 4, "sans_medium"), sfx="pop")
+    b.custom(j, i, i + 0.3, intro_char(ch, x, j, i), sfx=sfx, gain=(0.8, 0.8, 0.8, 0.7)[i])
+b.shots[j].shake = [(3, 7.0)]                    # 第四字落定：轻震，不闪白
+b.path(j, 3.4, 4.6, wb.underline(2780, 3820, 860, 16, 50), RED, 12)
+b.custom(j, 5, 5.3, pop_text("精益制造的14项原则", 3300, 970, 66, BLACK, j, 5, "sans_medium"), sfx="pop", gain=0.6)
 
 # 屏 1：小李返工第 3 遍
 j = scene(1, VA)
 SPIN0 = BOUNDS[1][0] + 4
 b.path(j, 0, 0.8, join(desk(780, 990, 380), stick(600, 1140, 0.85, "hold", tie=True, hair=True)), sfx="wood_high")
 b.path(j, 0.8, 0.95, face(600, 1140, 0.85, "sad"))
-b.custom(j, 1, 1.3, pop_text("小李 · 打工人", 720, 790, 54, BLACK, j, 1, "sans_medium"), sfx="pop")
+b.custom(j, 1, 1.3, pop_text("小李 · 打工人", 760, 775, 66, BLACK, j, 1, "sans_medium"), sfx="pop")
 b.path(j, 1.3, 1.9, doc(*LC, 150, 190), BLACK, 9)
 b.custom(j, 2, 2.9, loop_fn, sfx="wood_high")
 b.custom(j, 3, 3.3, slam_text("第3遍", LC[0], 520, 96, RED, j, 3), sfx="rim")
@@ -1025,7 +1064,7 @@ b.path(j, k_bu + 0.3, k_bu + 0.8, check(1030, 830, 42), GREEN, 11)
 b.custom(j, k_bu + 1, k_bu + 1.3, pop_text("坏", 1680, 700, 80, RED, j, k_bu + 1), sfx="rim", gain=0.7)
 b.path(j, k_bu + 1.3, k_bu + 1.8, cross(1680, 830, 38), RED, 11)
 k_ma = kb(j, wt(1, 2, 0.6), lo=k_bu + 2)
-b.custom(j, k_ma, k_ma + 0.3, pop_text("麻了", 900, 600, 70, BLUE, j, k_ma), sfx="pop", gain=0.6)
+b.custom(j, k_ma, k_ma + 0.3, pop_text("麻了", 930, 600, 76, BLUE, j, k_ma), sfx="pop", gain=0.6)
 
 # 屏 2：小王看到毛病，拉绳（drop）
 j = scene(2, VB)
@@ -1033,14 +1072,14 @@ KD = DROP - BOUNDS[2][0]
 b.shots[j].shake, b.shots[j].flashes = [(KD, 16.0)], [(KD, 0.45)]
 x0, x1, by = BELT
 b.path(j, 0, 0.7, book(540, 1310, 150, 100), GREEN, 7, sfx="wood_low")
-b.text(j, 1, 1.8, "丰田模式", 760, 1310, 60, GREEN, sfx="pop")
+b.text(j, 1, 1.8, "丰田模式", 790, 1310, 76, GREEN, sfx="pop")
 b.path(j, 2, 2.8, join(rect((x0 + x1) / 2, by + 12, x1 - x0 + 40, 46, 20),
                        *[circle(xx, by + 12, 13) for xx in range(x0 + 40, x1, 110)]), sfx="wood_high")
 T_IN = lambda: tb(2, 3)
 b.custom(j, 3, 3.3, cars_fn, sfx="pop")
 b.custom(j, 5, 5.8, worker_fn, sfx="wood_high")
-b.text(j, 5.8, 5.95, "员工", WK[0], 2225, 80, BLUE)
-b.text(j, 5.95, 6.0, "小王", WK[0], 2310, 62, BLUE)
+b.text(j, 5.8, 5.95, "员工", WK[0], 2230, 86, BLUE)
+b.text(j, 5.95, 6.0, "小王", WK[0], 2325, 82, BLUE)
 b.hit(j, 6, "pop", 0.9, "小王头顶冒“!”")
 b.hit(j, 7, "rim", 0.8, "小王指向那辆车，车身标红")
 b.path(j, 8, 8.5, join(P((x0, RAIL_Y), (1760, RAIL_Y)), P((LAMP[0], RAIL_Y), (LAMP[0], LAMP[1] - LAMP[2])),
@@ -1058,19 +1097,19 @@ LEAD_K = max(k_lamp + 1, 2)
 b.custom(j, LEAD_K, LEAD_K + 0.1, leader_fn, sfx="bongo_low", gain=0.9)
 b.hit(j, LEAD_K + 1, "bongo_low", 0.9, "老张脚步")
 b.hit(j, LEAD_K + 2, "bongo_low", 0.9, "老张脚步（站定）")
-b.text(j, LEAD_K + 2.4, LEAD_K + 2.75, "组长", LD[0], 2225, 80, RED)
-b.text(j, LEAD_K + 2.75, LEAD_K + 3.0, "老张", LD[0], 2310, 62, RED)
+b.text(j, LEAD_K + 2.4, LEAD_K + 2.75, "组长", LD[0] + 20, 2230, 86, RED)
+b.text(j, LEAD_K + 2.75, LEAD_K + 3.0, "老张", LD[0] + 20, 2325, 82, RED)
 
 # 屏 4：工位里修好线照常走；修不完就整条线停下来，先把它修好
 j = scene(4, VB2)
 b.path(j, 0, 0.8, zone_path(), BLUE, 7, sfx="wood_high")
-b.text(j, 0.8, 1.3, "工位", (ZONE[0] + ZONE[1]) / 2, BELT[2] + 115, 70, BLUE)
+b.text(j, 0.8, 1.3, "工位", (ZONE[0] + ZONE[1]) / 2, BELT[2] + 125, 86, BLUE)
 k_t = kb(j, wt(5, 0, 0.5), lo=1)
 b.custom(j, k_t, k_t + 0.3, timer_fn(j, k_t), sfx="pop")
 k_fix = kb(j, wt(5, 0, 0.9), lo=k_t + 1)
 b.custom(j, k_fix, k_fix + 0.3, bubble_fn(j, k_fix), sfx="pop")
 k_go = kb(j, wt(5, 1, 0.3), lo=k_fix + 1)
-b.path(j, k_go, k_go + 0.5, arrow((520, 2150), (900, 2150), 0, 34), GREEN, 9, sfx="wood_low")
+b.path(j, k_go, k_go + 0.5, arrow((520, 2240), (980, 2240), 0, 34), GREEN, 9, sfx="wood_low")
 k_red = kb(j, wt(6, 0, 0.3), lo=k_go + 1)
 T_RED = lambda: tb(4, k_red)
 b.hit(j, k_red, "rim", 0.9, "修不完：计时圈变红")
@@ -1097,9 +1136,9 @@ b.custom(j, k_why, k_why + 0.3, pop_text("为什么还要停", 3300, 2200, 76, B
 j = scene(6, VC)
 b.path(j, 0, 0.9, stations_path(), BLACK, 8, sfx="wood_high")
 for i, x in enumerate(ST_X):
-    b.text(j, 0.9 + i * 0.1, 1.0 + i * 0.1, f"工位{i + 1}", x, ST_Y + 140, 76, BLUE)
+    b.text(j, 0.9 + i * 0.1, 1.0 + i * 0.1, f"工位{i + 1}", x, ST_Y + 150, 84, BLUE)
 k_ns = kb(j, wt(8, 0, 0.4), lo=1)
-b.custom(j, k_ns, k_ns + 0.3, pop_text("要是不停", 640, 2950, 84, RED, j, k_ns, "hand"), sfx="rim", gain=0.6)
+b.custom(j, k_ns, k_ns + 0.3, pop_text("要是不停", 700, 2930, 92, RED, j, k_ns, "hand"), sfx="rim", gain=0.6)
 k_in = kb(j, wt(8, 1, 0.1), lo=k_ns + 1)
 FLOW["in"] = (j, k_in)
 b.custom(j, k_in, k_in + 0.3, flow_car_fn, sfx="pop")
@@ -1127,7 +1166,7 @@ b.shots[j].shake = [(k_rw, 14.0)]
 j = scene(8, VD)
 b.path(j, 0, 0.6, book(470, 3950, 150, 100), GREEN, 7, sfx="wood_low")
 b.text(j, 0.6, 1.2, "书中观点", 700, 3950, 54, GREEN)
-ROWS = [(pause_icon(560, 4160), "宁可停一下", RED), (lamp_icon(560, 4380), "当场亮出来", YELLOW),
+ROWS = [(pause_icon(560, 4160), "宁可停一下", RED), (lamp_icon(560, 4380), "当场摆出来", YELLOW),
         (source_icon(560, 4600), "在源头修好", BLUE)]
 lo = 1
 for ci, (icon, txt, col) in enumerate(ROWS):
@@ -1136,51 +1175,49 @@ for ci, (icon, txt, col) in enumerate(ROWS):
     b.text(j, k + 0.4, k + 0.4 + 0.18 * len(txt), txt, 1130, 4170 + ci * 220, 84, BLACK)
     lo = k + 1
 
-# 屏 9–12：雪球——对账、方案、牙疼，越滚越大，最后砸到小李
-U1, U2, U3 = ramp_u(900, 0), ramp_u(1300, 2), ramp_u(1100, 4)
-UEND = ramp_u(1900, 4) - 0.002
-j = scene(9, VS)
-b.path(j, 0, 1.2, ramp_path(), BLACK, 10, sfx="wood_high")
+# 屏 9–12：雪球——报表、方案、牙疼三站各一屏，越滚越大，最后砸到小李
+X1, X2, X3 = ST_SNOW
+j = scene(9, VS1)
+b.path(j, 0, 1.2, slope_path(), BLACK, 10, sfx="wood_high")
 k_dd = kb(j, wt(13, 1, 0.5), lo=2)
-b.custom(j, k_dd, k_dd + 0.3, pop_text("天天都有", 1400, 4930, 96, RED, j, k_dd), sfx="pop", gain=0.7)
+b.custom(j, k_dd, k_dd + 0.3, pop_text("天天都有", X1, 4560, 100, RED, j, k_dd), sfx="pop", gain=0.7)
 k_s1 = kb(j, wt(14, 0, 0.3), lo=k_dd + 1)
-b.path(j, k_s1, k_s1 + 0.5, sheet_icon(650, 4980), BLACK, 7, sfx="wood_low")
-b.text(j, k_s1 + 0.5, k_s1 + 0.9, "对账", 880, 4980, 92, BLUE)
-k_b1 = kb(j, wt(14, 0, 0.8), lo=k_s1 + 1)
+b.path(j, k_s1, k_s1 + 0.5, sheet_icon(X1 - 190, 4790), BLACK, 7, sfx="wood_low")
+b.text(j, k_s1 + 0.5, k_s1 + 0.9, "报表", X1 + 110, 4790, 96, BLUE)
+k_b1 = kb(j, wt(14, 0, 0.85), lo=k_s1 + 1)
 k_p1 = kb(j, wt(14, 1, 0.5), lo=k_b1 + 1)
 k_g1 = kb(j, wt(14, 2, 0.7), lo=k_p1 + 1)
-b.custom(j, k_b1, k_b1 + 0.3, lambda c, kk, T: ball_fn(c, kk, T), sfx="pop")
-b.hit(j, k_p1, "clap", 0.6, "先糊过去：贴一块补丁")
+b.custom(j, k_b1, k_b1 + 0.3, ball_fn, sfx="pop")
+b.hit(j, k_p1, "clap", 0.6, "先糊弄过去：贴一块补丁")
 b.hit(j, k_g1, "tom", 0.7, "全乱了：球变大")
 
-j = scene(10, VS)
-k_s2 = kb(j, wt(15, 0, 0.3), lo=1)
+j = scene(10, VS2)
+k_s2 = kb(j, wt(15, 0, 0.3), lo=3)
 b.hit(j, k_s2, "bongo_low", 0.9, "雪球滚到第二站")
-b.path(j, k_s2, k_s2 + 0.5, doc(1530, 5470, 110, 140, 3), BLACK, 7)
-b.text(j, k_s2 + 0.5, k_s2 + 0.9, "方案", 1300, 5470, 92, BLUE)
+b.path(j, k_s2, k_s2 + 0.5, join(doc(X2 - 200, 4990, 120, 150, 3), circle(X2 - 200, 5030, 18)), BLACK, 7)
+b.text(j, k_s2 + 0.5, k_s2 + 0.9, "方案", X2 + 90, 4990, 96, BLUE)
 k_p2 = kb(j, wt(15, 1, 0.5), lo=k_s2 + 1)
 b.hit(j, k_p2, "clap", 0.6, "先交了再说：再贴一块")
-k_g2 = kb(j, wt(15, 3, 0.6), lo=k_p2 + 1)
-b.hit(j, k_g2, "tom", 0.8, "坑越挖越大：球变大")
+k_g2 = kb(j, wt(15, 3, 0.5), lo=k_p2 + 1)
+b.custom(j, k_g2, k_g2 + 0.3, pop_text("漏洞", X2 + 90, 5110, 80, RED, j, k_g2), sfx="tom", gain=0.8)
 
-j = scene(11, VS)
-k_s3 = kb(j, wt(16, 0, 0.3), lo=1)
+j = scene(11, VS3)
+k_s3 = kb(j, wt(16, 0, 0.3), lo=3)
 b.hit(j, k_s3, "bongo_low", 0.9, "雪球滚到第三站")
-b.path(j, k_s3, k_s3 + 0.6, tooth(880, 5800, 0.9), BLACK, 8)
-b.text(j, k_s3 + 0.6, k_s3 + 1.0, "牙疼", 1110, 5790, 92, BLUE)
-k_p3 = kb(j, wt(16, 1, 0.4), lo=k_s3 + 1)
-b.hit(j, k_p3, "clap", 0.6, "先忍着：再贴一块")
-k_g3 = kb(j, wt(16, 2, 0.6), lo=k_p3 + 1)
-b.hit(j, k_g3, "tom", 0.85, "拖成了根管：球变大")
+b.path(j, k_s3, k_s3 + 0.6, tooth(X3 - 230, 5230, 1.0), BLACK, 8)
+b.text(j, k_s3 + 0.6, k_s3 + 1.0, "牙疼", X3 + 60, 5230, 96, BLUE)
+k_p3 = kb(j, wt(16, 0, 0.8), lo=k_s3 + 1)
+b.hit(j, k_p3, "clap", 0.6, "先忍一忍：再贴一块")
+k_g3 = kb(j, wt(16, 1, 0.6), lo=k_p3 + 1)
+b.hit(j, k_g3, "tom", 0.85, "拖到要做根管：球变大")
 
-j = scene(12, VS)
-k_li = 0
-b.custom(j, 0, 0.3, li_fn, sfx="wood_high")
-b.text(j, 0.3, 0.6, "小李", LI[0], LI[1] + 80, 84, BLACK)
-k_p4 = kb(j, wt(17, 2, 0.4), lo=1)
-b.hit(j, k_p4, "clap", 0.7, "先应付、先盖住：再贴一块")
-k_roll = kb(j, wt(17, 3, 0.3), lo=k_p4 + 1)
-k_big = kb(j, wt(17, 4, 0.5), lo=k_roll + 1)
+j = scene(12, VS4)
+b.custom(j, 2, 2.3, li_fn, sfx="wood_high")
+b.text(j, 2.3, 2.6, "小李", LI[0], LI[1] + 85, 84, BLACK)
+k_p4 = kb(j, wt(17, 0, 0.7), lo=3)
+b.hit(j, k_p4, "clap", 0.7, "先应付、先遮住：再贴一块")
+k_roll = kb(j, wt(17, 1, 0.4), lo=k_p4 + 1)
+k_big = kb(j, wt(17, 2, 0.5), lo=k_roll + 1)
 b.hit(j, k_roll, "bongo_low", 0.9, "一路往下走")
 b.hit(j, k_big, "tom", 0.9, "越滚越大")
 k_turn = kb(j, wt(18, 0, 0.5), lo=k_big + 1)
@@ -1188,34 +1225,34 @@ b.hit(j, k_turn, "rim", 0.7, "小李背过身：算了…")
 k_hit = kb(j, wt(18, 1, 0.85), lo=k_turn + 1, strong=True)
 b.hit(j, k_hit, "kick", 1.0, "麻烦找上门：大球咚地砸到小李（强拍）")
 b.shots[j].shake = [(k_hit, 22.0)]
-b.shots[j].flashes = [(k_hit, 0.4)]
-SNOW["li"] = lambda: tb(12, 0)
+b.shots[j].flashes = [(k_hit, 0.35)]
+SNOW["li"] = lambda: tb(12, 2)
 SNOW["turn"] = lambda: tb(12, k_turn)
 SNOW["hit"] = lambda: tb(12, k_hit)
-SNOW["keys"] = [(lambda: tb(9, k_b1), U1, 42), (lambda: tb(9, k_g1), U1, 62),
-                (lambda: tb(10, k_s2), U2, 74), (lambda: tb(10, k_g2), U2, 96),
-                (lambda: tb(11, k_s3), U3, 108), (lambda: tb(11, k_g3), U3, 130),
-                (lambda: tb(12, k_roll), UEND, 160), (lambda: tb(12, k_big), UEND, 200),
-                (lambda: tb(12, k_hit), UEND, 230)]
-SNOW["patches"] = [(lambda: tb(9, k_p1), -0.6), (lambda: tb(10, k_p2), 2.2), (lambda: tb(11, k_p3), 0.9),
-                   (lambda: tb(12, k_p4), -2.4)]
+SNOW["keys"] = [(lambda: tb(9, k_b1), X1, 42), (lambda: tb(9, k_g1), X1, 66),
+                (lambda: tb(10, k_s2), X2, 82), (lambda: tb(10, k_g2), X2, 108),
+                (lambda: tb(11, k_s3), X3, 124), (lambda: tb(11, k_g3), X3, 150),
+                (lambda: tb(12, k_roll), 3620, 170), (lambda: tb(12, k_big), END_X, 205),
+                (lambda: tb(12, k_hit), END_X, 225)]
+SNOW["patches"] = [(lambda: tb(9, k_p1), -0.5), (lambda: tb(10, k_p2), 2.4), (lambda: tb(11, k_p3), 0.8),
+                   (lambda: tb(12, k_p4), -2.5)]
 
 # 屏 13：所以下次发现问题，先停一停。第一，当场说出来，拉上同事看五分钟
 j = scene(13, VF1)
-k_tt = kb(j, wt(19, 1, 0.3), lo=1)
+k_tt = kb(j, wt(19, 2, 0.3), lo=1)
 b.custom(j, k_tt, k_tt + 0.3, pop_path(pause_icon(1430, 6270), 1430, 6270, RED, 10, j, k_tt, fill="#FFFFFF"), sfx="rim")
 b.custom(j, k_tt, k_tt + 0.3, pop_text("先停一停", 1030, 6270, 84, RED, j, k_tt))
 k_one = kb(j, wt(20, 1, 0.1), lo=k_tt + 1)
-b.custom(j, k_one, k_one + 0.3, pop_text("① 当场说出来", 1000, 6420, 70, BLUE, j, k_one), sfx="pop")
+b.custom(j, k_one, k_one + 0.3, pop_text("① 当场说出来", 1000, 6420, 80, BLUE, j, k_one), sfx="pop")
 b.path(j, k_one + 0.3, k_one + 0.9, join(desk(1020, 6720, 340), doc(1060, 6640, 110, 140, 3)))
 b.path(j, k_one + 0.9, k_one + 1.5, stick(760, 6900, 0.85, "up", tie=True, hair=True), BLACK, 10)
 k_mates = kb(j, wt(20, 2, 0.3), lo=k_one + 2)
 b.path(j, k_mates, k_mates + 0.7, join(stick(1330, 6900, 0.8, "point"), stick(1530, 6900, 0.8, "down")), BLUE, 9,
        sfx="wood_high")
 k_clock = kb(j, wt(20, 2, 0.85), lo=k_mates + 1)
-b.path(j, k_clock, k_clock + 0.6, join(wb.clock(1500, 6560, 70), wb.hands_at(1500, 6560, 70, 12, 5)), BLACK, 8,
+b.path(j, k_clock, k_clock + 0.6, join(wb.clock(1630, 6560, 70), wb.hands_at(1630, 6560, 70, 12, 5)), BLACK, 8,
        sfx="ding")
-b.text(j, k_clock + 0.6, k_clock + 1.0, "5分钟", 1290, 6560, 56, RED)
+b.text(j, k_clock + 0.6, k_clock + 1.0, "5分钟", 1500, 6440, 64, RED)
 
 # 屏 14：第二，在源头修
 j = scene(14, VF2)
@@ -1224,10 +1261,10 @@ BOX = [(600, "方案"), (1100, "主管"), (1600, "客户")]
 b.path(j, 1, 1.8, join(*[rect(x, 7650, 280, 180, 20) for x, _ in BOX], arrow((750, 7650), (950, 7650), 0, 36),
                        arrow((1250, 7650), (1450, 7650), 0, 36)), BLACK, 9, sfx="wood_high")
 for x, name in BOX:
-    b.text(j, 1.8, 2.0, name, x, 7650, 64, BLACK)
+    b.text(j, 1.8, 2.0, name, x, 7650, 74, BLACK)
 k_src = kb(j, wt(21, 1, 0.4), lo=2)
 b.path(j, k_src, k_src + 0.6, circle(600, 7650, 190), RED, 11, sfx="rim")
-b.text(j, k_src + 0.6, k_src + 1.0, "这里修", 600, 7900, 72, RED)
+b.text(j, k_src + 0.6, k_src + 1.0, "这里修", 600, 7905, 80, RED)
 k_patch = kb(j, wt(21, 2, 0.5), lo=k_src + 1)
 for i, x in enumerate((1100, 1600)):
     b.custom(j, k_patch, k_patch + 0.3, pop_path(join(rect(x + 90, 7580, 80, 60, 8), P((x + 60, 7580), (x + 120, 7580))),
@@ -1261,16 +1298,18 @@ b.custom(j, k_home + 1, k_home + 1.3, pop_text("准点下班", 3220, 3760, 70, B
 
 # 屏 17：评论区追问 + 下一讲
 j = scene(17, VG)
-b.path(j, 0, 0.8, bubble(1150, 9560, 940, 230, -1), BLACK, 9, sfx="wood_high")
+b.path(j, 0, 0.8, bubble(1150, 9540, 960, 300, -1), BLACK, 9, sfx="wood_high")
 k_q = kb(j, wt(24, 0, 0.2), lo=1)
-b.text(j, k_q, k_q + 1.4, "你最近在先应付哪件事？", 1150, 9560, 70, RED, sfx="pop")
-k_cm = kb(j, wt(25, 0, 0.3), lo=k_q + 2)
-b.custom(j, k_cm, k_cm + 0.3, pop_text("评论区说说，别一个人扛着", 1150, 9800, 58, BLACK, j, k_cm, "sans_medium"),
+b.text(j, k_q, k_q + 1.2, "你手上有没有一个问题", 1150, 9480, 72, RED, sfx="pop")
+k_q2 = kb(j, wt(24, 1, 0.1), lo=k_q + 1)
+b.text(j, k_q2, k_q2 + 1.0, "一直想着以后再说？", 1150, 9600, 72, RED)
+k_cm = kb(j, wt(25, 0, 0.3), lo=k_q2 + 2)
+b.custom(j, k_cm, k_cm + 0.3, pop_text("写在评论区，别一个人扛着", 1150, 9810, 58, BLACK, j, k_cm, "sans_medium"),
          sfx="ding")
 k_n = kb(j, wt(26, 0, 0.2), lo=k_cm + 1)
-b.path(j, k_n, k_n + 0.6, rect(1150, 10020, 900, 200, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", 1150, 9965, 46, BLUE)
-b.text(j, k_n + 0.8, k_n + 2.2, "活儿做得越多，为什么越乱？", 1150, 10055, 62, BLACK)
+b.path(j, k_n, k_n + 0.6, rect(1150, 10030, 980, 210, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", 1150, 9965, 52, BLUE)
+b.text(j, k_n + 0.8, k_n + 2.2, "活儿越做越多，为什么反而越乱？", 1150, 10065, 58, BLACK)
 
 # ---------------------------------------------------------------- 时间轴
 
@@ -1284,17 +1323,38 @@ b.shots[-1].t1 = S + END_LOCAL
 b.attach(ep)
 
 
+_PUNCT = "，。：？！、；"
+
+
+def char_time(li, idx):
+    """第 li 句第 idx 个字（不计标点）的本地时刻：按分句起点与分句内字数比例换算。"""
+    text = LINES[li][0].rstrip(_PUNCT)
+    clauses = text.split("，")
+    ts = CLAUSE_T[li]
+    n = 0
+    for ci, cl in enumerate(clauses):
+        chars = [ch for ch in cl if ch not in _PUNCT]
+        if idx < n + len(chars):
+            a = ts[ci]
+            z = (ts[ci + 1] - COMMA) if ci + 1 < len(ts) else DUR_L[li]
+            return STARTS[li] + a + (z - a) * (idx - n) / max(1, len(chars))
+        n += len(chars)
+    return STARTS[li] + DUR_L[li]
+
+
 def captions():
     caps = []
     for li, (text, pieces, _) in enumerate(LINES):
-        pend = None
-        for ci, cap in enumerate(pieces):
-            t = STARTS[li] + CLAUSE_T[li][ci]
-            if cap is None:
-                pend = t if pend is None else pend
-                continue
-            caps.append([pend if pend is not None else t, None, cap])
-            pend = None
+        plain = [ch for ch in text if ch not in _PUNCT]
+        idx = 0
+        for cap in pieces:
+            body = [ch for ch in cap if ch not in _PUNCT + "【】"]
+            if plain[idx: idx + len(body)] != body:
+                raise ValueError(f"字幕与旁白不一致：{text} / {cap}")
+            caps.append([char_time(li, idx), None, cap.rstrip("，。；：")])
+            idx += len(body)
+        if idx != len(plain):
+            raise ValueError(f"字幕没有覆盖整句：{text}")
     for i, cp in enumerate(caps):
         cp[1] = caps[i + 1][0] if i + 1 < len(caps) else None
     return caps

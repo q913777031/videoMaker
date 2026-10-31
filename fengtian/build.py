@@ -75,7 +75,7 @@ def board_at(view, sx, sy):
 
 
 def idle_tip(T):
-    """手的停放：最近画完那一笔的终点；空闲 0.4 秒后慢慢挪到画面右下角外（让出画面）。逐帧独立求值。"""
+    """手的停放：最近画完那一笔的终点；空闲 0.25 秒后 0.5 秒挪到画面右下角外（不停在字上）。逐帧独立求值。"""
     b, ep = M.b, M.ep
     best, tip = -1.0, None
     dummy = skia.Surface(8, 8).getCanvas()
@@ -96,7 +96,7 @@ def idle_tip(T):
     rest = board_at(b.end_view(j), W + 60, CAP_BAND[1] + 80)
     if tip is None or best < ep.shots[j].t0:
         return rest
-    m = ease_in_out(clamp01((T - best - 0.4) / 0.6))
+    m = ease_in_out(clamp01((T - best - 0.25) / 0.5))
     return lerp(tip[0], rest[0], m), lerp(tip[1], rest[1], m)
 
 
