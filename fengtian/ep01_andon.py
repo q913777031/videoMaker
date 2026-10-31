@@ -63,7 +63,7 @@ DROP = 32
 COMMA = 0.25
 HOLD = 1.55
 MIN_BEATS = 10
-INTRO_BEATS = 8                   # 四字逐拍落定（第 0–3 拍）后整体停留约 2 秒，再用 1.3 秒缓推到小李
+INTRO_BEATS = 6                   # 四字逐拍落定（第 0–3 拍，1.75 秒落完）后整体停留约 1.6 秒，再用 1.3 秒缓推到小李
 EXTRA_HOLD = {12: 1.0}            # “麻烦就会找上你”之后大球砸下（强拍），再多停一会儿
 
 core.SERIES.update(name="丰田模式", count="第一季", prefix="丰田")
@@ -71,11 +71,11 @@ core.SERIES.update(name="丰田模式", count="第一季", prefix="丰田")
 # 旁白：(整句, 字幕[按顺序拼起来等于整句（不计标点）；按字的位置换算出现时刻], 与同屏上一句的间隔秒)
 LINES = [
     ("同一个问题，已经返工第三遍了。", ["同一个问题", "已经【返工】第三遍了"], 0.0),
-    ("补了又坏，坏了又补，人都快麻了。", ["补了又坏，坏了又补", "人都快【麻了】"], 0.5),
+    ("补了又坏，坏了又补，人都快麻了。", ["补了又坏，坏了又补", "人都快【麻了】"], 0.4),
     ("丰田的做法，正好反过来：", ["丰田的做法，正好【反过来】"], 0.0),
-    ("工人一发现毛病，马上拉一下头顶的绳子。", ["工人一发现毛病", "马上【拉】一下头顶的绳子"], 0.35),
+    ("工人一发现毛病，马上拉一下头顶的绳子。", ["工人一发现毛病", "马上【拉】一下头顶的绳子"], 0.25),
     ("黄灯一亮，组长立刻赶过来帮忙。", ["黄灯一亮", "【组长】立刻赶过来帮忙"], 0.0),
-    ("如果在这个工位里能修好，生产线照常往前走；", ["如果在这个工位里", "能修好，生产线照常往前走"], 0.0),
+    ("如果在这个工位里能修好，生产线照常往前走；", ["如果在这个工位里", "能修好", "生产线照常往前走"], 0.0),
     ("要是修不完，就让整条线停下来，先把问题修好。", ["要是修不完", "就让整条线【停下来】", "先把问题【修好】"], 0.7),
     ("停线多亏啊，为什么还要停？", ["停线多亏啊", "为什么还要停？"], 0.0),
     ("因为不停的话，带毛病的车会继续往下走。", ["因为不停的话", "带毛病的车", "会继续往下走"], 0.0),
@@ -84,7 +84,7 @@ LINES = [
     ("这就是返工。", ["这就是【返工】"], 0.75),
     ("所以丰田宁可停一下，也要当场把问题摆出来，在源头修好。", ["所以丰田宁可停一下", "也要当场把问题摆出来", "在【源头】修好"], 0.0),
     ("我们身边，这种事天天都有。", ["我们身边", "这种事【天天都有】"], 0.0),
-    ("报表里有个数对不上，先糊弄过去，到月底对账就全乱了。", ["报表里有个数对不上", "先糊弄过去", "到月底对账就【全乱了】"], 0.0),
+    ("报表里有个数对不上，先混过去，到月底对账就全乱了。", ["报表里有个数对不上", "先混过去", "到月底对账就【全乱了】"], 0.0),
     ("方案里有个漏洞，想着先交了再说，到了客户那里，漏洞越来越大。", ["方案里有个漏洞", "想着先交了再说", "到了客户那里", "漏洞【越来越大】"], 0.0),
     ("牙有点疼，先忍一忍，结果拖到要做根管。", ["牙有点疼，先忍一忍", "结果拖到要做【根管】"], 0.0),
     ("遇到问题先应付、先遮住，它就会一路往下走，越滚越大。", ["遇到问题先应付、先遮住", "它就会一路往下走", "【越滚越大】"], 0.0),
@@ -128,7 +128,7 @@ NOTES = [
 # ---------------------------------------------------------------- 旁白：合成、补逗号停顿
 
 
-def stretch(x, text):
+def stretch(x, text, target=COMMA):
     """逗号处补停顿到约 COMMA 秒（预期位置 ±12% 内最安静的 30ms 切开）。返回 (音频, 各分句起点秒)。"""
     clauses = text.rstrip("。：？！；").split("，")
     hz = [sum(1 for ch in cl if ch not in "。：？！、；") for cl in clauses]
@@ -152,7 +152,7 @@ def stretch(x, text):
         while e < n and quiet[e]:
             e += 1
         have = (e - a) / 100 if quiet[i] else 0.0
-        add = int(max(0.0, COMMA - have) * audio.SR)
+        add = int(max(0.0, target - have) * audio.SR)
         cut = i * hop
         f = int(0.008 * audio.SR)
         left, right = x[:cut].copy(), x[cut:].copy()
@@ -165,7 +165,9 @@ def stretch(x, text):
 
 
 RAW = synthesize([t for t, _, _ in LINES])
-CLIPS, CLAUSE_T = zip(*[stretch(x, t) for x, (t, _, _) in zip(RAW, LINES)])
+NATURAL_COMMA = {0, 1, 2, 3}     # 开场四句卡在片头与 drop 之间，逗号用 ZipVoice 自然停顿（不额外补）
+CLIPS, CLAUSE_T = zip(*[stretch(x, t, 0.0 if i in NATURAL_COMMA else COMMA)
+                        for i, (x, (t, _, _)) in enumerate(zip(RAW, LINES))])
 DUR_L = [len(x) / audio.SR for x in CLIPS]
 
 # ---------------------------------------------------------------- 配乐延长：在小节线上循环第 96–136 拍（51.2–72.4 秒这一段）
@@ -204,25 +206,25 @@ def _schedule(T_arr):
     """返回 (每屏 [起拍, 止拍), 每句起点（配乐绝对秒）)。第 2 屏让“拉一下绳”句尾落在 drop；第 1 屏、片头往前推。"""
     n = len(LINES)
     st = [None] * n
-    need2 = 0.45 + DUR_L[2] + LINES[3][2] + DUR_L[3]
+    need2 = 0.3 + DUR_L[2] + LINES[3][2] + DUR_L[3]
     s2 = DROP - 10
     while T_arr[DROP] - T_arr[s2] < need2:
         s2 -= 2
-    st[2] = T_arr[s2] + 0.45
+    st[2] = T_arr[s2] + 0.3
     st[3] = T_arr[DROP] - DUR_L[3] - 0.03
     s1 = s2 - MIN_BEATS
     while True:
-        t0 = T_arr[s1] + 0.2                                  # 第 1 句在镜头从片头缓推向小李时进
-        if t0 + DUR_L[0] + LINES[1][2] + DUR_L[1] + HOLD <= T_arr[s2]:
+        t0 = T_arr[s1] + 0.05                                 # 第 1 句在镜头从片头缓推向小李时进
+        if t0 + DUR_L[0] + LINES[1][2] + DUR_L[1] + 1.5 <= T_arr[s2]:
             break
         s1 -= 2
-    st[0] = T_arr[s1] + 0.2
+    st[0] = T_arr[s1] + 0.05
     st[1] = st[0] + DUR_L[0] + LINES[1][2]
     s0 = s1 - INTRO_BEATS
     if s0 < 0:
         raise ValueError("片头前没有足够的拍")
-    bounds = [(s0, s1), (s1, s2), (s2, s2 + 14)]
-    b = s2 + 14
+    bounds = [(s0, s1), (s1, s2), (s2, DROP + 4)]          # 拉绳（drop）后再停 4 拍
+    b = DROP + 4
     for si in range(3, len(SCREENS)):
         lines = SCREENS[si][0]
         if b >= len(T_arr) - 1:
@@ -1046,7 +1048,7 @@ for i, (ch, x, sfx) in enumerate(zip(INTRO_CH, INTRO_X, ("rim", "clap", "tom", "
     b.custom(j, i, i + 0.3, intro_char(ch, x, j, i), sfx=sfx, gain=(0.8, 0.8, 0.8, 0.7)[i])
 b.shots[j].shake = [(3, 7.0)]                    # 第四字落定：轻震，不闪白
 b.path(j, 3.4, 4.6, wb.underline(2780, 3820, 860, 16, 50), RED, 12)
-b.custom(j, 5, 5.3, pop_text("精益制造的14项原则", 3300, 970, 66, BLACK, j, 5, "sans_medium"), sfx="pop", gain=0.6)
+b.custom(j, 4, 4.3, pop_text("精益制造的14项原则", 3300, 970, 66, BLACK, j, 4, "sans_medium"), sfx="pop", gain=0.6)
 
 # 屏 1：小李返工第 3 遍
 j = scene(1, VA)
@@ -1064,7 +1066,7 @@ b.path(j, k_bu + 0.3, k_bu + 0.8, check(1030, 830, 42), GREEN, 11)
 b.custom(j, k_bu + 1, k_bu + 1.3, pop_text("坏", 1680, 700, 80, RED, j, k_bu + 1), sfx="rim", gain=0.7)
 b.path(j, k_bu + 1.3, k_bu + 1.8, cross(1680, 830, 38), RED, 11)
 k_ma = kb(j, wt(1, 2, 0.6), lo=k_bu + 2)
-b.custom(j, k_ma, k_ma + 0.3, pop_text("麻了", 930, 600, 76, BLUE, j, k_ma), sfx="pop", gain=0.6)
+b.custom(j, k_ma, k_ma + 0.3, pop_text("麻了", 590, 620, 76, BLUE, j, k_ma), sfx="pop", gain=0.6)
 
 # 屏 2：小王看到毛病，拉绳（drop）
 j = scene(2, VB)
@@ -1188,7 +1190,7 @@ k_b1 = kb(j, wt(14, 0, 0.85), lo=k_s1 + 1)
 k_p1 = kb(j, wt(14, 1, 0.5), lo=k_b1 + 1)
 k_g1 = kb(j, wt(14, 2, 0.7), lo=k_p1 + 1)
 b.custom(j, k_b1, k_b1 + 0.3, ball_fn, sfx="pop")
-b.hit(j, k_p1, "clap", 0.6, "先糊弄过去：贴一块补丁")
+b.hit(j, k_p1, "clap", 0.6, "先混过去：贴一块补丁")
 b.hit(j, k_g1, "tom", 0.7, "全乱了：球变大")
 
 j = scene(10, VS2)
@@ -1204,8 +1206,8 @@ b.custom(j, k_g2, k_g2 + 0.3, pop_text("漏洞", X2 + 90, 5110, 80, RED, j, k_g2
 j = scene(11, VS3)
 k_s3 = kb(j, wt(16, 0, 0.3), lo=3)
 b.hit(j, k_s3, "bongo_low", 0.9, "雪球滚到第三站")
-b.path(j, k_s3, k_s3 + 0.6, tooth(X3 - 230, 5230, 1.0), BLACK, 8)
-b.text(j, k_s3 + 0.6, k_s3 + 1.0, "牙疼", X3 + 60, 5230, 96, BLUE)
+b.path(j, k_s3, k_s3 + 0.6, tooth(X3 - 370, 5230, 1.0), BLACK, 8)
+b.text(j, k_s3 + 0.6, k_s3 + 1.0, "牙疼", X3 - 30, 5230, 96, BLUE)
 k_p3 = kb(j, wt(16, 0, 0.8), lo=k_s3 + 1)
 b.hit(j, k_p3, "clap", 0.6, "先忍一忍：再贴一块")
 k_g3 = kb(j, wt(16, 1, 0.6), lo=k_p3 + 1)
@@ -1240,8 +1242,8 @@ SNOW["patches"] = [(lambda: tb(9, k_p1), -0.5), (lambda: tb(10, k_p2), 2.4), (la
 # 屏 13：所以下次发现问题，先停一停。第一，当场说出来，拉上同事看五分钟
 j = scene(13, VF1)
 k_tt = kb(j, wt(19, 2, 0.3), lo=1)
-b.custom(j, k_tt, k_tt + 0.3, pop_path(pause_icon(1430, 6270), 1430, 6270, RED, 10, j, k_tt, fill="#FFFFFF"), sfx="rim")
-b.custom(j, k_tt, k_tt + 0.3, pop_text("先停一停", 1030, 6270, 84, RED, j, k_tt))
+b.custom(j, k_tt, k_tt + 0.3, pop_path(pause_icon(1440, 6235), 1440, 6235, RED, 10, j, k_tt, fill="#FFFFFF"), sfx="rim")
+b.custom(j, k_tt, k_tt + 0.3, pop_text("先停一停", 1030, 6250, 84, RED, j, k_tt))
 k_one = kb(j, wt(20, 1, 0.1), lo=k_tt + 1)
 b.custom(j, k_one, k_one + 0.3, pop_text("① 当场说出来", 1000, 6420, 80, BLUE, j, k_one), sfx="pop")
 b.path(j, k_one + 0.3, k_one + 0.9, join(desk(1020, 6720, 340), doc(1060, 6640, 110, 140, 3)))
@@ -1250,9 +1252,9 @@ k_mates = kb(j, wt(20, 2, 0.3), lo=k_one + 2)
 b.path(j, k_mates, k_mates + 0.7, join(stick(1330, 6900, 0.8, "point"), stick(1530, 6900, 0.8, "down")), BLUE, 9,
        sfx="wood_high")
 k_clock = kb(j, wt(20, 2, 0.85), lo=k_mates + 1)
-b.path(j, k_clock, k_clock + 0.6, join(wb.clock(1630, 6560, 70), wb.hands_at(1630, 6560, 70, 12, 5)), BLACK, 8,
+b.path(j, k_clock, k_clock + 0.6, join(wb.clock(1450, 6400, 60), wb.hands_at(1450, 6400, 60, 12, 5)), BLACK, 8,
        sfx="ding")
-b.text(j, k_clock + 0.6, k_clock + 1.0, "5分钟", 1500, 6440, 64, RED)
+b.text(j, k_clock + 0.6, k_clock + 1.0, "5分钟", 1450, 6530, 64, RED)
 
 # 屏 14：第二，在源头修
 j = scene(14, VF2)
@@ -1318,6 +1320,7 @@ ep = core.Episode(NO, KEY, CONCEPT, TITLE, ACC, b.shots, refs=[], publish_title=
                   notes=NOTES)
 for s, (k0, k1) in zip(b.shots, BOUNDS):
     s.b0, s.t0, s.t1 = k0, core.bt(k0), core.bt(k1)
+    s.bars = (k1 - k0) // 4 + 2          # 名义小节数盖住全部实测拍（Board.t_of 超出名义长度会外推）
 b.shots[0].t0 = S
 b.shots[-1].t1 = S + END_LOCAL
 b.attach(ep)

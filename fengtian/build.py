@@ -233,8 +233,9 @@ def build_audio():
     m0 = int(round(M.S * audio.SR))
     full = M.music_track() if hasattr(M, "music_track") else core.music_track()   # 原曲（可能已循环延长）+ 混响尾音
     music = np.zeros((n, 2))
-    seg = full[m0: m0 + n]
-    music[: len(seg)] = seg
+    lead = max(0, -m0)                                # 成片起点早于原曲开头时，前面补静音
+    seg = full[max(0, m0): max(0, m0) + n - lead]
+    music[lead: lead + len(seg)] = seg
     fi = int(0.3 * audio.SR)
     music[:fi] *= np.linspace(0, 1, fi)[:, None]
     sfx = np.zeros((n, 2))
