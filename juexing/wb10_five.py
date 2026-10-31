@@ -82,6 +82,18 @@ def pop_s(k):
     return ease_out(clamp01(k * 1.6)) * (1 + 0.15 * math.sin(math.pi * clamp01(k)))
 
 
+def park(x0, y0, x1, y1, k0, k1):
+    """不画东西，只把笔从 (x0, y0) 挪到空白处 (x1, y1) 停住，免得停住的手挡住刚写完的字。"""
+
+    def fn(c, k, Tm):
+        if k >= 1:
+            return None
+        u = ease_in_out(k)
+        return (x0 + (x1 - x0) * u, y0 + (y1 - y0) * u)
+
+    C(fn, k0, k1)
+
+
 def oval(x, y, w, h) -> skia.Path:
     p = skia.Path()
     p.addOval(skia.Rect.MakeXYWH(x - w / 2, y - h / 2, w, h))
@@ -460,6 +472,7 @@ for i in range(4):
     shelf.append(rect(bx, Y + 270, 46, 110, 6))
 L(join(*shelf), 5, 5.9, BLACK, 7, sfx="wood_low")
 T("书架像朋友圈", X + 150, Y + 460, 72, GREEN, k0=6, k1=7.5, sfx="ding")
+park(X + 380, Y + 460, X + 540, Y + 540, 7.5, 8.2)
 
 # 周四：讲给自己听（X=950, Y=6900）
 X, Y = 950, 6900
@@ -496,6 +509,7 @@ C(layman_fn(J(), X - 250, Y - 40, 0.5), 4, 4.6, sfx="pop")
 T("外行", X - 30, Y - 120, 58, ORANGE, k0=4.6, k1=5.4)
 L(check(X + 0, Y - 220, 40), 5, 5.5, GREEN, 10, sfx="ding")
 T("讲到外行也懂", X + 120, Y + 470, 70, GREEN, k0=6, k1=7.5, sfx="pop")
+park(X + 330, Y + 470, X + 500, Y + 545, 7.5, 8.2)
 
 # 周五：跑一圈（X=950, Y=8350）
 X, Y = 950, 8350
@@ -541,6 +555,7 @@ C(run_fn(J(), False, BLUE), 3, 3.5, sfx="wood_high")
 T("当成追人游戏", X + 80, Y - 390, 66, RED, k0=4, k1=5.5, sfx="pop")
 T("跑完做难事", X - 80, Y + 450, 70, GREEN, k0=6, k1=7.25, sfx="ding")
 L(mini_book(X + 330, Y + 450, 0.9), 7, 7.7, GREEN, 8, sfx="pop")
+park(X + 330, Y + 410, X + 500, Y + 545, 7.7, 8.4)
 
 # 周末：复个盘（X=2650, Y=8350）
 X, Y = 2650, 8350
@@ -553,6 +568,7 @@ for n, (s, k0, sfx) in enumerate((("写下经过", 2, "pop"), ("问几个为什�
     T(str(n + 1), X - 270, yy + 2, 54, BLUE, k0=k0 + 0.3, k1=k0 + 0.6)
     T(s, X + 120, yy, 66, k0=k0 + 0.5, k1=k0 + 0.5 + 0.22 * len(s))
 H(7, "wood_high", 0.5, "落笔")
+park(X + 330, Y + 260, X + 470, Y + 360, 7.9, 8.5)
 
 # ---------------------------------------------------------------- 全季收尾：宝宝掌舵（场景 12）
 
