@@ -36,10 +36,10 @@ def J():
     return len(b.shots) - 1
 
 
-def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None):
+def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None, gain=0.8):
     """在当前镜头写字：写字时长按字数估计（每字约 0.25 拍，至少 0.8 拍）。"""
     k1 = k0 + max(0.8, 0.25 * len(s)) if k1 is None else k1
-    b.text(J(), k0, k1, s, x, y, size, color, sfx=sfx)
+    b.text(J(), k0, k1, s, x, y, size, color, sfx=sfx, gain=gain)
 
 
 def L(path, k0, k1, color=BLACK, width=10, sfx=None):
@@ -229,7 +229,7 @@ scene("先做个小测试", "小测试", (XL, 990, 0.75), bars=2)
 L(paper(XL, 965, 1000, 1030), 0, 0.9, sfx="wood_high")
 T("你能做到吗", XL, 575, 84, ACC, k0=1, k1=2.25, sfx="pop")
 for n, yy in enumerate(ROWS):
-    L(rect(BOX_X, yy, 100, 100, 10), 3 + n * 0.6, 3.5 + n * 0.6, BLACK, 9, sfx="wood_low" if n in (0, 2) else None)
+    L(rect(BOX_X, yy, 100, 100, 10), 3 + n * 0.5, 3.45 + n * 0.5, BLACK, 9, sfx="wood_low" if n in (0, 2) else None)
 L(underline(XL - 210, XL + 210, 630, 10, 36), 5, 5.8, ACC, 7, sfx="ding")
 
 scene("不想干了，能歇一阵？", "小测试 · 第一、二题", (XL, 980, Z))
@@ -242,14 +242,10 @@ L(underline(1200, 1330, ROWS[1] + 42, 8, 30), 7, 7.7, RED, 7)
 
 scene("讨厌的活，能说不？", "小测试 · 第三、四题", (1000, 1000, Z))
 T(ITEMS[2], 1060, ROWS[2], 60, k0=0, sfx="pop")
-T("？", BOX_X, ROWS[2] + 22, 76, BLUE, k0=2.5, k1=3.0)
-H(3, "wood_high")
-T(ITEMS[3], 1060, ROWS[3], 60, k0=3.5, k1=5.5)
-H(4, "pop")
-T("？", BOX_X, ROWS[3] + 22, 76, BLUE, k0=5.5, k1=6.0)
-H(6, "wood_high")
-L(oval(BOX_X, 1060, 170, 780), 6.5, 7.6, RED, 8)
-H(7, "ding")
+T("？", BOX_X, ROWS[2] + 22, 76, BLUE, k0=3, k1=3.8, sfx="wood_high")
+T(ITEMS[3], 1060, ROWS[3], 60, k0=4, sfx="pop")
+T("？", BOX_X, ROWS[3] + 22, 76, BLUE, k0=6, k1=6.8, sfx="wood_high")
+L(oval(BOX_X, 1060, 170, 780), 7, 7.9, RED, 8, sfx="ding")
 
 # ---------------------------------------------------------------- drop（场景 4）：闹钟被拎回小王手里
 
@@ -272,10 +268,10 @@ def clock_fn(j):
         spin = ease_out(clamp01((t - t_spin0) / (t_spin1 - t_spin0)))
         a = 50 + spin * (720 + 250)                      # 停在约 10:10 的位置
         body = alarm(x, y, r)
-        if t < t_fly0:                                   # 刚出现时随笔画出
-            part, tip = partial(join(body, hands_ang(x, y, r, a)), clamp01(k * 3))
+        if k < 1:                                        # 刚出现时随笔画出
+            part, tip = partial(join(body, hands_ang(x, y, r, a)), k)
             _stroke(c, part, ACC, 9)
-            return tip if k * 3 < 1 else None
+            return tip
         _stroke(c, body, ACC, 9)
         _stroke(c, hands_ang(x, y, r, a), RED, 9)
         if t < t_fly1:
@@ -286,17 +282,17 @@ def clock_fn(j):
 
 
 scene("钱能买回时间", "钱能买回时间", (2650, 950, 0.75), shake=[0], flashes=[0])
-T("时间，拎回来！", 2650, 480, 100, RED, k0=0, k1=1.5, sfx="kick")
-L(join(desk(*DESK, 440), stick(2330, 1290, 0.7, "down", tie=True), face(2330, 1290, 0.7, "flat")), 1.5, 2.4)
-T("老板桌", DESK[0], DESK[1] + 170, 52, k0=2.4, k1=3.0)
-H(2, "wood_low")
-C(clock_fn(J()), 1.6, 2.1)
-L(join(stick(XW[0], XW[1], XW[2], "up"), face(XW[0], XW[1], XW[2], "smile")), 2.4, 3.0, BLUE, 10)
+T("时间，拎回来！", 2650, 480, 100, RED, k0=0, k1=1.0, sfx="kick")
+L(join(desk(*DESK, 440), stick(2330, 1290, 0.7, "down", tie=True), face(2330, 1290, 0.7, "flat")), 1, 1.8,
+  sfx="wood_low")
+C(clock_fn(J()), 1.8, 2.0)
+L(join(stick(XW[0], XW[1], XW[2], "up"), face(XW[0], XW[1], XW[2], "smile")), 2, 2.8, BLUE, 10, sfx="wood_high")
 H(3, "tom")
 H(4, "ding")
 H(5, "shaker")
-T("小王", XW[0], XW[1] + 60, 54, BLUE, k0=6, k1=6.8, sfx="pop")
-L(rays(*CK1), 7, 7.7, RED, 7, sfx="ding")
+T("老板桌", DESK[0], DESK[1] + 170, 52, k0=6, k1=6.8, sfx="pop")
+L(rays(*CK1), 7, 7.6, RED, 7, sfx="ding")
+T("小王", XW[0], XW[1] + 60, 54, BLUE, k0=7.6, k1=8.0)
 
 # ---------------------------------------------------------------- 书中观点（场景 5–9）
 
@@ -324,9 +320,8 @@ L(P((560, BASE), (560, BASE - 260), (780, BASE - 260), (780, BASE)), 3, 3.8, BLA
 T("收入", 670, BASE + 80, 60, k0=3.8, k1=4.6)
 L(P((1060, BASE), (1060, BASE - 560), (1280, BASE - 560), (1280, BASE)), 5, 5.8, GREEN, 10, sfx="wood_high")
 T("能自己做主", 1170, BASE + 80, 60, GREEN, k0=5.8, k1=7.05)
-L(rays(1170, BASE - 620, 70), 7.1, 7.8, RED, 7)
-H(7, "ding")
-T("（示意）", 1400, 3620, 48, k0=7.2, k1=8.0)
+L(rays(1170, BASE - 620, 70), 7, 7.5, RED, 7, sfx="ding")
+T("（示意）", 1420, BASE - 60, 48, k0=7.5, k1=8.0)
 
 scene("问了很多老人", "书中提到 · 皮勒默的访谈", (XR, R3, Z))
 T("皮勒默：访谈很多老人", XR, 3460, 58, BLUE, k0=0, k1=2.0, sfx="pop")
@@ -341,10 +336,10 @@ scene("下班了，脑子还在上班", "书中观点 · 下班不下线", (XR, 
 L(join(bed(*BED, 720), lying(*BED, 1.0)), 0, 0.9, BLACK, 9, sfx="wood_low")
 T("23:40", 2230, 4960, 72, RED, k0=1, k1=1.8, sfx="pop")
 for n, (mx, my, s) in enumerate(((2470, 5220, "改个方案"), (2780, 5060, "在吗？"), (3060, 5240, "明早要"))):
-    L(msg(mx, my), 2 + n * 1.2, 2.5 + n * 1.2, BLACK, 7, sfx="pop" if n != 1 else None)
-    T(s, mx, my + 16, 50, k0=2.5 + n * 1.2, k1=3.2 + n * 1.2)
-H(3, "pop")
-T("睡不着", 2240, 5400, 60, BLUE, k0=6, k1=6.8, sfx="rim")
+    k = (2, 3.5, 5)[n]
+    L(msg(mx, my), k, k + 0.5, BLACK, 7, sfx="pop" if n != 1 else None)
+    T(s, mx, my + 16, 50, k0=k + 0.5, k1=k + 1.3)
+T("睡不着", 2240, 5400, 60, BLUE, k0=7, k1=7.8, sfx="rim")
 
 # ---------------------------------------------------------------- 按勾数解读（场景 10–11）
 
@@ -380,9 +375,8 @@ def drop_fn(x, y0, y1):
 
 
 scene("打勾少，先攒应急钱", "按勾数看 · 打勾少", (XL, R4, Z))
-T("0–1 个勾", XL, 4920, 84, RED, k0=0, k1=1.25, sfx="pop")
-C(pig_fn(J()), 1.5, 2.4)
-H(2, "wood_high")
+T("0–1 个勾", XL, 4920, 84, RED, k0=0, k1=1.0, sfx="pop")
+C(pig_fn(J()), 1, 1.9, sfx="wood_high")
 for n in range(3):
     C(drop_fn(PIG[0], 5010, PIG[1] - 110 * PIG[2]), 2.5 + n, 3.0 + n)
     H(3 + n, "ding")
@@ -393,9 +387,8 @@ T("3–4 个勾", XL, 6370, 84, GREEN, k0=0, k1=1.25, sfx="pop")
 L(coin_stack(640, 6760, 3), 2, 2.9, GREEN, 9, sfx="wood_high")
 L(arrow((800, 6700), (1060, 6700), 0.0, 40), 3, 3.7, BLACK, 9, sfx="pop")
 L(join(alarm(1260, 6690, 120), hands_ang(1260, 6690, 120, 50)), 4, 4.9, ACC, 9, sfx="wood_high")
-T("请人打扫一次", XL, 7000, 58, k0=5, k1=6.5, sfx="pop")
+T("请人打扫一次", XL, 7000, 58, k0=5, k1=6.4, sfx="pop")
 T("搬近点，少通勤", XL, 7120, 58, k0=6.5, k1=8.0)
-H(7, "pop")
 
 # ---------------------------------------------------------------- 做法（场景 12–13）
 
@@ -413,9 +406,8 @@ BEN = (2600, 8420)
 scene("把时间还给自己", "做法 · 时间归自己", (XR, R6, Z))
 L(bench(*BEN, 700), 0, 0.9, BLACK, 9, sfx="wood_low")
 L(sitting(2380, BEN[1], 0.95), 1, 1.9, BLUE, 9, sfx="wood_high")
-L(join(alarm(2510, BEN[1] - 120, 52), hands_ang(2510, BEN[1] - 120, 52, 50)), 2.2, 2.9, ACC, 7)
-H(3, "ding")
-L(pig(2830, BEN[1] - 132, 0.75, "smile"), 3, 3.9, ACC, 9)
+L(join(alarm(2510, BEN[1] - 120, 52), hands_ang(2510, BEN[1] - 120, 52, 50)), 2, 2.8, ACC, 7, sfx="ding")
+L(pig(2830, BEN[1] - 132, 0.75, "smile"), 3, 3.9, ACC, 9, sfx="pop")
 L(sun(3120, 7820, 60), 5, 5.8, ACC, 8, sfx="wood_high")
 T("这段时间，归我", 2550, 7860, 70, GREEN, k0=6, k1=8.0, sfx="pop")
 
@@ -431,8 +423,7 @@ H(2, "ding")
 H(4, "wood_high", 0.6)
 L(comment_box(XL, R6 - 20, 1200, 520), 5, 5.9, BLACK, 8)
 T("评论区：你打了几个勾？", XL, R6 - 60, 66, RED, k0=6, k1=8.75, sfx="pop")
-T("下一讲：开豪车的人，你记住他了吗？", XL, R6 + 90, 48, k0=9.5, k1=13.5)
-H(10, "wood_high", 0.6)
+T("下一讲：开豪车的人，你记住他了吗？", XL, R6 + 90, 48, k0=10, k1=13.5, sfx="wood_high", gain=0.6)
 L(underline(XL - 400, XL + 400, R6 + 140, 10, 36), 13.6, 14.2, BLACK, 6)
 b.hit(J_END, 16, "kick", 0.55, "原曲最后一击")
 

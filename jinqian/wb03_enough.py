@@ -300,7 +300,7 @@ FEET = 1335                     # 跑道上小王的脚底
 PIG1 = (1000, 1060)
 PIG = Actor(pig, *PIG1, 1.0, "smile", foot=118)
 WANG = Actor(runner, 1420, FEET, 0.75, "smile", width=10, streak=True)
-FIN = Actor(lambda x, y, s, m: finish(x, 990, *LANE), 2650, LANE[1], 1.0, "", width=11, streak=True)
+FIN = Actor(lambda x, y, s, m: finish(x, 990, *LANE), 2600, LANE[1], 1.0, "", width=11, streak=True)
 
 scene("工资涨了", "灵魂拷问", (700, 1000, 0.85), bars=2)
 L(payslip(480, 830), 0, 0.9, sfx="wood_high")
@@ -314,12 +314,12 @@ PIG.key(5.6, 0.4, f=1.12)
 scene("换了房，换了车", "灵魂拷问", (2000, 1050, 0.75))
 L(track(1250, 3550, *LANE), 0, 0.9, BLACK, 8, sfx="wood_low")
 WANG.draw(1, 1.9, sfx="wood_high")
-L(house(1850, LANE[0]), 2, 2.9, BLACK, 9, sfx="pop")
-T("新房", 1850, 860, 60, k0=3, k1=3.8, sfx="pop")
-L(car(2330, LANE[0]), 4, 4.9, BLUE, 9, sfx="pop")
-T("新车", 2330, 1010, 60, BLUE, k0=5, k1=5.8, sfx="pop")
+L(house(1800, LANE[0]), 2, 2.9, BLACK, 9, sfx="pop")
+T("新房", 1800, 860, 60, k0=3, k1=3.8, sfx="pop")
+L(car(2260, LANE[0]), 4, 4.9, BLUE, 9, sfx="pop")
+T("新车", 2260, 1010, 60, BLUE, k0=5, k1=5.8, sfx="pop")
 FIN.draw(6, 6.9, sfx="wood_high")
-T("终点", 2720, 930, 60, RED, k0=7, k1=7.8, sfx="pop")
+T("冲！", 1500, 1000, 64, RED, k0=7, k1=7.8, sfx="pop")
 
 scene("还是不够花", "灵魂拷问", (1000, 1050, 0.85))
 L(arrow((900, 1200), (720, 1360), 0.15, 36), 0, 0.9, RED, 9, sfx="wood_high")
@@ -334,12 +334,12 @@ T("不够花！", 1010, 720, 90, RED, k0=7, k1=8, sfx="kick")
 
 scene("终点线跑了", "灵魂拷问", (2650, 1050, 0.6), shake=[0, 2], flashes=[0])
 H(0, "kick", 1.0)
-WANG.key(0, 0.8, x=2560)
+WANG.key(0, 1.0, x=2510)
 FIN.key(2, 0.6, sfx="tom", x=3350)
 L(join(*[P((2780, LANE[0] - h), (3200, LANE[0] - h)) for h in (60, 160, 260)]), 3, 3.8, BLACK, 7, sfx="shaker")
 T("终点线跑了", 2650, 640, 100, RED, k0=4, k1=5.5, sfx="ding")
 WANG.key(6, 0.1, sfx="rim", mood="shock")
-T("？", 2500, 950, 90, RED, k0=7, k1=7.8, sfx="pop")
+T("？", 2450, 950, 90, RED, k0=7, k1=7.8, sfx="pop")
 
 # ---------------------------------------------------------------- 书中故事：派对上的“够了”（场景 5–7）
 
@@ -369,8 +369,8 @@ T("够了", 3010, 2625, 110, RED, k0=1, k1=1.8, sfx="ding")
 L(underline(2890, 3130, 2675, 10, 30), 2, 2.8, RED, 8, sfx="pop")
 L(face(*HEL, 0.7, "smile"), 3, 3.5, BLACK, 7, sfx="pop")
 L(face(*VON, 0.7, "flat"), 4, 4.5, BLACK, 7, sfx="wood_low")
-T("知道够了", 2650, 3240, 80, GREEN, k0=5, k1=6, sfx="pop")
-L(underline(2490, 2810, 3285, 10, 32), 7, 7.8, GREEN, 8, sfx="ding")
+T("知道够了", 2650, 3210, 80, GREEN, k0=5, k1=6, sfx="pop")
+L(underline(2490, 2810, 3255, 10, 32), 7, 7.8, GREEN, 8, sfx="ding")
 
 # ---------------------------------------------------------------- 书中观点：钉住终点线 / 比较没有尽头（场景 8–9）
 
@@ -442,7 +442,7 @@ T("一半随意花", 520, 7510, 56, k0=7, k1=8, sfx="pop")
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看整条跑道，再推到评论区
 
-FAR = (1800, 4500, 0.2)
+FAR = (1800, 4150, 0.13)
 NEAR = (1800, 8800, 0.8)
 scene("评论区说说你的够数", "评论区见", FAR, bars=4)
 b.move(J(), 4, NEAR, dur=1.1)
@@ -451,6 +451,7 @@ H(2, "ding")
 H(4, "wood_high", 0.6)
 T("你的够数是多少？", 1800, 8720, 80, RED, k0=6, k1=8, sfx="pop")
 T("下一讲：攒钱这件事，为什么拼的是时间？", 1800, 8890, 50, k0=9, k1=13.75, sfx="wood_high")
+Actor(pig, 1800, 9130, 0.8, "smile", foot=118).draw(14, 14.9, sfx="ding")
 b.hit(J(), 16, "kick", 0.55, "原曲最后一击")
 
 

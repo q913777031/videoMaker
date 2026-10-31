@@ -293,11 +293,11 @@ def glow_fn(c, k, t):
 b.custom(J(), 1, 1.6, glow_fn)
 L(arrow((950, 2420), (950, 1740), 0.0, 75), 1, 1.8, GREEN, 22, sfx="ding")
 L(rays(950, 1760), 2, 2.6, GREEN, 9, sfx="pop")
+T("大赚一笔", 1260, 2510, 92, GREEN, k0=3, k1=4.2, sfx="pop")
 MAN4 = (620, 2610, 0.6)
-L(stick(*MAN4, "up"), 3, 3.8, sfx="wood_high")
-L(face(*MAN4, "smile"), 3.8, 4.0)
-T("利弗莫尔", 620, 2672, 48, BLUE, k0=4, k1=5, sfx="pop")
-T("大赚一笔", 1260, 2510, 92, GREEN, k0=5, k1=6.2, sfx="pop")
+L(stick(*MAN4, "up"), 5, 5.8, sfx="wood_high")
+L(face(*MAN4, "smile"), 5.8, 6.0)
+T("利弗莫尔", 620, 2672, 48, BLUE, k0=6, k1=7, sfx="pop")
 
 # ---------------------------------------------------------------- 亮书 + 越押越大 + 全输了（场景 5–7）
 
@@ -447,7 +447,7 @@ scene("对未来乐观，对坑小心", "书中观点 · 路上有坑", (2650, 6
 J10 = J()
 L(join(P(road_pt(0, -95), road_pt(1, -95)), P(road_pt(0, 95), road_pt(1, 95))), 0, 0.9, BLACK, 9, sfx="wood_high")
 L(flag(3150, 5900), 1, 1.8, GREEN, 9, sfx="pop")
-T("乐观", 2990, 5800, 66, GREEN, k0=2, k1=2.8, sfx="pop")
+T("乐观", 2870, 5790, 66, GREEN, k0=2, k1=2.8, sfx="pop")
 for n, tp in enumerate(PITS):
     x, y = road_pt(tp, 38)
     L(join(oval(x, y, 130, 64), P((x - 30, y - 6), (x + 25, y + 8))), 3 + n, 3.6 + n, RED, 9, sfx="rim")
