@@ -184,7 +184,7 @@ for n, s in enumerate("321"):
 ox, oy = 950, 2250
 j_drop = scene("大多数人不赌", "多数人的选择", (ox, oy, 0.75), shake=[0, (4, 20.0)], flashes=[0])
 T("多数人：不赌", ox, oy - 530, 104, RED, k0=0, k1=1.5, sfx="kick")
-PV = (ox + 80, oy - 180)                     # 天平支点
+PV = (ox + 20, oy - 180)                     # 天平支点
 BR, SL, PW = 480, 260, 260                   # 横梁半长、吊绳长、秤盘宽
 TILT = math.radians(24)
 L(join(P(PV, (PV[0], oy + 520)), P((PV[0] - 200, oy + 520), (PV[0], oy + 400), (PV[0] + 200, oy + 520), close=True),
@@ -228,8 +228,8 @@ def scale_fn(c, k, t):
 b.custom(j_drop, 2, 3, scale_fn, sfx="wood_high")
 H(3, "pop")
 H(4, "kick")
-T("重！", ox + 250, oy + 300, 90, RED, k0=5, k1=5.8, sfx="rim")
-KX, KY, KS = ox - 470, oy + 600, 0.55
+T("重！", ox + 200, oy + 300, 90, RED, k0=5, k1=5.8, sfx="rim")
+KX, KY, KS = ox - 480, oy + 600, 0.62
 L(join(kuai(KX, KY, KS, "shrug"), face(KX, KY, KS, "sad")), 6, 6.9, RED, 9, sfx="wood_high")
 T("怕输", KX + 170, KY - 230, 60, RED, k0=7, k1=7.8, sfx="pop")
 
