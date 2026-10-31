@@ -31,6 +31,11 @@ ZIPVOICE = {"zv_yunxi": "zm_yunxi", "zv_009": "zm_009", "zv_001": "zf_001",
             "zv_yunjian": "zm_yunjian", "zv_yunyang": "zm_yunyang", "zv_yunxia": "zm_yunxia",
             "zv_xiaoxiao": "zf_xiaoxiao", "zv_xiaoyi": "zf_xiaoyi"}
 PROMPT_TEXT = "其实每个人都可以重新开始，换一种方式，去过自己真正想要的生活。"
+# CosyVoice3 音色：cv3_<x> 零样本、cv3i_<x> 语气指令；提示音 = ZipVoice 音色 zv_<x> 念 CV3_PROMPT_TEXT（全程合成音，不涉及真人）。
+# 模型跑在 models/venv_tts 的子进程里（见 engine/cosyvoice_worker.py 的准备步骤）。文本里可用 [sh][ǎo] 这样的拼音标注纠正多音字。
+CV3_PROMPT_TEXT = "工厂里每天都会出点小问题，我们先把它记下来，再一个一个慢慢解决。"
+CV3_INSTRUCT = "请用温暖、恳切、有感染力的语气讲解，像在提醒一个朋友，语调要有起伏。"
+CV3_PYTHON = MODEL_ROOT / "venv_tts" / "bin" / "python"
 
 
 # ---------------------------------------------------------------- 基础工具
@@ -125,12 +130,28 @@ class Narrator:
     ZipVoice 只借用其音色，发音与语调由 ZipVoice 自己生成，因此不涉及任何真人声音。
     ZipVoice 的语速跟随提示音：prompt_speed < 1（如 0.8）时提示音念得慢，生成的旁白整体放慢、停顿更自然；
     默认 1.0 与旧版完全相同（含缓存键）。
+
+    音色名以 cv3_ / cv3i_ 开头时使用 CosyVoice3（如 "cv3i_yunjian"）：提示音由 zv_<同名> 合成（prompt_speed 同上），
+    cv3i_ 额外带语气指令（instruct，默认 CV3_INSTRUCT）。首次合成时启动一个常驻子进程加载模型（约 30 秒），
+    CPU 上每 10 秒语音约需 2–3 分钟，结果同样按键缓存；合成带随机采样，固定种子后同一文本结果可复现。
     """
 
-    def __init__(self, voice: str = "zv_yunxi", prompt_speed: float = 1.0):
+    def __init__(self, voice: str = "zv_yunxi", prompt_speed: float = 1.0, instruct: str | None = None):
+        self._prompt = None
+        self._cv3 = None
+        if voice.startswith(("cv3_", "cv3i_")):
+            zv = "zv_" + voice.split("_", 1)[1]
+            if zv not in ZIPVOICE:
+                raise KeyError(f"unknown voice {voice}: no ZipVoice prompt {zv}")
+            if not CV3_PYTHON.is_file():
+                raise FileNotFoundError(f"CosyVoice3 venv not found: {CV3_PYTHON} (see engine/cosyvoice_worker.py)")
+            mode = "ins" if voice.startswith("cv3i_") else "zs"
+            ins = "You are a helpful assistant. " + (instruct or CV3_INSTRUCT) + "<|endofprompt|>"
+            self._cv3 = dict(voice=zv, prompt_speed=prompt_speed, mode=mode, instruct=ins, proc=None, wav=None)
+            self._key = f"cv3|{voice}|p{prompt_speed:.3f}" + (f"|{ins}" if mode == "ins" else "")
+            return
         import sherpa_onnx
 
-        self._prompt = None
         if voice in ZIPVOICE:
             d = str(MODEL_ROOT / ZV_DIR) + "/"
             if not Path(d + "decoder.int8.onnx").is_file():
@@ -168,7 +189,10 @@ class Narrator:
         path = CACHE_DIR / f"{key}.npy"
         if path.exists():
             return np.load(path)
-        if self._prompt is not None:
+        if self._cv3 is not None:
+            x, sr = self._cv3_generate(text, speed, int(key[:8], 16))
+            a = type("A", (), {"samples": x, "sample_rate": sr})
+        elif self._prompt is not None:
             a = self._tts.generate(text, PROMPT_TEXT, self._prompt, 24000, speed, num_steps)
         else:
             a = self._tts.generate(text, sid=self._sid, speed=speed)
@@ -180,6 +204,44 @@ class Narrator:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         np.save(path, x)
         return x
+
+    def _cv3_generate(self, text: str, speed: float, seed: int):
+        """把一句交给 CosyVoice3 子进程；首次调用时合成提示音并启动子进程。"""
+        import json
+        import subprocess
+        import tempfile
+
+        import soundfile as sf
+
+        c = self._cv3
+        if c["proc"] is None:
+            p = Narrator(c["voice"], prompt_speed=c["prompt_speed"]).generate(CV3_PROMPT_TEXT, 1.0, 8)
+            c["tmp"] = tempfile.TemporaryDirectory()
+            c["wav"] = str(Path(c["tmp"].name) / "prompt.wav")
+            sf.write(c["wav"], signal.resample_poly(p, 160, 441).astype(np.float32), 16000)
+            c["proc"] = subprocess.Popen([str(CV3_PYTHON), "-I", str(ROOT / "engine" / "cosyvoice_worker.py")],
+                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                         text=True, bufsize=1)
+            self._cv3_reply()
+        out = str(Path(c["tmp"].name) / "out.wav")
+        q = dict(text=text, mode=c["mode"], prompt_wav=c["wav"], prompt_text=CV3_PROMPT_TEXT, instruct=c["instruct"],
+                 speed=speed, seed=seed, out=out)
+        c["proc"].stdin.write(json.dumps(q, ensure_ascii=False) + "\n")
+        c["proc"].stdin.flush()
+        r = self._cv3_reply()
+        if not r.get("ok"):
+            raise RuntimeError(f"CosyVoice3 failed: {r.get('err')}")
+        x, sr = sf.read(out)
+        return x, sr
+
+    def _cv3_reply(self) -> dict:
+        import json
+
+        for line in self._cv3["proc"].stdout:
+            line = line.strip()
+            if line.startswith("{"):
+                return json.loads(line)
+        raise RuntimeError("CosyVoice3 worker exited")
 
 
 def _trim(x: np.ndarray, thr_db: float = -38.0) -> np.ndarray:
