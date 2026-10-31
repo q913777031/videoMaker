@@ -26,7 +26,7 @@ from .common import BOOK, episode, kuai, man
 ACC = "#3A6FC2"
 SQUARE_SHOT = 3                 # 场景 4：成绩点绕中线起伏 + 右边挠头的教官
 
-b = Board(size=(3600, 10800))
+b = Board(size=(3600, 11200))
 GRAY = "#8E95A3"
 
 
@@ -240,22 +240,23 @@ L(underline(2470, 2830, 1465), 7, 7.8, RED, 8, sfx="ding")
 
 # ---------------------------------------------------------------- 倒带 → 成绩图（场景 3–4）
 
-V34 = (1800, 2580, 0.65)
-MID_Y = 2600
+DY = 150                        # 成绩图整体下移，避免场景 2 的“只骂不夸”漏进画面顶端
+V34 = (1800, 2580 + DY, 0.65)
+MID_Y = 2600 + DY
 OFF = [-60, 90, -30, 260, 40, -80, -250, -20, 70]          # 每次成绩离中线多远（往下为差）
 PTS = [(1200 + i * 130, MID_Y + v) for i, v in enumerate(OFF)]
 WORST, BEST = PTS[3], PTS[6]
-CO3 = (2470, 2810, 0.55)
+CO3 = (2470, 2810 + DY, 0.55)
 
 scene("倒回去看看", "倒带", V34)
-L(rewind(1350, 2030), 0, 0.9, RED, 12, sfx="wood_high")
-T("倒带", 1620, 2030, 84, RED, k0=1, k1=1.8, sfx="pop")
+L(rewind(1350, 2030 + DY), 0, 0.9, RED, 12, sfx="wood_high")
+T("倒带", 1620, 2030 + DY, 84, RED, k0=1, k1=1.8, sfx="pop")
 C(2, 8, scroll_fn(1080, 2330, MID_Y), sfx="wood_low")
 H(3, "shaker", 0.7)
-L(arrow((1080, 2930), (1080, 2240), 0, 40), 4, 4.8, BLACK, 9, sfx="wood_high")
-T("成绩", 1080, 2175, 64, k0=5, k1=5.8, sfx="pop")
+L(arrow((1080, 2930 + DY), (1080, 2240 + DY), 0, 40), 4, 4.8, BLACK, 9, sfx="wood_high")
+T("成绩", 1080, 2175 + DY, 64, k0=5, k1=5.8, sfx="pop")
 L(coach(*CO3, "scratch"), 6, 6.8, BLACK, 9, sfx="wood_high")
-T("？", CO3[0], 2520, 84, RED, k0=7, k1=7.8, sfx="pop")
+T("？", CO3[0], 2520 + DY, 84, RED, k0=7, k1=7.8, sfx="pop")
 
 scene("本来就会往回落", "倒带 · 成绩图", V34, shake=[0], flashes=[0])
 C(0, 1.6, score_dots_fn(PTS), sfx="kick")
@@ -264,7 +265,7 @@ T("最差", WORST[0] - 140, WORST[1] + 10, 60, RED, k0=3, k1=3.8, sfx="pop")
 L(arrow((WORST[0] + 10, WORST[1] - 60), (PTS[4][0] - 12, PTS[4][1] + 26), -0.45, 34), 4, 4.8, RED, 10, sfx="kick")
 L(circle(*BEST, 56), 5, 5.8, BLUE, 9, sfx="pop")
 L(arrow((BEST[0] + 40, BEST[1] + 40), (PTS[7][0] - 6, PTS[7][1] - 28), -0.45, 34), 6, 6.8, BLUE, 10, sfx="wood_low")
-T("自己往回弹", 1700, 3100, 84, RED, k0=7, k1=8, sfx="ding")
+T("自己往回弹", 1700, 3100 + DY, 84, RED, k0=7, k1=8, sfx="ding")
 
 # ---------------------------------------------------------------- 书中观点（场景 5–8）
 
@@ -368,10 +369,10 @@ b.move(j14, 4, CMT, dur=1.1)
 H(0, "cymbal", 0.5)
 H(2, "ding")
 H(4, "wood_high", 0.6)
-L(kuai(2350, 10480, 0.6, "up"), 6, 6.8, RED, 9, sfx="pop")
-L(face(2350, 10480, 0.6, "smile"), 6.8, 7.0, RED, 7)
-L(man(2950, 10480, 0.6), 7, 7.8, BLUE, 9, sfx="wood_high")
-L(face(2950, 10480, 0.6, "smile"), 7.8, 8.0, BLUE, 7)
+L(kuai(2450, 10480, 0.6, "up"), 6, 6.8, RED, 9, sfx="pop")
+L(face(2450, 10480, 0.6, "smile"), 6.8, 7.0, RED, 7)
+L(man(2830, 10480, 0.6), 7, 7.8, BLUE, 9, sfx="wood_high")
+L(face(2830, 10480, 0.6, "smile"), 7.8, 8.0, BLUE, 7)
 T("你被“骂完就好”骗过吗？", 2650, 9830, 66, RED, k0=8, k1=10.75, sfx="pop")
 T("下一讲：排期两周，为什么总拖成一个月？", 2650, 9990, 46, k0=11, k1=15.5, sfx="wood_high")
 b.hit(j14, 16, "kick", 0.55, "原曲最后一击")
