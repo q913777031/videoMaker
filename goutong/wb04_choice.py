@@ -25,7 +25,7 @@ from engine.gfx import clamp01, ease_in_out, lerp
 from .common import BOOK, episode
 
 ACC = "#2F8F83"
-SQUARE_SHOT = 12                 # 场景 10：十字路口四条路尽头的四个结局（人物 + 四条路）
+SQUARE_SHOT = 12                 # 场景 13：两人隔着文件对上话（人物 + 收刺的小泡）
 
 b = Board(size=(3600, 9000))
 
