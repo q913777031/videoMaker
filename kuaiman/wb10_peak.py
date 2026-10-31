@@ -28,7 +28,7 @@ from .common import BOOK, episode, kuai, man
 ACC = "#8A5BB0"
 SQUARE_SHOT = 3                 # 场景 4：两条疼痛曲线 + 峰 / 终红圈 + 病人A（皱眉）、病人B（平静）
 
-b = Board(size=(3600, 9000))
+b = Board(size=(3600, 9400))
 
 # 白板分区：左列中心 XL（场景 1–8 自上而下），右列中心 XR（场景 9–14 自下而上）
 XL, XR = 1150, 2650
@@ -196,7 +196,7 @@ T("做同一种检查", XL, 520, 76, ACC, k0=4, k1=5.5, sfx="pop")
 # 两张图同一比例：横轴 24 分钟，纵轴疼痛 0–10；A 在上、B 在下，原点 x 对齐
 X0, XW, HH = XL - 580, 1140, 450
 CA = Chart(X0, 2200, XW, HH, 24)
-CB = Chart(X0, 3350, XW, HH, 24)
+CB = Chart(X0, 3500, XW, HH, 24)
 PA = [(0, 0), (1, 2), (2, 4), (3, 3), (4, 5), (5, 6.5), (6, 5.5), (7, 7.5), (8, 8)]
 PB_HEAD = PA
 PB_TAIL = [(8, 8), (9, 6.5), (10, 7), (11, 5.5), (13, 4.5), (15, 4), (17, 3), (19, 2.5), (21, 1.8), (23, 1.2),
@@ -219,7 +219,7 @@ T("8分钟", CA.pt(8, 0)[0], CA.base + 62, 50, k0=5.3, k1=6)
 L(circle(*A_END, 14), 6, 6.5, RED, 12, sfx="rim")
 T("疼着结束", A_END[0] + 230, A_END[1] - 30, 62, RED, k0=7, k1=8, sfx="ding")
 
-scene("第二个：长，慢慢收尾", "病人B · 长", (XL, 3130, 0.85))
+scene("第二个：长，慢慢收尾", "病人B · 长", (XL, 3280, 0.85))
 chart_frame(CB, "病人B")
 L(CB.curve(PB_HEAD), 3, 3.9, ACC, 11, sfx="wood_low")
 L(CB.curve(PB_TAIL), 4, 5.8, ACC, 11, sfx="shaker")
@@ -228,57 +228,57 @@ T("24分钟", CB.pt(24, 0)[0] - 40, CB.base + 62, 50, k0=6.3, k1=7)
 T("慢慢收尾", CB.pt(16, 0)[0], CB.pt(16, 6.6)[1], 62, BLUE, k0=7, k1=8, sfx="ding")
 
 PA_X = XL + 820                 # drop 时同框才看得到的两位病人（曲线右侧）
-j_drop = scene("长的那个，记得更好", "峰和终", (XL + 120, 2560, 0.53), shake=[0, 4], flashes=[0])
+j_drop = scene("长的那个，记得更好", "峰和终", (XL + 120, 2600, 0.49), shake=[0, 4], flashes=[0])
 L(circle(*A_END, 70), 0, 0.8, RED, 12, sfx="kick")
 L(circle(*B_PEAK, 70), 1, 1.8, RED, 12, sfx="ding")
 L(circle(*B_END, 70), 2, 2.8, RED, 12, sfx="ding")
 b.custom(j_drop, 3, 12, glow_fn([A_END, B_PEAK, B_END]))
-T("峰也是终", A_END[0] + 250, A_END[1] - 10, 80, RED, k0=3, k1=4, sfx="pop")
+T("峰也是终", A_END[0] + 270, A_END[1] + 110, 80, RED, k0=3, k1=4, sfx="pop")
 T("峰", B_PEAK[0] + 130, B_PEAK[1] - 40, 80, RED, k0=3.4, k1=3.8)
 T("终", B_END[0], B_END[1] - 125, 80, RED, k0=3.8, k1=4.2)
-T("B 记得没那么糟", XL + 100, 2570, 104, RED, k0=4, k1=5.75, sfx="kick")
+T("B 记得没那么糟", XL + 100, 2650, 104, RED, k0=4, k1=5.75, sfx="kick")
 L(join(stick(PA_X, 2180, 0.62, "down"), face(PA_X, 2180, 0.62, "sad")), 6, 6.9, BLACK, 9, sfx="wood_high")
-L(join(stick(PA_X, 3330, 0.62, "down"), face(PA_X, 3330, 0.62, "smile")), 7, 7.9, BLUE, 9, sfx="wood_low")
+L(join(stick(PA_X, 3480, 0.62, "down"), face(PA_X, 3480, 0.62, "smile")), 7, 7.9, BLUE, 9, sfx="wood_low")
 
 # ---------------------------------------------------------------- 书中观点（场景 5–8，左列）
 
-scene("只记最高点和结尾", "思考，快与慢 · 书中观点", (XL, 4350, 0.85))
-L(book(XL - 380, 4250, 380, 260), 0, 0.9, sfx="wood_low")
-T("思考，快与慢", XL - 380, 4040, 60, GREEN, k0=1, k1=2.5, sfx="pop")
-L(join(kuai(XL + 230, 4620, 0.6), face(XL + 230, 4620, 0.6, "smile")), 3, 3.9, RED, 9, sfx="wood_high")
-L(join(man(XL + 520, 4620, 0.6), face(XL + 520, 4620, 0.6, "flat")), 4, 4.9, BLUE, 9, sfx="wood_high")
-T("峰终定律", XL - 380, 4540, 90, RED, k0=5, k1=6, sfx="pop")
-L(underline(XL - 570, XL - 190, 4610), 7, 7.8, ORANGE, 8, sfx="ding")
+scene("只记最高点和结尾", "思考，快与慢 · 书中观点", (XL, 4650, 0.85))
+L(book(XL - 380, 4550, 380, 260), 0, 0.9, sfx="wood_low")
+T("思考，快与慢", XL - 380, 4340, 60, GREEN, k0=1, k1=2.5, sfx="pop")
+L(join(kuai(XL + 230, 4920, 0.6), face(XL + 230, 4920, 0.6, "smile")), 3, 3.9, RED, 9, sfx="wood_high")
+L(join(man(XL + 520, 4920, 0.6), face(XL + 520, 4920, 0.6, "flat")), 4, 4.9, BLUE, 9, sfx="wood_high")
+T("峰终定律", XL - 380, 4840, 90, RED, k0=5, k1=6, sfx="pop")
+L(underline(XL - 570, XL - 190, 4910), 7, 7.8, ORANGE, 8, sfx="ding")
 
-scene("多久，几乎不算", "书中观点 · 忽略时长", (XL, 5650, 0.85))
-L(arrow((XL - 540, 5600), (XL + 540, 5600), 0.0, 50), 0, 0.9, BLACK, 10, sfx="wood_high")
-T("时长", XL, 5500, 64, k0=1, k1=1.8, sfx="pop")
-T("8分钟", XL - 420, 5700, 56, ACC, k0=2, k1=2.8, sfx="pop")
-T("24分钟", XL + 400, 5700, 56, ACC, k0=3, k1=3.8, sfx="pop")
-L(cross(XL, 5600, 110), 4, 4.9, RED, 12, sfx="rim")
-T("忽略时长", XL, 5930, 96, RED, k0=5, k1=6, sfx="pop")
-L(underline(XL - 200, XL + 200, 6000), 7, 7.8, RED, 8, sfx="ding")
+scene("多久，几乎不算", "书中观点 · 忽略时长", (XL, 5950, 0.85))
+L(arrow((XL - 540, 5900), (XL + 540, 5900), 0.0, 50), 0, 0.9, BLACK, 10, sfx="wood_high")
+T("时长", XL, 5800, 64, k0=1, k1=1.8, sfx="pop")
+T("8分钟", XL - 420, 6000, 56, ACC, k0=2, k1=2.8, sfx="pop")
+T("24分钟", XL + 400, 6000, 56, ACC, k0=3, k1=3.8, sfx="pop")
+L(cross(XL, 5900, 110), 4, 4.9, RED, 12, sfx="rim")
+T("忽略时长", XL, 6230, 96, RED, k0=5, k1=6, sfx="pop")
+L(underline(XL - 200, XL + 200, 6300), 7, 7.8, RED, 8, sfx="ding")
 
-WL, WR, WY = XL - 350, XL + 350, 6980             # 两盆冷水（水面高度 WY）
-scene("多泡半分钟，更愿意", "书中实验 · 冷水", (XL, 6950, 0.85))
+WL, WR, WY = XL - 350, XL + 350, 7280             # 两盆冷水（水面高度 WY）
+scene("多泡半分钟，更愿意", "书中实验 · 冷水", (XL, 7250, 0.85))
 L(basin(WL, WY), 0, 0.9, BLUE, 9, sfx="wood_high")
-L(hand_in(WL, 6640, 7080), 1, 1.9, BLACK, 9, sfx="wood_low")
-T("60秒", WL, 6570, 60, BLUE, k0=2, k1=2.8, sfx="pop")
-L(join(basin(WR, WY), hand_in(WR, 6640, 7080)), 3, 3.9, BLUE, 9, sfx="wood_high")
-T("90秒", WR, 6570, 60, BLUE, k0=4, k1=4.8, sfx="pop")
-T("最后30秒稍暖", WR, 7260, 50, ORANGE, k0=5, k1=6.5, sfx="pop")
-L(check(WR - 210, 7385, 34), 6, 6.6, GREEN, 10, sfx="wood_high")
-T("多数人选它", WR + 30, 7385, 58, GREEN, k0=7, k1=8, sfx="ding")
+L(hand_in(WL, 6940, 7380), 1, 1.9, BLACK, 9, sfx="wood_low")
+T("60秒", WL, 6870, 60, BLUE, k0=2, k1=2.8, sfx="pop")
+L(join(basin(WR, WY), hand_in(WR, 6940, 7380)), 3, 3.9, BLUE, 9, sfx="wood_high")
+T("90秒", WR, 6870, 60, BLUE, k0=4, k1=4.8, sfx="pop")
+T("最后30秒稍暖", WR, 7560, 50, ORANGE, k0=5, k1=6.5, sfx="pop")
+L(check(WR - 210, 7685, 34), 6, 6.6, GREEN, 10, sfx="wood_high")
+T("多数人选它", WR + 30, 7685, 58, GREEN, k0=7, k1=8, sfx="ding")
 
-scene("过日子和记账的我", "书中观点 · 两个自我", (XL, 8250, 0.85))
-L(underline(XL - 560, XL + 440, 8520, 12, 50), 0, 0.9, BLACK, 8, sfx="wood_high")
-L(join(kuai(XL - 420, 8500, 0.55, "point"), face(XL - 420, 8500, 0.55, "smile")), 1, 1.9, RED, 9, sfx="pop")
-T("好…累…疼…", XL - 40, 8330, 58, RED, k0=2, k1=3.25, sfx="pop")
-L(join(man(XL + 400, 8500, 0.55, "hold"), face(XL + 400, 8500, 0.55, "flat"), album(XL + 490, 8370)), 4, 4.9,
+scene("过日子和记账的我", "书中观点 · 两个自我", (XL, 8550, 0.85))
+L(underline(XL - 560, XL + 440, 8820, 12, 50), 0, 0.9, BLACK, 8, sfx="wood_high")
+L(join(kuai(XL - 420, 8800, 0.55, "point"), face(XL - 420, 8800, 0.55, "smile")), 1, 1.9, RED, 9, sfx="pop")
+T("好…累…疼…", XL - 40, 8630, 58, RED, k0=2, k1=3.25, sfx="pop")
+L(join(man(XL + 400, 8800, 0.55, "hold"), face(XL + 400, 8800, 0.55, "flat"), album(XL + 490, 8670)), 4, 4.9,
   BLUE, 9, sfx="wood_low")
-T("体验的我", XL - 420, 8620, 56, RED, k0=5, k1=6, sfx="pop")
-T("记忆的我", XL + 400, 8620, 56, BLUE, k0=6, k1=7, sfx="pop")
-L(ellipse(XL + 490, 8370, 170, 140), 7, 7.8, ORANGE, 8, sfx="ding")
+T("体验的我", XL - 420, 8920, 56, RED, k0=5, k1=6, sfx="pop")
+L(ellipse(XL + 490, 8670, 170, 140), 6, 6.8, ORANGE, 8, sfx="pop")
+T("记忆的我", XL + 400, 8920, 56, BLUE, k0=7, k1=8, sfx="ding")
 
 # ---------------------------------------------------------------- 用曲线看生活（场景 9–10，右列，自下而上）
 
@@ -326,7 +326,7 @@ T("② 别在最难受时停", XR, 3870, 76, BLUE, k0=0, k1=2, sfx="pop")
 L(SL.axes(), 2, 2.9, BLACK, 8, sfx="wood_high")
 L(SL.curve([(0, 2), (1.5, 4), (3, 5.5), (4.2, 7.5), (5, 8.5)]), 3, 3.9, ACC, 11, sfx="wood_low")
 L(SL.curve([(5, 8.5), (6, 6), (7.5, 4), (9, 2.6), (10, 2)]), 4, 5.5, GREEN, 11, sfx="shaker")
-T("收尾聊两句轻松的", SL.pt(7.5, 0)[0] - 30, SL.pt(0, 7.6)[1], 54, GREEN, k0=6, k1=8, sfx="ding")
+T("收尾聊两句轻松的", XR + 300, SL.pt(0, 9.6)[1], 54, GREEN, k0=6, k1=8, sfx="ding")
 
 CX, DX = XR - 230, XR + 230
 scene("照片全删，还去吗", "做法三 · 问问自己", (XR, 2900, 0.85))
@@ -340,7 +340,7 @@ T("还去吗？", XR, 3160, 70, RED, k0=7, k1=8, sfx="ding")
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，再推到评论区
 
-FAR = (1800, 4600, 0.105)
+FAR = (1800, 4750, 0.1)
 CMT = (XR, 1550, 0.85)
 j_end = scene("评论区聊聊", "评论区见", FAR, bars=4)
 b.move(j_end, 4, CMT, dur=1.1)
