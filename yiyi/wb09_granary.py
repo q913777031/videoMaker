@@ -266,11 +266,11 @@ GX, GY, GW, GH = 2900, CY + 300, 460, 400    # 粮仓：底边中点、宽、高
 scene("存进了粮仓", "书中观点 · 粮仓", (2650, CY, 0.85))
 L(arrow((R1[0] + 40, R1[1] + 20), (GX - GW / 2 - 30, GY - GH - 20), -0.2, 40), 0, 0.9, RED, 9, sfx="wood_high")
 L(granary(GX, GY, GW, GH), 1, 1.9, BLACK, 10, sfx="wood_low")
-T("做过的事", GX, GY - GH + 90, 52, k0=3, k1=3.9, sfx="pop")
-T("爱过的人", GX, GY - GH + 190, 52, RED, k0=4, k1=4.9, sfx="pop")
-T("扛过的难", GX, GY - GH + 290, 52, k0=5, k1=5.9, sfx="pop")
-T("过去的粮仓", GX, GY + 110, 64, RED, k0=6, k1=7.25, sfx="ding")
-H(2, "shaker", 0.5)
+T("做过的事", GX, GY - GH + 90, 52, k0=2, k1=2.9, sfx="pop")
+T("爱过的人", GX, GY - GH + 190, 52, RED, k0=3, k1=3.9, sfx="pop")
+T("扛过的难", GX, GY - GH + 290, 52, k0=4, k1=4.9, sfx="pop")
+T("过去的粮仓", GX, GY + 110, 64, RED, k0=5, k1=6.25, sfx="pop")
+L(underline(GX - 170, GX + 170, GY + 160, amp=6, step=40), 7, 7.8, RED, 7, sfx="ding")
 
 DEST = (GX, GY - GH - 60)
 
@@ -309,17 +309,17 @@ def grain_fill(c, k, t):
     return None
 
 
-AN6 = (2330, CY + 920)
-COMP6 = (AN6[0], AN6[1] - 140, 44)
+AN6 = (2420, CY + 940)
+COMP6 = (AN6[0], AN6[1] - 175, 54)
 scene("谁也拿不走", "书中观点 · 拿不走", (2220, CY + 80, 0.52))
 b.custom(J(), 0, 6, flying_pages, sfx="shaker")
 b.custom(J(), 1, 7, grain_fill, sfx="wood_low")
-L(stick(*AN6, 0.85, "point"), 2, 2.8, BLUE, 11, sfx="wood_high")
-L(face(*AN6, 0.85, "smile"), 2.8, 3.0, BLUE, 10)
+L(stick(*AN6, 1.1, "point"), 2, 2.8, BLUE, 12, sfx="wood_high")
+L(face(*AN6, 1.1, "smile"), 2.8, 3.0, BLUE, 11)
 L(compass(*COMP6), 3, 3.6, BLACK, 8, sfx="pop")
 b.custom(J(), 3.6, 5.0, needle_fn(*COMP6, (GX, GY - GH / 2), turns=1.5))
 H(5, "ding")
-T("谁也拿不走", 1640, CY + 720, 100, RED, k0=6, k1=7.5, sfx="pop")
+T("谁也拿不走", 1700, CY + 740, 110, RED, k0=6, k1=7.5, sfx="pop")
 
 # ---------------------------------------------------------------- 书中观点 · 算一笔账（场景 7–8）
 
