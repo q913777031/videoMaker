@@ -401,15 +401,15 @@ def crash_fn(c, k, t):
     return None
 
 
-LX4 = 3080
+LX4 = 3130
 scene("一下就趴了", "比喻 · 太重了", (2560, 2250, 0.74), shake=[0], flashes=[0])
 C(crash_fn, 0, 0.5, sfx="kick")
 T("砰！", 2900, 1780, 150, RED, k0=1, k1=1.8, sfx="pop")
 L(join(impact(X3 - 360, F3), impact(X3 + 360, F3)), 2, 2.8, BLACK, 7, sfx="wood_low")
-L(barbell(LX4, F3 - LIGHT["ph"] / 2, **dict(LIGHT, half=170)), 3, 3.8, BLACK, 9, sfx="wood_high")
-L(dust(LX4, F3 - LIGHT["ph"] - 12, 360), 4, 4.8, "#8A8A8A", 6, sfx="shaker")
-L(arrow((3150, 2160), (3100, 2370), 0.2, 30), 5, 5.6, BLACK, 7, sfx="wood_high")
-T("落满灰", 3080, 2090, 64, k0=6, k1=6.8, sfx="pop")
+L(barbell(LX4, F3 - LIGHT["ph"] / 2, **dict(LIGHT, half=140)), 3, 3.8, BLACK, 9, sfx="wood_high")
+L(dust(LX4, F3 - LIGHT["ph"] - 12, 280), 4, 4.8, "#8A8A8A", 6, sfx="shaker")
+L(arrow((3190, 2160), (3140, 2370), 0.2, 30), 5, 5.6, BLACK, 7, sfx="wood_high")
+T("落满灰", 3130, 2090, 64, k0=6, k1=6.8, sfx="pop")
 
 # ---------------------------------------------------------------- 亮书（场景 5）
 
@@ -424,16 +424,16 @@ T("第五章 学习力", 1000, 1760, 56, k0=6, k1=7.5, sfx="pop")
 # ---------------------------------------------------------------- 书中观点：三副杠铃三个区（场景 6，封面镜头）
 
 F6 = 3900
-scene("三副杠铃三个区", "书中观点 · 三个区", (1800, 3720, 0.7))
+scene("三副杠铃三个区", "书中观点 · 三个区", (1800, 3720, 0.66))
 L(join(P((1080, F6), (2520, F6)), barbell(1280, F6 - 40, half=180, ph=80, pw=24, n=1),
        dust(1280, F6 - 92, 300)), 0, 0.9, BLACK, 9, sfx="wood_high")
-L(barbell(2340, F6 - 150, half=200, ph=300, pw=44, n=3),
+L(barbell(2320, F6 - 150, half=190, ph=300, pw=44, n=3),
   1, 1.9, BLACK, 10, sfx="wood_low")
 L(join(body(1800, F6, 0.9), strain(1800, F6, 0.9), arms(1800, F6, 0.9, F6 - 261 - 100, 100),
        barbell(1800, F6 - 261 - 100, half=220, ph=160, pw=32, n=2)), 2, 2.9, BLUE, 9, sfx="pop")
 T("舒适区", 1280, 4030, 76, k0=3, k1=3.8, sfx="pop")
 T("拉伸区", 1800, 4030, 76, GREEN, k0=4, k1=4.8, sfx="pop")
-T("困难区", 2340, 4030, 76, RED, k0=5, k1=5.8, sfx="pop")
+T("困难区", 2320, 4030, 76, RED, k0=5, k1=5.8, sfx="pop")
 L(oval(1800, 3680, 560, 540), 6, 6.9, GREEN, 9, sfx="ding")
 L(underline(1690, 1910, 4085, 8, 30), 7, 7.6, GREEN, 7, sfx="wood_high")
 
@@ -508,10 +508,10 @@ scene("举得轻松就加片", "做法 · 一次加一片", (2600, 7650, 0.85))
 L(join(P((2020, F12), (3180, F12)), body(X12, F12), face(X12, F12, 1.0, "smile")), 0, 0.9, BLUE, 9, sfx="wood_high")
 L(arms(X12, F12, 1.0, BAR12, 100), 1, 1.6, BLUE, 9, sfx="wood_low")
 L(barbell(X12, BAR12, **K12), 2, 2.9, BLACK, 9, sfx="wood_high")
-T("举顺了", 2600, 7230, 72, BLUE, k0=3, k1=3.8, sfx="pop")
+T("举顺了", 2600, 7220, 72, BLUE, k0=3, k1=3.8, sfx="pop")
 for i in range(3):
     L(added_plates(X12, BAR12, i=i, **K12), 4 + i, 4.6 + i, GREEN, 8, sfx="pop")
-T("一次只加一片", 2600, 8100, 64, GREEN, k0=6.6, k1=8)
+T("一次只加一片", 2600, 7380, 64, GREEN, k0=6.6, k1=8)
 
 # ---------------------------------------------------------------- 一个月后（场景 13）：拉远
 
