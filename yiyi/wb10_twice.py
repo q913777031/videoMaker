@@ -108,10 +108,11 @@ def ring_fn(cx, cy, R, words, size, color, last=None, last_color=RED):
             x, y = ring_pos(cx, cy, R, i)
             col = last_color if (last is not None and i == last) else color
             s = 1 + 0.25 * (1 - f)
+            big = 1.3 if (last is not None and i == last) else 1.0
             c.save()
             c.translate(x, y)
             c.scale(s, s)
-            K.text(c, w, 0, 0, size, "hand", col, f)
+            K.text(c, w, 0, 0, size * big, "hand", col, f)
             c.restore()
             if f < 1:
                 tip = (x + size * 0.6, y + size * 0.3)
@@ -340,8 +341,8 @@ T("你会怎么过？", 2650, 1260, 76, RED, k0=6, k1=7.5, sfx="pop")
 
 # ---------------------------------------------------------------- 亮书 + 回看这一季（场景 3）
 
-CMP3 = (1230, 2230, 90)
-RING3 = 290
+CMP3 = (1175, 2210, 80)
+RING3 = 265
 scene("这一季最后一讲", "活出生命的意义 · 最后一讲", (950, 2300, 0.85))
 L(book(600, 2080, 380, 250), 0, 0.9, BLACK, 9, sfx="wood_low")
 T("活出生命的意义", 600, 1850, 56, GREEN, k0=1, k1=2.75, sfx="pop")
@@ -356,12 +357,16 @@ b.custom(J(), 6, 8.0, needle_fn(*CMP3, Q3, turns=2.5))
 H(8, "ding")
 T("前九讲", 600, 2450, 50, GRAY, k0=6, k1=6.8)
 
+# drop 前一拍：镜头先移到下一屏，第 0 拍“第二次”砸下时画面已就位
+V4 = (2650, 2300, 0.85)
+b.move(J(), 10.0, V4, dur=0.75)
+
 # ---------------------------------------------------------------- drop：就当第二次活（场景 4）
 
 NAN4 = (2760, 2800)               # 阿宁脚底
 GHO4 = (2560, 2770)               # 重影脚底
 J4 = [0]
-scene("就当第二次活", "活出生命的意义 · 书中观点", (2650, 2300, 0.85), shake=[0], flashes=[0])
+scene("就当第二次活", "活出生命的意义 · 书中观点", V4, shake=[0], flashes=[0])
 J4[0] = J()
 b.custom(J4[0], 0, 0.3, slam_fn(J4, "第二次", 2650, 1860, 150), sfx="kick")
 L(stick(*NAN4, 0.9, "down"), 1, 1.8, BLUE, 10, sfx="wood_high")
@@ -395,11 +400,11 @@ scene("幸福追不到", "误区③ · 幸福", (*C7, 0.85))
 pair_frame(*C7)
 pair_text(*C7, ("盯着开心", "才会开心"), ("投入一件事", "幸福自己会来"), (BLACK, RED))
 L(stick(C7[0] - 400, C7[1] + 400, 0.55, "point"), 3, 3.7, BLACK, 9, sfx="wood_low")
-b.custom(J(), 3.2, 4.4, fly_fn((C7[0] - 300, C7[1] + 160), (C7[0] - 130, C7[1] + 20), 0.7, wobble=50))
+b.custom(J(), 3.2, 4.4, fly_fn((C7[0] - 300, C7[1] + 160), (C7[0] - 120, C7[1] + 10), 1.0, wobble=50))
 L(join(stick(C7[0] + 230, C7[1] + 400, 0.55, "hold"),
        P((C7[0] + 300, C7[1] + 290), (C7[0] + 520, C7[1] + 290)),
        P((C7[0] + 500, C7[1] + 290), (C7[0] + 500, C7[1] + 400))), 7, 7.7, BLACK, 9, sfx="wood_high")
-b.custom(J(), 7.4, 8.6, fly_fn((C7[0] + 560, C7[1] + 30), (C7[0] + 275, C7[1] + 262), 0.5, wobble=40))
+b.custom(J(), 7.4, 8.6, fly_fn((C7[0] + 560, C7[1] + 30), (C7[0] + 290, C7[1] + 255), 0.75, wobble=40))
 
 C8 = (2650, 5100)
 scene("看向外面", "误区④ · 眼睛", (*C8, 0.85))
@@ -419,7 +424,7 @@ SX = C9[0] - 315
 L(join(stick(SX, C9[1] + 420, 0.55, "up"),
        *[arrow((SX + 140 * math.cos(a), C9[1] + 170 + 140 * math.sin(a)),
                (SX + 250 * math.cos(a), C9[1] + 170 + 250 * math.sin(a)), 0.2, 26)
-         for a in (math.radians(d) for d in (-150, -30, 200, -20 + 360))]), 3, 3.9, GRAY, 8, sfx="wood_low")
+         for a in (math.radians(d) for d in (-160, -120, -60, -20))]), 3, 3.9, GRAY, 8, sfx="wood_low")
 L(us_map(C9[0] + 315, C9[1] + 190, 540, 280), 7, 7.5, BLACK, 8, sfx="wood_high")
 L(statue(C9[0] + 500, C9[1] + 230, 0.6), 7.5, 7.8, BLUE, 7)
 L(statue(C9[0] + 140, C9[1] + 230, 0.6), 7.7, 8.0, RED, 7)
@@ -429,8 +434,8 @@ L(statue(C9[0] + 140, C9[1] + 230, 0.6), 7.7, 8.0, RED, 7)
 AX = 6580
 NODES = (520, 950, 1380)
 scene("第二次这样过", "回到早上", (950, 6500, 0.85))
-T("第二次的今天", 950, 6080, 72, BLUE, k0=0, k1=1.5, sfx="pop")
-L(stick(NODES[0] - 60, 6980, 0.5, "down"), 1, 1.7, BLUE, 8, sfx="wood_high")
+T("第二次的今天", 950, 6200, 72, BLUE, k0=0, k1=1.5, sfx="pop")
+L(stick(NODES[0], 6950, 0.5, "down"), 1, 1.7, BLUE, 8, sfx="wood_high")
 L(join(arrow((380, AX), (1540, AX), 0.0, 40), *[circle(x, AX, 18) for x in NODES]), 2, 2.8, BLACK, 9, sfx="wood_low")
 T("路上抬头看看", NODES[0] + 30, AX - 110, 50, RED, k0=3, k1=4.5, sfx="pop")
 T("开会先说重点", NODES[1], AX + 130, 50, RED, k0=5, k1=6.5, sfx="pop")
@@ -449,14 +454,14 @@ L(stick(480, 8330, 0.75, "hold"), 7, 7.7, BLUE, 9, sfx="wood_high")
 L(face(480, 8330, 0.75, "flat"), 7.7, 7.9, BLUE, 8)
 
 CARD12 = (2500, 7820, 540, 190)
-COMP12 = (2400, 8150, 40)
+COMP12 = (2400, 8205, 36)
 scene("重来也这么做", "做法② · 挑一件事", (2650, 7900, 0.85))
 T("② 今天挑一件事", 2650, 7440, 72, BLUE, k0=0, k1=1.75, sfx="pop")
 L(rect(*CARD12, 14), 2, 2.8, BLACK, 8, sfx="wood_low")
 T("给家里打个电话", CARD12[0], CARD12[1], 56, k0=3, k1=4.75, sfx="pop")
 L(check(2900, 7810, 60), 5, 5.6, RED, 12, sfx="rim")
-L(stick(2400, 8330, 0.7, "down"), 6, 6.6, BLUE, 9, sfx="wood_high")
-L(face(2400, 8330, 0.7, "smile"), 6.6, 6.8, BLUE, 8)
+L(stick(2400, 8380, 0.85, "down"), 6, 6.6, BLUE, 9, sfx="wood_high")
+L(face(2400, 8380, 0.85, "smile"), 6.6, 6.8, BLUE, 8)
 L(compass(*COMP12), 6.8, 7.2, BLACK, 6)
 b.custom(J(), 7, 7.9, needle_fn(*COMP12, (CARD12[0], CARD12[1]), turns=1.5))
 H(7, "shaker", 0.5)
