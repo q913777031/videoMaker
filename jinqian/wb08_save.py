@@ -277,10 +277,10 @@ def scene(text, tag_, view, bars=3, **kw):
     return b.shot(text, tag_, view=view, bars=bars, **kw)
 
 
-NOTES = [(1050, 900, -4), (1800, 880, 3), (2550, 900, -2)]
+NOTES = [(1150, 900, -4), (1800, 880, 3), (2450, 900, -2)]
 scene("这三句你听过吧", "常听的三句话", (1800, 850, 0.55), bars=2)
 for n, (x, y, d) in enumerate(NOTES):
-    L(note(x, y, 420, 380, d), n, n + 0.8, ORANGE, 10, sfx="wood_high")
+    L(note(x, y, 380, 360, d), n, n + 0.8, ORANGE, 10, sfx="wood_high")
 for n, (x, y, d) in enumerate(NOTES):
     T("？", x, y + 20, 200, RED, k0=3 + n, k1=3.8 + n, sfx="pop")
 
@@ -309,12 +309,12 @@ pig1.nod(9, "wood_low")
 Y4 = 3750
 scene("省下的油比找到的多", "书中例子 · 石油危机", (1800, Y4, 0.7), shake=[0], flashes=[0])
 T("1970年代", 1800, Y4 - 560, 110, RED, k0=0, k1=1.5, sfx="kick")
-L(derrick(1180, Y4 + 150), 2, 2.9, BLACK, 10, sfx="wood_high")
-L(car(2110, Y4 + 150), 3, 3.9, BLACK, 10, sfx="wood_high")
-L(barrels(1440, Y4 + 150, 2), 4, 4.8, BLACK, 9, sfx="pop")
-L(barrels(2440, Y4 + 150, 4), 5, 5.9, GREEN, 9, sfx="pop")
-T("找到的", 1300, Y4 + 290, 64, k0=6, sfx="pop")
-T("省下的", 2280, Y4 + 290, 64, GREEN, k0=7, sfx="ding")
+L(derrick(1260, Y4 + 150), 2, 2.9, BLACK, 10, sfx="wood_high")
+L(car(2080, Y4 + 150), 3, 3.9, BLACK, 10, sfx="wood_high")
+L(barrels(1520, Y4 + 150, 2), 4, 4.8, BLACK, 9, sfx="pop")
+L(barrels(2380, Y4 + 150, 4), 5, 5.9, GREEN, 9, sfx="pop")
+T("找到的", 1380, Y4 + 290, 64, k0=6, sfx="pop")
+T("省下的", 2230, Y4 + 290, 64, GREEN, k0=7, sfx="ding")
 
 # ---------------------------------------------------------------- 亮书 + 省下的就是赚到的（场景 5–6）
 
@@ -356,11 +356,11 @@ T("？", 2470, Y7 + 180, 110, RED, k0=5, sfx="pop")
 L(check(2860, Y7 + 150, 75), 6, 6.8, GREEN, 14, sfx="ding")
 
 Y9 = 7950
-scene("存下的是选择", "书中观点 · 存下选择", (1800, Y9, 0.75))
-pig9 = Pig(1330, Y9, 1.1).draw(0)
-BR = [((1580, Y9 - 80), (1960, Y9 - 440), 0.12, "能换工作", (2250, Y9 - 450)),
-      ((1600, Y9), (2000, Y9), 0.0, "能等一等", (2280, Y9)),
-      ((1580, Y9 + 80), (1960, Y9 + 440), -0.12, "能说不", (2230, Y9 + 450))]
+scene("存下的是选择", "书中观点 · 存下选择", (1780, Y9, 0.75))
+pig9 = Pig(1390, Y9, 1.1).draw(0)
+BR = [((1630, Y9 - 80), (1980, Y9 - 440), 0.12, "能换工作", (2250, Y9 - 450)),
+      ((1650, Y9), (2020, Y9), 0.0, "能等一等", (2280, Y9)),
+      ((1630, Y9 + 80), (1980, Y9 + 440), -0.12, "能说不", (2230, Y9 + 450))]
 for n, (a, z, bend, s, (tx, ty)) in enumerate(BR):
     L(arrow(a, z, bend, 44), 1 + 2 * n, 1.8 + 2 * n, GREEN, 9, sfx="wood_high")
     T(s, tx, ty, 64, GREEN, k0=2 + 2 * n, sfx="pop")
