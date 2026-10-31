@@ -27,7 +27,7 @@ from engine.gfx import clamp01, ease_in, ease_in_out, lerp
 from .common import BOOK, episode
 
 ACC = "#2F7FA8"
-SQUARE_SHOT = 3                 # 场景 4（drop）：两条线 + 截止红线 + 撞上的爆炸纹，小周站在线头
+SQUARE_SHOT = 1                 # 场景 2：日历飞走露出“周四”，小周傻眼，明天怪兽出现
 
 b = Board(size=(4400, 7600))
 BG = "#FBFBF9"                  # 白板底色（怪兽、日历页用它填底，盖住下面的线）

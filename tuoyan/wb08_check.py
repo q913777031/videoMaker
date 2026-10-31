@@ -29,7 +29,7 @@ from engine.gfx import clamp01, ease_out
 from .common import BOOK, episode
 
 ACC = "#7A4FA3"
-SQUARE_SHOT = 3                 # 场景 4（drop）：大清单 + 明天怪兽探头 + 小周指着清单
+SQUARE_SHOT = 12                # 场景 13：显示器边贴便利贴，小周举手笑，明天怪兽缩小
 
 b = Board(size=(3600, 7200))
 
