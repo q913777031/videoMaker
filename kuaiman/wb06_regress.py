@@ -24,7 +24,7 @@ from engine.gfx import clamp01, ease_out
 from .common import BOOK, episode, kuai, man
 
 ACC = "#3A6FC2"
-SQUARE_SHOT = 3                 # 场景 4：成绩点绕中线起伏 + 右边挠头的教官
+SQUARE_SHOT = 0                 # 场景 1：教官喊“重飞！”，学员敬礼，飞机飞好了
 
 b = Board(size=(3600, 11200))
 GRAY = "#8E95A3"

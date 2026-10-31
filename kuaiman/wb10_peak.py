@@ -26,7 +26,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow,
 from .common import BOOK, episode, kuai, man
 
 ACC = "#8A5BB0"
-SQUARE_SHOT = 3                 # 场景 4：两条疼痛曲线 + 峰 / 终红圈 + 病人A（皱眉）、病人B（平静）
+SQUARE_SHOT = 12                # 场景 13：相机“全删”，快快和慢慢对视“还去吗？”
 
 b = Board(size=(3600, 9400))
 
