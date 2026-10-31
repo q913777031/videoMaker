@@ -23,7 +23,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, c
 
 from .common import BOOK, episode
 
-ACC = "#7B5EA7"                 # 本讲主色：耳朵的紫（倾听）
+ACC = "#6E8B2F"                 # 本讲主色：橄榄绿（倾听，系列内与其他讲区分）
 SQUARE_SHOT = 3                 # 场景 4：勾满的清单 + 红印章，朋友往后退一步
 
 b = Board(size=(3600, 8900))
@@ -625,10 +625,10 @@ J11 = J()
 person(J11, 1, *FR2, 1.0, "sad", moods=[(J11 + 1, 7, "smile")], nods=[(J11 + 1, 7)], sfx="wood_high")
 L(sit(*ME2, 1.0), 2, 2.8, BLUE, 10, sfx="pop")
 L(sit_face(*ME2, 1.0, "flat"), 2.8, 3.0, BLUE, 9)
-L(heart(2170, 6600, 48), 4, 4.5, RED, 9, sfx="pop")
-T("他的感受", 2170, 6720, 54, RED, k0=4.5, k1=5.5)
-L(battery(2170, 6870, 1.1, 1), 6, 6.5, GREEN, 9, sfx="wood_high")
-T("他的需要", 2170, 6990, 54, GREEN, k0=6.5, k1=7.5)
+L(heart(2120, 6560, 48), 4, 4.5, RED, 9, sfx="pop")
+T("他的感受", 2120, 6670, 54, RED, k0=4.5, k1=5.5)
+L(battery(2120, 6800, 1.1, 1), 6, 6.5, GREEN, 9, sfx="wood_high")
+T("他的需要", 2120, 6910, 54, GREEN, k0=6.5, k1=7.5)
 
 MYB = (2860, 6330, 820, 260)
 scene("说出你听到的", "做法 · 据书中思路", E)
