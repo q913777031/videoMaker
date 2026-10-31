@@ -356,7 +356,7 @@ def zig(x0, y0, x1, y1, n=5, amp=26) -> skia.Path:
 
 
 def cracks() -> skia.Path:
-    r0, r1 = 100, 235
+    r0, r1 = 130, 240
     return join(zig(CX, CY - r0, CX, CY - r1), zig(CX - r0, CY, CX - r1, CY), zig(CX + r0, CY, CX + r1, CY),
                 zig(CX, CY + r0, CX, CY + r1), zig(CX + 70, CY - 70, CX + 150, CY - 140, 3, 16),
                 zig(CX - 70, CY + 70, CX - 150, CY + 150, 3, 16))
@@ -413,7 +413,7 @@ def impact_fn(c, k, t):
     if k < 0.5:
         for dx in (-50, 0, 50):
             K.seg(c, CX + dx, CY - 330, CX + dx, CY - 170, BLACK, 5, 0.5 * (1 - k * 2))
-    draw_rock(c, CX, CY, 110, 0.4, sy)
+    draw_rock(c, CX, CY, 135, 0.4, sy)
     return None
 
 
@@ -447,19 +447,19 @@ L(face(*LEAD, 0.8, "sad"), 0.9, 1.0)
 L(doc(1100, 880, 300, 380, 5), 1, 1.9, BLACK, 9, sfx="wood_low")
 T("方案", 1100, 630, 60, k0=2, k1=2.8, sfx="pop")
 L(cross(1100, 880, 120), 3, 3.8, RED, 14, sfx="rim")
-T("周五 下午", 680, 680, 60, k0=4, k1=5.25, sfx="pop")
+T("周五 下午", 760, 680, 60, k0=4, k1=5.25, sfx="pop")
 
 ME = (2000, 1250)
 PAO1 = (1150, 420, 640, 170)
-scene("这做的什么东西", "开局 · 一句话飞来", (1400, 800, 0.68))
+scene("这做的什么东西", "开局 · 一句话飞来", (1400, 800, 0.65))
 L(stick(*ME, 0.8), 0, 0.9, BLUE, 10, sfx="wood_high")
 L(face(*ME, 0.8, "flat"), 0.9, 1.0, BLUE, 9)
 C(1, 1.8, pao_fn(*PAO1, lambda k: (math.sin(clamp01(k) * math.pi / 2) * (1 + 0.1 * math.sin(k * math.pi)), 44, 0, 0)),
   sfx="wood_low")
-T("这做的什么东西", 1190, 420, 58, RED, k0=2, sfx="pop")
+T("这做的什么东西", 1190, 420, 60, RED, k0=2, sfx="pop")
 C(5, 6, stone_fly_fn((1480, 470), (1945, 1105)), sfx="shaker")
 H(6, "kick")
-T("咚！", 2150, 850, 76, RED, k0=7, k1=7.8, sfx="pop")
+T("咚！", 1990, 830, 76, RED, k0=7, k1=7.8, sfx="pop")
 
 ASK = (1530, 3640, 0.65)        # 站在路口的主角（左下角）
 ARROWS = [((CX, CY - 250), (CX, CY - 420)), ((CX - 250, CY), (CX - 420, CY)), ((CX + 250, CY), (CX + 420, CY)),
@@ -475,7 +475,7 @@ T("？", ASK[0], ASK[1] - 290 * ASK[2] - 120, 100, RED, k0=6, k1=6.8, sfx="ding"
 
 # ---------------------------------------------------------------- drop：石头砸出十字路口（场景 4）+ 亮书（场景 5）
 
-scene("一句话，四条路", "书中观点 · 四种选择", (1800, 3180, 0.6), shake=[0], flashes=[0])
+scene("一句话，四条路", "书中观点 · 四种选择", (1800, 3180, 0.62), shake=[0], flashes=[0])
 C(0, 0.8, impact_fn, sfx="kick")
 L(cracks(), 0, 0.8, RED, 8)
 L(roads(), 1, 1.9, BLACK, 9, sfx="wood_low")
@@ -523,30 +523,30 @@ T("第二天，甩脸", 2080, 1980, 56, RED, k0=6, k1=7.5, sfx="rim")
 
 E0 = (2700, 3600, 0.9)
 EB = (3200, 3330, 280, 130)
-scene("第三条：看看自己", "第三条路 · 看看自己", (2950, 3300, 0.85))
+scene("第三条：看看自己", "第三条路 · 看看自己", (2950, 3460, 0.85))
 L(chest(*E0), 0, 0.9, BLUE, 10, sfx="wood_high")
 L(face(*E0, "flat"), 0.9, 1.0, BLUE, 8)
 L(battery(*EB), 1, 1.9, BLACK, 9, sfx="wood_low")
 C(2, 2.8, cells_fn(*EB, [GREEN, GREEN, GREEN]), sfx="pop")
 L(empty_cell(*EB, 3), 3, 3.6, RED, 7, sfx="rim")
-L(bubble(2780, 2950, 400, 130, -1), 4, 4.8, BLACK, 8, sfx="wood_high")
-T("我有点难受", 2780, 2950, 56, k0=5, k1=6.25, sfx="pop")
+L(bubble(2780, 3010, 400, 130, -1), 4, 4.8, BLACK, 8, sfx="wood_high")
+T("我有点难受", 2780, 3010, 56, k0=5, k1=6.25, sfx="pop")
 T("两周的活被看见", 3200, 3480, 50, GREEN, k0=6.25, k1=7.9)
 H(7, "ding")
 
-S0, S1 = (1550, 4750, 0.9), (2180, 4750, 0.8)
-SB = (1960, 4230, 230, 110)
-scene("第四条：听听对方", "第四条路 · 听听对方", (1800, 4450, 0.85))
+S0, S1 = (1550, 4790, 0.9), (2180, 4790, 0.8)
+SB = (1960, 4290, 230, 110)
+scene("第四条：听听对方", "第四条路 · 听听对方", (1800, 4660, 0.85))
 L(stick(*S0, tie=True), 0, 0.9, BLACK, 10, sfx="wood_high")
 L(face(*S0, "flat"), 0.9, 1.0, BLACK, 8)
-L(join(clock(1550, 4230, 85), hands_at(1550, 4230, 85, 9, 0)), 1, 1.9, BLACK, 8, sfx="wood_low")
-T("明早上会", 1550, 4080, 52, k0=2, k1=3, sfx="pop")
+L(join(clock(1550, 4290, 85), hands_at(1550, 4290, 85, 9, 0)), 1, 1.9, BLACK, 8, sfx="wood_low")
+T("明早上会", 1550, 4150, 52, k0=2, k1=3, sfx="pop")
 L(battery(*SB), 3, 3.8, BLACK, 9, sfx="wood_high")
 C(4, 4.4, cells_fn(*SB, [RED]), sfx="rim")
-T("要一份能交的", 1960, 4080, 50, k0=5, k1=6.5, sfx="pop")
+T("要一份能交的", 1960, 4150, 50, k0=5, k1=6.5, sfx="pop")
 L(stick(*S1), 6.5, 7.2, BLUE, 10)
 L(face(*S1, "smile"), 7.2, 7.4, BLUE, 8)
-T("他急", 1300, 4430, 60, RED, k0=7, k1=7.8, sfx="tom")
+T("他急", 1300, 4490, 60, RED, k0=7, k1=7.8, sfx="tom")
 
 # ---------------------------------------------------------------- 拉远：四个结局（场景 10，横屏封面）
 
@@ -573,7 +573,7 @@ T("火来自你的需要", 1000, 5400, 64, RED, k0=6, k1=7.75, sfx="ding")
 
 P0 = (2300, 6250, 0.9)
 PB = (2900, 6100, 260, 120)
-scene("先停一下问自己", "做法 · 第一步", (2600, 5850, 0.85))
+scene("先停一下问自己", "做法 · 第一步", (2680, 5850, 0.85))
 L(chest(*P0), 0, 0.9, BLUE, 10, sfx="wood_high")
 L(calm(*P0), 0.9, 1.0, BLUE, 8)
 L(breath(), 1, 1.8, BLUE, 7, sfx="shaker")
