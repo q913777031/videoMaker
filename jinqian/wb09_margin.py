@@ -21,7 +21,7 @@ import skia
 from adler import kit as K
 from engine.gfx import clamp01, ease_in_out, ease_out
 from whiteboard import engine as wb
-from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, check, circle, cross, house, join,
+from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, check, circle, cross, join,
                                rect, stick, underline)
 
 from .common import BOOK, episode
@@ -84,6 +84,13 @@ def ledger_car(x, y, w=620, h=290) -> skia.Path:
     top = y - 50 - h
     return join(rect(x, top + h / 2, w, h, 18), P((x - w / 2 + 40, top), (x - w / 2 + 40, top + h)),
                 circle(x - w / 2 + 120, y - 40, 38), circle(x + w / 2 - 120, y - 40, 38))
+
+
+def house(x, y, w=280, h=230) -> skia.Path:
+    """平房：(x, y) 为地面中点。"""
+    return join(P((x - w / 2, y), (x - w / 2, y - h), (x + w / 2, y - h), (x + w / 2, y)),
+                P((x - w / 2 - 35, y - h), (x, y - h - 150), (x + w / 2 + 35, y - h)),
+                P((x - 35, y), (x - 35, y - 110), (x + 35, y - 110), (x + 35, y)), rect(x + w / 4 + 10, y - h + 70, 60, 60, 4))
 
 
 def road(x0, x1, y, dash=True) -> skia.Path:
@@ -304,10 +311,10 @@ scene("小王的钱也贴太紧", "跟车距离 · 小王的账本", (2650, 1000
 L(ledger_car(LX, GY3), 0, 0.9, BLUE, 9, sfx="wood_low")
 T("房租+还款+花销", LX + 20, 1050, 58, k0=1, k1=2.75, sfx="pop")
 T("= 工资", LX + 20, 1160, 64, k0=3, k1=3.8, sfx="pop")
-T("剩：0", 2700, 790, 84, RED, k0=4, k1=4.8, sfx="rim")
-L(circle(2700, 785, 105), 5, 5.7, RED, 7, sfx="pop")
+T("剩：0", 2610, 790, 84, RED, k0=4, k1=4.8, sfx="rim")
+L(circle(2610, 785, 105), 5, 5.7, RED, 7, sfx="pop")
 J3 = J()
-pig_item(J3, 6, 2190, 900, 0.8, [(J3, 6, "sweat"), (J3 + 1, 5, "shock")], sfx="ding")
+pig_item(J3, 6, 2265, 900, 0.8, [(J3, 6, "sweat"), (J3 + 1, 5, "shock")], sfx="ding")
 
 FX = 2985                       # 前车（意外）位置
 scene("一次意外，全乱了", "跟车距离 · 急刹", (2650, 1030, 0.75), shake=[0, 5], flashes=[0])
@@ -319,8 +326,8 @@ T("生病 / 搬家", FX, 905, 58, RED, k0=3.5, k1=4.75)
 L(join(zigzag(2700, 1000, 2650, 1180, 4, 16), zigzag(2560, 960, 2470, 1100, 3, 14),
        burst(2770, 1130, 45, 95, 6, 1.0)), 5, 5.8, RED, 8, sfx="rim")
 L(join(sheet(2120, 1420, -25), sheet(2330, 1480, 18), sheet(2560, 1440, -8),
-       P((2190, 1340), (2240, 1300)), P((2400, 1390), (2440, 1350))), 6, 6.9, BLACK, 7, sfx="wood_high")
-T("全乱了", 2880, 1470, 100, RED, k0=7, k1=7.9, sfx="ding")
+       P((2190, 1340), (2240, 1300)), P((2400, 1390), (2440, 1350))), 7, 7.9, BLACK, 7, sfx="wood_high")
+T("全乱了", 2880, 1470, 100, RED, k0=6, k1=6.9, sfx="ding")
 
 # ---------------------------------------------------------------- 书中观点（场景 5–9）
 
@@ -418,7 +425,8 @@ T("一家开销", 1250, 6230, 56, k0=1, k1=2, sfx="pop")
 L(stick(560, 6150, 0.8, "hold"), 3, 3.8, BLUE, 9, sfx="wood_high")
 L(P((650, 5990), (860, 6010), (1100, 5990)), 4, 4.7, BLACK, 8, sfx="pop")
 T("一份工资", 870, 5920, 56, BLUE, k0=5, k1=6, sfx="pop")
-T("要是断了？", 950, 5480, 80, RED, k0=7, k1=8.25, sfx="rim")
+T("要是断了？", 950, 5480, 80, RED, k0=6.2, k1=7.45)
+H(7, "rim")
 
 # ---------------------------------------------------------------- 具体做法（场景 11–13）
 
@@ -442,19 +450,18 @@ T("按八成来算", 2690, 7480, 74, RED, k0=6, k1=7.5, sfx="ding")
 L(underline(2510, 2870, 7540), 7.5, 8, RED, 7)
 
 scene("多一条退路", "做法三 · 多一根绳", (2650, 9000, 0.85))
-T("③ 多一条退路", 2650, 8580, 76, BLUE, k0=0, k1=1.5, sfx="pop")
-L(join(ceiling(2250, 3050, 8700), P((2450, 8700), (2450, 8950)), hanging(2250, 3050, 8950)), 2, 2.9, BLACK, 9,
+T("③ 多一条退路", 2650, 8580, 76, BLUE, k0=0, k1=1.75, sfx="pop")
+L(join(ceiling(2250, 3050, 8700), P((2450, 8700), (2450, 8950)), hanging(2250, 3050, 8950)), 2, 2.8, BLACK, 9,
   sfx="wood_low")
 T("工资", 2340, 8830, 54, k0=3, k1=3.8, sfx="pop")
-L(P((2850, 8700), (2850, 8950)), 4, 4.6, GREEN, 11, sfx="ding")
-T("存款", 2960, 8830, 54, GREEN, k0=4.6, k1=5.4)
+L(P((2850, 8700), (2850, 8950)), 4, 4.5, GREEN, 11, sfx="ding")
+T("存款", 2960, 8830, 54, GREEN, k0=4.5, k1=5.3)
 L(join(zigzag(2420, 8860, 2480, 8890, 4, 10), cross(2450, 8875, 26)), 6, 6.5, RED, 8, sfx="rim")
-T("断一根，还撑得住", 2650, 9300, 70, GREEN, k0=6.5, k1=8.5)
-H(7, "pop")
+T("还撑得住！", 2650, 9300, 76, GREEN, k0=6.6, k1=7.85)
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看整条路，再推到评论区
 
-FAR = (1800, 4700, 0.16)
+FAR = (1800, 4000, 0.14)
 COMMENT = (1000, 9060, 0.8)
 scene("你留了多少余地？", "评论区见", FAR, bars=4)
 J14 = J()
