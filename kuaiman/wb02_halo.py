@@ -23,7 +23,8 @@ from .common import BOOK, episode, kuai, man
 ACC = "#3A6FC2"
 SQUARE_SHOT = 3                 # 场景 4：小A（爱心）+ 小B（问号）+ 两张六词卡 + “同样六个词”
 
-b = Board(size=(3600, 9300))
+b = Board(size=(3600, 10000))
+OY = 200                        # 各区块整体下移：顶部留白，后面几排再逐排加大间距，避免上一排的字露在页眉上方
 
 
 def J():
@@ -33,10 +34,12 @@ def J():
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None):
     """在当前镜头写字：写字时长按字数估计（每字约 0.25 拍，至少 0.8 拍）。"""
     k1 = k0 + max(0.8, 0.25 * len(s)) if k1 is None else k1
-    b.text(J(), k0, k1, s, x, y, size, color, sfx=sfx)
+    b.text(J(), k0, k1, s, x, y + OY, size, color, sfx=sfx)
 
 
 def L(path, k0, k1, color=BLACK, width=10, sfx=None):
+    path = skia.Path(path)
+    path.offset(0, OY)
     b.path(J(), k0, k1, path, color, width, sfx=sfx)
 
 
@@ -45,7 +48,7 @@ def H(k, sfx, gain=0.8):
 
 
 def scene(text, tag, view, bars=3, **kw):
-    return b.shot(text, tag, view=view, bars=bars, **kw)
+    return b.shot(text, tag, view=(view[0], view[1] + OY, view[2]), bars=bars, **kw)
 
 
 # ---------------------------------------------------------------- 本讲画法
@@ -105,7 +108,7 @@ def note(x, y, a=220) -> skia.Path:
 AX, BX, FY = 1500, 2100, 1650   # 小A、小B 的脚底
 WORDS = ["聪明", "勤奋", "冲动", "挑剔", "固执", "嫉妒"]
 GOOD = {"聪明", "勤奋"}
-CA, CB, CY = 950, 2650, 1300    # 两张词卡的中心
+CA, CB, CY = 1050, 2550, 1300    # 两张词卡的中心
 
 scene("新来两个同事", "两个新同事", (1800, 1400, 0.85), bars=2)
 L(join(stick(AX, FY, 0.8, "down"), face(AX, FY, 0.8, "smile")), 0, 0.9, sfx="wood_high")
@@ -118,23 +121,25 @@ T("新来的同事", 1800, 1050, 72, BLUE, k0=4, k1=5.25, sfx="pop")
 
 
 def word_card(cx, words, ring_color):
-    L(rect(cx, CY, 260, 560, 16), 0, 0.9, BLACK, 8, sfx="wood_high")
+    L(rect(cx, CY, 260, 600, 16), 0, 0.9, BLACK, 8, sfx="wood_high")
     for n, w in enumerate(words):
-        T(w, cx, CY - 205 + n * 90 + 20, 60, GREEN if w in GOOD else RED, k0=1 + n, k1=1.8 + n, sfx="pop")
-    L(ellipse(cx, CY - 205, 200, 90), 7, 7.8, ring_color, 8, sfx="ding")
+        T(w, cx, CY - 225 + n * 88, 60, GREEN if w in GOOD else RED, k0=1 + n, k1=1.8 + n, sfx="pop")
+    L(ellipse(cx, CY - 225, 200, 100), 7, 7.8, ring_color, 8, sfx="ding")
 
 
-scene("先听到优点", "小A · 先听优点", (1250, 1350, 0.85))
+scene("先听到优点", "小A · 先听优点", (1350, 1350, 0.85))
 word_card(CA, WORDS, GREEN)
 
-scene("先听到缺点", "小B · 先听缺点", (2350, 1350, 0.85))
+scene("先听到缺点", "小B · 先听缺点", (2250, 1350, 0.85))
 word_card(CB, WORDS[::-1], RED)
 
-scene("同样的词，两种印象", "同样六个词", (1800, 1250, 0.52), shake=[0], flashes=[0])
+scene("同样的词，两种印象", "同样六个词", (1800, 1300, 0.58), shake=[0], flashes=[0])
 T("同样六个词", 1800, 870, 130, RED, k0=0, k1=1.25, sfx="kick")
+b.erase(J(), 1, 1.6, 1800, 1050 + OY, 460, 110)          # 擦掉场景 1 的“新来的同事”，给两人头顶留出地方
+H(1, "shaker")
 L(heart(AX, 1260, 70), 2, 2.9, RED, 10, sfx="ding")
 T("？", BX, 1300, 180, RED, k0=4, k1=4.8, sfx="rim")
-T("顺序反了，印象也反了", 1800, 1950, 84, k0=5, k1=7.25, sfx="pop")
+T("顺序反了，印象也反了", 1800, 1880, 84, k0=5, k1=7.25, sfx="pop")
 
 # ---------------------------------------------------------------- 书中观点（场景 5–7）
 
@@ -158,6 +163,7 @@ L(bubble(2150, 2640, 280, 130, -1), 4, 4.6, BLACK, 8, sfx="pop")
 T("懂了！", 2150, 2660, 58, k0=4.6, k1=5.4)
 T("眼见即为事实", FX, 3250, 64, RED, k0=6, k1=7.5, sfx="ding")
 
+OY = 260
 scene("作者批卷也中招", "书中故事 · 批卷", (2500, 4300, 0.85))
 L(doc(2150, 4100, 280, 360, 4), 0, 0.9, sfx="wood_high")
 T("高分", 2150, 3870, 60, RED, k0=1, k1=1.8, sfx="pop")
@@ -181,6 +187,7 @@ L(doc(1300, 4000, 240, 300, 3), 4, 4.9, BLACK, 8, sfx="wood_low")
 for n, yy in enumerate((3900, 4015, 4130)):
     L(check(1475, yy, 28), 5 + n, 5.6 + n, GREEN, 9, sfx="ding" if n == 2 else "pop")
 
+OY = 320
 scene("周报先写什么", "例子 · 周报", (1300, 5700, 0.85))
 L(doc(1000, 5600, 300, 380, 5), 0, 0.9, sfx="wood_high")
 T("先写成果", 1000, 5330, 56, GREEN, k0=1, k1=2, sfx="pop")
@@ -201,6 +208,7 @@ for n, x in enumerate((2350, 2650, 2950)):
 
 # ---------------------------------------------------------------- 具体做法（场景 11–13）
 
+OY = 470
 scene("开会前，先各写各的", "做法一 · 先写再说", (2500, 7100, 0.85))
 T("① 先写再说", 2500, 6720, 76, BLUE, k0=0, k1=1.5, sfx="pop")
 for n, x in enumerate((2150, 2500, 2850)):
@@ -216,10 +224,11 @@ for n, w in enumerate(("沟通", "专业", "态度", "经验")):
     T(w, GX[n], 6968, 54, k0=3 + n, k1=3.8 + n, sfx="pop")
 L(check(GX[0], 7100, 36), 7, 7.6, GREEN, 10, sfx="ding")
 
+OY = 600
 scene("重点放第一句", "做法三 · 重点放开头", (1300, 8500, 0.85))
 T("③ 重点放开头", 1300, 8100, 76, BLUE, k0=0, k1=1.75, sfx="pop")
 L(doc(1300, 8550, 420, 520, 5), 2, 2.9, sfx="wood_high")
-L(rect(1297, 8340, 400, 70, 10), 3, 3.8, RED, 9, sfx="ding")
+L(rect(1297, 8340, 380, 70, 10), 3, 3.8, RED, 9, sfx="ding")
 T("先写成果", 1690, 8220, 58, RED, k0=4, k1=5, sfx="pop")
 L(arrow((1660, 8255), (1525, 8330), 0.1, 28), 5, 5.8, RED, 7, sfx="wood_low")
 L(head(1700, 8650, 70, "smile"), 6, 6.9, BLACK, 8, sfx="pop")
@@ -229,7 +238,7 @@ L(head(1700, 8650, 70, "smile"), 6, 6.9, BLACK, 8, sfx="pop")
 FAR = (1800, 4700, 0.105)
 CMT = (2500, 8500, 0.85)
 j_end = scene("评论区聊聊", "评论区见", FAR, bars=4)
-b.move(j_end, 4, CMT, dur=1.1)
+b.move(j_end, 4, (CMT[0], CMT[1] + OY, CMT[2]), dur=1.1)
 H(0, "cymbal", 0.5)
 H(2, "ding")
 H(4, "wood_high", 0.6)
