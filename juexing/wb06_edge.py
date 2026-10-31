@@ -466,9 +466,9 @@ scene("咬一下牙刚好", "书中观点 · 拉伸区", (2600, 6300, 0.85))
 T("拉伸区", 2600, 5870, 84, GREEN, k0=0, k1=0.8, sfx="pop")
 L(join(P((2020, F9), (3180, F9)), body(X9, F9)), 1, 1.9, BLUE, 9, sfx="wood_high")
 C(lift_fn(X9, F9, 1.0, MID, raise_(HY9 + 70, HY9 - 110)), 2, 3.5, sfx="wood_low")
-L(strain(X9, F9), 4, 4.6, BLUE, 7, sfx="pop")
-L(sweat(X9, F9), 5, 5.7, BLUE, 6, sfx="pop")
-T("看得懂，得动脑", 2600, 6790, 64, k0=6, k1=7.75, sfx="pop")
+L(join(strain(X9, F9), sweat(X9, F9)), 4, 4.8, BLUE, 7, sfx="pop")
+T("看得懂，得动脑", 2600, 6790, 64, k0=5, k1=6.75, sfx="pop")
+L(check(3000, 6020, 50), 7, 7.6, GREEN, 10, sfx="ding")
 
 # ---------------------------------------------------------------- 换成上班的事：练英语（场景 10）
 
@@ -479,9 +479,9 @@ L(barbell(XB, 6000, half=200, ph=80, pw=24, n=1), 1, 1.8, BLACK, 9, sfx="wood_hi
 T("背会的词", 1250, 6020, 60, k0=2, k1=3, sfx="pop")
 L(barbell(XB, 6330, half=260, ph=240, pw=44, n=3), 3, 3.9, RED, 9, sfx="wood_low")
 T("看原版剧", 1250, 6350, 60, RED, k0=4, k1=5, sfx="pop")
-L(barbell(XB, 6660, half=230, ph=150, pw=32, n=2), 5, 5.8, GREEN, 9, sfx="wood_high")
-T("带字幕的短片", 1250, 6680, 60, GREEN, k0=6, k1=7.2, sfx="pop")
-L(check(1490, 6560, 44), 7.2, 7.8, GREEN, 10)
+L(barbell(XB, 6660, half=230, ph=150, pw=32, n=2), 5, 5.7, GREEN, 9, sfx="wood_high")
+T("带字幕的短片", 1250, 6680, 60, GREEN, k0=5.7, k1=7)
+L(check(1490, 6560, 44), 7, 7.6, GREEN, 10, sfx="ding")
 
 # ---------------------------------------------------------------- 练的四个要点（场景 11）
 
