@@ -283,6 +283,7 @@ C(wedge_fn(J()), 2, 3.0, sfx="shaker")
 T("21:00", CK[0] - CK[2] - 140, CK[1], 64, BLUE, k0=3, k1=4.0, sfx="pop")
 T("23:00", CK[0] - 210, CK[1] - 390, 64, BLUE, k0=4, k1=5.0, sfx="pop")
 T("去哪了？", CK[0], CK[1] + CK[2] + 120, 76, RED, k0=5, k1=6.0, sfx="tom")
+park(CK[0] + 80, CK[1] + CK[2] + 120, CK[0] + 340, CK[1] + CK[2] + 170, 6, 6.6)
 
 
 def _wedge_pt(ang, rr):
@@ -304,6 +305,7 @@ arc.lineTo(tipx - 20, tipy + 40)
 L(arc, 4, 4.8, RED, 9, sfx="wood_high")
 T("全给了", 2260, 990, 72, RED, k0=5, k1=5.8, sfx="pop")
 T("手机", 2260, 1090, 72, RED, k0=6, k1=6.8, sfx="pop")
+park(2330, 1090, 2300, 1480, 6.8, 7.5)
 
 # ---------------------------------------------------------------- 一周日历（场景 3–4）
 
@@ -323,6 +325,7 @@ for n, d in enumerate(DAYS):
     T(d, CELL_X[n], 2262, 56, k0=2 + n * 0.3, k1=2.3 + n * 0.3, sfx="pop" if n == 0 else None)
 L(stick(1250, 3260, 0.8, "point"), 5, 5.9, BLACK, 10, sfx="wood_high")
 T("小林的一周", 1800, 2110, 72, BLUE, k0=6, k1=7.25, sfx="pop")
+park(1980, 2110, 2300, 3150, 7.25, 8)
 
 
 def stamp_fn(paths):
@@ -348,6 +351,7 @@ for n, nm in enumerate(NAMES):
     T(nm, CELL_X[n], NAME_Y, 56, ICON_COL[n] if ICON_COL[n] != BLACK else RED, k0=1 + n, k1=1.6 + n,
       sfx="pop" if n < 4 else "ding")
 T("书中：早冥读写跑", 2020, 2850, 66, GREEN, k0=6, k1=8.0, sfx="pop")
+park(2280, 2850, 2420, 3200, 8, 8.6)
 
 # ---------------------------------------------------------------- 亮书（场景 5）
 
@@ -357,6 +361,7 @@ T("认知觉醒", 1600, 3810, 76, GREEN, k0=1, k1=2, sfx="pop")
 T("周岭 著", 1600, 4300, 56, k0=3, k1=3.9, sfx="pop")
 L(join(helm(2200, 4010, 90), grips(2200, 4010, 90, range(9))), 4, 4.9, GREEN, 8, sfx="wood_high")
 T("10", 2200, 4250, 64, GREEN, k0=5, k1=5.8, sfx="ding")
+park(2230, 4250, 2380, 4460, 5.8, 6.5)
 
 # ---------------------------------------------------------------- 一天一页（场景 6–11）：蛇形排在白板上
 
@@ -371,6 +376,7 @@ L(sun(X + 380, Y - 170, 56), 4, 4.8, ORANGE, 9, sfx="pop")
 L(alarm(X + 380, Y + 160, 1.1), 5, 5.8, BLACK, 9, sfx="wood_low")
 T("早起靠早睡", X, Y + 440, 76, GREEN, k0=6, k1=7.25, sfx="ding")
 L(cross(X + 470, Y + 70, 34), 7, 7.5, RED, 10, sfx="rim")
+park(X + 500, Y + 100, X + 520, Y + 500, 7.5, 8.2)
 
 # 周二：坐五分钟（X=2650, Y=5450）
 X, Y = 2650, 5450
@@ -438,6 +444,7 @@ T("5 分钟", X - 150, Y - 388, 62, k0=3, k1=4.0, sfx="pop")
 C(drift_fn(J(), X + 40, SEAT - 300, X + 390, Y - 300), 4, 6, sfx="wood_high")
 L(arrow((X + 400, Y - 230), (X + 90, SEAT - 280), -0.3, 36), 5, 5.8, BLUE, 9, sfx="tom")
 T("走神就拉回", X, Y + 450, 76, GREEN, k0=6, k1=7.25, sfx="ding")
+park(X + 190, Y + 450, X + 430, Y + 490, 7.25, 8)
 
 # 周三：跟作者聊（X=2650, Y=6900）
 X, Y = 2650, 6900
@@ -602,6 +609,7 @@ L(baby(WH[0] - 140, DECK, 0.85), 4, 4.8, BLUE, 8, sfx="pop")
 L(join(helm(*WH), P((WH[0], WH[1] + WH[2] * 0.3), (WH[0], DECK))), 5, 5.8, GREEN, 8, sfx="wood_high")
 C(grips_fn(*WH), 6, 6.9, sfx="shaker")
 L(grip(*WH, 9), 7, 7.5, RED, 12, sfx="ding")
+park(WH[0] - 30, WH[1] - 70, HX + 430, HY + 330, 7.5, 8.3)
 
 # ---------------------------------------------------------------- 十讲连起来（场景 13）
 
@@ -684,6 +692,7 @@ for n in range(10):
     col = GREEN if n == 9 else BLACK
     L(EP_ICONS[n](x, y - 125), k0, k0 + 0.4, col, 7, sfx=("pop" if n % 2 == 0 and n < 9 else "ding" if n == 9 else None))
     T(f"{n + 1:02d}", x, y + 85, 74, RED if n == 9 else BLUE, k0=k0 + 0.3, k1=k0 + 0.6 if n < 9 else k0 + 1.1)
+park(1030, RY + 335, 2000, RY + 360, 7.1, 7.9)
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，第 4 拍推到评论区
 
