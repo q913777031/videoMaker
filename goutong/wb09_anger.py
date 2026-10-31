@@ -24,7 +24,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, book, 
 from .common import BOOK, episode
 
 ACC = "#C2452D"
-SQUARE_SHOT = 9                 # 场景 10：整条怒气曲线拉远，四个拐点各贴一步，左上角是会议室里的两个人
+SQUARE_SHOT = 12                 # 场景 13：我指着门边的“停 听 找 说”便签（人物 + 四步）
 
 b = Board(size=(4200, 6000))
 
