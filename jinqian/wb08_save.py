@@ -390,7 +390,7 @@ T("发薪日", 600, Y11 - 30, 54, RED, k0=3, sfx="pop")
 L(arrow((760, Y11 - 60), (1060, Y11 - 60), 0.0, 40), 4, 4.8, GREEN, 9, sfx="wood_low")
 pig11 = Pig(1290, Y11 + 20, 0.8).draw(5)
 T("存 → 花", 950, Y11 + 330, 90, GREEN, k0=6, sfx="ding")
-coin_fly(7, 9, 600, Y11 - 60, pig11, r=40, sfx_show="pop", sfx_land="ding", grow=1.12)
+coin_fly(7, 9, 600, Y11 - 270, pig11, r=40, sfx_show="pop", sfx_land="ding", grow=1.12)
 
 scene("存个没名目的钱", "做法二 · 没名目", (2650, Y11, 0.85))
 T("② 没名目的钱", 2650, Y11 - 440, 76, BLUE, k0=0, sfx="pop")
