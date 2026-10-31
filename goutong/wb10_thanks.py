@@ -159,7 +159,7 @@ class Pao:
         if k >= 0.8:
             c.drawPath(spikes_path(self.x, self.y, self.rx, self.ry, [ln] * self.n), wb.marker(color, 7))
             pao_face(c, self.x, self.y, self.rx, self.ry, "smile" if calm else "frown", color)
-            K.text(c, self.label, self.x, self.y + self.ry * 0.38, 46, "hand", color)
+            K.text(c, self.label, self.x, self.y + self.ry * 0.38, 52, "hand", color)
         return tip
 
 
@@ -328,7 +328,7 @@ L(mirror(left_station, MID), 2, 2.9, BLACK, 9, sfx="wood_high")
 L(mirror(lamp(*LAMP_L), MID), 3, 3.7, BLACK, 8, sfx="pop")
 C(3.7, 4.0, glow_fn(*LAMP_L, flip=True))
 L(moon(MID, 640, 70), 4, 4.8, ORANGE, 9, sfx="shaker")
-T("熬到半夜", MID, 1500, 66, k0=5, k1=6.0, sfx="pop")
+T("熬到半夜", MID, 800, 66, k0=5, k1=6.0, sfx="pop")
 
 # 场景 2：两个组长，两种夸
 LEAD_L = (1330, 2700)
@@ -391,10 +391,10 @@ C(0, 0.35, slam_fn, sfx="kick")
 T("做了啥", BOX_X[0], BOX_Y + 22, 70, k0=1, k1=1.75, sfx="pop")
 T("帮到啥", BOX_X[1], BOX_Y + 22, 70, k0=2, k1=2.75, sfx="pop")
 T("啥心情", BOX_X[2], BOX_Y + 22, 70, k0=3, k1=3.75, sfx="pop")
-L(join(stick(1330, 5340, 0.62, "point", tie=True), face(1330, 5340, 0.62, "smile")), 4, 4.9, BLACK, 9, sfx="wood_high")
-L(mirror(join(stick(2270, 5340, 0.62, "hold", tie=True), face(2270, 5340, 0.62, "smile"), note(2165, 5200, 110, 100)),
-         2270), 5, 5.9, BLACK, 9, sfx="wood_low")
-T("感激，说清这三样", MID, 4900, 70, ACC, k0=6, k1=8.0, sfx="pop")
+L(join(stick(1300, 5400, 0.85, "point", tie=True), face(1300, 5400, 0.85, "smile"), thumb(1500, 5150, 0.6)), 6, 6.9, BLACK, 9, sfx="wood_high")
+L(mirror(join(stick(2300, 5400, 0.85, "hold", tie=True), face(2300, 5400, 0.85, "smile"), note(2420, 5160, 150, 140)),
+         2300), 7, 7.9, BLACK, 9, sfx="wood_low")
+T("感激，说清这三样", MID, 4900, 70, ACC, k0=4, k1=6.0, sfx="pop")
 
 # ---------------------------------------------------------------- 亮书（场景 5）
 
@@ -411,7 +411,7 @@ T("讲感激的一章", MID, 6575, 56, BLUE, k0=6, k1=7.5, sfx="pop")
 
 SH = (MID, 7310)
 OFFS = ((-80, -60, -0.13), (70, -15, 0.11), (-30, 45, -0.06))
-J_SHEET = scene("他做了啥", "说清三件事 · 做了啥", (MID, 7350, 0.85))
+J_SHEET = scene("他做了啥", "说清三件事 · 做了啥", (MID, 7380, 0.85))
 L(eye(1340, 6935, 0.95), 0, 0.8, BLACK, 8, sfx="wood_high")
 T("做了啥", 1560, 6945, 72, k0=1, k1=1.75, sfx="pop")
 
@@ -426,9 +426,9 @@ def sheets_fn(c, k, T):
             continue
         x, y = SH[0] + dx * (1 - a), SH[1] + dy * (1 - a)
         p = sheet(x, y)
-        p.transform(skia.Matrix.RotateRad(rot * (1 - a), skia.Point(x, y)))
+        p.transform(skia.Matrix.RotateDeg(math.degrees(rot * (1 - a)), skia.Point(x, y)))
         bg = rect(x, y, 380, 250, 10)
-        bg.transform(skia.Matrix.RotateRad(rot * (1 - a), skia.Point(x, y)))
+        bg.transform(skia.Matrix.RotateDeg(math.degrees(rot * (1 - a)), skia.Point(x, y)))
         c.drawPath(bg, K.paint("#FBFBF9"))
         part, t = wb.partial(p, f)
         c.drawPath(part, wb.marker(BLACK, 8))
