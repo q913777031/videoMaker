@@ -27,7 +27,9 @@ VOICES = {
 }
 # ZipVoice 音色 → 用作音色提示的 Kokoro 音色
 ZV_DIR = "sherpa-onnx-zipvoice-distill-int8-zh-en-emilia"
-ZIPVOICE = {"zv_yunxi": "zm_yunxi", "zv_009": "zm_009", "zv_001": "zf_001"}
+ZIPVOICE = {"zv_yunxi": "zm_yunxi", "zv_009": "zm_009", "zv_001": "zf_001",
+            "zv_yunjian": "zm_yunjian", "zv_yunyang": "zm_yunyang", "zv_yunxia": "zm_yunxia",
+            "zv_xiaoxiao": "zf_xiaoxiao", "zv_xiaoyi": "zf_xiaoyi"}
 PROMPT_TEXT = "其实每个人都可以重新开始，换一种方式，去过自己真正想要的生活。"
 
 
@@ -121,9 +123,11 @@ class Narrator:
 
     音色名以 zv_ 开头时使用 ZipVoice（零样本、韵律接近真人）：先用对应的 Kokoro 音色合成一句提示音，
     ZipVoice 只借用其音色，发音与语调由 ZipVoice 自己生成，因此不涉及任何真人声音。
+    ZipVoice 的语速跟随提示音：prompt_speed < 1（如 0.8）时提示音念得慢，生成的旁白整体放慢、停顿更自然；
+    默认 1.0 与旧版完全相同（含缓存键）。
     """
 
-    def __init__(self, voice: str = "zv_yunxi"):
+    def __init__(self, voice: str = "zv_yunxi", prompt_speed: float = 1.0):
         import sherpa_onnx
 
         self._prompt = None
@@ -136,9 +140,9 @@ class Narrator:
                 vocoder=str(MODEL_ROOT / "vocos_24khz.onnx"), data_dir=d + "espeak-ng-data", lexicon=d + "lexicon.txt")
             self._tts = sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(
                 model=sherpa_onnx.OfflineTtsModelConfig(zipvoice=zv, num_threads=4)))
-            prompt = Narrator(ZIPVOICE[voice]).generate(PROMPT_TEXT, 1.0)
+            prompt = Narrator(ZIPVOICE[voice]).generate(PROMPT_TEXT, prompt_speed)
             self._prompt = signal.resample_poly(prompt, 24000, SR).astype(np.float32).tolist()
-            self._key = f"{ZV_DIR}|{voice}"
+            self._key = f"{ZV_DIR}|{voice}" + (f"|p{prompt_speed:.3f}" if prompt_speed != 1.0 else "")
             return
         sub, model, self._sid = VOICES[voice]
         d = str(MODEL_ROOT / sub) + "/"
@@ -154,14 +158,18 @@ class Narrator:
         self._tts = sherpa_onnx.OfflineTts(cfg)
         self._key = f"{sub}|{self._sid}"
 
-    def generate(self, text: str, speed: float = 1.0) -> np.ndarray:
-        """合成一句旁白；结果按 (音色, 语速, 文本) 缓存到 .cache/tts，改画面重渲染时无需重新合成。"""
-        key = hashlib.sha1(f"{self._key}|{speed:.4f}|{text}".encode()).hexdigest()
+    def generate(self, text: str, speed: float = 1.0, num_steps: int = 4) -> np.ndarray:
+        """合成一句旁白；结果按 (音色, 语速, 文本[, 步数]) 缓存到 .cache/tts，改画面重渲染时无需重新合成。
+
+        num_steps 为 ZipVoice 的去噪步数（默认 4；调高更慢、可能更自然），Kokoro 音色忽略此参数。
+        默认步数的缓存键与旧版相同，已有缓存继续有效。"""
+        steps = f"|steps{num_steps}" if self._prompt is not None and num_steps != 4 else ""
+        key = hashlib.sha1(f"{self._key}|{speed:.4f}|{text}{steps}".encode()).hexdigest()
         path = CACHE_DIR / f"{key}.npy"
         if path.exists():
             return np.load(path)
         if self._prompt is not None:
-            a = self._tts.generate(text, PROMPT_TEXT, self._prompt, 24000, speed, 4)
+            a = self._tts.generate(text, PROMPT_TEXT, self._prompt, 24000, speed, num_steps)
         else:
             a = self._tts.generate(text, sid=self._sid, speed=speed)
         x = np.asarray(a.samples, np.float64)
