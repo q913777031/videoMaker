@@ -26,14 +26,15 @@ from .common import BOOK, episode
 ACC = "#4E7A8C"
 SQUARE_SHOT = 3                 # 场景 4：漏底的桶 + 阿宁
 
-b = Board(size=(3600, 10000))
+b = Board(size=(3600, 10400))
+OY = 0                          # 场景 9–12 整体下移，避免上一块的字漏到页眉上方
 
 
 def T(s, x, y, size=72, color=BLACK, k0=0.0, k1=None, sfx=None, j=None):
     """在当前镜头写字：写字时长按字数估计（每字约 0.25 拍，至少 0.8 拍）。"""
     jj = len(b.shots) - 1 if j is None else j
     k1 = k0 + max(0.8, 0.25 * len(s)) if k1 is None else k1
-    b.text(jj, k0, k1, s, x, y, size, color, sfx=sfx)
+    b.text(jj, k0, k1, s, x, y + OY, size, color, sfx=sfx)
 
 
 def TL(s, left, y, size=64, color=BLACK, k0=0.0, k1=None, sfx=None):
@@ -42,6 +43,9 @@ def TL(s, left, y, size=64, color=BLACK, k0=0.0, k1=None, sfx=None):
 
 
 def L(path, k0, k1, color=BLACK, width=10, sfx=None):
+    if OY:
+        path = skia.Path(path)
+        path.offset(0, OY)
     b.path(len(b.shots) - 1, k0, k1, path, color, width, sfx=sfx)
 
 
@@ -256,7 +260,7 @@ def scroll_fn(x, y, w, h):
 
 
 def scene(text, tag, view, bars=3, **kw):
-    return b.shot(text, tag, view=view, bars=bars, **kw)
+    return b.shot(text, tag, view=(view[0], view[1] + OY, view[2]), bars=bars, **kw)
 
 
 # ---------------------------------------------------------------- 开局：周日下午（场景 1–2）
@@ -273,7 +277,7 @@ PH = (1600, 1000, 420, 680)
 scene("越刷越没劲", "周日下午", (1750, 900, 0.85))
 L(phone(*PH), 0, 0.9, BLACK, 9, sfx="wood_high")
 b.custom(J(), 1, 11.5, scroll_fn(*PH), sfx="shaker")
-T("刷了 3 小时", 2130, 760, 60, RED, k0=2, k1=3.5, sfx="pop")
+T("刷了 3 小时", 2130, 810, 60, RED, k0=2, k1=3.5, sfx="pop")
 L(bars_down(2130, 1130), 4, 4.9, BLUE, 9, sfx="wood_high")
 T("越刷越空", 2130, 1220, 56, BLUE, k0=5, k1=6, sfx="pop")
 T("为什么特别没劲？", 1750, 470, 84, RED, k0=6, k1=8, sfx="kick")
@@ -281,7 +285,7 @@ T("为什么特别没劲？", 1750, 470, 84, RED, k0=6, k1=8, sfx="kick")
 # ---------------------------------------------------------------- 自测清单（场景 3–6），drop 在场景 4
 
 CB = (900, 2650)
-BX, LEFT = 510, 580
+BX, LEFT = 1320, 440
 ROWS = [2340, 2520, 2700, 2880, 3060]
 ITEMS = ["周末比上班还累", "一闲下来就心慌", "买完东西，高兴不过一晚", "不知道下周盼什么", "忙的时候还好，一停就空"]
 
@@ -330,7 +334,7 @@ tick(3, 7)
 scene("一停就空", "自测清单", V_LIST)
 row(4, 0)
 tick(4, 3)
-L(P((420, ROWS[0] - 40), (395, ROWS[0] - 40), (395, ROWS[4] + 40), (420, ROWS[4] + 40)), 4, 4.8, RED, 8,
+L(P((1425, ROWS[0] - 40), (1455, ROWS[0] - 40), (1455, ROWS[4] + 40), (1425, ROWS[4] + 40)), 4, 4.8, RED, 8,
   sfx="wood_low")
 T("勾了 5 个", 720, 3210, 72, RED, k0=5, k1=6.5, sfx="ding")
 T("你呢？", 1130, 3210, 72, BLUE, k0=7, k1=7.8, sfx="pop")
@@ -358,6 +362,7 @@ L(circle(xs[6], 4230, 50), 4, 4.7, RED, 9, sfx="rim")
 T("一周忙完，闲下来发现日子空着", 2900, 4470, 50, k0=5, k1=7, sfx="pop")
 T("多半是无聊", 2900, 4580, 58, BLUE, k0=7, k1=8)
 
+OY = 150
 BK2 = (2900, 5330)
 scene("拿别的东西填", "书中观点 · 拿别的填", (2900, 5520, 0.8))
 L(bucket(*BK2, 460, 420), 0, 0.9, BLACK, 10, sfx="wood_high")
@@ -368,7 +373,7 @@ for n, (w, x, y) in enumerate((("钱", 2420, 5110), ("权", 2900, 5060), ("乐�
             30), 2.8 + n, 3.0 + n + 0.0, RED, 7)
 L(join(crack_mark(BK2[0], BK2[1] + 420), P((2860, 5820), (2850, 5870)), P((2950, 5830), (2955, 5880))), 5, 5.8,
   BLUE, 8, sfx="rim")
-T("填不满", 2900, 6000, 76, RED, k0=6, k1=7, sfx="ding")
+T("填不满", 3320, 5760, 76, RED, k0=6, k1=7, sfx="ding")
 
 # ---------------------------------------------------------------- 解读（场景 10）
 
@@ -378,7 +383,7 @@ scene("缺一件为谁做的事", "据书中思路 · 解读", (1150, 5550, 0.8)
 L(stick(*AN, 0.85, "hold"), 0, 0.9, BLUE, 10, sfx="wood_high")
 L(face(*AN, 0.85, "flat"), 0.9, 1.1, BLUE, 8)
 L(compass(*CP, 75), 2, 2.8, BLACK, 8, sfx="pop")
-b.custom(J(), 3, 11.8, spin_fn(*CP, 75), sfx="shaker")
+b.custom(J(), 3, 11.8, spin_fn(CP[0], CP[1] + OY, 75), sfx="shaker")
 L(rect(1450, 5500, 520, 170, 20), 5, 5.8, BLACK, 7, sfx="wood_high")
 T("为了 ____", 1450, 5500, 64, k0=5.8, k1=6.8)
 T("缺一件为谁做的事", 1250, 5130, 64, RED, k0=7, k1=8, sfx="ding")
@@ -399,11 +404,13 @@ T("② 给下周定个盼头", 2900, 6550, 72, BLUE, k0=0, k1=2, sfx="pop")
 grid2, xs2 = week(2410, 6950, WK2, 140, 140)
 L(join(grid2, P((2550, 6860), (2550, 7040))), 2, 2.7, BLACK, 8, sfx="wood_high")
 for i, (w, x) in enumerate(zip(WK2, xs2)):
-    b.text(J(), 2.7 + i * 0.12, 2.82 + i * 0.12, w, x, 6810, 48, BLACK)
+    b.text(J(), 2.7 + i * 0.12, 2.82 + i * 0.12, w, x, 6810 + OY, 48, BLACK)
 L(flag(xs2[3] - 20, 7010, 0.75), 4, 4.7, RED, 9, sfx="pop")
-T("约朋友爬山", xs2[3], 7140, 56, RED, k0=5, k1=6.25, sfx="pop")
-L(arrow((xs2[0], 7040), (xs2[3] - 50, 7060), 0.25, 30), 7, 7.8, GREEN, 8, sfx="ding")
+L(arrow((xs2[0], 7040), (xs2[3] - 50, 7060), 0.25, 30), 5, 5.8, GREEN, 8, sfx="wood_high")
+T("约朋友爬山", xs2[3], 7140, 56, RED, k0=7, k1=8, sfx="ding")
 
+
+OY = 0
 BK3 = (2600, 8180)
 AN3 = (1950, 8800)
 CP3 = (2090, 8420)
@@ -413,8 +420,8 @@ L(face(*AN3, 0.8, "smile"), 0.9, 1.1, BLUE, 8)
 L(compass(*CP3, 60), 1.2, 1.9, BLACK, 7)
 L(bucket(*BK3, 460, 420), 2, 2.8, BLACK, 10, sfx="wood_low")
 L(patch(BK3[0], BK3[1] + 420), 3, 3.8, RED, 9, sfx="pop")
-T("为谁做的事", BK3[0], BK3[1] + 560, 56, GREEN, k0=4, k1=5.25, sfx="pop")
-L(join(circle(2540, 8520, 40), rect(2650, 8520, 90, 70, 8), P((2470, 8570), (2730, 8570))), 6, 6.8, BLACK, 7,
+T("为谁做的事", BK3[0], BK3[1] + 560, 56, GREEN, k0=6, k1=7.25, sfx="pop")
+L(join(circle(2540, 8520, 40), rect(2650, 8520, 90, 70, 8), P((2470, 8570), (2730, 8570))), 4, 4.8, BLACK, 7,
   sfx="wood_high")
 b.custom(J(), 6, 8, settle_fn(*CP3, 60, -25))
 H(8, "ding", note="罗盘停住")
@@ -422,16 +429,16 @@ H(8, "ding", note="罗盘停住")
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，再推到评论区
 
 FAR = (1800, 4750, 0.18)
-COMMENT = (1800, 9550, 0.8)
+COMMENT = (1800, 9850, 0.8)
 scene("评论区聊聊", "评论区见", FAR, bars=4)
 b.move(J(), 4, COMMENT, dur=1.1)
 H(0, "cymbal", 0.5)
 H(2, "ding")
 H(4, "wood_high", 0.6)
-L(bubble(1800, 9470, 900, 170, -1), 5, 5.9, BLACK, 8, sfx="wood_low")
-T("你勾了几条？", 1800, 9470, 80, RED, k0=6, k1=7.5, sfx="pop")
-T("下一讲：撑不住的时候，你会想起谁？", 1800, 9690, 48, k0=9, k1=13, sfx="wood_high")
-L(P((1400, 9750), (2200, 9750)), 13, 13.8, BLACK, 6)
+L(bubble(1800, 9770, 900, 170, -1), 5, 5.9, BLACK, 8, sfx="wood_low")
+T("你勾了几条？", 1800, 9770, 80, RED, k0=6, k1=7.5, sfx="pop")
+T("下一讲：撑不住的时候，你会想起谁？", 1800, 9990, 48, k0=9, k1=13, sfx="wood_high")
+L(P((1400, 10050), (2200, 10050)), 13, 13.8, BLACK, 6)
 b.hit(J(), 16, "kick", 0.55, "原曲最后一击")
 
 
