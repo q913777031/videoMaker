@@ -22,7 +22,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow,
 from .common import BOOK, episode
 
 ACC = "#7A4FA3"
-SQUARE_SHOT = 6                 # 场景 7：直线与曲线分叉，中间一道缝，阿杰站在缝里
+SQUARE_SHOT = 7                 # 场景 8：阿杰举望远镜，小圆里是曲线后面的爬升
 
 b = Board(size=(4800, 6600))
 PAPER = "#FBFBF9"

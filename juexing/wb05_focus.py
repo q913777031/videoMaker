@@ -23,7 +23,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, b
 from .common import BOOK, episode
 
 ACC = "#3E7CB1"
-SQUARE_SHOT = 3                 # 场景 4：晚上十点的屏幕，一堆窗口压着，报告只有标题
+SQUARE_SHOT = 6                 # 场景 7：工位前的小人，心飘走的蓝色虚线小人
 
 b = Board(size=(3600, 11700))
 
