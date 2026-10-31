@@ -118,12 +118,15 @@ def wheel(x, y, r=150, grips=0) -> skia.Path:
         a = i * math.pi / 4
         parts.append(P((x + math.cos(a) * r * 0.22, y + math.sin(a) * r * 0.22),
                        (x + math.cos(a) * r * 1.28, y + math.sin(a) * r * 1.28)))
-    for g in range(grips):
-        a = -math.pi * 0.75 + g * 0.32
-        for dr in (-0.1, 0.1):
-            parts.append(P((x + math.cos(a + dr) * r * 0.85, y + math.sin(a + dr) * r * 0.85),
-                           (x + math.cos(a + dr) * r * 1.15, y + math.sin(a + dr) * r * 1.15)))
+    parts += [grip(x, y, r, g) for g in range(grips)]
     return join(*parts)
+
+
+def grip(x, y, r, g) -> skia.Path:
+    """舵上第 g 道握痕（从 0 数）：系列第 N 讲舵上有 N 道。"""
+    a = -math.pi * 0.75 + g * 0.32
+    return join(*[P((x + math.cos(a + dr) * r * 0.85, y + math.sin(a + dr) * r * 0.85),
+                    (x + math.cos(a + dr) * r * 1.15, y + math.sin(a + dr) * r * 1.15)) for dr in (-0.1, 0.1)])
 
 
 def double_arrow(x, y0, y1, head=34) -> skia.Path:
@@ -414,9 +417,10 @@ L(red_path(CUT_X - 70, RED_END), 1, 2.2, GREEN, 18, sfx="wood_high")
 b.move(J(), 3, (2560, 2830, 1.3), dur=1.1)
 b.custom(J(), 4, 4.3, disc_fn(*BRAIN), sfx="pop")
 L(join(circle(*BRAIN), circle(2660, 2985, 14), circle(2690, 3025, 9)), 4.3, 5.0, BLACK, 8)
-L(join(elder(2440, 2890, 0.42), uncle(2550, 2890, 0.42)), 5, 5.9, BLACK, 7, sfx="wood_low")
-L(baby(2650, 2890, 0.5), 6, 6.7, BLUE, 7, sfx="wood_high")
-L(wheel(2658, 2805, 36, grips=2), 7, 7.8, GREEN, 6, sfx="ding")
+L(join(elder(2440, 2890, 0.42), uncle(2550, 2890, 0.42)), 5, 5.8, BLACK, 7, sfx="wood_low")
+L(baby(2650, 2890, 0.5), 5.8, 6.4, BLUE, 7)
+L(wheel(2658, 2805, 36, grips=2), 6, 6.7, GREEN, 6, sfx="wood_high")
+L(grip(2658, 2805, 36, 2), 7, 7.5, RED, 7, sfx="ding")          # 第 3 道握痕：本讲新增
 
 # ---------------------------------------------------------------- 片尾（场景 14，4 小节）：先拉远看全板，再推到评论区
 
@@ -443,6 +447,6 @@ def build():
                   "都是示意图，不是数据。",
                   "阿杰下班学剪视频的三个月、进度本（每周存一条作品、回头对比）均为示意，据书中思路整理，不指向任何具体公司或个人。",
                   "脑内三兄弟（拄拐的本能脑、戴耳机的情绪脑、抱舵的理智脑宝宝）为本系列的视觉角色，据第一章“按年纪比”的比喻"
-                  "与第三章“思维舵手”的说法设计；舵上两道握痕表示系列进度。"],
+                  "与第三章“思维舵手”的说法设计；舵上三道握痕表示系列进度（第 N 讲 N 道，红色那道为本讲新增）。"],
                  tags="#坚持 #学习方法")
     return b.attach(ep)
