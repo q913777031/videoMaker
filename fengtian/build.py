@@ -231,7 +231,7 @@ def build_audio():
     v = audio.process_voice(v)
     voice = audio.pan(v, 0) * 1.41
     m0 = int(round(M.S * audio.SR))
-    full = core.music_track()                         # 原曲 + 最后一击后的混响尾音
+    full = M.music_track() if hasattr(M, "music_track") else core.music_track()   # 原曲（可能已循环延长）+ 混响尾音
     music = np.zeros((n, 2))
     seg = full[m0: m0 + n]
     music[: len(seg)] = seg
@@ -265,7 +265,7 @@ def build_audio():
 # ---------------------------------------------------------------- 检查
 
 def wording_warnings():
-    texts = [("旁白", t) for t, _ in M.LINES] + [("字幕", c_) for _, ps in M.LINES for c_ in ps if c_]
+    texts = [("旁白", ln[0]) for ln in M.LINES] + [("字幕", c_) for ln in M.LINES for c_ in ln[1] if c_]
     texts += [("白板字", it["s"]) for it in M.b.items if it["kind"] == "text"]
     texts += [("标签", s.tag) for s in M.b.shots] + [("片名", M.TITLE), ("封面", M.COVER_TITLE.replace("|", ""))]
     out = []
@@ -286,8 +286,7 @@ def screen_table():
         s = M.b.shots[j]
         ends = [M.b.t_of(it["j"], it["k1"]) - M.S for it in M.b.items if it["j"] == j]
         ends += [core.bt(s.b0 + h[0]) - M.S for h in s.hits]
-        li = M.SCREENS[j][0][-1]
-        ve = M.STARTS[li] + M.DUR_L[li]
+        ve = (M.STARTS[M.SCREENS[j][0][-1]] + M.DUR_L[M.SCREENS[j][0][-1]]) if M.SCREENS[j][0] else a
         rows.append((j + 1, M.SCREENS[j][1], a, z, z - a, max(ends), ve, z - max(max(ends), ve)))
     return rows
 
@@ -296,9 +295,13 @@ def report(asr=None):
     for w in wording_warnings():
         print("文案警告：", w, file=sys.stderr)
     print(f"时长 {M.END_LOCAL:.2f}s，配乐 {M.S:.2f}s 起（drop 在 {core.BEATS[M.DROP]['t'] - M.S:.2f}s）")
-    for (text, _), st, du in zip(M.LINES, M.STARTS, M.DUR_L):
+    for (text, *_), st, du in zip(M.LINES, M.STARTS, M.DUR_L):
         print(f"  旁白 {st:6.2f}–{st + du:6.2f}s {core.han(text) / du:.2f}字/秒  {text}")
-    hz = sum(core.han(t) for t, _ in M.LINES)
+    hz = sum(core.han(ln[0]) for ln in M.LINES)
+    span = M.STARTS[-1] + M.DUR_L[-1] - M.STARTS[0]
+    print(f"  旁白首句起到末句止 {span:.1f}s，含停顿 {hz / span:.2f} 字/秒")
+    for t_, what in getattr(M, "SEAMS", []):
+        print(f"  配乐接缝 {t_:6.2f}s  {what}")
     print(f"  全片 {hz} 字，纯语音 {sum(M.DUR_L):.1f}s（{hz / sum(M.DUR_L):.2f} 字/秒，含逗号停顿）")
     for r in screen_table():
         print(f"  屏{r[0]:2d} {r[1]:12s} {r[2]:6.2f}–{r[3]:6.2f}s 停留 {r[4]:5.2f}s 最后画面事件 {r[5]:6.2f}s "
@@ -306,7 +309,7 @@ def report(asr=None):
     if asr:
         from fengtian.voice_audition import asr_check, edit
         res = asr_check(asr, M.RAW)
-        for (t, _), a in zip(M.LINES, res):
+        for (t, *_), a in zip(M.LINES, res):
             ref = "".join(ch for ch in t if ch not in "，。：？、")
             print(f"  ASR {a}（差 {edit(ref, a)} 字）")
 
