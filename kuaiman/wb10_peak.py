@@ -186,12 +186,12 @@ BA, BB, BY = XL - 330, XL + 330, 1000          # 两张病床的中点（床面�
 
 scene("两个病人做检查", "两个病人", (XL, 880, 0.85), bars=2)
 T("做同一种检查", XL, 520, 76, ACC, k0=0, k1=1.5, sfx="pop")
-L(join(bed(BA, BY), lying_face(BA, BY)), 1.5, 2.4, BLACK, 9, sfx="wood_high")
-L(rect(BA, 760, 210, 90, 14), 2.4, 2.8, BLACK, 7)
-T("病人A", BA, 762, 56, k0=2.8, k1=3.4)
-L(join(bed(BB, BY), lying_face(BB, BY)), 3, 3.9, BLACK, 9, sfx="wood_high")
-L(rect(BB, 760, 210, 90, 14), 4, 4.4, BLACK, 7, sfx="pop")
-T("病人B", BB, 762, 56, k0=4.4, k1=5.2)
+L(join(bed(BA, BY), lying_face(BA, BY)), 2, 2.9, BLACK, 9, sfx="wood_high")
+L(rect(BA, 760, 210, 90, 14), 3, 3.3, BLACK, 7, sfx="pop")
+T("病人A", BA, 762, 56, k0=3.3, k1=3.9)
+L(join(bed(BB, BY), lying_face(BB, BY)), 4, 4.8, BLACK, 9, sfx="wood_high")
+L(rect(BB, 760, 210, 90, 14), 5, 5.3, BLACK, 7, sfx="pop")
+T("病人B", BB, 762, 56, k0=5.3, k1=6)
 
 # 两张图同一比例：横轴 24 分钟，纵轴疼痛 0–10；A 在上、B 在下，原点 x 对齐
 X0, XW, HH = XL - 580, 1140, 450
