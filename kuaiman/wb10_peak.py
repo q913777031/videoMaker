@@ -185,13 +185,13 @@ def table(x, y, w=1000) -> skia.Path:
 BA, BB, BY = XL - 330, XL + 330, 1000          # 两张病床的中点（床面高度 BY）
 
 scene("两个病人做检查", "两个病人", (XL, 880, 0.85), bars=2)
-L(join(bed(BA, BY), lying_face(BA, BY)), 0, 0.9, BLACK, 9, sfx="wood_high")
-L(rect(BA, 760, 210, 90, 14), 1, 1.4, BLACK, 7, sfx="pop")
-T("病人A", BA, 762, 56, k0=1.4, k1=2.2)
-L(join(bed(BB, BY), lying_face(BB, BY)), 2, 2.9, BLACK, 9, sfx="wood_high")
-L(rect(BB, 760, 210, 90, 14), 3, 3.4, BLACK, 7, sfx="pop")
-T("病人B", BB, 762, 56, k0=3.4, k1=4.2)
-T("做同一种检查", XL, 520, 76, ACC, k0=4, k1=5.5, sfx="pop")
+T("做同一种检查", XL, 520, 76, ACC, k0=0, k1=1.5, sfx="pop")
+L(join(bed(BA, BY), lying_face(BA, BY)), 1.5, 2.4, BLACK, 9, sfx="wood_high")
+L(rect(BA, 760, 210, 90, 14), 2.4, 2.8, BLACK, 7)
+T("病人A", BA, 762, 56, k0=2.8, k1=3.4)
+L(join(bed(BB, BY), lying_face(BB, BY)), 3, 3.9, BLACK, 9, sfx="wood_high")
+L(rect(BB, 760, 210, 90, 14), 4, 4.4, BLACK, 7, sfx="pop")
+T("病人B", BB, 762, 56, k0=4.4, k1=5.2)
 
 # 两张图同一比例：横轴 24 分钟，纵轴疼痛 0–10；A 在上、B 在下，原点 x 对齐
 X0, XW, HH = XL - 580, 1140, 450
@@ -270,15 +270,15 @@ T("最后30秒稍暖", WR, 7560, 50, ORANGE, k0=5, k1=6.5, sfx="pop")
 L(check(WR - 210, 7685, 34), 6, 6.6, GREEN, 10, sfx="wood_high")
 T("多数人选它", WR + 30, 7685, 58, GREEN, k0=7, k1=8, sfx="ding")
 
-scene("过日子和记账的我", "书中观点 · 两个自我", (XL, 8550, 0.85))
-L(underline(XL - 560, XL + 440, 8820, 12, 50), 0, 0.9, BLACK, 8, sfx="wood_high")
-L(join(kuai(XL - 420, 8800, 0.55, "point"), face(XL - 420, 8800, 0.55, "smile")), 1, 1.9, RED, 9, sfx="pop")
-T("好…累…疼…", XL - 40, 8630, 58, RED, k0=2, k1=3.25, sfx="pop")
-L(join(man(XL + 400, 8800, 0.55, "hold"), face(XL + 400, 8800, 0.55, "flat"), album(XL + 490, 8670)), 4, 4.9,
+scene("过日子和记账的我", "书中观点 · 两个自我", (XL, 8700, 0.85))
+L(underline(XL - 560, XL + 440, 8970, 12, 50), 0, 0.9, BLACK, 8, sfx="wood_high")
+L(join(kuai(XL - 420, 8950, 0.55, "point"), face(XL - 420, 8950, 0.55, "smile")), 1, 1.9, RED, 9, sfx="pop")
+T("好…累…疼…", XL - 40, 8780, 58, RED, k0=2, k1=3.25, sfx="pop")
+L(join(man(XL + 400, 8950, 0.55, "hold"), face(XL + 400, 8950, 0.55, "flat"), album(XL + 490, 8820)), 4, 4.9,
   BLUE, 9, sfx="wood_low")
-T("体验的我", XL - 420, 8920, 56, RED, k0=5, k1=6, sfx="pop")
-L(ellipse(XL + 490, 8670, 170, 140), 6, 6.8, ORANGE, 8, sfx="pop")
-T("记忆的我", XL + 400, 8920, 56, BLUE, k0=7, k1=8, sfx="ding")
+T("体验的我", XL - 420, 9070, 56, RED, k0=5, k1=6, sfx="pop")
+L(ellipse(XL + 490, 8820, 170, 140), 6, 6.8, ORANGE, 8, sfx="pop")
+T("记忆的我", XL + 400, 9070, 56, BLUE, k0=7, k1=8, sfx="ding")
 
 # ---------------------------------------------------------------- 用曲线看生活（场景 9–10，右列，自下而上）
 
@@ -290,9 +290,9 @@ T("天", TR.x0 + 1110, TR.base + 62, 50, k0=1.6, k1=2)
 L(TR.curve([(0, 6), (0.6, 7.5), (1.2, 7), (2, 8.6), (2.8, 7.8), (3.5, 8.8), (4, 8.2)]), 2, 3.8, ACC, 11,
   sfx="wood_low")
 L(P(TR.pt(4, 8.2), TR.pt(4.35, 4), TR.pt(4.8, 0.6)), 4, 4.6, RED, 12, sfx="rim")
-T("最后一天", TR.pt(4.4, 0)[0], TR.base + 62, 50, RED, k0=5, k1=5.8, sfx="pop")
-T("赶飞机，吵架", TR.pt(2.9, 0)[0], TR.pt(0, 1.6)[1], 58, RED, k0=6, k1=7.25, sfx="pop")
-T("回想：这趟真糟", XR + 60, 7880, 62, BLUE, k0=7, k1=8, sfx="ding")
+T("赶飞机，吵架", TR.pt(2.9, 0)[0], TR.pt(0, 1.6)[1], 58, RED, k0=5, k1=6.25, sfx="pop")
+T("回想：这趟真糟", XR + 60, 7880, 62, BLUE, k0=6, k1=7.6, sfx="ding")
+T("最后一天", TR.pt(4.4, 0)[0], TR.base + 62, 50, RED, k0=7, k1=8, sfx="pop")
 
 RP = Chart(XR - 580, 7100, 1100, 450, 10)         # 汇报：横轴 10 分钟，纵轴顺利
 DIP = RP.pt(9.6, 2)
