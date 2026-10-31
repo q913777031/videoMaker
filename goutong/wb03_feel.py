@@ -25,7 +25,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, c
 from .common import BOOK, episode
 
 ACC = "#C84E74"
-SQUARE_SHOT = 3                 # 场景 4：裂开的大泡泡 + 掉出来的“想法”标签
+SQUARE_SHOT = 2                 # 场景 3：两个人各顶一个带刺泡泡，中间迸出火星
 GRAY = "#8C9199"
 
 b = Board(size=(3600, 15000))

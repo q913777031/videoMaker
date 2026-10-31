@@ -21,7 +21,7 @@ from engine.gfx import clamp01, ease_in_out, ease_out, lerp
 from .common import BOOK, episode
 
 ACC = "#2F8F83"
-SQUARE_SHOT = 10                # 场景 11：五对原话和改写排成一列，中间一串缺电的电池
+SQUARE_SHOT = 12                # 场景 13：说出听到的需要，对象收刺变笑脸
 COVER_SHOT = 3                  # 竖版封面：场景 4，带刺小泡剥开露出电池
 
 b = Board(size=(3600, 10500))

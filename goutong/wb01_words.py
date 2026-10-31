@@ -26,7 +26,7 @@ from engine.gfx import clamp01, ease_in_out, ease_out, lerp
 from .common import BOOK, episode
 
 ACC = "#C8503C"
-SQUARE_SHOT = 8                 # 场景 9：一天时间轴上四个带刺小泡，各贴一类标签
+SQUARE_SHOT = 11                # 场景 12：两人对着表格一起看，蓝色圆小泡
 
 b = Board(size=(3600, 9600))
 
