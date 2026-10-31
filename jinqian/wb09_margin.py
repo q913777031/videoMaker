@@ -26,7 +26,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, RED, Board, P, arrow, book, c
 
 from .common import BOOK, episode
 
-ACC = "#D08A1E"                 # 本讲主色：路口黄灯
+ACC = "#D9622B"                 # 本讲主色：交通锥橙（与其他讲的琥珀、蓝、绿区分）
 SQUARE_SHOT = 3                 # 场景 4：急刹撞散账本车 + 冒汗的小猪罐
 
 b = Board(size=(3600, 9700))
