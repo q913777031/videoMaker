@@ -453,13 +453,7 @@ scene("它只会喊应该", "书中观点 · 应该", (2650, 3600, 0.85))
 L(overseer(*OV6, -70), 0, 1.0, BLACK, 9, sfx="wood_high")
 SH = [("应该细心", 2900, 3200), ("应该检查", 2950, 3440), ("应该完美", 2900, 3680)]
 for n, (s, x, y) in enumerate(SH):
-    C(1 + n * 1.5 if n else 1, 1.5 + n * 1.5 if n else 1.5, pop_text(s, x, y, 80), sfx=None)
-H(1, "pop")
-b.items[-3]["k0"], b.items[-3]["k1"] = 1, 1.5
-b.items[-2]["k0"], b.items[-2]["k1"] = 2, 2.5
-b.items[-1]["k0"], b.items[-1]["k1"] = 3, 3.5
-H(2, "pop")
-H(3, "pop")
+    C(2 + n, 2.5 + n, pop_text(s, x, y, 80), sfx="pop")
 L(join(*[rect(x - 80, y, 180, 100, 46) for _, x, y in SH]), 5, 5.8, BLUE, 7, sfx="rim")
 T("留意这两个字", 2650, 4080, 66, BLUE, k0=6, k1=7.5, sfx="ding")
 
