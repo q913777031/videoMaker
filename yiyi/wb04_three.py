@@ -23,7 +23,7 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow,
 from .common import BOOK, episode
 
 ACC = "#3F7D74"
-SQUARE_SHOT = 10                # 场景 11：三条路全图 + 阿宁 + 罗盘
+SQUARE_SHOT = 3                  # 场景 4：三块红路牌砸下 + 阿宁 + 三叉罗盘
 GRAY = "#7D828C"
 
 b = Board(size=(3600, 9000))
