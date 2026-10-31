@@ -236,6 +236,7 @@ def balance_fn(c, k, t):
     _, _, px, py = _pan_pos(-1, a)
     for i in range(3):                                   # 左盘：一摞“怎么”
         by = py - 34 - i * 64
+        c.drawPath(rect(px, by, 170, 60, 8), K.paint("#FBFBF9", alpha))
         c.drawPath(rect(px, by, 170, 60, 8), K.paint(BLACK, alpha, 6))
         K.text(c, "怎么", px, by, 50, "hand", BLACK, alpha)
     t_imp = b.t_of(J4, 0)
@@ -247,6 +248,7 @@ def balance_fn(c, k, t):
         c.save()
         c.translate(px, by)
         c.scale(s, s)
+        c.drawPath(rect(0, 0, 250, 110, 12), K.paint("#FBFBF9"))
         c.drawPath(rect(0, 0, 250, 110, 12), K.paint(RED, 1, 9))
         K.text(c, "为什么", 0, 0, 76, "hand", RED)
         c.restore()
@@ -276,7 +278,7 @@ L(flag(2900, HZ, 170), 2, 2.8, RED, 9, sfx="ding")
 L(join(stick(2330, 3960, 0.4, "down"), stick(2970, 3960, 0.4, "down")), 3, 3.8, GRAY, 7, sfx="pop")
 T("没指望", 2320, 4110, 56, GRAY, k0=5, k1=5.8, sfx="pop")
 T("有盼头", 2980, 4110, 56, RED, k0=6, k1=6.8, sfx="pop")
-T("撑得住", 2980, 3080, 50, RED, k0=7, k1=7.8, sfx="wood_high")
+T("撑得住", 3110, 3200, 50, RED, k0=7, k1=7.8, sfx="wood_high")
 
 scene("他想着以后的讲台", "书中故事 · 雪地", (950, 3700, 0.85))
 L(underline(380, 1520, 4150, amp=10, step=70), 0, 0.9, GRAY, 7, sfx="wood_low")
