@@ -23,7 +23,7 @@ from engine.gfx import clamp01
 
 from .common import BOOK, episode
 
-ACC = "#4E7A8C"
+ACC = "#6B8E3A"
 SQUARE_SHOT = 3                 # 场景 4：漏底的桶 + 阿宁
 
 b = Board(size=(3600, 10400))
