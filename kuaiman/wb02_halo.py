@@ -111,13 +111,13 @@ GOOD = {"聪明", "勤奋"}
 CA, CB, CY = 1050, 2550, 1300    # 两张词卡的中心
 
 scene("新来两个同事", "两个新同事", (1800, 1400, 0.85), bars=2)
-L(join(stick(AX, FY, 0.8, "down"), face(AX, FY, 0.8, "smile")), 0, 0.9, sfx="wood_high")
-L(rect(AX, FY + 85, 150, 80, 12), 1, 1.4, BLACK, 7, sfx="pop")
-T("小A", AX, FY + 103, 52, k0=1.4, k1=2.2)
-L(join(stick(BX, FY, 0.8, "down"), face(BX, FY, 0.8, "smile")), 2, 2.9, sfx="wood_high")
-L(rect(BX, FY + 85, 150, 80, 12), 3, 3.4, BLACK, 7, sfx="pop")
-T("小B", BX, FY + 103, 52, k0=3.4, k1=4.2)
-T("新来的同事", 1800, 1050, 72, BLUE, k0=4, k1=5.25, sfx="pop")
+T("新来的同事", 1800, 1050, 72, BLUE, k0=0, k1=1.25, sfx="pop")
+L(join(stick(AX, FY, 0.8, "down"), face(AX, FY, 0.8, "smile"), rect(AX, FY + 85, 150, 80, 12)), 2, 2.9,
+  sfx="wood_high")
+T("小A", AX, FY + 103, 52, k0=3, k1=3.8, sfx="pop")
+L(join(stick(BX, FY, 0.8, "down"), face(BX, FY, 0.8, "smile"), rect(BX, FY + 85, 150, 80, 12)), 4, 4.9,
+  sfx="wood_high")
+T("小B", BX, FY + 103, 52, k0=5, k1=5.8, sfx="pop")
 
 
 def word_card(cx, words, ring_color):
@@ -148,8 +148,8 @@ L(book(950, 2850, 380, 260), 0, 0.9, sfx="wood_low")
 T("思考，快与慢", 950, 2650, 60, GREEN, k0=1, k1=2.5, sfx="pop")
 L(join(kuai(1450, 3150, 0.6), face(1450, 3150, 0.6, "smile")), 3, 3.9, RED, 9, sfx="wood_high")
 L(join(man(1750, 3150, 0.6), face(1750, 3150, 0.6, "flat")), 4, 4.9, BLUE, 9, sfx="wood_high")
-T("光环效应", 950, 3230, 90, RED, k0=5, k1=6, sfx="pop")
-L(ellipse(950, 3110, 300, 56), 7, 7.8, ORANGE, 9, sfx="ding")
+L(ellipse(950, 3110, 300, 56), 5, 5.8, ORANGE, 9, sfx="ding")
+T("光环效应", 950, 3230, 90, RED, k0=6, k1=7, sfx="pop")
 
 KX, KY = 2100, 3350             # 快快（拿着一块拼图）
 FX, FYY = 2780, 2850            # 拼图框
@@ -183,9 +183,9 @@ L(stick(900, 4700, 0.75, "down"), 1, 1.9, BLUE, 9, sfx="wood_high")
 L(join(stick(1700, 4700, 0.75, "down"), face(1700, 4700, 0.75, "smile")), 2, 2.9, BLACK, 9, sfx="pop")
 L(rect(1700, 4350, 150, 80, 12), 3, 3.4, RED, 7, sfx="pop")
 T("名校", 1700, 4368, 54, RED, k0=3.4, k1=4.2)
-L(doc(1300, 4000, 240, 300, 3), 4, 4.9, BLACK, 8, sfx="wood_low")
+L(doc(1200, 4000, 240, 300, 3), 4, 4.9, BLACK, 8, sfx="wood_low")
 for n, yy in enumerate((3900, 4015, 4130)):
-    L(check(1475, yy, 28), 5 + n, 5.6 + n, GREEN, 9, sfx="ding" if n == 2 else "pop")
+    L(check(1375, yy, 28), 5 + n, 5.6 + n, GREEN, 9, sfx="ding" if n == 2 else "pop")
 
 OY = 320
 scene("周报先写什么", "例子 · 周报", (1300, 5700, 0.85))

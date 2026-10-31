@@ -57,12 +57,12 @@ def oval(x, y, rx, ry) -> skia.Path:
     return p
 
 
-def rays_around(x, y, rx, ry, n=10, d0=30, d1=90) -> skia.Path:
-    """椭圆外一圈爆点短线。"""
+def rays_around(x, y, rx, ry, d0=30, d1=90, degs=(-55, -25, 0, 25, 55, 125, 155, 180, 205, 235)) -> skia.Path:
+    """椭圆外一圈爆点短线（正上、正下留空，不压到上下的字）。"""
     import math
     parts = []
-    for i in range(n):
-        a = i / n * 2 * math.pi + 0.3
+    for deg in degs:
+        a = math.radians(deg)
         ca, sa = math.cos(a), math.sin(a)
         parts.append(P((x + (rx + d0) * ca, y + (ry + d0) * sa), (x + (rx + d1) * ca, y + (ry + d1 * 0.7) * sa)))
     return join(*parts)
@@ -225,7 +225,7 @@ scene("加起来，超了", "故事 · 加起来", (XR, 2480, 0.75), shake=[0], 
 T("= 120%", TOT[0], TOT[1], 150, RED, k0=0, k1=1.2, sfx="kick")
 L(join(oval(TOT[0], TOT[1], 340, 130), rays_around(TOT[0], TOT[1], 340, 130)), 1, 1.9, RED, 10, sfx="rim")
 b.custom(J(), 1, 1.9, burst_fn(TOT[0], TOT[1], 330))
-T("多出 20%", TOT[0], 2625, 60, RED, k0=2, k1=3, sfx="ding")
+T("多出 20%", TOT[0], 2640, 60, RED, k0=2, k1=3, sfx="ding")
 TRIO = [(2250, False, False), (2560, True, False), (2870, False, True)]
 L(join(*[stick(x, 3000, 0.5, "shrug", hair=h, tie=t) for x, h, t in TRIO]), 3, 3.9, BLACK, 8, sfx="wood_high")
 L(join(*[face(x, 3000, 0.5, "frown") for x, _, _ in TRIO]), 3.9, 4.3, BLACK, 7)
@@ -303,7 +303,7 @@ L(stick(480, 6800, 0.65, "point", tie=True), 2, 2.8, BLACK, 9, sfx="pop")
 L(face(480, 6800, 0.65, "smile"), 2.8, 2.95, BLACK, 7)
 ROW_H = (CAL[3] - 90) / 4
 b.custom(J(), 3, 3.8, highlight_fn(CAL[0], CAL[1] + CAL[3] / 2 - ROW_H / 2, CAL[2] - 16, ROW_H - 14), sfx="ding")
-L(bubble(500, 6300, 320, 120, 1), 5, 5.5, BLACK, 8, sfx="pop")
+L(bubble(500, 6300, 320, 120, -1), 5, 5.5, BLACK, 8, sfx="pop")
 T("最近不错", 500, 6300, 54, k0=5.5, k1=6.5)
 T("前三周呢？", CAL[0], 6800, 56, RED, k0=7, k1=8, sfx="rim")
 
@@ -316,9 +316,9 @@ L(rect(*PAPER, 380, 220, 12), 2, 2.8, BLACK, 9, sfx="wood_high")
 T("我 40%", *PAPER, 72, k0=3, k1=4, sfx="pop")
 L(P((PAPER[0] - 20, PAPER[1] + 8), (PAPER[0] + 130, PAPER[1] - 12)), 4, 4.6, RED, 12, sfx="rim")
 T("差不多", PAPER[0], 6625, 64, GREEN, k0=5, k1=5.8, sfx="ding")
-L(stick(3050, 6800, 0.7, "down"), 6, 6.8, BLACK, 9, sfx="pop")
-L(face(3050, 6800, 0.7, "smile"), 6.8, 6.95, BLACK, 7)
-T("小王", 3050, 6870, 48, k0=7, k1=7.8)
+T("小王", 3050, 6870, 48, k0=6, k1=6.8, sfx="pop")
+L(stick(3050, 6800, 0.7, "down"), 7, 7.8, BLACK, 9, sfx="wood_low")
+L(face(3050, 6800, 0.7, "smile"), 7.8, 7.95, BLACK, 7)
 
 NB = (2600, 7820)
 scene("每天记一行", "做法② · 记一行", (XR, 7800, 0.85))
@@ -328,7 +328,7 @@ for n, line in enumerate(("周一 改方案", "周二 对接口", "周三 帮小
     T(line, NB[0] + 20, 7660 + n * 130, 56, k0=3 + n, k1=3.9 + n, sfx="pop")
 L(stick(3150, 8150, 0.65, "hold"), 6, 6.8, BLACK, 9, sfx="wood_low")
 L(face(3150, 8150, 0.65, "smile"), 6.8, 6.95, BLACK, 7)
-L(check(NB[0] + 220, 7920, 30), 7, 7.5, GREEN, 9, sfx="ding")
+L(check(NB[0] + 280, 7915, 30), 7, 7.5, GREEN, 9, sfx="ding")
 
 scene("先问问别人那块", "做法③ · 先问对方", (XL, 7800, 0.85))
 T("③ 先问对方", XL, 7400, 76, BLUE, k0=0, k1=1.25, sfx="pop")
@@ -351,11 +351,12 @@ b.move(J(), 4, COMMENT, dur=1.1)
 H(0, "cymbal", 0.5)
 H(2, "ding")
 L(rect(1800, 9130, 1120, 380, 30), 4, 4.9, BLACK, 7, sfx="wood_high")
-L(kuai(1450, 9700, 0.5, "up"), 5, 5.5, RED, 8, sfx="pop")
-L(man(2150, 9700, 0.5), 5.5, 6.0, BLUE, 8)
+L(kuai(1450, 9700, 0.5, "up"), 5, 5.4, RED, 8, sfx="pop")
+L(man(2150, 9700, 0.5), 5.4, 5.8, BLUE, 8)
+L(nod(2150, 9700, 0.5), 5.8, 6.0, BLUE, 6)
 T("你们组加起来超过一百吗？", 1800, 9050, 76, RED, k0=6, k1=8.75, sfx="pop")
 T("下一讲：细节越多，为什么越容易信错？", 1800, 9220, 46, k0=9, k1=13.5, sfx="wood_high")
-L(nod(2150, 9700, 0.5), 14, 14.5, BLUE, 6, sfx="shaker")
+L(underline(1400, 1800, 9275, 10, 30), 14, 14.6, BLACK, 6, sfx="shaker")
 b.hit(J(), 16, "kick", 0.55, "原曲最后一击")
 
 
