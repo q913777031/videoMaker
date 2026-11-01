@@ -39,7 +39,7 @@ from whiteboard import engine as wb
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out" / "fengtian"
 VIDEOS = ROOT / "videos" / "fengtian"
-MODS = {"01": "ep01_andon"}
+MODS = {"01": "ep01_andon", "02": "ep02_pull"}
 W, H, FPS = 1080, 1620, 30
 SAFE = dict(top=130, bottom=290, right=160, left=48)
 STAGE = (48, 280, 920, 1180)                       # 白板舞台（左、上、右、下）
@@ -268,6 +268,7 @@ def build_audio():
 def wording_warnings():
     texts = [("旁白", ln[0]) for ln in M.LINES] + [("字幕", c_) for ln in M.LINES for c_ in ln[1] if c_]
     texts += [("白板字", it["s"]) for it in M.b.items if it["kind"] == "text"]
+    texts += [("画面字", s_) for s_ in getattr(M, "SCREEN_TEXTS", [])]      # 第 02 讲起：弹字、砸字、印章、气泡
     texts += [("标签", s.tag) for s in M.b.shots] + [("片名", M.TITLE), ("封面", M.COVER_TITLE.replace("|", ""))]
     out = []
     for where, s in texts:
