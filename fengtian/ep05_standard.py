@@ -49,7 +49,7 @@ SCREENS = [
     ([26, 27, 28], "评论区见", 19),
 ]
 
-L = C.Lesson("05", SCREENS, drop_screen=2, board_size=(5000, 11400))
+L = C.Lesson("05", SCREENS, drop_screen=2, board_size=(5000, 11400), extra_hold={5: 0.8})
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
