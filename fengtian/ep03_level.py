@@ -1367,5 +1367,5 @@ def bars19(c, kk, T):
 b.custom(j, k_n + 2.6, k_n + 3.2, bars19)
 
 # ================================================================ 收尾
-L.finish(cover_shot=9, notes=NOTES)
+L.finish(cover_shot=10, notes=NOTES)
 L.export(globals())
