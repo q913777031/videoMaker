@@ -777,7 +777,7 @@ b.path(j, 0, 0.8, join(P((330, YB - 820), (330, AXY), (4330, AXY)), P((4290, AXY
                        P((300, YB - 790), (330, YB - 820), (360, YB - 790))), BLACK, 14, sfx="wood_high")
 b.text(j, 0.8, 1.0, "忙", 455, YB - 780, 150, RED)
 b.text(j, 1.0, 1.3, "1月", 455, AXY + 140, 120, BLACK)
-b.text(j, 1.3, 1.7, "12月", 4150, AXY + 140, 120, BLACK)
+b.text(j, 1.3, 1.7, "12月", 3950, AXY + 140, 120, BLACK)
 k_cv = kb(j, wt(14, 1, 0.05), lo=2)
 b.path(j, k_cv, k_cv + 2, YEAR, RED, 18, sfx="shaker")
 b.hit(j, k_cv + 1, "wood_low", 0.5, "曲线爬过第一个尖峰")
