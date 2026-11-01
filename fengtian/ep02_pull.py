@@ -45,7 +45,7 @@ SCREENS = [
     ([26, 27, 28], "评论区见", 18),
 ]
 
-L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 11400))
+L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 11400), extra_hold={13: 0.8, 17: 0.4})
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -936,7 +936,7 @@ def pages10(c, kk, T):
             paper(c, 0, 0, 230, 290, lines=5, fill="#ECEEF2" if dust and i > 0 else "#FFFFFF",
                   color="#9AA0AC" if dust and i > 0 else BLACK)
             if i == 0:
-                K.text(c, "周报", -10, -95, 54, "hand", BLUE)
+                K.text(c, "周报", -10, -118, 50, "hand", BLUE)
     if dust:
         g = clamp01((T - tb(10, k_none)) / 0.4)
         for n in range(16):
@@ -1402,7 +1402,7 @@ def home17(c, kk, T):
 
 b.custom(j, 1, 1.3, home17, sfx="pop")
 b.hit(j, k_go17, "bongo_low", 0.8, "小李背包往门口走")
-b.custom(j, k_go17 + 3, k_go17 + 3.3, L.pop_text("准点走", cx + 150, cy - 320, 100, BLUE, j, k_go17 + 3), sfx="ding", gain=0.8)
+b.custom(j, k_go17 + 2, k_go17 + 2.3, L.pop_text("准点走", cx + 150, cy - 320, 100, BLUE, j, k_go17 + 2), sfx="ding", gain=0.8)
 
 # ================================================================ 屏 18：评论区见 + 下一讲预告
 cx, cy = R[18]
