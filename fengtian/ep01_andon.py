@@ -31,7 +31,14 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow,
 # backend="engine.audio"：本仓库 Narrator（ZipVoice / Kokoro / CosyVoice3 / IndexTTS2）；IndexTTS2 写法见 engine/audio.py 的 Narrator 说明，
 # 例：{"backend": "engine.audio", "voice": "ix2_cv3jian", "emo": {"text": "语气温和，耐心讲解", "alpha": 0.7}, "line_emo": {7: …}}；其余值写成 "包.模块:函数"，
 # 该函数签名 fn(text, **options) -> (samples: np.ndarray, sample_rate: int)，由 synthesize() 统一转成 44.1kHz、裁静音。
-NARRATOR = {"backend": "engine.audio", "voice": "cv3i_yunjian", "prompt_speed": 0.95, "speed": 1.0, "num_steps": 8}
+# 方案 2（用户选定）：IndexTTS2，音色取第 01 讲 CosyVoice3 旁白，每句用文字描述情绪，强度 0.7
+_EMO = {"讲": "语气温和，像跟朋友聊天一样耐心讲解", "疼": "带着体谅和关心，有点心疼对方", "问": "略带惊讶，好奇地反问",
+        "醒": "认真、关切地提醒", "安": "平静、温暖，让人安心", "奇": "带点好奇，像要讲一件有意思的事",
+        "定": "认真、肯定地说明", "叹": "有点无奈，轻轻叹气", "近": "亲切地拉近距离，像聊家常",
+        "励": "温和、鼓励地说", "条": "清楚、耐心地一条条说明", "笑": "轻松、温暖，带点笑意"}
+LINE_MOOD = "讲疼奇讲讲讲定问讲讲叹定定近叹叹叹醒醒安励条条条笑近安奇"
+NARRATOR = {"backend": "engine.audio", "voice": "ix2_cv3jian", "speed": 1.0, "num_steps": 8,
+            "line_emo": {i: {"text": _EMO[m], "alpha": 0.7} for i, m in enumerate(LINE_MOOD)}}
 # 多音字：合成时换成 CosyVoice 拼音标注（字幕、ASR 核对仍用原文）
 PINYIN = [("组长", "组[zh][ǎng]"), ("重新", "[ch][óng]新"), ("宁可", "[n][ìng]可"), ("当场", "[d][āng]场"),
           ("个数", "个[sh][ù]"), ("应付", "[y][ìng]付"), ("少一点", "[sh][ǎo]一点"), ("扛着", "[k][áng]着")]
@@ -73,6 +80,7 @@ TAGS = "#丰田模式 #精益管理 #读书 #打工人 #职场 #返工"
 COVER_TITLE = "同一个问题|为什么总【返工】"
 DROP = 32
 COMMA = 0.25
+MAX_GAP = 0.6                     # 逗号处停顿上限（IndexTTS2 偶有 1 秒以上的长停）
 HOLD = 1.55
 MIN_BEATS = 10
 INTRO_BEATS = 6                   # 四字逐拍落定（第 0–3 拍，1.75 秒落完）后整体停留约 1.6 秒，再用 1.3 秒缓推到小李
@@ -166,6 +174,11 @@ def stretch(x, text, target=COMMA):
         while e < n and quiet[e]:
             e += 1
         have = (e - a) / 100 if quiet[i] else 0.0
+        if target and have > MAX_GAP:                 # 模型自带的过长停顿压到 MAX_GAP（只删静音段中间部分）
+            k0, k1 = (a * hop + int(MAX_GAP / 2 * audio.SR)), (e * hop - int(MAX_GAP / 2 * audio.SR))
+            x = np.concatenate([x[:k0], x[k1:]])
+            added -= k1 - k0
+            i, have = a + int(MAX_GAP * 50), MAX_GAP
         add = int(max(0.0, target - have) * audio.SR)
         cut = i * hop
         f = int(0.008 * audio.SR)
