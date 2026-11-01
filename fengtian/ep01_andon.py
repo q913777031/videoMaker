@@ -28,7 +28,8 @@ from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow,
                                desk, doc, face, join, rect, stick)
 
 # ---------------------------------------------------------------- 旁白合成（可插拔：换后端只改这里）
-# backend="engine.audio"：本仓库 Narrator（ZipVoice / Kokoro）；其余值写成 "包.模块:函数"，
+# backend="engine.audio"：本仓库 Narrator（ZipVoice / Kokoro / CosyVoice3 / IndexTTS2）；IndexTTS2 写法见 engine/audio.py 的 Narrator 说明，
+# 例：{"backend": "engine.audio", "voice": "ix2_cv3jian", "emo": {"text": "语气温和，耐心讲解", "alpha": 0.7}, "line_emo": {7: …}}；其余值写成 "包.模块:函数"，
 # 该函数签名 fn(text, **options) -> (samples: np.ndarray, sample_rate: int)，由 synthesize() 统一转成 44.1kHz、裁静音。
 NARRATOR = {"backend": "engine.audio", "voice": "cv3i_yunjian", "prompt_speed": 0.95, "speed": 1.0, "num_steps": 8}
 # 多音字：合成时换成 CosyVoice 拼音标注（字幕、ASR 核对仍用原文）
@@ -47,8 +48,10 @@ def synthesize(texts):
     cfg = dict(NARRATOR)
     be = cfg.pop("backend")
     if be == "engine.audio":
-        nar = audio.Narrator(cfg["voice"], prompt_speed=cfg.get("prompt_speed", 1.0))
-        return [nar.generate(t, cfg.get("speed", 1.0), cfg.get("num_steps", 4)) for t in texts]
+        nar = audio.Narrator(cfg["voice"], prompt_speed=cfg.get("prompt_speed", 1.0), emo=cfg.get("emo"))
+        line_emo = cfg.get("line_emo", {})          # 仅 ix2_ 音色：{句序号: emo} 逐句覆盖情绪
+        return [nar.generate(t, cfg.get("speed", 1.0), cfg.get("num_steps", 4), **({"emo": line_emo[i]} if i in line_emo else {}))
+                for i, t in enumerate(texts)]
     mod, fn = be.split(":")
     f = getattr(importlib.import_module(mod), fn)
     out = []

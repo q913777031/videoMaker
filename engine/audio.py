@@ -5,6 +5,7 @@
 
 import functools
 import hashlib
+import json
 import math
 from pathlib import Path
 
@@ -36,6 +37,16 @@ PROMPT_TEXT = "其实每个人都可以重新开始，换一种方式，去过�
 CV3_PROMPT_TEXT = "工厂里每天都会出点小问题，我们先把它记下来，再一个一个慢慢解决。"
 CV3_INSTRUCT = "请用温暖、恳切、有感染力的语气讲解，像在提醒一个朋友，语调要有起伏。"
 CV3_PYTHON = MODEL_ROOT / "venv_tts" / "bin" / "python"
+# IndexTTS2 音色：ix2_<x>，模型跑在 models/venv_tts 的子进程里（见 engine/indextts_worker.py 的准备步骤）。
+# 音色提示（speaker prompt）全程用本地合成音：
+#   ix2_cv3jian —— 第 01 讲《丰田模式》现用 CosyVoice3 旁白（cv3i_yunjian、prompt_speed 0.95）里的两句，约 9 秒，
+#                  音色与 ep01 一致；首次使用时从 .cache/tts 的合成结果拼出，并另存到 models/ix2_prompts/（CV3 权重已删，靠它留底）；
+#   ix2_<z>     —— ZipVoice 音色 zv_<z>（如 ix2_yunjian）念 IX2_PROMPT_TEXT。
+IX2_PROMPT_DIR = MODEL_ROOT / "ix2_prompts"
+IX2_PROMPT_TEXT = "工厂里每天都会出点小问题。我们先把它记下来，再一个一个慢慢解决，这样大家后面都能轻松一点。"
+IX2_CV3_LINES = {"cv3jian": ["说回我们自己，这种事是不是天天都有？", "报表里有个[sh][ù]对不上，你想着先混过去，到月底对账，全乱了。"]}
+# 情绪向量各维：喜 怒 哀 惧 厌恶 低落 惊讶 平静（IndexTTS2 顺序）
+IX2_EMOTIONS = ("happy", "angry", "sad", "afraid", "disgusted", "melancholic", "surprised", "calm")
 
 
 # ---------------------------------------------------------------- 基础工具
@@ -134,11 +145,35 @@ class Narrator:
     音色名以 cv3_ / cv3i_ 开头时使用 CosyVoice3（如 "cv3i_yunjian"）：提示音由 zv_<同名> 合成（prompt_speed 同上），
     cv3i_ 额外带语气指令（instruct，默认 CV3_INSTRUCT）。首次合成时启动一个常驻子进程加载模型（约 30 秒），
     CPU 上每 10 秒语音约需 2–3 分钟，结果同样按键缓存；合成带随机采样，固定种子后同一文本结果可复现。
+
+    音色名以 ix2_ 开头时使用 IndexTTS2（如 "ix2_cv3jian"，提示音见 IX2_CV3_LINES / IX2_PROMPT_TEXT）。
+    emo 设情绪（也可在 generate(emo=…) 里逐句覆盖）：
+      None                                   —— 不加控制，情绪跟随音色提示；
+      {"text": "语气温和，耐心讲解", "alpha": 0.7} —— 文字描述情绪（模型自带 Qwen 情绪模型换算成向量）；
+      {"vector": {"calm": 0.7, "happy": 0.2}, "alpha": 0.7}（或 8 个数的列表，顺序见 IX2_EMOTIONS）—— 情绪向量；
+      {"audio": "某段合成音.wav", "alpha": 0.7}    —— 情绪参考音频（不得用真人录音）；
+      字符串等同 {"text": 字符串, "alpha": 0.7}。
+    IndexTTS2 没有语速参数：语速跟随提示音（prompt_speed≠1 时用 ffmpeg atempo 先把提示音变速）；
+    generate 的 speed≠1 时取同一句原速的结果做 atempo 变速（不重新采样）。文本里的 CosyVoice 式拼音标注 [d][āng] 自动换成 IndexTTS2 的 DANG1。
+    首次合成时启动常驻子进程加载模型（约 80 秒、内存约 9GB），CPU 上每 10 秒语音约需 4 分钟；缓存键含
+    后端|音色提示|情绪参数|语速|文本，固定种子可复现。
     """
 
-    def __init__(self, voice: str = "zv_yunxi", prompt_speed: float = 1.0, instruct: str | None = None):
+    def __init__(self, voice: str = "zv_yunxi", prompt_speed: float = 1.0, instruct: str | None = None, emo=None):
         self._prompt = None
         self._cv3 = None
+        self._ix2 = None
+        if voice.startswith("ix2_"):
+            if not CV3_PYTHON.is_file():
+                raise FileNotFoundError(f"TTS venv not found: {CV3_PYTHON} (see engine/indextts_worker.py)")
+            name = voice[4:]
+            if name not in IX2_CV3_LINES and "zv_" + name not in ZIPVOICE:
+                raise KeyError(f"unknown voice {voice}: no IndexTTS2 prompt for {name}")
+            wav = self._ix2_prompt(name, prompt_speed)
+            ph = hashlib.sha1(wav.read_bytes()).hexdigest()[:12]
+            self._ix2 = dict(wav=str(wav), emo=_ix2_emo(emo), proc=None)
+            self._key = f"ix2|{voice}|{ph}|p{prompt_speed:.3f}"
+            return
         if voice.startswith(("cv3_", "cv3i_")):
             zv = "zv_" + voice.split("_", 1)[1]
             if zv not in ZIPVOICE:
@@ -179,17 +214,28 @@ class Narrator:
         self._tts = sherpa_onnx.OfflineTts(cfg)
         self._key = f"{sub}|{self._sid}"
 
-    def generate(self, text: str, speed: float = 1.0, num_steps: int = 4) -> np.ndarray:
+    def generate(self, text: str, speed: float = 1.0, num_steps: int = 4, emo=None) -> np.ndarray:
         """合成一句旁白；结果按 (音色, 语速, 文本[, 步数]) 缓存到 .cache/tts，改画面重渲染时无需重新合成。
 
         num_steps 为 ZipVoice 的去噪步数（默认 4；调高更慢、可能更自然），Kokoro 音色忽略此参数。
-        默认步数的缓存键与旧版相同，已有缓存继续有效。"""
+        默认步数的缓存键与旧版相同，已有缓存继续有效。emo 只对 ix2_ 音色有效（逐句覆盖构造时的情绪）。"""
         steps = f"|steps{num_steps}" if self._prompt is not None and num_steps != 4 else ""
-        key = hashlib.sha1(f"{self._key}|{speed:.4f}|{text}{steps}".encode()).hexdigest()
+        if self._ix2 is not None:                 # IndexTTS2：后端|音色提示|情绪参数|语速|文本（num_steps 不用）
+            e = self._ix2["emo"] if emo is None else _ix2_emo(emo)
+            raw = f"{self._key}|{json.dumps(e, sort_keys=True, ensure_ascii=False)}|{speed:.4f}|{text}"
+        else:
+            raw = f"{self._key}|{speed:.4f}|{text}{steps}"
+        key = hashlib.sha1(raw.encode()).hexdigest()
         path = CACHE_DIR / f"{key}.npy"
         if path.exists():
             return np.load(path)
-        if self._cv3 is not None:
+        if self._ix2 is not None:
+            if abs(speed - 1.0) > 1e-6:           # 变速版 = 原速版（同一份采样结果）再 atempo，换语速不重新采样
+                x, sr = _atempo(self.generate(text, 1.0, num_steps, emo), SR, speed), SR
+            else:
+                x, sr = self._ix2_generate(_ix2_pinyin(text), e, int(key[:8], 16))
+            a = type("A", (), {"samples": x, "sample_rate": sr})
+        elif self._cv3 is not None:
             x, sr = self._cv3_generate(text, speed, int(key[:8], 16))
             a = type("A", (), {"samples": x, "sample_rate": sr})
         elif self._prompt is not None:
@@ -242,6 +288,150 @@ class Narrator:
             if line.startswith("{"):
                 return json.loads(line)
         raise RuntimeError("CosyVoice3 worker exited")
+
+    # ---------------------------------------------------------------- IndexTTS2
+    @staticmethod
+    def _ix2_prompt(name: str, prompt_speed: float) -> Path:
+        """音色提示 wav（24kHz）：先找 models/ix2_prompts/<name>.wav，没有就用本地合成音拼出并存下。"""
+        import soundfile as sf
+
+        base = IX2_PROMPT_DIR / f"{name}.wav"
+        if not base.is_file():
+            if name in IX2_CV3_LINES:            # 只读缓存：CosyVoice3 权重已删，缓存缺失时直接报错
+                cv = Narrator("cv3i_yunjian", prompt_speed=0.95)
+                xs = []
+                for t in IX2_CV3_LINES[name]:
+                    k = hashlib.sha1(f"{cv._key}|{1.0:.4f}|{t}".encode()).hexdigest()
+                    p = CACHE_DIR / f"{k}.npy"
+                    if not p.is_file():
+                        raise FileNotFoundError(f"CosyVoice3 cache missing for prompt line: {t} ({p})")
+                    xs.append(np.load(p))
+                y = np.concatenate([xs[0], np.zeros(int(0.5 * SR))] + xs[1:])
+            else:
+                y = Narrator("zv_" + name).generate(IX2_PROMPT_TEXT, 1.0, 8)
+            y = y * (0.89 / max(1e-9, np.abs(y).max()))
+            IX2_PROMPT_DIR.mkdir(parents=True, exist_ok=True)
+            sf.write(base, signal.resample_poly(y, 240, 441).astype(np.float32), 24000)
+        if abs(prompt_speed - 1.0) < 1e-6:
+            return base
+        out = IX2_PROMPT_DIR / f"{name}_p{prompt_speed:.3f}.wav"
+        if not out.is_file():
+            _atempo_file(base, out, prompt_speed)
+        return out
+
+    def _ix2_generate(self, text: str, emo: dict | None, seed: int):
+        """把一句交给 IndexTTS2 子进程；首次调用时启动子进程。"""
+        import json as _json
+        import subprocess
+        import tempfile
+
+        import soundfile as sf
+
+        c = self._ix2
+        if c["proc"] is None:
+            c["tmp"] = tempfile.TemporaryDirectory()
+            c["proc"] = subprocess.Popen([str(CV3_PYTHON), "-I", str(ROOT / "engine" / "indextts_worker.py")],
+                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                         text=True, bufsize=1, cwd=c["tmp"].name)
+            self._ix2_reply()
+        out = str(Path(c["tmp"].name) / "out.wav")
+        q = dict(text=text, spk_wav=c["wav"], seed=seed, out=out)
+        if emo:
+            q["emo_alpha"] = emo["alpha"]
+            for k, qk in (("vector", "emo_vector"), ("text", "emo_text"), ("audio", "emo_wav")):
+                if k in emo:
+                    q[qk] = emo[k]
+        c["proc"].stdin.write(_json.dumps(q, ensure_ascii=False) + "\n")
+        c["proc"].stdin.flush()
+        r = self._ix2_reply()
+        if not r.get("ok"):
+            raise RuntimeError(f"IndexTTS2 failed: {r.get('err')}")
+        c["last"] = r
+        x, sr = sf.read(out)
+        return x, sr
+
+    def _ix2_reply(self) -> dict:
+        import json as _json
+
+        for line in self._ix2["proc"].stdout:
+            line = line.strip()
+            if line.startswith("{"):
+                return _json.loads(line)
+        raise RuntimeError("IndexTTS2 worker exited")
+
+
+def _ix2_emo(emo):
+    """把 emo 参数整理成规范 dict（进缓存键）：{"alpha": a, "text"|"vector"|"audio": …}。"""
+    if emo is None:
+        return None
+    if isinstance(emo, str):
+        emo = {"text": emo}
+    e = dict(emo)
+    alpha = float(e.pop("alpha", 0.7))
+    if "vector" in e:
+        v = e["vector"]
+        if isinstance(v, dict):
+            bad = set(v) - set(IX2_EMOTIONS)
+            if bad:
+                raise KeyError(f"unknown emotions {bad}; use {IX2_EMOTIONS}")
+            v = [float(v.get(k, 0.0)) for k in IX2_EMOTIONS]
+        if len(v) != 8:
+            raise ValueError("emotion vector needs 8 values")
+        return {"alpha": round(alpha, 3), "vector": [round(float(x), 4) for x in v]}
+    if "text" in e:
+        return {"alpha": round(alpha, 3), "text": str(e["text"])}
+    if "audio" in e:
+        p = Path(e["audio"]).resolve()
+        return {"alpha": round(alpha, 3), "audio": str(p), "sha": hashlib.sha1(p.read_bytes()).hexdigest()[:12]}
+    raise ValueError(f"bad emo {emo!r}")
+
+
+_TONES = {"ā": "a1", "á": "a2", "ǎ": "a3", "à": "a4", "ō": "o1", "ó": "o2", "ǒ": "o3", "ò": "o4",
+          "ē": "e1", "é": "e2", "ě": "e3", "è": "e4", "ī": "i1", "í": "i2", "ǐ": "i3", "ì": "i4",
+          "ū": "u1", "ú": "u2", "ǔ": "u3", "ù": "u4", "ǖ": "v1", "ǘ": "v2", "ǚ": "v3", "ǜ": "v4", "ü": "v"}
+
+
+def _ix2_pinyin(text: str) -> str:
+    """CosyVoice 式拼音标注 "[d][āng]场" → IndexTTS2 式 "DANG1场"（拼音大写 + 声调数字，替换掉那个字）。
+
+    也可以直接在文本里写 IndexTTS2 式：把多音字换成大写拼音加声调（1–4，轻声 5），如 "先YING4付一下"。"""
+    import re
+
+    def conv(m):
+        py = "".join(re.findall(r"\[([^\]]+)\]", m.group(0)))
+        tone = "5"
+        out = ""
+        for ch in py:
+            t = _TONES.get(ch)
+            if t is None:
+                out += ch
+            else:
+                out += t[0]
+                if len(t) > 1:
+                    tone = t[1]
+        return out.upper() + tone
+
+    return re.sub(r"(?:\[[a-zāáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜü]+\])+", conv, text)
+
+
+def _atempo(x: np.ndarray, sr: int, tempo: float) -> np.ndarray:
+    import tempfile
+
+    import soundfile as sf
+
+    with tempfile.TemporaryDirectory() as d:
+        sf.write(f"{d}/a.wav", np.asarray(x, np.float32), sr)
+        _atempo_file(f"{d}/a.wav", f"{d}/b.wav", tempo)
+        y, _ = sf.read(f"{d}/b.wav")
+    return np.asarray(y, np.float64)
+
+
+def _atempo_file(src, dst, tempo: float):
+    """ffmpeg atempo 变速不变调（tempo>1 变快）。"""
+    import subprocess
+
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src), "-filter:a", f"atempo={tempo:.4f}", str(dst)],
+                   check=True)
 
 
 def _trim(x: np.ndarray, thr_db: float = -38.0) -> np.ndarray:
