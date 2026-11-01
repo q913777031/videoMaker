@@ -39,7 +39,7 @@ from whiteboard import engine as wb
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out" / "fengtian"
 VIDEOS = ROOT / "videos" / "fengtian"
-MODS = {"01": "ep01_andon", "02": "ep02_pull", "03": "ep03_level", "04": "ep04_flow", "05": "ep05_standard", "06": "ep06_visual", "07": "ep07_genchi"}
+MODS = {"01": "ep01_andon", "02": "ep02_pull", "03": "ep03_level", "04": "ep04_flow", "05": "ep05_standard", "06": "ep06_visual", "07": "ep07_genchi", "08": "ep08_why"}
 W, H, FPS = 1080, 1620, 30
 SAFE = dict(top=130, bottom=290, right=160, left=48)
 STAGE = (48, 280, 920, 1180)                       # 白板舞台（左、上、右、下）
