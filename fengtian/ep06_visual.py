@@ -1178,9 +1178,9 @@ def strip9(c, kk, T):
     chat_phone(c, x, ybot + 80, 0.95, 0)
     if T >= tb(9, k_scr + 2):
         a = clamp01((T - tb(9, k_scr + 2)) / 0.3)
-        K.text(c, "翻了半天", x + 260, cy - 200, 64, "hand", RED, a)
-        c.drawPath(arrow((x + 160, cy - 300), (x + 160, cy - 100), 0, 26), wb.marker(RED, 7, a))
-        c.drawPath(arrow((x + 160, cy - 100), (x + 160, cy - 300), 0, 26), wb.marker(RED, 7, a))
+        K.text(c, "翻了半天", x - 300, cy - 120, 58, "hand", RED, a)
+        c.drawPath(arrow((x - 150, cy - 260), (x - 150, cy - 30), 0, 26), wb.marker(RED, 7, a))
+        c.drawPath(arrow((x - 150, cy - 30), (x - 150, cy - 260), 0, 26), wb.marker(RED, 7, a))
     return None
 
 
