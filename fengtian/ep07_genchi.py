@@ -657,7 +657,6 @@ for name, k_ in (("美国", k_us), ("加拿大", k_ca), ("墨西哥", k_mx)):
     path, (lx, ly), col = MAP[name]
     b.path(j, k_, k_ + 0.6, path, col, 8, sfx=("wood_low", "wood_high", "tom")[("美国", "加拿大", "墨西哥").index(name)],
            gain=0.7)
-    b.custom(j, k_ + 0.5, k_ + 0.8, L.pop_text(name, lx, ly, 52, col, j, k_ + 0.5))
 ROUTE3 = skia.Path()
 ROUTE3.moveTo(cx + 70, cy - 100)
 ROUTE3.cubicTo(cx + 40, cy - 260, cx + 120, cy - 315, cx + 280, cy - 315)
@@ -681,6 +680,26 @@ def route3(c, kk, T, cx=cx, cy=cy):
 
 
 b.custom(j, k_route, k_route + 0.3, route3, sfx="shaker", gain=0.7)
+
+
+def map_label(name, k_):
+    """国名：白底小牌子，画在路线上面（路线从牌子下面穿过）。"""
+    _, (lx, ly), col = MAP[name]
+    w = K.text_w(name, 52, "hand") + 34
+
+    def fn(c, kk, T):
+        sc = pop_scale(T - tb(3, k_ + 0.5))
+        if sc > 0:
+            with K.at(c, lx, ly, 0, sc):
+                box(c, 0, 0, w, 66, "#FFFFFF", col, 4, 33)
+                K.text(c, name, 0, 2, 52, "hand", col)
+        return None
+    return fn
+
+
+L.note(*MAP)
+for name, k_ in (("美国", k_us), ("加拿大", k_ca), ("墨西哥", k_mx)):
+    b.custom(j, k_ + 0.5, k_ + 0.8, map_label(name, k_))
 
 
 def eng3(c, sc, T, cx=cx, cy=cy):
