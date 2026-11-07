@@ -246,25 +246,25 @@ def cloud1(c, kk, T, cx=cx, cy=cy):
             g = clamp01((T - tb(1, k_place)) / 0.3)
             c.drawRect(skia.Rect.MakeXYWH(x0 - 400, y0 - 400, 400, 400), K.paint("#DCE6F2", g))
             c.drawRect(skia.Rect.MakeXYWH(x0, y0 - 400, 400, 400), K.paint("#F3E2B8", g))
-            box(c, x0 - 300, y0 - 280, 130, 100, "#2E2A28", BLACK, 4, 6, g)
+            box(c, x0 - 300, y0 - 90, 130, 100, "#2E2A28", BLACK, 4, 6, g)
             K.text(c, "公司", x0 - 200, y0 - 360, 44, "hand", BLUE, g)
-            c.drawRect(skia.Rect.MakeXYWH(x0 + 220, y0 - 320, 120, 120), wb.marker(BROWN, 6, g))
-            C.line(c, (x0 + 280, y0 - 320), (x0 + 280, y0 - 200), BROWN, 5, g)
+            c.drawRect(skia.Rect.MakeXYWH(x0 + 240, y0 - 140, 120, 120), wb.marker(BROWN, 6, g))
+            C.line(c, (x0 + 300, y0 - 140), (x0 + 300, y0 - 20), BROWN, 5, g)
             K.text(c, "老家", x0 + 200, y0 - 360, 44, "hand", BROWN, g)
         combo(c, x0, y0, 0.95, "flat")
         if T >= tb(1, k_face):
             g = pop_scale(T - tb(1, k_face))
-            with K.at(c, x0 - 250, y0 - 220, 0, g):
-                box(c, 0, 0, 200, 64, PAPER_W, BLACK, 4, 30)
-                K.text(c, "领导的脸", 0, 2, 38, "hand", BLACK)
-            c.drawPath(wb.arrow((x0 - 150, y0 - 220), (x0 - 55, y0 - 270), 0.1, 18), wb.marker(BLACK, 4, clamp01(g)))
+            with K.at(c, x0 - 240, y0 - 250, 0, g):
+                box(c, 0, 0, 230, 76, PAPER_W, BLACK, 4, 30)
+                K.text(c, "领导的脸", 0, 2, 46, "hand", BLACK)
+            c.drawPath(wb.arrow((x0 - 125, y0 - 250), (x0 - 55, y0 - 270), 0.1, 18), wb.marker(BLACK, 4, clamp01(g)))
         if T >= tb(1, k_voice):
             g = pop_scale(T - tb(1, k_voice))
-            with K.at(c, x0 + 230, y0 - 150, 0, g):
-                c.drawRoundRect(skia.Rect.MakeXYWH(-120, -50, 240, 100), 40, 40, K.paint("#FFF4D6"))
-                c.drawPath(wb.bubble(0, 0, 240, 100, -1), wb.marker(ORANGE, 5))
-                K.text(c, "吃了没？", 0, 2, 44, "hand", ORANGE)
-                K.text(c, "妈的声音", 0, 90, 34, "hand", ORANGE)
+            with K.at(c, x0 + 240, y0 - 280, 0, g):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-140, -55, 280, 110), 40, 40, K.paint("#FFF4D6"))
+                c.drawPath(wb.bubble(0, 0, 280, 110, -1), wb.marker(ORANGE, 5))
+                K.text(c, "吃了没？", 0, 2, 52, "hand", ORANGE)
+                K.text(c, "妈的声音", 0, 90, 40, "hand", ORANGE)
     return None
 
 
@@ -272,7 +272,7 @@ ev(j, k_cl, cloud1, "pop", 0.75)
 b.hit(j, k_face, "pop", 0.7, "脸像领导")
 b.hit(j, k_voice, "wood_high", 0.7, "声音像妈")
 b.hit(j, k_place, "shaker", 0.65, "一半公司一半老家")
-ev(j, k_where, L.pop_text("哪儿？", cx + 330, cy + 240, 90, RED, j, k_where), "rim", 0.8)
+ev(j, k_where, L.pop_text("哪儿？", cx + 380, cy + 270, 90, RED, j, k_where), "rim", 0.8)
 
 # ================================================================ 屏 2：drop——穿高中校服的同事，在你家厨房开会
 cx, cy = R[2]
@@ -287,7 +287,7 @@ L.note("开会", "高中校服")
 
 def cloud2(c, kk, T, cx=cx, cy=cy):
     sc = pop_scale(T - tb(2, k_kit))
-    if not dream_cloud(c, CL2[0], CL2[1], 1060, 860, sc):
+    if not dream_cloud(c, CL2[0], CL2[1], 1060, 800, sc):
         return None
     with at_pop(c, CL2[0], CL2[1], sc):
         gy = CL2[1] + 280
@@ -319,7 +319,7 @@ def cloud2(c, kk, T, cx=cx, cy=cy):
 ev(j, k_kit, cloud2, "pop", 0.75)
 b.hit(j, k_stu, "wood_high", 0.75, "穿校服的同事")
 ev(j, KD, L.slam_text("开会", cx + 300, cy - 400, 140, RED, j, KD, rot=-6), "kick", 0.95)
-ev(j, max(k_stu, KD - 1), L.pop_text("高中校服", cx - 300, cy + 420, 60, BLUE, j, max(k_stu, KD - 1)), None)
+ev(j, max(k_stu, KD - 1), L.pop_text("高中校服", cx - 300, cy + 490, 60, BLUE, j, max(k_stu, KD - 1)), None)
 
 # ================================================================ 屏 3：醒来三句话就讲完了，可感觉装了好多事
 cx, cy = R[3]
@@ -450,7 +450,7 @@ j = L.scene(5, (cx, cy + 10, Z))
 k_book = kq(j, wt(7, 0, 0.5), 0)
 k_l1 = nx(j, wt(7, 1, 0.4), k_book)
 k_l2 = nx(j, wt(7, 2, 0.4), k_l1)
-k_l3 = nx(j, wt(7, 4, 0.5), k_l2)
+k_l3 = nx(j, wt(7, 3, 0.6), k_l2)
 BK = (cx + 40, cy - 60)
 NODES = [(cx - 300, cy - 400), (cx + 340, cy - 380), (cx + 300, cy + 330)]
 L.note("同事", "妻子爱的花", "小时候")
@@ -533,7 +533,7 @@ def src6(c, kk, T, cx=cx, cy=cy):
         with at_pop(c, x, y, g):
             s = 0.6
             if i == 0:
-                draw_boss(c, x, y, s, alpha=1 - fly * 0.6)
+                draw_boss(c, x, y, s)
             elif i == 1:
                 mom(c, x, y, s)
             else:
@@ -859,8 +859,8 @@ cx, cy = R[12]
 j = L.scene(12, (cx, cy + 10, Z))
 k_h12 = kq(j, wt(16, 0, 0.3), 0)
 k_wr = nx(j, wt(16, 1, 0.3), k_h12)
-k_faces = nx(j, wt(16, 2, 0.5), k_wr)
-k_pick = nx(j, wt(16, 3, 0.4), k_faces)
+k_faces = nx(j, wt(16, 2, 0.2), k_wr)
+k_pick = nx(j, wt(16, 2, 0.8), k_faces)
 L.note("第三", "写成一句话", "我怕被比下去", "怕", "烦", "还好")
 FACES = [("怕", "o"), ("烦", "sad"), ("还好", "smile")]
 
@@ -917,7 +917,7 @@ cx, cy = R[13]
 j = L.scene(13, (cx, cy + 10, Z))
 k_mess = 0
 k_untie = nx(j, wt(17, 1, 0.6), k_mess)
-k_clear = nx(j, wt(17, 3, 0.4), k_untie)
+k_clear = nx(j, wt(17, 2, 0.6), k_untie)
 L.note("我怕被比下去")
 
 
