@@ -1,10 +1,11 @@
 """《丰田模式》16 教人：新人教了三遍，怎么还是不会？（白板手绘 + AI 旁白，竖屏 2:3）
 
-对话改写：同一段“带新人”拍两遍。原来那段开头打一块场记板“第一遍”，讲完丰田带新人的四步，场记板翻成“改写版”，
+对话改写：同一段“带新人”拍两遍（2026-11 新结构：先痛点和身边的例子，再回放原来那段）。原来那段开头打一块场记板“第一遍”，讲完丰田带新人的四步，场记板翻成“改写版”，
 同一张桌子、同一份活再演一遍；改写版每屏右上角一张四格进度卡（一二三四），做到哪一步亮哪一格。
 - 开场（qmarks）：小李讲第 1、2、3 遍，小周头顶的问号一个比一个大，“又错了”；
 - 日常：小李第三次指着屏幕讲，气泡越来越大；小周交上来的文件一个红叉；小李心里嘀咕“这么简单”；
-- 第一遍（drop）：场记板“第一遍”拍下；小李的鼠标快成一团残影，“这样，再这样，懂了吧？”砸下；
+- 身边的例子：交接时扔过去一个文件夹“都在里面了”；教爸妈手机挂号，手指在屏幕上飞，爸妈摆手“算了”（drop）；
+- 第一遍：场记板“第一遍”拍下；小李的鼠标快成一团残影，“这样，再这样，懂了吧？”砸下；
   小周点头说懂了，日历翻到第二天，桌上三个红叉；
 - 书中做法：车间组长带新员工（戴安全帽），牌子上四个空格，“学的人没学会 / 就当是教的人没教会”；组长自己拧螺丝，
   再转身教人，“懂这份活”“会教别人”两个勾；
@@ -12,8 +13,7 @@
   每步弹出“为什么”；第三步换小周操作，边做边说，错一处当场改成勾；第四步小李回座位，钟走一阵回来看，小周举手“找你”；
   结果：第二天小周交出一个勾，还问“为什么要这样？”；
 - 为什么：小李闭着眼都会的一串步骤里有两步是虚线（忘了讲）；耳朵听的字往外漏，手做过的一步留在脑子里；
-- 说回我们：交接时扔过去一个文件夹“都在里面了”；教爸妈手机挂号，手指在屏幕上飞，爸妈摆手“算了”；
-  小李桌上一摞自己的活、旁边站着等着学的新人，“三步”；三步做法（先画“用在哪”再画“怎么做” / 两人轮流做给对方看 /
+- 说回我们：小李桌上一摞自己的活、旁边站着等着学的新人，“三步”；三步做法（先画“用在哪”再画“怎么做” / 两人轮流做给对方看 /
   第二天走到桌边问“卡在哪了？”）；海边躺椅上手机很安静，工位上小周顺利接手；
 - 收尾：评论区“谢谢某某”；多年后小周带着新人，墙上挂着小李的照片；下一讲预告（一条链子断了一节）。
 小李 common.draw_li；新人小周 scenekit.draw_zhou（短卷发、圆框眼镜、绿卫衣、“新”字工牌，不戴安全帽）；
@@ -41,18 +41,18 @@ from whiteboard.engine import P, check, cross, rect
 SCREENS = [
     ([], "开场", 0),
     ([0, 1], "打工人日常", 1),
-    ([2, 3], "回放 · 原来那一段", 2),
-    ([4], "回放 · 原来那一段", 3),
-    ([5, 6], "丰田模式 · 书中做法", 4),
-    ([7], "丰田模式 · 书中做法", 5),
-    ([8, 9], "改写 · 第一步", 6),
-    ([10], "改写 · 第二步", 7),
-    ([11], "改写 · 第三步", 8),
-    ([12], "改写 · 第四步", 9),
-    ([13], "改写 · 结果", 10),
-    ([14, 15, 16], "为什么做一遍更好", 11),
-    ([17, 18], "说回我们自己", 12),
-    ([19], "说回我们自己", 13),
+    ([2, 3], "身边的例子", 2),
+    ([4], "身边的例子", 3),
+    ([5, 6], "回放 · 原来那一段", 4),
+    ([7], "回放 · 原来那一段", 5),
+    ([8, 9], "丰田模式 · 书中做法", 6),
+    ([10], "丰田模式 · 书中做法", 7),
+    ([11, 12], "改写 · 第一步", 8),
+    ([13], "改写 · 第二步", 9),
+    ([14], "改写 · 第三步", 10),
+    ([15], "改写 · 第四步", 11),
+    ([16], "改写 · 结果", 12),
+    ([17, 18, 19], "为什么做一遍更好", 13),
     ([20, 21], "说回我们自己", 14),
     ([22], "做法一 · 示意", 15),
     ([23], "做法二 · 示意", 16),
@@ -62,7 +62,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("16")          # 本讲样式：深褐黑板、开场 qmarks、转场 drop
-L = C.Lesson("16", SCREENS, drop_screen=2, board_size=(5000, 12800), theme=THEME)
+L = C.Lesson("16", SCREENS, drop_screen=3, board_size=(5000, 12800), theme=THEME)
 b = L.b
 tb, wt = L.tb, L.wt
 KT = Kit(L)
@@ -284,481 +284,10 @@ def think1(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k1_th, think1, "wood_high", 0.75)
 
-# ================================================================ 屏 2：场记板“第一遍”拍下；鼠标快成残影；drop 时“这样，再这样，懂了吧？”砸下
+# ================================================================ 屏 2：交接时一个文件夹被扔到桌上，“都在里面了”；新人对着文件夹发愣
 cx, cy = R[2]
 j = L.scene(2, (cx, cy + 10, Z))
-KD = L.drop_k()
-b.shots[j].shake, b.shots[j].flashes = [(KD, 16.0)], [(KD, 0.45)]
-k2_clap = 0
-k2_ppl = min(max(kq(j, wt(2, 1, 0.3), 1), 1), KD - 2)
-k2_fast = min(max(kq(j, wt(3, 0, 0.4), k2_ppl + 1), k2_ppl + 1), KD - 1)
-L.note("这样，再这样", "懂了吧？")
-ev(j, k2_clap, clap_fn(2, k2_clap, cx - 330, cy - 440, "第一遍"), "clap", 0.9)
-
-
-def ppl2(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(2, k2_ppl))
-    if sc <= 0:
-        return None
-    with at_pop(c, cx, cy + 300, sc):
-        monitor(c, cx, cy + 80, 380, 250, BLUE_FILL)
-        desk(c, cx, cy + 270, 760)
-        fast = T >= tb(2, k2_fast)
-        mx, my = cx - 160, cy + 240
-        if fast:
-            mouse_blur(c, mx, my, T)
-            for i in range(4):
-                ph = ((T * 3) + i * 0.25) % 1
-                c.drawRect(skia.Rect.MakeXYWH(cx - 150 + ph * 260, cy + 10 + i * 40, 60, 20), K.paint(BLUE, 1 - ph))
-        else:
-            mouse_blur(c, mx, my, 0.0, 1.0)
-        hy = cy + 520 - 290 * 0.85
-        draw_li(c, cx - 380, cy + 520, 0.85, "smile", rh=(mx, my - 20))
-        seated(draw_zhou, c, cx + 330, cy + 530, 0.85, mood="o" if fast else "flat")
-    return None
-
-
-ev(j, k2_ppl, ppl2, "wood_low", 0.7)
-b.hit(j, k2_fast, "shaker", 0.8, "鼠标飞快")
-
-
-def say2(c, kk, T, cx=cx, cy=cy):
-    sc = C.slam_scale(T - tb(2, KD))
-    if sc <= 0:
-        return None
-    with K.at(c, cx + 100, cy - 330, -3, sc):
-        c.drawRoundRect(skia.Rect.MakeXYWH(-310, -120, 620, 240), 50, 50, K.paint("#FFFFFF"))
-        c.drawPath(wb.bubble(0, 0, 620, 240, -1), wb.marker(BLACK, 8))
-        K.text(c, "这样，再这样", 0, -40, 66, "hand", BLACK)
-        K.text(c, "懂了吧？", 0, 50, 80, "hand", RED)
-    return None
-
-
-ev(j, KD, say2, "kick", 0.95)
-
-# ================================================================ 屏 3：小周点头说懂了；日历翻到第二天；桌上三个红叉
-cx, cy = R[3]
-j = L.scene(3, (cx, cy + 10, Z))
-k3_nod, k3_cal, k3_x1 = seq(j, [None, (4, 1, 0.1), (4, 1, 0.6)])
-k3_x2, k3_x3 = k3_x1 + 1, k3_x1 + 2
-L.note("懂了", "第二天")
-ev(j, 0, clap_fn(3, 0, cx - 380, cy - 470, "第一遍"))
-
-
-def nod3(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(3, k3_nod))
-    if sc <= 0:
-        return None
-    x, y = cx - 250, cy + 520
-    nod = 10 * abs(math.sin((T - tb(3, k3_nod)) * 6)) if T < tb(3, k3_cal) else 0
-    with at_pop(c, x, y, sc):
-        draw_zhou(c, x, y + nod * 0.3, 0.95, mood="smile" if T < tb(3, k3_x1) else "sad")
-        if T < tb(3, k3_cal) + 0.5:
-            bubble_text(c, "懂了", x + 60, y - 430, 60, BLACK, -1)
-    return None
-
-
-ev(j, k3_nod, nod3, "pop", 0.7)
-
-
-def cal3(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(3, k3_cal))
-    if sc <= 0:
-        return None
-    x, y = cx + 300, cy - 280
-    with at_pop(c, x, y, sc):
-        calendar_page(c, x, y, 300, 280, "第二天", flip=ease_in_out(clamp01((T - tb(3, k3_cal)) / 0.4)))
-    return None
-
-
-ev(j, k3_cal, cal3, "wood_high", 0.75)
-
-
-def xs3(c, kk, T, cx=cx, cy=cy):
-    desk(c, cx + 200, cy + 300, 620)
-    for n, k_ in enumerate((k3_x1, k3_x2, k3_x3)):
-        if T >= tb(3, k_):
-            x = cx + 20 + n * 180
-            paper(c, x, cy + 220, 150, 150, rows=2, rot=(n - 1) * 6)
-            xmark(c, x, cy + 220, 55, clamp01((T - tb(3, k_)) / 0.25))
-    return None
-
-
-ev(j, k3_x1, xs3, "rim", 0.8)
-b.hit(j, k3_x2, "rim", 0.8, "第二个红叉")
-b.hit(j, k3_x3, "kick", 0.85, "第三个红叉")
-
-# ================================================================ 屏 4：车间组长带新员工；牌子四个空格；“学的人没学会 / 就当是教的人没教会”
-cx, cy = R[4]
-j = L.scene(4, (cx, cy + 10, Z))
-k4_ppl, k4_sign, k4_t1, k4_t2 = seq(j, [None, (5, 2, 0.3), (6, 0, 0.8), (6, 1, 0.6)])
-L.note("学的人没学会", "就当是教的人没教会", "四步")
-
-
-def ppl4(c, T, cx=cx, cy=cy):
-    C.line(c, (cx - 560, cy + 530), (cx + 560, cy + 530), GRAY, 6)
-    hy = cy + 520 - 290 * 0.9
-    draw_leader2(c, cx - 300, cy + 520, 0.9, rh=(cx - 180, hy + 70), mood="smile")
-    draw_worker(c, cx - 30, cy + 520, 0.85, mood="o")
-
-
-pop(j, k4_ppl, cx - 150, cy + 520, ppl4, "wood_low", 0.7)
-
-
-def sign4(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(4, k4_sign))
-    if sc <= 0:
-        return None
-    x, y = cx + 330, cy + 180
-    with at_pop(c, x, y, sc):
-        C.line(c, (x, y + 120), (x, y + 350), WOOD_LINE, 12)
-        box(c, x, y, 380, 240, WOOD, WOOD_LINE, 8, 12)
-        K.text(c, "四步", x, y - 75, 54, "hand", BLACK)
-        for i in range(4):
-            g = pop_scale(T - tb(4, k4_sign) - 0.1 * i)
-            with K.at(c, x - 135 + i * 90, y + 35, 0, g):
-                box(c, 0, 0, 74, 74, "#FFFFFF", BLACK, 5, 10)
-                K.text(c, STEP_NAMES[i], 0, 2, 46, "hand", BLACK)
-    return None
-
-
-ev(j, k4_sign, sign4, "wood_high", 0.75)
-ev(j, k4_t1, L.slam_text("学的人没学会", cx - 30, cy - 450, 80, BLACK, j, k4_t1), "rim", 0.8)
-ev(j, k4_t2, L.slam_text("就当是教的人没教会", cx - 30, cy - 320, 80, RED, j, k4_t2, rot=-2), "kick", 0.9)
-b.shots[j].shake = [(k4_t2, 8.0)]
-
-# ================================================================ 屏 5：组长自己拧螺丝，再转身教新员工；“懂这份活”“会教别人”两个勾
-cx, cy = R[5]
-j = L.scene(5, (cx, cy + 10, Z))
-k5_bench, k5_turn, k5_c1, k5_c2 = seq(j, [None, (7, 2, 0.2), (7, 2, 0.8), (7, 3, 0.7)])
-L.note("懂这份活", "会教别人", "丰田的领导")
-
-
-def bench5(c, T, cx=cx, cy=cy):
-    K.text(c, "丰田的领导", cx - 300, cy - 470, 58, "hand", GRAY)
-    box(c, cx - 150, cy + 250, 560, 40, WOOD, WOOD_LINE, 6, 6)
-    for dx in (-400, 100):
-        C.line(c, (cx + dx, cy + 270), (cx + dx, cy + 530), WOOD_LINE, 9)
-    box(c, cx - 150, cy + 190, 200, 80, "#C9CED6", BLACK, 5, 8)
-    turned = T >= tb(5, k5_turn)
-    x, y = cx - 380, cy + 520
-    hy = y - 290 * 0.9
-    tw = 18 * math.sin((T - tb(5, k5_bench)) * 10) if not turned else 0
-    draw_leader2(c, x, y, 0.9, rh=(cx - 200 + tw, cy + 170) if not turned else (x + 160, hy + 40), mood="smile")
-    a = math.radians((T - tb(5, k5_bench)) * 400 if not turned else 0)
-    C.line(c, (cx - 150, cy + 170), (cx - 150 + 50 * math.cos(a), cy + 170 + 20 * math.sin(a)), GRAY, 8)
-    if turned:
-        g = pop_scale(T - tb(5, k5_turn))
-        with at_pop(c, cx + 300, cy + 520, g):
-            draw_worker(c, cx + 300, cy + 520, 0.85, mood="smile")
-
-
-pop(j, k5_bench, cx - 150, cy + 300, bench5, "wood_low", 0.7)
-b.hit(j, k5_turn, "pop", 0.7, "转身教新员工")
-
-
-def checks5(c, kk, T, cx=cx, cy=cy):
-    for n, (k_, s_, y) in enumerate(((k5_c1, "懂这份活", cy - 300), (k5_c2, "会教别人", cy - 120))):
-        g = pop_scale(T - tb(5, k_))
-        if g <= 0:
-            continue
-        with K.at(c, cx + 220, y, 0, g):
-            box(c, 0, 0, 440, 130, "#FFFFFF", GREEN, 6, 20)
-            K.text(c, s_, 40, 2, 62, "hand", BLACK)
-        tick(c, cx + 50, y, 40, clamp01((T - tb(5, k_)) / 0.3))
-    return None
-
-
-ev(j, k5_c1, checks5, "ding", 0.75)
-b.hit(j, k5_c2, "ding", 0.8, "第二个勾")
-
-# ================================================================ 屏 6：改写版——场记板翻面；拉椅子让小周坐下；纸上画出这份活用在哪、做错会怎样
-cx, cy = R[6]
-j = L.scene(6, (cx, cy + 10, Z))
-k6_clap, k6_chair, k6_use, k6_err = seq(j, [None, (9, 0, 0.6), (9, 1, 0.6), (9, 3, 0.5)])
-k6_card = k6_chair
-L.note("报表", "领导开会用", "错一个数", "会上出丑")
-ev(j, k6_clap, clap_fn(6, k6_clap, cx - 330, cy - 440, "改写版", GREEN), "clap", 0.9)
-ev(j, k6_card, step_card_fn(6, 1, k6_card))
-
-
-def ppl6(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(6, k6_chair))
-    if sc <= 0:
-        return None
-    with at_pop(c, cx, cy + 400, sc):
-        desk(c, cx + 60, cy + 270, 640)
-        u = ease_out(clamp01((T - tb(6, k6_chair)) / 0.5))
-        seated(draw_zhou, c, lerp(cx + 450, cx + 300, u), cy + 530, 0.85, mood="smile")
-        hy = cy + 520 - 290 * 0.85
-        draw_li(c, cx - 380, cy + 520, 0.85, "smile", rh=(cx - 160, cy + 230))
-    return None
-
-
-ev(j, k6_chair, ppl6, "wood_low", 0.7)
-
-
-def sheet6(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(6, k6_use))
-    if sc <= 0:
-        return None
-    x, y = cx + 20, cy - 120
-    with at_pop(c, x, y, sc):
-        box(c, x, y, 700, 300, "#FFFFFF", BLACK, 6, 8)
-        box(c, x - 210, y - 40, 170, 110, BLUE_FILL, BLUE, 5, 8)
-        K.text(c, "报表", x - 210, y - 38, 48, "hand", BLUE)
-        C.line(c, (x - 110, y - 40), (x + 10, y - 40), BLUE, 8)
-        C.line(c, (x + 10, y - 40), (x - 15, y - 58), BLUE, 8)
-        C.line(c, (x + 10, y - 40), (x - 15, y - 22), BLUE, 8)
-        K.text(c, "领导开会用", x + 170, y - 38, 48, "hand", BLUE)
-        if T >= tb(6, k6_err):
-            g = pop_scale(T - tb(6, k6_err))
-            with K.at(c, x, y + 80, 0, g):
-                K.text(c, "错一个数 → 会上出丑", 0, 0, 46, "hand", RED)
-    return None
-
-
-L.note("错一个数 → 会上出丑")
-ev(j, k6_use, sheet6, "wood_high", 0.75)
-b.hit(j, k6_err, "rim", 0.8, "做错会怎样")
-
-# ================================================================ 屏 7：第二步——小李慢慢做，每做一步弹出一张“为什么”小卡片
-cx, cy = R[7]
-j = L.scene(7, (cx, cy + 10, Z))
-k7_ppl, k7_w1, k7_w2, k7_w3 = seq(j, [None, (10, 1, 0.6), (10, 2, 0.6), (10, 3, 0.6)])
-L.note("为什么")
-ev(j, k7_ppl, step_card_fn(7, 2, k7_ppl))
-
-
-def ppl7(c, T, cx=cx, cy=cy):
-    monitor(c, cx - 60, cy + 120, 340, 220, BLUE_FILL)
-    desk(c, cx - 20, cy + 270, 700)
-    hy = cy + 520 - 290 * 0.85
-    slow = 12 * math.sin((T - tb(7, k7_ppl)) * 2)
-    draw_li(c, cx - 380, cy + 520, 0.85, "smile", rh=(cx - 220 + slow, cy + 230))
-    seated(draw_zhou, c, cx + 330, cy + 530, 0.85, mood="smile")
-    K.text(c, "慢", cx - 380, cy - 140, 60, "hand", GREEN)
-
-
-L.note("慢")
-pop(j, k7_ppl, cx, cy + 300, ppl7, "wood_low", 0.7)
-
-
-def whys7(c, kk, T, cx=cx, cy=cy):
-    for n, k_ in enumerate((k7_w1, k7_w2, k7_w3)):
-        g = pop_scale(T - tb(7, k_))
-        if g <= 0:
-            continue
-        x, y = cx - 260 + n * 260, cy - 260
-        with K.at(c, x, y, (n - 1) * 5, g):
-            box(c, 0, 0, 220, 150, NOTE_FILL, ORANGE, 6, 12)
-            K.text(c, f"第{STEP_NAMES[n]}步", 0, -35, 40, "hand", GRAY)
-            K.text(c, "为什么", 0, 25, 52, "hand", ORANGE)
-    return None
-
-
-L.note("第一步", "第二步", "第三步")
-ev(j, k7_w1, whys7, "pop", 0.75)
-b.hit(j, k7_w2, "pop", 0.75, "第二张为什么")
-b.hit(j, k7_w3, "bongo_high", 0.75, "第三张为什么")
-
-# ================================================================ 屏 8：第三步——换小周操作，边做边说；错了一处，小李当场一指，改成勾
-cx, cy = R[8]
-j = L.scene(8, (cx, cy + 10, Z))
-k8_swap, k8_say, k8_err, k8_fix = seq(j, [None, (11, 1, 0.4), (11, 2, 0.3), (11, 3, 0.5)])
-L.note("先点这个…", "当场改")
-ev(j, k8_swap, step_card_fn(8, 3, k8_swap))
-
-
-def ppl8(c, T, cx=cx, cy=cy):
-    monitor(c, cx + 60, cy + 120, 340, 220, BLUE_FILL)
-    desk(c, cx + 40, cy + 270, 700)
-    point = T >= tb(8, k8_err)
-    hy = cy + 520 - 290 * 0.85
-    draw_li(c, cx - 400, cy + 520, 0.85, "o" if point and T < tb(8, k8_fix) else "smile",
-            rh=(cx - 40, cy + 60) if point else None)
-    ty = 10 * math.sin((T - tb(8, k8_swap)) * 12)
-    seated(draw_zhou, c, cx - 100, cy + 530, 0.85, mood="smile", rh=(cx + 30, cy + 230 + ty))
-
-
-pop(j, k8_swap, cx, cy + 300, ppl8, "wood_low", 0.7)
-ev(j, k8_say, L.pop_bubble("先点这个…", cx - 60, cy - 160, j, k8_say, 58, BLACK, tail=-1), "pop", 0.75)
-
-
-def fix8(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(8, k8_err)
-    if T < t0:
-        return None
-    x, y = cx + 60, cy + 110
-    fixed = T >= tb(8, k8_fix)
-    if not fixed:
-        xmark(c, x, y, 50, clamp01((T - t0) / 0.25))
-    else:
-        tick(c, x, y, 55, clamp01((T - tb(8, k8_fix)) / 0.25))
-        g = C.slam_scale(T - tb(8, k8_fix))
-        with K.at(c, cx + 300, cy - 360, -4, g):
-            K.text(c, "当场改", 0, 0, 90, "hand", GREEN)
-    return None
-
-
-ev(j, k8_err, fix8, "rim", 0.8)
-b.hit(j, k8_fix, "kick", 0.85, "改成勾")
-
-# ================================================================ 屏 9：第四步——小李回到自己座位；钟走一阵他探头回来看；小周举手“找你”
-cx, cy = R[9]
-j = L.scene(9, (cx, cy + 10, Z))
-k9_back, k9_clk, k9_peek, k9_hand = seq(j, [None, (12, 1, 0.3), (12, 2, 0.4), (12, 3, 0.6)])
-L.note("有问题找我", "放手")
-ev(j, k9_back, step_card_fn(9, 4, k9_back))
-
-
-def ppl9(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(9, k9_back))
-    if sc <= 0:
-        return None
-    with at_pop(c, cx, cy + 400, sc):
-        desk(c, cx + 230, cy + 300, 420)
-        monitor(c, cx + 230, cy + 160, 260, 170, BLUE_FILL)
-        hand = T >= tb(9, k9_hand)
-        seated(draw_zhou, c, cx + 360, cy + 540, 0.8, mood="smile", lh=(cx + 300, cy + 60) if hand else None)
-        desk(c, cx - 360, cy + 300, 300)
-        u = ease_out(clamp01((T - tb(9, k9_back)) / 0.6))
-        peek = T >= tb(9, k9_peek)
-        x = lerp(cx + 50, cx - 360, u)
-        if peek:
-            x = lerp(cx - 360, cx - 120, ease_out(clamp01((T - tb(9, k9_peek)) / 0.4)))
-        draw_li(c, x, cy + 520, 0.8, "smile")
-    return None
-
-
-ev(j, k9_back, ppl9, "wood_low", 0.7)
-ev(j, k9_back, L.pop_text("放手", cx - 380, cy - 470, 80, GREEN, j, k9_back))
-
-
-def clk9(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(9, k9_clk))
-    if sc <= 0:
-        return None
-    x, y = cx - 300, cy - 220
-    h = clamp01((T - tb(9, k9_clk)) / 1.5) * 0.4
-    with at_pop(c, x, y, sc):
-        clock_face(c, x, y, 120, h, h, GREEN, GREEN_FILL)
-    return None
-
-
-ev(j, k9_clk, clk9, "wood_high", 0.7)
-b.hit(j, k9_peek, "pop", 0.7, "探头回来看")
-ev(j, k9_hand, L.pop_bubble("有问题找我", cx + 150, cy - 230, j, k9_hand, 56, BLACK, tail=-1), "bongo_high", 0.75)
-
-# ================================================================ 屏 10：结果——第二天小周交出一个勾，还举着问号“为什么要这样？”
-cx, cy = R[10]
-j = L.scene(10, (cx, cy + 10, Z))
-k10_cal, k10_done, k10_q = seq(j, [None, (13, 1, 0.5), (13, 2, 0.6)])
-L.note("第二天", "为什么要这样？")
-pop(j, k10_cal, cx - 330, cy - 400, lambda c, T, cx=cx, cy=cy: calendar_page(c, cx - 330, cy - 400, 260, 240, "第二天"),
-    "wood_high", 0.7)
-
-
-def zhou10(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(10, k10_cal) - 0.15)
-    if sc <= 0:
-        return None
-    x, y = cx - 150, cy + 520
-    hy = y - 290 * 0.95
-    done = T >= tb(10, k10_done)
-    with at_pop(c, x, y, sc):
-        draw_zhou(c, x, y, 0.95, mood="smile", rh=(x + 150, hy + 40) if done else None)
-        draw_li(c, cx + 380, y, 0.85, "smile" if done else "flat")
-    if done:
-        g = pop_scale(T - tb(10, k10_done))
-        with K.at(c, x + 250, hy + 10, 4, g):
-            paper(c, 0, 0, 220, 260, rows=4)
-            tick(c, 30, 40, 70, clamp01((T - tb(10, k10_done)) / 0.3))
-    return None
-
-
-ev(j, k10_cal, zhou10)
-b.hit(j, k10_done, "ding", 0.85, "交出一个勾")
-ev(j, k10_q, L.pop_bubble("为什么要这样？", cx + 160, cy - 300, j, k10_q, 58, BLUE, tail=-1), "pop", 0.75)
-
-# ================================================================ 屏 11：步骤链里两步是虚线（忘了讲）；耳朵听的字往外漏，手做过的一步留在脑子里
-cx, cy = R[11]
-j = L.scene(11, (cx, cy + 10, Z))
-k11_q, k11_chain, k11_hid, k11_ear, k11_hand = seq(j, [None, (15, 0, 0.6), (15, 2, 0.5), (16, 0, 0.6), (16, 2, 0.4)])
-L.note("讲三遍", "做一遍", "忘了讲", "听", "做")
-ev(j, k11_q, L.slam_text("讲三遍 < 做一遍", cx, cy - 500, 80, RED, j, k11_q), "rim", 0.8)
-L.note("讲三遍 < 做一遍")
-
-
-def chain11(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(11, k11_chain))
-    if sc <= 0:
-        return None
-    y = cy - 260
-    hid = T >= tb(11, k11_hid)
-    with at_pop(c, cx, y, sc):
-        for i in range(6):
-            x = cx - 450 + i * 180
-            ghost = i in (2, 4)
-            if ghost and hid:
-                dashed_rect(c, x, y, 130, 100, GRAY, 5)
-                K.text(c, "?", x, y, 50, "hand", GRAY)
-            else:
-                box(c, x, y, 130, 100, BLUE_FILL, BLUE, 5, 12)
-                K.text(c, str(i + 1), x, y + 2, 54, "hand", BLUE)
-            if i < 5:
-                C.line(c, (x + 66, y), (x + 114, y), GRAY, 6)
-        if hid:
-            g = pop_scale(T - tb(11, k11_hid))
-            with K.at(c, cx - 90, y + 110, 0, g):
-                K.text(c, "忘了讲", 0, 0, 52, "hand", RED)
-    return None
-
-
-ev(j, k11_chain, chain11, "wood_high", 0.75)
-b.hit(j, k11_hid, "rim", 0.8, "两步变虚线")
-
-
-def ear11(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(11, k11_ear))
-    if sc <= 0:
-        return None
-    x, y = cx - 260, cy + 200
-    with at_pop(c, x, y, sc):
-        ear(c, x, y, 1.6)
-        K.text(c, "听", x, y + 220, 60, "hand", GRAY)
-        for n in range(4):
-            ph = ((T - tb(11, k11_ear)) * 0.8 + n * 0.25) % 1
-            K.text(c, "字", x + 30 + ph * 230, y - 40 + ph * 180 + n * 10, 40, "hand", GRAY, 1 - ph)
-    return None
-
-
-L.note("字")
-ev(j, k11_ear, ear11, "shaker", 0.7)
-
-
-def hand11(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(11, k11_hand))
-    if sc <= 0:
-        return None
-    x, y = cx + 260, cy + 200
-    with at_pop(c, x, y, sc):
-        brain(c, x, y - 40, 110)
-        g = clamp01((T - tb(11, k11_hand)) / 0.5)
-        bx, by = x, lerp(y + 230, y - 40, ease_out(g))
-        box(c, bx, by, 110, 80, GREEN_FILL, GREEN, 5, 10)
-        K.text(c, "做", bx, by + 2, 50, "hand", GREEN)
-        if g >= 1:
-            sparkle(c, x, y - 40, T - tb(11, k11_hand) - 0.5, GREEN, 8, 130, 200)
-    return None
-
-
-ev(j, k11_hand, hand11, "ding", 0.8)
-
-# ================================================================ 屏 12：交接时一个文件夹被扔到桌上，“都在里面了”；新人对着文件夹发愣
-cx, cy = R[12]
-j = L.scene(12, (cx, cy + 10, Z))
-k12_desk, k12_throw, k12_say, k12_stare = seq(j, [None, (18, 1, 0.5), (18, 2, 0.4), (18, 2, 0.9)])
+k12_desk, k12_throw, k12_say, k12_stare = seq(j, [None, (3, 1, 0.5), (3, 2, 0.4), (3, 2, 0.9)])
 L.note("交接", "都在里面了")
 pop(j, k12_desk, cx, cy + 290, lambda c, T, cx=cx, cy=cy: (desk(c, cx + 100, cy + 290, 640),
                                                          K.text(c, "交接", cx - 380, cy - 470, 70, "hand", GRAY)),
@@ -766,7 +295,7 @@ pop(j, k12_desk, cx, cy + 290, lambda c, T, cx=cx, cy=cy: (desk(c, cx + 100, cy 
 
 
 def throw12(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(12, k12_throw)
+    t0 = tb(2, k12_throw)
     if T < t0:
         return None
     u = ease_in_out(clamp01((T - t0) / 0.45))
@@ -790,7 +319,7 @@ ev(j, k12_say, L.pop_bubble("都在里面了", cx - 330, cy - 250, j, k12_say, 5
 
 
 def stare12(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(12, k12_stare))
+    sc = pop_scale(T - tb(2, k12_stare))
     if sc <= 0:
         return None
     x, y = cx + 380, cy + 520
@@ -803,26 +332,30 @@ def stare12(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k12_stare, stare12, "bongo_low", 0.75)
 
-# ================================================================ 屏 13：教爸妈手机挂号，手指在屏幕上飞；爸妈头顶问号越来越大，摆手“算了”
-cx, cy = R[13]
-j = L.scene(13, (cx, cy + 10, Z))
-k13_ppl, k13_fast, k13_q, k13_no = seq(j, [None, (19, 1, 0.4), (19, 2, 0.5), (19, 3, 0.5)])
+# ================================================================ 屏 3：教爸妈手机挂号，手指在屏幕上飞；爸妈头顶问号越来越大，摆手“算了”
+cx, cy = R[3]
+j = L.scene(3, (cx, cy + 10, Z))
+KD = L.drop_k()                       # drop 屏：“最后说算了”说完正好 drop，“算了”砸下、震屏、闪白
+b.shots[j].shake, b.shots[j].flashes = [(KD, 14.0)], [(KD, 0.4)]
+k13_ppl, k13_fast, k13_q = seq(j, [None, (4, 1, 0.4), (4, 2, 0.5)])
+k13_q = min(k13_q, KD - 1)
+k13_no = KD
 L.note("挂号", "算了")
 
 
 def ppl13(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(13, k13_ppl))
+    sc = pop_scale(T - tb(3, k13_ppl))
     if sc <= 0:
         return None
-    no = T >= tb(13, k13_no)
+    no = T >= tb(3, k13_no)
     with at_pop(c, cx, cy + 520, sc):
         hy = cy + 520 - 290 * 0.85
-        fast = T >= tb(13, k13_fast)
+        fast = T >= tb(3, k13_fast)
         fx = cx - 130 + (40 * math.sin(T * 30) if fast and not no else 0)
         draw_li(c, cx - 330, cy + 520, 0.85, "smile", rh=(fx, cy + 120))
         phone(c, cx - 150, cy + 140, 150, 260, screen=BLUE_FILL)
         K.text(c, "挂号", cx - 150, cy + 100, 40, "hand", BLUE)
-        wave = 30 * math.sin((T - tb(13, k13_no)) * 14) if no else 0
+        wave = 30 * math.sin((T - tb(3, k13_no)) * 14) if no else 0
         draw_mom(c, cx + 170, cy + 520, 0.8, mood="sad" if no else "o", rh=(cx + 260 + wave, cy + 180) if no else None)
         draw_dad(c, cx + 400, cy + 520, 0.8, mood="sad" if no else "o")
     return None
@@ -833,7 +366,7 @@ b.hit(j, k13_fast, "shaker", 0.8, "手指在屏幕上飞")
 
 
 def q13(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(13, k13_q)
+    t0 = tb(3, k13_q)
     if T < t0:
         return None
     grow = 1 + 0.6 * clamp01((T - t0) / 1.5)
@@ -843,7 +376,478 @@ def q13(c, kk, T, cx=cx, cy=cy):
 
 
 ev(j, k13_q, q13, "bongo_high", 0.75)
-ev(j, k13_no, L.slam_text("算了", cx + 290, cy - 360, 120, RED, j, k13_no, rot=-6), "kick", 0.85)
+ev(j, k13_no, L.slam_text("算了", cx + 290, cy - 360, 130, RED, j, k13_no, rot=-6), "kick", 0.95)
+
+# ================================================================ 屏 4：场记板“第一遍”拍下；鼠标快成残影；说完时“这样，再这样，懂了吧？”砸下
+cx, cy = R[4]
+j = L.scene(4, (cx, cy + 10, Z))
+k2_clap = 0
+k2_ppl = max(kq(j, wt(5, 1, 0.3), 1), 1)
+k2_fast = nx(j, wt(6, 0, 0.4), k2_ppl)
+KD4 = nx(j, wt(6, 3, 0.8), k2_fast)      # “懂了吧？”说完：气泡砸下
+b.shots[j].shake, b.shots[j].flashes = [(KD4, 12.0)], [(KD4, 0.3)]
+L.note("这样，再这样", "懂了吧？")
+ev(j, k2_clap, clap_fn(j, k2_clap, cx - 330, cy - 440, "第一遍"), "clap", 0.9)
+
+
+def ppl2(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(4, k2_ppl))
+    if sc <= 0:
+        return None
+    with at_pop(c, cx, cy + 300, sc):
+        monitor(c, cx, cy + 80, 380, 250, BLUE_FILL)
+        desk(c, cx, cy + 270, 760)
+        fast = T >= tb(4, k2_fast)
+        mx, my = cx - 160, cy + 240
+        if fast:
+            mouse_blur(c, mx, my, T)
+            for i in range(4):
+                ph = ((T * 3) + i * 0.25) % 1
+                c.drawRect(skia.Rect.MakeXYWH(cx - 150 + ph * 260, cy + 10 + i * 40, 60, 20), K.paint(BLUE, 1 - ph))
+        else:
+            mouse_blur(c, mx, my, 0.0, 1.0)
+        hy = cy + 520 - 290 * 0.85
+        draw_li(c, cx - 380, cy + 520, 0.85, "smile", rh=(mx, my - 20))
+        seated(draw_zhou, c, cx + 330, cy + 530, 0.85, mood="o" if fast else "flat")
+    return None
+
+
+ev(j, k2_ppl, ppl2, "wood_low", 0.7)
+b.hit(j, k2_fast, "shaker", 0.8, "鼠标飞快")
+
+
+def say2(c, kk, T, cx=cx, cy=cy):
+    sc = C.slam_scale(T - tb(4, KD4))
+    if sc <= 0:
+        return None
+    with K.at(c, cx + 100, cy - 330, -3, sc):
+        c.drawRoundRect(skia.Rect.MakeXYWH(-310, -120, 620, 240), 50, 50, K.paint("#FFFFFF"))
+        c.drawPath(wb.bubble(0, 0, 620, 240, -1), wb.marker(BLACK, 8))
+        K.text(c, "这样，再这样", 0, -40, 66, "hand", BLACK)
+        K.text(c, "懂了吧？", 0, 50, 80, "hand", RED)
+    return None
+
+
+ev(j, KD4, say2, "kick", 0.95)
+
+# ================================================================ 屏 5：小周点头说懂了；日历翻到第二天；桌上三个红叉
+cx, cy = R[5]
+j = L.scene(5, (cx, cy + 10, Z))
+k3_nod, k3_cal, k3_x1 = seq(j, [None, (7, 1, 0.1), (7, 1, 0.6)])
+k3_x2, k3_x3 = k3_x1 + 1, k3_x1 + 2
+L.note("懂了", "第二天")
+ev(j, 0, clap_fn(j, 0, cx - 380, cy - 470, "第一遍"))
+
+
+def nod3(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(5, k3_nod))
+    if sc <= 0:
+        return None
+    x, y = cx - 250, cy + 520
+    nod = 10 * abs(math.sin((T - tb(5, k3_nod)) * 6)) if T < tb(5, k3_cal) else 0
+    with at_pop(c, x, y, sc):
+        draw_zhou(c, x, y + nod * 0.3, 0.95, mood="smile" if T < tb(5, k3_x1) else "sad")
+        if T < tb(5, k3_cal) + 0.5:
+            bubble_text(c, "懂了", x + 60, y - 430, 60, BLACK, -1)
+    return None
+
+
+ev(j, k3_nod, nod3, "pop", 0.7)
+
+
+def cal3(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(5, k3_cal))
+    if sc <= 0:
+        return None
+    x, y = cx + 300, cy - 280
+    with at_pop(c, x, y, sc):
+        calendar_page(c, x, y, 300, 280, "第二天", flip=ease_in_out(clamp01((T - tb(5, k3_cal)) / 0.4)))
+    return None
+
+
+ev(j, k3_cal, cal3, "wood_high", 0.75)
+
+
+def xs3(c, kk, T, cx=cx, cy=cy):
+    desk(c, cx + 200, cy + 300, 620)
+    for n, k_ in enumerate((k3_x1, k3_x2, k3_x3)):
+        if T >= tb(5, k_):
+            x = cx + 20 + n * 180
+            paper(c, x, cy + 220, 150, 150, rows=2, rot=(n - 1) * 6)
+            xmark(c, x, cy + 220, 55, clamp01((T - tb(5, k_)) / 0.25))
+    return None
+
+
+ev(j, k3_x1, xs3, "rim", 0.8)
+b.hit(j, k3_x2, "rim", 0.8, "第二个红叉")
+b.hit(j, k3_x3, "kick", 0.85, "第三个红叉")
+
+# ================================================================ 屏 6：车间组长带新员工；牌子四个空格；“学的人没学会 / 就当是教的人没教会”
+cx, cy = R[6]
+j = L.scene(6, (cx, cy + 10, Z))
+k4_ppl, k4_sign, k4_t1, k4_t2 = seq(j, [None, (8, 2, 0.3), (9, 0, 0.8), (9, 1, 0.6)])
+L.note("学的人没学会", "就当是教的人没教会", "四步")
+
+
+def ppl4(c, T, cx=cx, cy=cy):
+    C.line(c, (cx - 560, cy + 530), (cx + 560, cy + 530), GRAY, 6)
+    hy = cy + 520 - 290 * 0.9
+    draw_leader2(c, cx - 300, cy + 520, 0.9, rh=(cx - 180, hy + 70), mood="smile")
+    draw_worker(c, cx - 30, cy + 520, 0.85, mood="o")
+
+
+pop(j, k4_ppl, cx - 150, cy + 520, ppl4, "wood_low", 0.7)
+
+
+def sign4(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(6, k4_sign))
+    if sc <= 0:
+        return None
+    x, y = cx + 330, cy + 180
+    with at_pop(c, x, y, sc):
+        C.line(c, (x, y + 120), (x, y + 350), WOOD_LINE, 12)
+        box(c, x, y, 380, 240, WOOD, WOOD_LINE, 8, 12)
+        K.text(c, "四步", x, y - 75, 54, "hand", BLACK)
+        for i in range(4):
+            g = pop_scale(T - tb(6, k4_sign) - 0.1 * i)
+            with K.at(c, x - 135 + i * 90, y + 35, 0, g):
+                box(c, 0, 0, 74, 74, "#FFFFFF", BLACK, 5, 10)
+                K.text(c, STEP_NAMES[i], 0, 2, 46, "hand", BLACK)
+    return None
+
+
+ev(j, k4_sign, sign4, "wood_high", 0.75)
+ev(j, k4_t1, L.slam_text("学的人没学会", cx - 30, cy - 450, 80, BLACK, j, k4_t1), "rim", 0.8)
+ev(j, k4_t2, L.slam_text("就当是教的人没教会", cx - 30, cy - 320, 80, RED, j, k4_t2, rot=-2), "kick", 0.9)
+b.shots[j].shake = [(k4_t2, 8.0)]
+
+# ================================================================ 屏 7：组长自己拧螺丝，再转身教新员工；“懂这份活”“会教别人”两个勾
+cx, cy = R[7]
+j = L.scene(7, (cx, cy + 10, Z))
+k5_bench, k5_turn, k5_c1, k5_c2 = seq(j, [None, (10, 2, 0.2), (10, 2, 0.8), (10, 3, 0.7)])
+L.note("懂这份活", "会教别人", "丰田的领导")
+
+
+def bench5(c, T, cx=cx, cy=cy):
+    K.text(c, "丰田的领导", cx - 300, cy - 470, 58, "hand", GRAY)
+    box(c, cx - 150, cy + 250, 560, 40, WOOD, WOOD_LINE, 6, 6)
+    for dx in (-400, 100):
+        C.line(c, (cx + dx, cy + 270), (cx + dx, cy + 530), WOOD_LINE, 9)
+    box(c, cx - 150, cy + 190, 200, 80, "#C9CED6", BLACK, 5, 8)
+    turned = T >= tb(7, k5_turn)
+    x, y = cx - 380, cy + 520
+    hy = y - 290 * 0.9
+    tw = 18 * math.sin((T - tb(7, k5_bench)) * 10) if not turned else 0
+    draw_leader2(c, x, y, 0.9, rh=(cx - 200 + tw, cy + 170) if not turned else (x + 160, hy + 40), mood="smile")
+    a = math.radians((T - tb(7, k5_bench)) * 400 if not turned else 0)
+    C.line(c, (cx - 150, cy + 170), (cx - 150 + 50 * math.cos(a), cy + 170 + 20 * math.sin(a)), GRAY, 8)
+    if turned:
+        g = pop_scale(T - tb(7, k5_turn))
+        with at_pop(c, cx + 300, cy + 520, g):
+            draw_worker(c, cx + 300, cy + 520, 0.85, mood="smile")
+
+
+pop(j, k5_bench, cx - 150, cy + 300, bench5, "wood_low", 0.7)
+b.hit(j, k5_turn, "pop", 0.7, "转身教新员工")
+
+
+def checks5(c, kk, T, cx=cx, cy=cy):
+    for n, (k_, s_, y) in enumerate(((k5_c1, "懂这份活", cy - 300), (k5_c2, "会教别人", cy - 120))):
+        g = pop_scale(T - tb(7, k_))
+        if g <= 0:
+            continue
+        with K.at(c, cx + 220, y, 0, g):
+            box(c, 0, 0, 440, 130, "#FFFFFF", GREEN, 6, 20)
+            K.text(c, s_, 40, 2, 62, "hand", BLACK)
+        tick(c, cx + 50, y, 40, clamp01((T - tb(7, k_)) / 0.3))
+    return None
+
+
+ev(j, k5_c1, checks5, "ding", 0.75)
+b.hit(j, k5_c2, "ding", 0.8, "第二个勾")
+
+# ================================================================ 屏 8：改写版——场记板翻面；拉椅子让小周坐下；纸上画出这份活用在哪、做错会怎样
+cx, cy = R[8]
+j = L.scene(8, (cx, cy + 10, Z))
+k6_clap, k6_chair, k6_use, k6_err = seq(j, [None, (12, 0, 0.6), (12, 1, 0.6), (12, 3, 0.5)])
+k6_card = k6_chair
+L.note("报表", "领导开会用", "错一个数", "会上出丑")
+ev(j, k6_clap, clap_fn(j, k6_clap, cx - 330, cy - 440, "改写版", GREEN), "clap", 0.9)
+ev(j, k6_card, step_card_fn(j, 1, k6_card))
+
+
+def ppl6(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(8, k6_chair))
+    if sc <= 0:
+        return None
+    with at_pop(c, cx, cy + 400, sc):
+        desk(c, cx + 60, cy + 270, 640)
+        u = ease_out(clamp01((T - tb(8, k6_chair)) / 0.5))
+        seated(draw_zhou, c, lerp(cx + 450, cx + 300, u), cy + 530, 0.85, mood="smile")
+        hy = cy + 520 - 290 * 0.85
+        draw_li(c, cx - 380, cy + 520, 0.85, "smile", rh=(cx - 160, cy + 230))
+    return None
+
+
+ev(j, k6_chair, ppl6, "wood_low", 0.7)
+
+
+def sheet6(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(8, k6_use))
+    if sc <= 0:
+        return None
+    x, y = cx + 20, cy - 120
+    with at_pop(c, x, y, sc):
+        box(c, x, y, 700, 300, "#FFFFFF", BLACK, 6, 8)
+        box(c, x - 210, y - 40, 170, 110, BLUE_FILL, BLUE, 5, 8)
+        K.text(c, "报表", x - 210, y - 38, 48, "hand", BLUE)
+        C.line(c, (x - 110, y - 40), (x + 10, y - 40), BLUE, 8)
+        C.line(c, (x + 10, y - 40), (x - 15, y - 58), BLUE, 8)
+        C.line(c, (x + 10, y - 40), (x - 15, y - 22), BLUE, 8)
+        K.text(c, "领导开会用", x + 170, y - 38, 48, "hand", BLUE)
+        if T >= tb(8, k6_err):
+            g = pop_scale(T - tb(8, k6_err))
+            with K.at(c, x, y + 80, 0, g):
+                K.text(c, "错一个数 → 会上出丑", 0, 0, 46, "hand", RED)
+    return None
+
+
+L.note("错一个数 → 会上出丑")
+ev(j, k6_use, sheet6, "wood_high", 0.75)
+b.hit(j, k6_err, "rim", 0.8, "做错会怎样")
+
+# ================================================================ 屏 9：第二步——小李慢慢做，每做一步弹出一张“为什么”小卡片
+cx, cy = R[9]
+j = L.scene(9, (cx, cy + 10, Z))
+k7_ppl, k7_w1, k7_w2, k7_w3 = seq(j, [None, (13, 1, 0.6), (13, 2, 0.6), (13, 3, 0.6)])
+L.note("为什么")
+ev(j, k7_ppl, step_card_fn(j, 2, k7_ppl))
+
+
+def ppl7(c, T, cx=cx, cy=cy):
+    monitor(c, cx - 60, cy + 120, 340, 220, BLUE_FILL)
+    desk(c, cx - 20, cy + 270, 700)
+    hy = cy + 520 - 290 * 0.85
+    slow = 12 * math.sin((T - tb(9, k7_ppl)) * 2)
+    draw_li(c, cx - 380, cy + 520, 0.85, "smile", rh=(cx - 220 + slow, cy + 230))
+    seated(draw_zhou, c, cx + 330, cy + 530, 0.85, mood="smile")
+    K.text(c, "慢", cx - 380, cy - 140, 60, "hand", GREEN)
+
+
+L.note("慢")
+pop(j, k7_ppl, cx, cy + 300, ppl7, "wood_low", 0.7)
+
+
+def whys7(c, kk, T, cx=cx, cy=cy):
+    for n, k_ in enumerate((k7_w1, k7_w2, k7_w3)):
+        g = pop_scale(T - tb(9, k_))
+        if g <= 0:
+            continue
+        x, y = cx - 260 + n * 260, cy - 260
+        with K.at(c, x, y, (n - 1) * 5, g):
+            box(c, 0, 0, 220, 150, NOTE_FILL, ORANGE, 6, 12)
+            K.text(c, f"第{STEP_NAMES[n]}步", 0, -35, 40, "hand", GRAY)
+            K.text(c, "为什么", 0, 25, 52, "hand", ORANGE)
+    return None
+
+
+L.note("第一步", "第二步", "第三步")
+ev(j, k7_w1, whys7, "pop", 0.75)
+b.hit(j, k7_w2, "pop", 0.75, "第二张为什么")
+b.hit(j, k7_w3, "bongo_high", 0.75, "第三张为什么")
+
+# ================================================================ 屏 10：第三步——换小周操作，边做边说；错了一处，小李当场一指，改成勾
+cx, cy = R[10]
+j = L.scene(10, (cx, cy + 10, Z))
+k8_swap, k8_say, k8_err, k8_fix = seq(j, [None, (14, 1, 0.4), (14, 2, 0.3), (14, 3, 0.5)])
+L.note("先点这个…", "当场改")
+ev(j, k8_swap, step_card_fn(j, 3, k8_swap))
+
+
+def ppl8(c, T, cx=cx, cy=cy):
+    monitor(c, cx + 60, cy + 120, 340, 220, BLUE_FILL)
+    desk(c, cx + 40, cy + 270, 700)
+    point = T >= tb(10, k8_err)
+    hy = cy + 520 - 290 * 0.85
+    draw_li(c, cx - 400, cy + 520, 0.85, "o" if point and T < tb(10, k8_fix) else "smile",
+            rh=(cx - 40, cy + 60) if point else None)
+    ty = 10 * math.sin((T - tb(10, k8_swap)) * 12)
+    seated(draw_zhou, c, cx - 100, cy + 530, 0.85, mood="smile", rh=(cx + 30, cy + 230 + ty))
+
+
+pop(j, k8_swap, cx, cy + 300, ppl8, "wood_low", 0.7)
+ev(j, k8_say, L.pop_bubble("先点这个…", cx - 60, cy - 160, j, k8_say, 58, BLACK, tail=-1), "pop", 0.75)
+
+
+def fix8(c, kk, T, cx=cx, cy=cy):
+    t0 = tb(10, k8_err)
+    if T < t0:
+        return None
+    x, y = cx + 60, cy + 110
+    fixed = T >= tb(10, k8_fix)
+    if not fixed:
+        xmark(c, x, y, 50, clamp01((T - t0) / 0.25))
+    else:
+        tick(c, x, y, 55, clamp01((T - tb(10, k8_fix)) / 0.25))
+        g = C.slam_scale(T - tb(10, k8_fix))
+        with K.at(c, cx + 300, cy - 360, -4, g):
+            K.text(c, "当场改", 0, 0, 90, "hand", GREEN)
+    return None
+
+
+ev(j, k8_err, fix8, "rim", 0.8)
+b.hit(j, k8_fix, "kick", 0.85, "改成勾")
+
+# ================================================================ 屏 11：第四步——小李回到自己座位；钟走一阵他探头回来看；小周举手“找你”
+cx, cy = R[11]
+j = L.scene(11, (cx, cy + 10, Z))
+k9_back, k9_clk, k9_peek, k9_hand = seq(j, [None, (15, 1, 0.3), (15, 2, 0.4), (15, 3, 0.6)])
+L.note("有问题找我", "放手")
+ev(j, k9_back, step_card_fn(j, 4, k9_back))
+
+
+def ppl9(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(11, k9_back))
+    if sc <= 0:
+        return None
+    with at_pop(c, cx, cy + 400, sc):
+        desk(c, cx + 230, cy + 300, 420)
+        monitor(c, cx + 230, cy + 160, 260, 170, BLUE_FILL)
+        hand = T >= tb(11, k9_hand)
+        seated(draw_zhou, c, cx + 360, cy + 540, 0.8, mood="smile", lh=(cx + 300, cy + 60) if hand else None)
+        desk(c, cx - 360, cy + 300, 300)
+        u = ease_out(clamp01((T - tb(11, k9_back)) / 0.6))
+        peek = T >= tb(11, k9_peek)
+        x = lerp(cx + 50, cx - 360, u)
+        if peek:
+            x = lerp(cx - 360, cx - 120, ease_out(clamp01((T - tb(11, k9_peek)) / 0.4)))
+        draw_li(c, x, cy + 520, 0.8, "smile")
+    return None
+
+
+ev(j, k9_back, ppl9, "wood_low", 0.7)
+ev(j, k9_back, L.pop_text("放手", cx - 380, cy - 470, 80, GREEN, j, k9_back))
+
+
+def clk9(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(11, k9_clk))
+    if sc <= 0:
+        return None
+    x, y = cx - 300, cy - 220
+    h = clamp01((T - tb(11, k9_clk)) / 1.5) * 0.4
+    with at_pop(c, x, y, sc):
+        clock_face(c, x, y, 120, h, h, GREEN, GREEN_FILL)
+    return None
+
+
+ev(j, k9_clk, clk9, "wood_high", 0.7)
+b.hit(j, k9_peek, "pop", 0.7, "探头回来看")
+ev(j, k9_hand, L.pop_bubble("有问题找我", cx + 150, cy - 230, j, k9_hand, 56, BLACK, tail=-1), "bongo_high", 0.75)
+
+# ================================================================ 屏 12：结果——第二天小周交出一个勾，还举着问号“为什么要这样？”
+cx, cy = R[12]
+j = L.scene(12, (cx, cy + 10, Z))
+k10_cal, k10_done, k10_q = seq(j, [None, (16, 1, 0.5), (16, 2, 0.6)])
+L.note("第二天", "为什么要这样？")
+pop(j, k10_cal, cx - 330, cy - 400, lambda c, T, cx=cx, cy=cy: calendar_page(c, cx - 330, cy - 400, 260, 240, "第二天"),
+    "wood_high", 0.7)
+
+
+def zhou10(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(12, k10_cal) - 0.15)
+    if sc <= 0:
+        return None
+    x, y = cx - 150, cy + 520
+    hy = y - 290 * 0.95
+    done = T >= tb(12, k10_done)
+    with at_pop(c, x, y, sc):
+        draw_zhou(c, x, y, 0.95, mood="smile", rh=(x + 150, hy + 40) if done else None)
+        draw_li(c, cx + 380, y, 0.85, "smile" if done else "flat")
+    if done:
+        g = pop_scale(T - tb(12, k10_done))
+        with K.at(c, x + 250, hy + 10, 4, g):
+            paper(c, 0, 0, 220, 260, rows=4)
+            tick(c, 30, 40, 70, clamp01((T - tb(12, k10_done)) / 0.3))
+    return None
+
+
+ev(j, k10_cal, zhou10)
+b.hit(j, k10_done, "ding", 0.85, "交出一个勾")
+ev(j, k10_q, L.pop_bubble("为什么要这样？", cx + 160, cy - 300, j, k10_q, 58, BLUE, tail=-1), "pop", 0.75)
+
+# ================================================================ 屏 13：步骤链里两步是虚线（忘了讲）；耳朵听的字往外漏，手做过的一步留在脑子里
+cx, cy = R[13]
+j = L.scene(13, (cx, cy + 10, Z))
+k11_q, k11_chain, k11_hid, k11_ear, k11_hand = seq(j, [None, (18, 0, 0.6), (18, 2, 0.5), (19, 0, 0.6), (19, 2, 0.4)])
+L.note("讲三遍", "做一遍", "忘了讲", "听", "做")
+ev(j, k11_q, L.slam_text("讲三遍 < 做一遍", cx, cy - 500, 80, RED, j, k11_q), "rim", 0.8)
+L.note("讲三遍 < 做一遍")
+
+
+def chain11(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(13, k11_chain))
+    if sc <= 0:
+        return None
+    y = cy - 260
+    hid = T >= tb(13, k11_hid)
+    with at_pop(c, cx, y, sc):
+        for i in range(6):
+            x = cx - 450 + i * 180
+            ghost = i in (2, 4)
+            if ghost and hid:
+                dashed_rect(c, x, y, 130, 100, GRAY, 5)
+                K.text(c, "?", x, y, 50, "hand", GRAY)
+            else:
+                box(c, x, y, 130, 100, BLUE_FILL, BLUE, 5, 12)
+                K.text(c, str(i + 1), x, y + 2, 54, "hand", BLUE)
+            if i < 5:
+                C.line(c, (x + 66, y), (x + 114, y), GRAY, 6)
+        if hid:
+            g = pop_scale(T - tb(13, k11_hid))
+            with K.at(c, cx - 90, y + 110, 0, g):
+                K.text(c, "忘了讲", 0, 0, 52, "hand", RED)
+    return None
+
+
+ev(j, k11_chain, chain11, "wood_high", 0.75)
+b.hit(j, k11_hid, "rim", 0.8, "两步变虚线")
+
+
+def ear11(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(13, k11_ear))
+    if sc <= 0:
+        return None
+    x, y = cx - 260, cy + 200
+    with at_pop(c, x, y, sc):
+        ear(c, x, y, 1.6)
+        K.text(c, "听", x, y + 220, 60, "hand", GRAY)
+        for n in range(4):
+            ph = ((T - tb(13, k11_ear)) * 0.8 + n * 0.25) % 1
+            K.text(c, "字", x + 30 + ph * 230, y - 40 + ph * 180 + n * 10, 40, "hand", GRAY, 1 - ph)
+    return None
+
+
+L.note("字")
+ev(j, k11_ear, ear11, "shaker", 0.7)
+
+
+def hand11(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(13, k11_hand))
+    if sc <= 0:
+        return None
+    x, y = cx + 260, cy + 200
+    with at_pop(c, x, y, sc):
+        brain(c, x, y - 40, 110)
+        g = clamp01((T - tb(13, k11_hand)) / 0.5)
+        bx, by = x, lerp(y + 230, y - 40, ease_out(g))
+        box(c, bx, by, 110, 80, GREEN_FILL, GREEN, 5, 10)
+        K.text(c, "做", bx, by + 2, 50, "hand", GREEN)
+        if g >= 1:
+            sparkle(c, x, y - 40, T - tb(13, k11_hand) - 0.5, GREEN, 8, 130, 200)
+    return None
+
+
+ev(j, k11_hand, hand11, "ding", 0.8)
 
 # ================================================================ 屏 14：小李桌上一摞自己的活，旁边站着等着学的新人；大字“三步”
 cx, cy = R[14]
@@ -1084,5 +1088,5 @@ def next19(c, kk, T, cx=cx, cy=cy):
 ev(j, k19_nx, next19, "wood_high", 0.75)
 
 # ================================================================ 收尾
-L.finish(cover_shot=2, square_shot=8, notes=NOTES)
+L.finish(cover_shot=4, square_shot=10, notes=NOTES)
 L.export(globals())
