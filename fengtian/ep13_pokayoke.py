@@ -55,7 +55,8 @@ SCREENS = [
 ]
 
 THEME = FT.get("13")          # 本讲样式（fengtian/theme.py）：石墨板（深色）、开场 mailfly、转场 pan
-L = C.Lesson("13", SCREENS, drop_screen=2, board_size=(5000, 13400), theme=THEME)
+L = C.Lesson("13", SCREENS, drop_screen=2, board_size=(5000, 13400), theme=THEME,
+              trim_tail={16: 0.15})          # 第 16 句句尾碎音（识别成“手”），裁掉
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
