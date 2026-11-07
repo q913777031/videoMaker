@@ -48,11 +48,11 @@ SCREENS = [
     ([23], "做法二 · 示意", 14),
     ([24], "做法三 · 示意", 15),
     ([25], "更有底气", 16),
-    ([26, 27, 28], "评论区见", 17),
+    ([26, 27, 28, 29], "评论区见", 17),
 ]
 
 THEME = FT.get("07")          # 本讲样式（fengtian/theme.py）：淡粉信纸、开场 doorsign、转场 swing
-L = C.Lesson("07", SCREENS, drop_screen=2, board_size=(5000, 11400), theme=THEME)
+L = C.Lesson("07", SCREENS, drop_screen=2, board_size=(5000, 13000), theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -1897,11 +1897,70 @@ L.note(*[g[0] for g in GRIPES])
 for n, (s_, x, y, rot) in enumerate(GRIPES):
     ev(j, k_gr + n, L.pop_bubble(s_, x, y, j, k_gr + n, 56, BLACK, tail=-1 if n % 2 == 0 else 1),
        ("pop", "pop", "wood_high")[n], 0.6)
-k_n = nx(j, wt(28, 0, 0.15), k_gr + 2)
-b.path(j, k_n, k_n + 0.6, rect(cx, cy + 300, 1000, 330, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 180, 52, BLUE)
-b.text(j, k_n + 0.8, k_n + 1.6, "问题修好了", cx, cy + 265, 64, BLACK)
-b.text(j, k_n + 1.6, k_n + 2.6, "为什么又回来了？", cx, cy + 350, 64, BLACK)
+# 2026-11 收尾鼓励（第 28 句）：镜头下移；一串脚印走到车间，小李手里的话筒变大；预告卡整体下移 DY
+DY = 760
+k_e = nx(j, wt(28, 0, 0.0), k_gr + 2)
+b.move(j, k_e, (cx, cy + 800, Z), 1.1)
+k_e1 = k_e + 2
+k_walk = nx(j, wt(28, 0, 0.55), k_e1)
+k_mic = nx(j, wt(28, 1, 0.3), k_walk + 1)
+k_big = nx(j, wt(28, 2, 0.6), k_mic)
+GY17 = cy + 760
+X0_17, X1_17 = cx - 420, cx - 90
+FEET17 = [(X0_17 + 30 + i * 70, GY17 + 30 - (i % 2) * 26) for i in range(5)]
+
+
+def gemba17(c, kk, T, cx=cx, cy=cy):
+    """小李从左边走到车间门口；脚印一个个留下；拿起话筒，话筒变大、冒声波。"""
+    sc = pop_scale(T - tb(17, k_e1))
+    if sc <= 0:
+        return None
+    with at_pop(c, cx, GY17 - 150, sc):
+        c.drawPath(factory_path(cx + 330, GY17, 300, 250), K.paint("#FFFFFF"))
+        c.drawPath(factory_path(cx + 330, GY17, 300, 250), wb.marker(BLACK, 7))
+        K.text(c, "车间", cx + 330, GY17 + 50, 46, "hand", BLUE)
+        t0 = tb(17, k_walk)
+        tw = tb(17, k_walk + 2) - t0
+        for i, (x, y) in enumerate(FEET17):
+            a = clamp01((T - t0 - (i + 0.5) * tw / 5) / 0.12)
+            if a > 0:
+                foot(c, x, y, 90, 0.8, GRAY, a)
+        x, dy, _ = walk(T, t0, tw, X0_17, X1_17, 12)
+        s = 0.8
+        hy = GY17 - 290 * s
+        g = ease_out(clamp01((T - tb(17, k_big)) / 0.35))
+        held = T >= tb(17, k_mic)
+        rh = (x + 110 * s, hy + 70 * s) if held else None
+        c.save()
+        c.translate(0, dy)
+        draw_li(c, x, GY17, s, "smile" if held else "flat", rh=rh)
+        if held:
+            ms = pop_scale(T - tb(17, k_mic)) * (1 + 0.7 * g)
+            mx, my = rh[0] + 6, rh[1] - 30
+            with K.at(c, mx, my, 20, ms):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-9, 0, 18, 70), 8, 8, K.paint(BLACK))
+                c.drawCircle(0, -10, 24, K.paint("#9AA0AC"))
+                c.drawCircle(0, -10, 24, wb.marker(BLACK, 5))
+            if g > 0:
+                for n in range(3):
+                    r = 60 + n * 38 + 10 * math.sin(T * 6 + n)
+                    arc = skia.Path()
+                    arc.addArc(skia.Rect.MakeXYWH(mx - r + 20, my - 40 - r, 2 * r, 2 * r), -40, 50)
+                    c.drawPath(arc, wb.marker(ORANGE, 7, g * (1 - n * 0.2)))
+        c.restore()
+    return None
+
+
+ev(j, k_e1, gemba17, "pop", 0.6)
+b.hit(j, k_walk, "wood_low", 0.6, "脚印走向车间")
+b.hit(j, k_walk + 1, "wood_high", 0.5, "脚印走向车间")
+b.hit(j, k_mic, "pop", 0.6, "拿起话筒")
+ev(j, k_big, L.pop_text("说话更有分量", cx, cy + 300, 70, BLUE, j, k_big), "ding", 0.7)
+k_n = nx(j, wt(29, 0, 0.15), k_big)
+b.path(j, k_n, k_n + 0.6, rect(cx, cy + 300 + DY, 1000, 330, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 180 + DY, 52, BLUE)
+b.text(j, k_n + 0.8, k_n + 1.6, "问题修好了", cx, cy + 265 + DY, 64, BLACK)
+b.text(j, k_n + 1.6, k_n + 2.6, "为什么又回来了？", cx, cy + 350 + DY, 64, BLACK)
 
 
 def moles17(c, kk, T, cx=cx, cy=cy):
@@ -1910,7 +1969,7 @@ def moles17(c, kk, T, cx=cx, cy=cy):
     if T < t0:
         return None
     for n, x in enumerate((cx - 400, cx + 400)):
-        y = cy + 400
+        y = cy + 400 + DY
         c.drawOval(skia.Rect.MakeXYWH(x - 60, y - 14, 120, 30), K.paint("#3A3F48"))
         ph = (T - t0) * 1.6 + n * 0.5
         up = max(0.0, math.sin(ph * math.pi))

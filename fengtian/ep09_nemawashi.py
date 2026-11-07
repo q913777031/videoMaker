@@ -51,11 +51,11 @@ SCREENS = [
     ([24], "做法二 · 示意", 16),
     ([25], "做法三 · 示意", 17),
     ([26], "少吵一小时", 18),
-    ([27, 28, 29], "评论区见", 19),
+    ([27, 28, 29, 30], "评论区见", 19),
 ]
 
 THEME = FT.get("09")          # 本讲样式（fengtian/theme.py）：蓝图纸、开场 reject、转场 wipe
-L = C.Lesson("09", SCREENS, drop_screen=2, board_size=(5000, 11900), theme=THEME)
+L = C.Lesson("09", SCREENS, drop_screen=2, board_size=(5000, 13000), theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -1978,11 +1978,59 @@ L.note(*[g[0] for g in GRIPES])
 for n, (s_, x, y) in enumerate(GRIPES):
     ev(j, k_gr + n, L.pop_bubble(s_, x, y, j, k_gr + n, 56, BLACK, tail=-1 if n % 2 == 0 else 1),
        ("pop", "pop", "wood_high")[n], 0.6)
-k_n = nx(j, wt(29, 0, 0.15), k_gr + 2)
-b.path(j, k_n, k_n + 0.6, rect(cx, cy + 300, 1000, 330, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 180, 52, BLUE)
-b.text(j, k_n + 0.8, k_n + 1.6, "每天都很忙", cx, cy + 265, 64, BLACK)
-b.text(j, k_n + 1.6, k_n + 2.6, "为什么还在原地？", cx, cy + 350, 64, BLACK)
+# 2026-11 收尾鼓励（第 29 句）：镜头下移；小李双手捧着方案，聊几句后方案变成一棵连根挪好的小树；预告卡整体下移 DY
+DY = 760
+k_e = nx(j, wt(29, 0, 0.0), k_gr + 2)
+b.move(j, k_e, (cx, cy + 800, Z), 1.1)
+k_e1 = k_e + 2
+k_talk = nx(j, wt(29, 1, 0.2), k_e1)
+k_tree = nx(j, wt(29, 2, 0.3), k_talk + 1)
+LI19E = (cx - 170, cy + 700, 0.8)
+TALK19 = [(cx + 230, cy + 430), (cx + 380, cy + 540)]
+
+
+def hold19(c, kk, T, cx=cx, cy=cy):
+    """小李双手捧着方案 → 方案变成一棵根上裹着土团的小树，小李笑。"""
+    sc = pop_scale(T - tb(19, k_e1))
+    if sc <= 0:
+        return None
+    x, y, s = LI19E
+    hy = y - 290 * s
+    hx, hyy = x + 150, hy + 170 * s
+    f = ease_out(clamp01((T - tb(19, k_tree)) / 0.4))
+    with at_pop(c, x + 60, y - 150, sc):
+        if f < 1:
+            with K.at(c, hx, hyy - 70, -4, 1 - f):
+                c.drawPath(wb.doc(0, 0, 130, 170, 3), K.paint("#FFFFFF"))
+                c.drawPath(wb.doc(0, 0, 130, 170, 3), wb.marker(BLACK, 6))
+        if f > 0:
+            with K.at(c, hx, hyy, 0, pop_scale(T - tb(19, k_tree))):
+                tree(c, 0, -40, 0.42, ball=1.0, buds=f)
+        draw_li(c, x, y, s, "smile" if f > 0 else "flat", lh=(hx - 60, hyy + 10), rh=(hx + 50, hyy + 12))
+    return None
+
+
+ev(j, k_e1, hold19, "pop", 0.6)
+for n, (x, y) in enumerate(TALK19):
+    k_ = k_talk + n * 0.5
+    b.custom(j, k_, k_ + 0.3, pop_fn(j, k_, lambda c, sc, T, x=x, y=y: _talk19(c, sc, x, y)),
+             sfx="wood_high" if n == 0 else None, gain=0.6)
+
+
+def _talk19(c, sc, x, y):
+    with at_pop(c, x, y, sc):
+        c.drawRoundRect(skia.Rect.MakeXYWH(x - 80, y - 50, 160, 100), 40, 40, K.paint("#FFFFFF"))
+        c.drawPath(wb.bubble(x, y, 160, 100, -1), wb.marker(BLACK, 6))
+        for d in (-40, 0, 40):
+            c.drawCircle(x + d, y, 9, K.paint(BLACK))
+
+
+ev(j, k_tree, L.pop_text("护着你的方案", cx, cy + 300, 70, BLUE, j, k_tree), "ding", 0.7)
+k_n = nx(j, wt(30, 0, 0.15), k_tree)
+b.path(j, k_n, k_n + 0.6, rect(cx, cy + 300 + DY, 1000, 330, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 180 + DY, 52, BLUE)
+b.text(j, k_n + 0.8, k_n + 1.6, "每天都很忙", cx, cy + 265 + DY, 64, BLACK)
+b.text(j, k_n + 1.6, k_n + 2.6, "为什么还在原地？", cx, cy + 350 + DY, 64, BLACK)
 
 
 def preview19(c, kk, T, cx=cx, cy=cy):
@@ -1991,7 +2039,7 @@ def preview19(c, kk, T, cx=cx, cy=cy):
     if T < t0:
         return None
     g = pop_scale(T - t0)
-    x, y = cx - 395, cy + 310
+    x, y = cx - 395, cy + 310 + DY
     with K.at(c, x, y, 0, g):
         box(c, 0, 0, 120, 130, "#FFFFFF", BLACK, 5, 8)
         c.drawRect(skia.Rect.MakeXYWH(-60, -65, 120, 34), K.paint(RED))
@@ -2006,7 +2054,7 @@ def preview19(c, kk, T, cx=cx, cy=cy):
             C.line(c, (-58, 92), (58, 92), GRAY, 3)
             c.restore()
     x2 = cx + 400
-    with K.at(c, x2, cy + 445, 0, g):
+    with K.at(c, x2, cy + 445 + DY, 0, g):
         draw_li(c, 0, 0, 0.5, "sad")
 
         dashed(c, (-60, 4), (60, 4), GRAY, 5)

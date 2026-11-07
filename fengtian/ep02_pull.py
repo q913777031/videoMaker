@@ -43,11 +43,11 @@ SCREENS = [
     ([23], "做法二 · 示意", 15),
     ([24], "做法三 · 示意", 16),
     ([25], "准点下班", 17),
-    ([26, 27, 28], "评论区见", 18),
+    ([26, 27, 28, 29], "评论区见", 18),
 ]
 
 THEME = FT.get("02")          # 本讲样式（fengtian/theme.py）：浅灰蓝点阵、开场 pile、转场 pan
-L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 11400), extra_hold={13: 0.8, 17: 0.4}, theme=THEME)
+L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={13: 0.8, 17: 0.4}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -1427,14 +1427,81 @@ for i, (x, y, fn) in enumerate(AV):
 k_help = kb(j, wt(27, 1, 0.2), lo=k_av + 2)
 b.custom(j, k_help, k_help + 0.3, L.pop_text("说出来，大家帮你避开", cx, cy + 70, 58, BLACK, j, k_help, "sans_medium"),
          sfx="ding")
-k_n = kb(j, wt(28, 0, 0.2), lo=k_help + 1)
-b.path(j, k_n, k_n + 0.6, rect(cx, cy + 330, 1000, 260, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 245, 52, BLUE)
-b.text(j, k_n + 0.8, k_n + 2.2, "为什么总是忙一阵闲一阵？", cx, cy + 330, 60, BLACK)
+# 2026-11 收尾鼓励（第 28 句）：镜头下移，小李把“下一件”卡片递给等着用的小王，小王点头；预告卡整体下移 DY
+DY = 670
+k_e = kb(j, wt(28, 0, 0.0), lo=k_help + 1)
+b.move(j, k_e, (cx, cy + 740, Z), 1.1)
+k_e1 = k_e + 2
+k_give = kb(j, wt(28, 1, 0.15), lo=k_e1 + 1)
+k_ok = kb(j, wt(28, 1, 0.8), lo=k_give + 1)
+LI18, WG18 = (cx - 260, cy + 700, 0.8), (cx + 260, cy + 700, 0.8)
+
+
+def draw_wang(c, x, y, s, lh=None, rh=None, mood="flat", head_dy=0.0):
+    """同事小王（办公室，不戴安全帽）：照抄第 06/07 讲造型。"""
+    d_lh, d_rh = rest_hands(x, y, s)
+    lh, rh = lh or d_lh, rh or d_rh
+    hy = y - 290 * s + head_dy
+    sh = (x, y - 290 * s + 80 * s)
+    hip = (x, y - 120 * s)
+    for ft in ((x - 50 * s, y), (x + 50 * s, y)):
+        C.line(c, hip, ft, BLUE, 10)
+    C.line(c, sh, lh, BLUE, 10)
+    C.line(c, sh, rh, BLUE, 10)
+    torso = skia.Rect.MakeLTRB(x - 42 * s, y - 235 * s, x + 42 * s, y - 105 * s)
+    c.drawRoundRect(torso, 18 * s, 18 * s, K.paint("#FFFFFF"))
+    c.drawRoundRect(torso, 18 * s, 18 * s, wb.marker(BLUE, 7))
+    badge = skia.Rect.MakeXYWH(x - 20 * s, y - 180 * s, 40 * s, 30 * s)
+    c.drawRoundRect(badge, 4, 4, K.paint("#DCE8F7"))
+    c.drawRoundRect(badge, 4, 4, wb.marker(BLUE, 4))
+    c.drawRoundRect(skia.Rect.MakeLTRB(x - 54 * s, hy - 46 * s, x + 54 * s, hy + 40 * s), 26 * s, 26 * s, K.paint("#2E2A28"))
+    c.drawCircle(x, hy, 45 * s, K.paint("#FFFFFF"))
+    c.drawCircle(x, hy, 45 * s, wb.marker(BLACK, 9))
+    fringe = skia.Path()
+    fringe.addArc(skia.Rect.MakeXYWH(x - 50 * s, hy - 52 * s, 100 * s, 72 * s), 180, 180)
+    fringe.close()
+    c.drawPath(fringe, K.paint("#2E2A28"))
+    c.drawCircle(x + 36 * s, hy - 24 * s, 9 * s, K.paint(ORANGE))
+    C._eyes_mouth(c, x, hy + 4 * s, s, mood, 1.0)
+
+
+def give18(c, kk, T):
+    """小李伸手递卡片，卡片飞到小王手里；小王点两下头、笑。"""
+    (lx, ly, s), (wx, wy, _) = LI18, WG18
+    sc = pop_scale(T - tb(18, k_e1))
+    if sc <= 0:
+        return None
+    f = ease_in_out(clamp01((T - tb(18, k_give)) / 0.5))
+    nod = T - tb(18, k_ok)
+    head = 14 * abs(math.sin(nod * 2 * math.pi * 1.6)) if 0 <= nod < 0.65 else 0.0
+    hy = ly - 290 * s
+    li_rh = (lx + lerp(70, 150, min(1.0, f * 3)) * s, lerp(hy + 170 * s, hy + 110 * s, min(1.0, f * 3)))
+    wg_lh = (wx - 150 * s, hy + 110 * s) if f > 0 else None
+    with at_pop(c, cx, ly - 120, sc):
+        draw_li(c, lx, ly, s, "smile", rh=li_rh)
+        draw_wang(c, wx, wy, s, lh=wg_lh, mood="smile" if nod >= 0 else "flat", head_dy=head)
+        x = lerp(li_rh[0] + 20, wx - 150 * s - 20, f)
+        y = hy + 110 * s - 60 - 90 * math.sin(math.pi * f)
+        r = skia.Rect.MakeXYWH(x - 85, y - 55, 170, 110)
+        c.drawRoundRect(r, 10, 10, K.paint("#FFF4C2"))
+        c.drawRoundRect(r, 10, 10, wb.marker(ORANGE, 6))
+        K.text(c, "下一件", x, y, 44, "hand", BLACK)
+    return None
+
+
+L.note("下一件")
+b.custom(j, k_e1, k_e1 + 0.3, give18, sfx="pop", gain=0.6)
+b.hit(j, k_give, "wood_high", 0.7, "卡片递出去")
+b.path(j, k_ok, k_ok + 0.5, check(WG18[0] + 150, WG18[1] - 330, 40), GREEN, 11, sfx="ding")
+b.custom(j, k_ok + 1, k_ok + 1.3, L.pop_text("花在有人等的地方", cx, cy + 250, 64, BLUE, j, k_ok + 1), sfx="pop", gain=0.6)
+k_n = kb(j, wt(29, 0, 0.2), lo=k_ok + 1)
+b.path(j, k_n, k_n + 0.6, rect(cx, cy + 330 + DY, 1000, 260, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 245 + DY, 52, BLUE)
+b.text(j, k_n + 0.8, k_n + 2.2, "为什么总是忙一阵闲一阵？", cx, cy + 330 + DY, 60, BLACK)
 wave = skia.Path()
-wave.moveTo(cx - 200, cy + 405)
+wave.moveTo(cx - 200, cy + 405 + DY)
 for i in range(1, 41):
-    wave.lineTo(cx - 200 + i * 10, cy + 405 - 22 * math.sin(i / 40 * 4 * math.pi) * (1 if (i // 10) % 2 == 0 else 1.6))
+    wave.lineTo(cx - 200 + i * 10, cy + 405 + DY - 22 * math.sin(i / 40 * 4 * math.pi) * (1 if (i // 10) % 2 == 0 else 1.6))
 b.path(j, k_n + 2.2, k_n + 3.0, wave, ORANGE, 7)
 
 # ================================================================ 收尾

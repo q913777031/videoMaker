@@ -47,11 +47,11 @@ SCREENS = [
     ([22], "做法二 · 示意", 16),
     ([23], "做法三 · 示意", 17),
     ([24, 25], "清单的好处", 18),
-    ([26, 27, 28], "评论区见", 19),
+    ([26, 27, 28, 29], "评论区见", 19),
 ]
 
 THEME = FT.get("05")          # 本讲样式（fengtian/theme.py）：浅绿方格、开场 checklist、转场 wipe
-L = C.Lesson("05", SCREENS, drop_screen=2, board_size=(5000, 11400), extra_hold={5: 0.8}, theme=THEME)
+L = C.Lesson("05", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={5: 0.8}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -1758,11 +1758,60 @@ def mini19(i):
 
 for i in range(3):
     ev(j, k_cards + i, pop_fn(j, k_cards + i, mini19(i)), "pop", 0.6)
-k_n = max(kq(j, wt(28, 0, 0.15), k_cards + 3), k_cards + 3)
-b.path(j, k_n, k_n + 0.6, rect(cx, cy + 300, 1000, 330, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 180, 52, BLUE)
-b.text(j, k_n + 0.8, k_n + 1.6, "事情一多", cx, cy + 265, 64, BLACK)
-b.text(j, k_n + 1.6, k_n + 2.6, "为什么总有漏掉的？", cx, cy + 350, 64, BLACK)
+# 2026-11 收尾鼓励（第 28 句）：镜头下移；今天的小李把写好的清单递给明天的小李；预告卡整体下移 DY
+DY = 760
+k_e = kq(j, wt(28, 0, 0.0), k_cards + 3)
+b.move(j, k_e, (cx, cy + 800, Z), 1.1)
+k_e1 = k_e + 2
+k_list = max(kq(j, wt(28, 0, 0.7), k_e1 + 1), k_e1 + 1)
+k_tmr = max(kq(j, wt(28, 1, 0.2), k_list + 1), k_list + 1)
+k_give = k_tmr + 1
+k_ok = max(kq(j, wt(28, 1, 0.85), k_give + 1), k_give + 1)
+TD19, TM19 = (cx - 270, cy + 690, 0.8), (cx + 270, cy + 690, 0.8)
+
+
+def handoff19(c, kk, T, cx=cx, cy=cy):
+    """今天的小李举着清单 → 清单飞到明天的小李手里，明天的小李笑。"""
+    if T < tb(19, k_e1):
+        return None
+    (ax, ay, s), (bx, by, _) = TD19, TM19
+    hy = ay - 290 * s
+    sa = pop_scale(T - tb(19, k_e1))
+    with at_pop(c, ax, ay - 150, sa):
+        held = T >= tb(19, k_list)
+        draw_li(c, ax, ay, s, "smile" if held else "flat", rh=(ax + 120 * s, hy + 90 * s) if held else None)
+    K.text(c, "今天", ax, ay + 60, 50, "hand", BLUE, sa)
+    sb = pop_scale(T - tb(19, k_tmr))
+    if sb > 0:
+        ok = T >= tb(19, k_ok)
+        with at_pop(c, bx, by - 150, sb):
+            got = T >= tb(19, k_give) + 0.4
+            draw_li(c, bx, by, s, "smile" if ok else "flat", lh=(bx - 120 * s, hy + 90 * s) if got else None)
+        K.text(c, "明天", bx, by + 60, 50, "hand", ORANGE, sb)
+    if T >= tb(19, k_list):
+        f = ease_in_out(clamp01((T - tb(19, k_give)) / 0.45))
+        x = lerp(ax + 120 * s + 70, bx - 120 * s - 70, f)
+        y = hy + 40 * s - 120 * math.sin(math.pi * f)
+        sl = pop_scale(T - tb(19, k_list))
+        with K.at(c, x, y, lerp(-6, 6, f), sl):
+            sticky(c, 0, 0, 150, 170)
+            for n in range(3):
+                checkbox(c, -40, -45 + n * 45, 26, "ok")
+                c.drawLine(-20, -45 + n * 45, 50, -45 + n * 45, wb.marker("#9AA0AC", 4))
+    return None
+
+
+L.note("今天", "明天")
+ev(j, k_e1, handoff19, "pop", 0.6)
+b.hit(j, k_list, "wood_high", 0.7, "清单写好")
+b.hit(j, k_tmr, "pop", 0.6, "明天的小李出现")
+b.hit(j, k_give, "wood_low", 0.7, "清单递过去")
+ev(j, k_ok, L.pop_text("给以后的自己省事", cx, cy + 300, 64, BLUE, j, k_ok), "ding", 0.7)
+k_n = max(kq(j, wt(29, 0, 0.15), k_ok + 1), k_ok + 1)
+b.path(j, k_n, k_n + 0.6, rect(cx, cy + 300 + DY, 1000, 330, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 180 + DY, 52, BLUE)
+b.text(j, k_n + 0.8, k_n + 1.6, "事情一多", cx, cy + 265 + DY, 64, BLACK)
+b.text(j, k_n + 1.6, k_n + 2.6, "为什么总有漏掉的？", cx, cy + 350 + DY, 64, BLACK)
 
 
 def fly19(c, kk, T, cx=cx, cy=cy):
@@ -1773,7 +1822,7 @@ def fly19(c, kk, T, cx=cx, cy=cy):
         if g <= 0:
             continue
         x = cx + 380 + 80 * g + i * 10
-        y = cy + 260 - 220 * g + i * 50 + 20 * math.sin(g * 9 + i)
+        y = cy + 260 + DY - 220 * g + i * 50 + 20 * math.sin(g * 9 + i)
         with K.at(c, x, y, 30 * g * (1 if i % 2 else -1) + i * 6):
             sticky(c, 0, 0, 80, 70, alpha=1 - 0.6 * g)
     return None

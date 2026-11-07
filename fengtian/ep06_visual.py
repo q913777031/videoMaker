@@ -1,11 +1,11 @@
 """《丰田模式》06 目视化：事情一多，为什么总有漏掉的？（白板手绘 + AI 旁白，竖屏 2:3）
 
 两人对比：同样一天十几件事，左格小李全记在脑子里、翻聊天记录，右格小王在桌边贴一块三栏小白板。
-全片用“左右两格分屏”（像视频通话的两个窗口，每格顶上一块名牌）对照两个人，讲丰田时插入车间画线、看板、安灯。
+全片用“左右两格分屏”（像视频通话的两个窗口，每格顶上一块名牌）对照两个人，讲丰田时插入车间画线、取货卡片、头顶的灯。
 - 0–3 秒：系列开场“丰田模式”四字，缓推到小李桌上“周五交”的便利贴被吹起、逐拍翻着飘出画面，“又忘了”砸下；
 - 两格分屏（屏 2/3 共用一块画面）：左格脑袋里塞满小方块、手机聊天一路往上翻；右格小王贴三栏白板，组长路过看一眼；
 - drop：第 4 屏“目视化管理”砸下；组长沿流水线走过去，头顶一只眼睛，绿灯正常、红灯异常；
-- 书中做法：地面黄线框、最高线；看板 / 安灯 / 整理整顿三块牌，问题红点浮在外面；
+- 书中做法：地面黄线框、最高线；取货卡片 / 头顶的灯 / 整齐的工具三块牌，问题红点浮在外面；
 - 为什么摆出来：红点钻进脑袋和电脑，没了，“没人管”；
 - 两格分屏再来一次（结果）：左格方块往外掉，“漏”；右格一张卡片变红，小王举手，组长赶来；
 - 说回我们：周五问进度、取件码截图、药吃没吃 → 脑子当仓库 → 怕作秀 → 三步 → 安心 → 评论区 + 下一讲预告。
@@ -47,11 +47,11 @@ SCREENS = [
     ([23], "做法二 · 示意", 14),
     ([24], "做法三 · 示意", 15),
     ([25, 26], "安心", 16),
-    ([27, 28, 29], "评论区见", 17),
+    ([27, 28, 29, 30], "评论区见", 17),
 ]
 
 THEME = FT.get("06")          # 本讲样式（fengtian/theme.py）：墨绿黑板、开场 sticky、转场 arc
-L = C.Lesson("06", SCREENS, drop_screen=4, board_size=(5000, 11900), extra_hold={10: 0.5, 16: 1.0}, theme=THEME)
+L = C.Lesson("06", SCREENS, drop_screen=4, board_size=(5000, 13000), extra_hold={10: 0.5, 16: 1.0}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -855,16 +855,16 @@ b.custom(j, k_mark, k_mark + 0.3, L.stamp("都标出来", cx, cy - 400, 92, j, k
          gain=0.75)
 b.shots[j].shake = [(k_mark, 8.0)]
 
-# ================================================================ 屏 6：看板、安灯、整理整顿三块牌；问题红点浮在外面
+# ================================================================ 屏 6：取货卡片、头顶的灯、整齐的工具三块牌；问题红点浮在外面
 cx, cy = R[5]
 j = L.scene(6, (cx, cy + 20, Z))
 IX = [cx - 380, cx, cx + 380]
 IY = cy - 150
-k_i6 = [kq(j, wt(9, 0, 0.1), lo=1)]
-k_i6 += [kq(j, wt(9, 0, 0.42), lo=k_i6[0] + 1)]
-k_i6 += [kq(j, wt(9, 0, 0.75), lo=k_i6[1] + 1)]
+k_i6 = [kq(j, wt(9, 0, 0.25), lo=1)]               # 2026-11 第 9 句改为“取货卡片、头顶的灯、摆整齐的工具”
+k_i6 += [kq(j, wt(9, 0, 0.47), lo=k_i6[0] + 1)]
+k_i6 += [kq(j, wt(9, 0, 0.70), lo=k_i6[1] + 1)]
 k_out6 = kq(j, wt(9, 1, 0.55), lo=k_i6[2] + 1)
-NAMES6 = ["看板", "安灯", "整理整顿"]
+NAMES6 = ["取货卡片", "头顶的灯", "整齐的工具"]
 
 
 def icon6(i):
@@ -874,7 +874,7 @@ def icon6(i):
             r = skia.Rect.MakeXYWH(x - 150, y - 160, 300, 320)
             c.drawRoundRect(r, 22, 22, K.paint("#FFFFFF"))
             c.drawRoundRect(r, 22, 22, wb.marker(BLUE, 7))
-            if i == 0:                                   # 看板卡片
+            if i == 0:                                   # 取货卡片
                 card = skia.Rect.MakeXYWH(x - 70, y - 120, 140, 180)
                 c.drawRect(card, K.paint("#FFF4C2"))
                 c.drawRect(card, wb.marker(BLACK, 5))
@@ -882,12 +882,12 @@ def icon6(i):
                 for k_ in range(3):
                     c.drawLine(x - 45, y - 60 + k_ * 34, x + 45 - (k_ % 2) * 25, y - 60 + k_ * 34, wb.marker(GRAY, 4))
                 c.drawPath(C.box_path(x, y + 50, 70, 40), wb.marker(BLACK, 5))
-            elif i == 1:                                 # 安灯
+            elif i == 1:                                 # 头顶的灯
                 tw = T - tb(6, k_i6[1])
                 lamp(c, x, y - 70, 1.0, RED, blink=0.7 + 0.3 * math.cos(tw * 8), r=40)
                 c.drawPath(P((x + 60, y - 120), (x + 60, y + 20)), wb.marker(BLACK, 4))
                 c.drawCircle(x + 60, y + 30, 10, K.paint(ORANGE))
-            else:                                        # 整理整顿：工具墙，每件工具有画好的轮廓
+            else:                                        # 整齐的工具：工具墙，每件工具有画好的轮廓
                 for k_, (dx, tw_) in enumerate(((-75, 0), (0, 1), (75, 2))):
                     xx = x + dx
                     c.drawRoundRect(skia.Rect.MakeXYWH(xx - 30, y - 120, 60, 170), 10, 10, wb.marker(GRAY, 3))
@@ -900,7 +900,7 @@ def icon6(i):
                     else:
                         c.drawLine(xx - 6, y - 110, xx + 6, y + 35, wb.marker(ORANGE, 12))
                         c.drawLine(xx - 6, y - 110, xx + 6, y + 35, wb.marker(BLACK, 3))
-            K.text(c, NAMES6[i], x, y + 110, 56 if i < 2 else 52, "hand", BLUE)
+            K.text(c, NAMES6[i], x, y + 110, 52, "hand", BLUE)
     return draw
 
 
@@ -1774,7 +1774,6 @@ b.text(j, k_q18, k_q18 + 1.0, "你最常忘的", cx, cy - 520, 70, RED, sfx="pop
 b.text(j, k_q18 + 1.0, k_q18 + 1.8, "是哪类事？", cx, cy - 430, 70, RED)
 LI18 = (cx - 420, cy + 120, 0.75)
 k_type = kq(j, wt(28, 0, 0.3), lo=k_q18 + 2)
-k_n18 = kq(j, wt(29, 0, 0.15), lo=k_type + 1)
 INP = (cx + 130, cy - 230, 700, 120)
 b.custom(j, 1, 1.3, L.figure(draw_li, j, 1, *LI18, mood="smile",
                              rh=lambda T: (LI18[0] + 120, LI18[1] - 290 * LI18[2] + 60) if T >= tb(18, k_type) else None),
@@ -1815,14 +1814,67 @@ def input18(c, kk, T):
 
 L.note("我总忘回消息", "发送")
 b.custom(j, k_type, k_type + 0.3, input18, sfx="wood_high")
-b.path(j, k_n18, k_n18 + 0.6, rect(cx, cy + 390, 1060, 260, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n18 + 0.5, k_n18 + 0.8, "下一讲", cx - 120, cy + 300, 50, BLUE)
-b.text(j, k_n18 + 0.8, k_n18 + 2.2, "会开了三次，问题怎么还在？", cx - 80, cy + 390, 56, BLACK)
+# 2026-11 收尾鼓励（第 29 句）：镜头下移；小李脑袋上压着的箱子搬到白板上变成便利贴，脑袋一轻、人飘起一点；预告卡整体下移 DY
+DY = 730
+k_e = kq(j, wt(29, 0, 0.0), lo=k_cat + 2)
+b.move(j, k_e, (cx, cy + 860, Z), 1.1)
+k_e1 = k_e + 2
+k_full = kq(j, wt(29, 1, 0.4), lo=k_e1 + 1)
+k_out = kq(j, wt(29, 2, 0.1), lo=k_full + 1)
+k_float = k_out + 2
+LI18E = (cx - 230, cy + 860, 0.8)
+WB18 = (cx + 230, cy + 660)
+BOX18 = [(-40, -62), (38, -64), (0, -106)]
+NOTE18 = [(-95, -20), (0, 30), (95, -20)]
+
+
+def unload18(c, kk, T, cx=cx, cy=cy):
+    """箱子压在小李头上（太满时晃），一个个飞到白板上变成便利贴；最后小李笑着飘起一点。"""
+    sc = pop_scale(T - tb(18, k_e1))
+    if sc <= 0:
+        return None
+    x, y, s = LI18E
+    wx, wy = WB18
+    fl = ease_out(clamp01((T - tb(18, k_float)) / 0.5))
+    lift = -45 * fl - 8 * math.sin((T - tb(18, k_float)) * 4) * fl
+    hy = y - 290 * s + lift
+    with at_pop(c, cx, cy + 660, sc):
+        r = skia.Rect.MakeXYWH(wx - 200, wy - 150, 400, 300)
+        c.drawRoundRect(r, 12, 12, K.paint("#FFFFFF"))
+        c.drawRoundRect(r, 12, 12, wb.marker(BLACK, 7))
+        c.drawLine(wx - 150, wy + 150, wx - 170, wy + 210, wb.marker(BLACK, 7))
+        c.drawLine(wx + 150, wy + 150, wx + 170, wy + 210, wb.marker(BLACK, 7))
+        if fl > 0:
+            c.drawLine(x - 50, y + 20, x + 50, y + 20, wb.marker(GRAY, 5, 0.6))
+        draw_li(c, x, y + lift, s, "smile" if fl > 0 else ("sad" if T >= tb(18, k_full) else "flat"))
+        shake = 7 * math.sin(T * 30) if tb(18, k_full) <= T < tb(18, k_out) else 0.0
+        for i, ((bx_, by_), (nx_, ny_)) in enumerate(zip(BOX18, NOTE18)):
+            f = ease_in_out(clamp01((T - tb(18, k_out) - i * 0.35) / 0.4))
+            px = lerp(x + bx_ + shake, wx + nx_, f)
+            py = lerp(hy + by_, wy + ny_, f) - 90 * math.sin(math.pi * f)
+            if f < 1:
+                with K.at(c, px, py, (i - 1) * 8 * (1 - f)):
+                    c.drawPath(C.box_path(0, 0, 90, 64), K.paint("#F1DDB8"))
+                    c.drawPath(C.box_path(0, 0, 90, 64), wb.marker("#A9773E", 6))
+            else:
+                sticky(c, px, py, 0.75, "", fill=(NOTE_FILL, "#FFD9A8", GREEN_FILL)[i], rot=(i - 1) * 6)
+    return None
+
+
+b.custom(j, k_e1, k_e1 + 0.3, unload18, sfx="pop", gain=0.6)
+b.hit(j, k_full, "wood_low", 0.7, "头上的箱子晃")
+b.hit(j, k_out, "pop", 0.6, "箱子飞到白板上")
+b.hit(j, k_out + 1, "pop", 0.5, "箱子飞到白板上")
+b.custom(j, k_float, k_float + 0.3, L.pop_text("给脑子减减负", cx, cy + 390, 70, BLUE, j, k_float), sfx="ding", gain=0.7)
+k_n18 = kq(j, wt(30, 0, 0.15), lo=k_float + 1)
+b.path(j, k_n18, k_n18 + 0.6, rect(cx, cy + 390 + DY, 1060, 260, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n18 + 0.5, k_n18 + 0.8, "下一讲", cx - 120, cy + 300 + DY, 50, BLUE)
+b.text(j, k_n18 + 0.8, k_n18 + 2.2, "会开了三次，问题怎么还在？", cx - 80, cy + 390 + DY, 56, BLACK)
 
 
 def door18(c, sc, T):
     cx, cy = R[17]
-    x, y = cx + 420, cy + 420
+    x, y = cx + 420, cy + 420 + DY
     with at_pop(c, x, y, sc, rot=6):
         r = skia.Rect.MakeXYWH(x - 70, y - 40, 140, 80)
         c.drawRoundRect(r, 10, 10, K.paint("#FFFFFF"))

@@ -1,4 +1,4 @@
-"""《丰田模式》10 反省：每天都很忙，为什么还在原地？（白板手绘 + AI 旁白，竖屏 2:3；系列收尾）
+"""《丰田模式》10 反省：每天都很忙，为什么还在原地？（白板手绘 + AI 旁白，竖屏 2:3）
 
 自测：三道题，符合记一分。第 2–5 屏右上角一直挂着计分卡（三个格子 + “N分”），每答完一题，“+1”飞进格子。
 - 0–3 秒：系列开场“丰田模式”四字，缓推到挂历一页页翻到十二月，小李在跑步机上满头大汗，“原地”砸下；一张“小测试”卷子；
@@ -11,7 +11,8 @@
 - 为什么：左边圆圈跑道上转圈（重复），右边停下回头看，脚下长出往上的路（学）；一本“一年经验”复印十遍叠成“十年经验？”；
 - 说回我们：两个季度的汇报卡在同一处；和对象为洗碗吵三次；做饭咸了怪锅，放大镜里是半勺盐；照镜子难为情，大复盘打叉，
   五分钟沙漏，“三步”；三步做法（便签“下次更好”、只圈一行明天改、先说谢谢再解释）；
-- 收尾：回头看，身后一条长路插着十面小旗（十讲的概念）；十讲小卡片排成两排，“第一季 完”，第一讲“停线”亮起，评论框。
+- 收尾：回头看，身后一条长路插着十面小旗（十讲的概念）；评论框里几个老习惯，“一年后”小日历，小李回头看、身后又插下一面小旗；
+  下一讲预告卡（第 11 讲：白忙，角上一个浪费计数器）。
 办公室里的同事小王用本模块的 draw_wang（短发、白衬衫、蓝工牌，不戴安全帽，与第 06、07 讲同一造型）；
 安全帽造型（common.draw_worker）只用于车间员工（第 6、7 屏丰田的项目组）；组长 common.draw_leader，大野耐一 common.draw_ohno。
 文案见 fengtian/PLAN.md「### 10 反省」；时间轴、配乐、相机、人物见 fengtian/common.py。
@@ -54,7 +55,7 @@ SCREENS = [
     ([23], "做法二 · 示意", 17),
     ([24], "做法三 · 示意", 18),
     ([25], "回头看", 19),
-    ([26, 27, 28], "系列收尾", 20),
+    ([26, 27, 28, 29], "评论区见", 20),
 ]
 
 THEME = FT.get("10")          # 本讲样式（fengtian/theme.py）：暖杏方格、开场 treadmill、转场 tilt
@@ -2070,100 +2071,130 @@ b.hit(j, k_lookb, "wood_high", 0.7, "小李回头看")
 ev(j, k_far, L.slam_text("很远", cx - 250, cy + 500, 110, RED, j, k_far, rot=-4), "kick", 0.9)
 b.shots[j].shake = [(k_far, 9.0)]
 
-# ================================================================ 屏 20：十讲小卡片两排，“第一季 完”；评论框；第一讲“停线”亮起
+# ================================================================ 屏 20：评论区——最想改掉的老习惯；“一年后”小日历；小李回头看、身后又插一面小旗（收尾鼓励）；下一讲预告
+# 2026-11 起第 10 讲不再是系列收尾，结尾预告第 11 讲（第 26–29 句）
 cx, cy = R[20]
 j = L.scene(20, (cx, cy + 10, Z))
-k_cd0 = 0
-k_cards = [k_cd0 + i // 2 for i in range(10)]
-k_end = nx(j, wt(26, 1, 0.5), k_cards[-1])
-k_hop = nx(j, wt(27, 1, 0.1), k_end)
-k_cmt = nx(j, wt(28, 0, 0.3), k_hop + 2)
-k_one = nx(j, wt(28, 1, 0.7), k_cmt)
-L.note("第一季", "完", "最想用哪一讲？", "从这里开始")
+b.path(j, 0, 0.8, wb.bubble(cx, cy - 440, 1000, 200, -1), BLACK, 9, sfx="wood_high")
+k_q = nx(j, wt(26, 0, 0.2), 0)
+b.text(j, k_q, k_q + 1.3, "最想改掉的老习惯？", cx, cy - 440, 64, RED, sfx="pop")
+k_hab = nx(j, wt(26, 1, 0.3), k_q)
+HABITS = [("熬夜", cx - 140, -4), ("拖延", cx + 110, 3), ("刷手机", cx + 360, -3)]
+L.note(*[h[0] for h in HABITS])
+for i, (s_, x, rot) in enumerate(HABITS):
+    def hab20(c, sc, T, s_=s_, x=x, rot=rot, i=i):
+        y = cy - 285
+        with K.at(c, x, y, rot, sc):
+            box(c, 0, 0, 210, 90, ("#FFE58A", "#FFD9A8", BLUE_FILL)[i], "#C99A12", 5, 10)
+            K.text(c, s_, 0, 0, 52, "hand", BLACK)
+    k_ = k_hab + i * 0.5
+    ev(j, k_, pop_fn(j, k_, hab20), "pop" if i % 2 == 0 else None, 0.6)
+k_type = nx(j, wt(27, 0, 0.1), k_hab + 1)
+k_cal = nx(j, wt(27, 1, 0.2), k_type)
+INP20 = (cx - 60, cy - 150, 760, 110)
 
 
-def card_xy(i, cx=cx, cy=cy):
-    return cx - 400 + (i % 5) * 200, cy - 380 + (i // 5) * 220
-
-
-def cards20(c, kk, T, cx=cx, cy=cy):
-    hop0 = tb(20, k_hop)
-    for i in range(10):
-        sc = pop_scale(T - tb(20, k_cards[i]) - (i % 2) * 0.27)
-        if sc <= 0:
-            continue
-        x, y = card_xy(i)
-        lit = i == 0 and T >= tb(20, k_one)
-        g = 1 + 0.18 * pop_scale(T - tb(20, k_one)) if lit else 1.0
-        hop = 0.0
-        if hop0 <= T < hop0 + 2.0:
-            idx = int((T - hop0) / 0.25) % 10
-            if idx == i:
-                hop = -24
-        with K.at(c, x, y + hop, 0, sc * g):
-            box(c, 0, 0, 180, 190, RED_FILL if lit else "#FFFFFF", RED if lit else BLACK, 8 if lit else 6, 16)
-            K.rr(c, 0, -55, 90, 50, 25, RED if lit or i == 9 else GRAY)
-            K.text(c, f"{i + 1:02d}", 0, -54, 34, "black", "#FFFFFF")
-            nm = CONCEPTS[i]
-            K.text(c, nm, 0, 30, 50 if len(nm) <= 2 else (42 if len(nm) == 3 else 38), "hand", RED if lit else BLACK)
+def input20(c, kk, T, cx=cx, cy=cy):
+    x, y, w, h = INP20
+    sc = pop_scale(T - tb(20, k_type))
+    if sc <= 0:
+        return None
+    with at_pop(c, x, y, sc):
+        r = skia.Rect.MakeXYWH(x - w / 2, y - h / 2, w, h)
+        c.drawRoundRect(r, h / 2, h / 2, K.paint("#FFFFFF"))
+        c.drawRoundRect(r, h / 2, h / 2, wb.marker(BLUE, 7))
+        msg = "我想改掉拖延"
+        n = min(len(msg), int((T - tb(20, k_type)) / 0.15) + 1)
+        tw = K.text(c, msg[:n], x - w / 2 + 40, y, 52, "hand", BLACK, 1, "left")
+        if (T * 2) % 1 < 0.5:
+            c.drawLine(x - w / 2 + 48 + tw, y - 28, x - w / 2 + 48 + tw, y + 28, wb.marker(BLUE, 5))
+        c.drawRoundRect(skia.Rect.MakeXYWH(x + w / 2 - 150, y - 36, 130, 72), 36, 36, K.paint(BLUE))
+        K.text(c, "发送", x + w / 2 - 85, y, 42, "sans_medium", "#FFFFFF")
     return None
 
 
-L.note(*[f"{i + 1:02d}" for i in range(10)])
-b.custom(j, 0, 0.3, cards20)
-for k_ in sorted(set(k_cards)):
-    b.hit(j, k_, "wood_high" if k_ % 2 else "pop", 0.55, "十讲卡片依次出现")
-ev(j, k_end, L.stamp("第一季 完", cx + 220, cy + 30, 64, j, k_end, rot=-6), "kick", 0.85)
-b.hit(j, k_hop, "shaker", 0.6, "卡片挨个跳一下")
+L.note("我想改掉拖延", "发送", "一年后")
+ev(j, k_type, input20, "wood_high", 0.6)
 
 
-def cmt20(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(20, k_cmt)
+def cal20(c, sc, T, cx=cx, cy=cy):
+    x, y = cx + 330, cy + 110
+    with K.at(c, x, y, 5, sc):
+        box(c, 0, 0, 230, 230, "#FFFFFF", BLACK, 6, 12)
+        c.drawRect(skia.Rect.MakeXYWH(-115, -115, 230, 60), K.paint(RED))
+        K.text(c, "一年后", 0, -84, 40, "sans_medium", "#FFFFFF")
+        for r_ in range(3):
+            for q in range(4):
+                c.drawRect(skia.Rect.MakeXYWH(-90 + q * 48, -30 + r_ * 44, 32, 30), wb.marker(GRAY, 3))
+        c.drawCircle(0, -128, 14, K.paint(RED))
+        c.drawCircle(0, -128, 14, wb.marker(BLACK, 4))
+        c.drawPath(check(-90 + 3 * 48 + 16, -30 + 2 * 44 + 12, 24), wb.marker(GREEN, 7))
+
+
+ev(j, k_cal, pop_fn(j, k_cal, cal20), "wood_low", 0.7)
+k_li = nx(j, wt(28, 0, 0.1), k_cal)
+k_look = nx(j, wt(28, 0, 0.7), k_li)
+k_flag = nx(j, wt(28, 1, 0.5), k_look)
+GY20 = cy + 235
+LI20 = (cx - 90, GY20, 0.62)
+OLD20 = [cx - 440, cx - 340]
+
+
+def road20(c, kk, T, cx=cx, cy=cy):
+    """一条路，路上已有两面小旗；小李走在前面，回头看，身后又插下一面小旗。"""
+    sc = pop_scale(T - tb(20, k_li))
+    if sc <= 0:
+        return None
+    x, y, s = LI20
+    hx, hy = head_of(x, y, s)
+    look = T >= tb(20, k_look)
+    with at_pop(c, cx - 200, GY20, sc):
+        C.line(c, (cx - 500, GY20 + 4), (cx + 60, GY20 + 4), GRAY, 7)
+        for n, fx in enumerate(OLD20 + ([cx - 240] if T >= tb(20, k_flag) else [])):
+            new = n == 2
+            g = pop_scale(T - tb(20, k_flag)) if new else 1.0
+            with K.at(c, fx, GY20, 0, g):
+                C.line(c, (0, 0), (0, -130), "#6B6B6B", 6)
+                c.drawPath(P((0, -130), (70, -108), (0, -86), close=True), K.paint(RED if new else "#FFFFFF"))
+                c.drawPath(P((0, -130), (70, -108), (0, -86), close=True), wb.marker(RED, 5))
+        draw_li(c, x, y, s, "smile" if look else "flat", back=False,
+                rh=(x - 110 * s, hy + 90 * s) if look else None)
+        if look:
+            g = pop_scale(T - tb(20, k_look))
+            with K.at(c, hx - 60, hy + 20, 0, g):
+                c.drawPath(wb.arrow((20, 0), (-100, 30), 0.3, 24), wb.marker(BLUE, 6))
+        sparkle(c, cx - 240, GY20 - 110, T - tb(20, k_flag), YELLOW, 10, 50, 110)
+    return None
+
+
+ev(j, k_li, road20, "pop", 0.6)
+b.hit(j, k_look, "wood_high", 0.6, "小李回头看")
+b.hit(j, k_flag, "kick", 0.8, "身后又插下一面小旗")
+k_txt = k_flag + 1
+ev(j, k_txt, L.pop_text("每一年都不白过", cx - 150, cy - 35, 60, BLUE, j, k_txt), "ding", 0.7)
+k_n = nx(j, wt(29, 0, 0.15), k_txt)
+b.path(j, k_n, k_n + 0.6, rect(cx, cy + 420, 1000, 260, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx - 100, cy + 340, 50, BLUE)
+b.text(j, k_n + 0.8, k_n + 2.2, "一天下来，有多少时间在白忙？", cx - 90, cy + 430, 56, BLACK)
+L.note("浪费")
+
+
+def waste20(c, kk, T, cx=cx, cy=cy):
+    """预告卡右角：小李的一天，浪费计数器往上跳。"""
+    t0 = tb(20, k_n + 2.2)
     sc = pop_scale(T - t0)
     if sc <= 0:
         return None
-    x, y = cx + 80, cy + 330
-    with K.at(c, x, y, 0, sc):
-        bubble_box(c, 0, 0, 760, 230, -1)
-        K.text(c, "最想用哪一讲？", 0, -40, 66, "hand", RED)
-        f = clamp01((T - t0 - 0.3) / 0.8)
-        C.line(c, (-280, 50), (-280 + 420 * f, 50), GRAY, 8)
-        if f < 1 and int(T * 4) % 2 == 0:
-            C.line(c, (-280 + 420 * f + 12, 26), (-280 + 420 * f + 12, 74), BLUE, 6)
+    x, y = cx + 405, cy + 420
+    with K.at(c, x, y, 4, sc):
+        box(c, 0, 0, 130, 150, "#FFFFFF", RED, 6, 12)
+        K.text(c, "浪费", 0, -42, 34, "hand", RED)
+        n = min(9, int(max(0.0, T - t0 - 0.3) * 3))
+        K.text(c, str(n), 0, 22, 64, "black", BLACK)
     return None
 
 
-ev(j, k_cmt, cmt20, "pop", 0.75)
-
-
-def one20(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(20, k_one)
-    if T < t0:
-        return None
-    x, y = card_xy(0)
-    g = pop_scale(T - t0)
-    sparkle(c, x, y, T - t0, YELLOW, 10, 110, 190)
-    with K.at(c, x + 30, y - 175, 0, g):
-        K.text(c, "从这里开始", 0, 0, 52, "hand", RED)
-    return None
-
-
-ev(j, k_one, one20, "ding", 0.85)
-
-
-def li20(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(20, k_cmt))
-    if sc <= 0:
-        return None
-    x, y, s = cx - 420, cy + 560, 0.55
-    hx, hy = head_of(x, y, s)
-    wave = math.sin(T * 8) * 30
-    with at_pop(c, x, y, sc):
-        draw_li(c, x, y, s, "smile", rh=(x + 80 * s + wave * s, hy - 60 * s))
-    return None
-
-
-b.custom(j, k_cmt, k_cmt + 0.3, li20)
+b.custom(j, k_n + 2.2, k_n + 2.5, waste20)
 
 # ================================================================ 收尾
 L.finish(cover_shot=1, square_shot=10, notes=NOTES)

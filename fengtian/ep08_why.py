@@ -53,11 +53,11 @@ SCREENS = [
     ([23], "做法二 · 示意", 11),
     ([24], "做法三 · 示意", 12),
     ([25], "不再打地鼠", 13),
-    ([26, 27, 28], "评论区见", 14),
+    ([26, 27, 28, 29], "评论区见", 14),
 ]
 
 THEME = FT.get("08")          # 本讲样式（fengtian/theme.py）：薰衣草点阵、开场 mole、转场 pullpush
-L = C.Lesson("08", SCREENS, drop_screen=2, board_size=(5400, 13800), extra_hold={1: 0.4, 9: 2.6}, theme=THEME)
+L = C.Lesson("08", SCREENS, drop_screen=2, board_size=(5400, 14400), extra_hold={1: 0.4, 9: 2.6}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 Z = 0.72
@@ -1964,7 +1964,6 @@ LI20 = (cx - 430, cy + 120, 0.7)
 k_q20 = kq(j, wt(26, 1, 0.5), lo=1)
 k_type = kq(j, wt(27, 0, 0.3), lo=k_q20 + 1)
 k_rep = kq(j, wt(27, 1, 0.3), lo=k_type + 1)
-k_n20 = kq(j, wt(28, 0, 0.15), lo=k_rep + 3)
 INP = (cx + 110, cy - 460, 760, 110)
 b.custom(j, 1, 1.3, L.figure(draw_li, j, 1, *LI20, mood="flat",
                              rh=lambda T: (LI20[0] + 110, LI20[1] - 290 * LI20[2] + 40) if T >= tb(20, k_type) else None),
@@ -2002,10 +2001,55 @@ for i in range(3):
         with at_pop(c, x_, y_, sc):
             bubble_txt(c, "为什么？", x_, y_, 48, RED, tail=-1, h=96)
     b.custom(j, k_, k_ + 0.3, pop_fn(j, k_, rep20), sfx="pop", gain=0.55)
+# 2026-11 收尾鼓励（第 28 句）：镜头下移；地下画出根，小李从地洞里爬出来，洞口长出小草；预告卡整体下移 DY
+DY = 730
+k_e = kq(j, wt(28, 0, 0.0), lo=k_rep + 3)
+b.move(j, k_e, (cx, cy + 860, Z), 1.1)
+k_e1 = k_e + 2
+k_root = kq(j, wt(28, 0, 0.7), lo=k_e1 + 1)
+k_up = kq(j, wt(28, 1, 0.25), lo=k_root + 1)
+k_grass = kq(j, wt(28, 1, 0.85), lo=k_up + 1)
+GY20 = cy + 760
+HX20 = cx - 120
+ROOT20 = wb.join(P((HX20, GY20 + 32), (HX20 - 10, GY20 + 90), (HX20 + 10, GY20 + 150)),
+              P((HX20 - 10, GY20 + 90), (HX20 - 60, GY20 + 135)), P((HX20 + 2, GY20 + 120), (HX20 + 55, GY20 + 165)))
+
+
+def climb20(c, kk, T):
+    """地洞里只露出脑袋的小李 → 爬出来站到洞边，笑；洞口冒出小草。"""
+    sc = pop_scale(T - tb(20, k_e1))
+    if sc <= 0:
+        return None
+    s = 0.8
+    with at_pop(c, HX20, GY20, sc):
+        c.drawLine(cx - 520, GY20, cx + 520, GY20, wb.marker("#8A5A2B", 7))
+        hole(c, HX20, GY20, 240, 64)
+        f = ease_in_out(clamp01((T - tb(20, k_up)) / 0.6))
+        x = lerp(HX20, HX20 + 240, ease_in_out(clamp01((T - tb(20, k_up) - 0.3) / 0.5)))
+        y = lerp(GY20 + 170, GY20, f)
+        c.save()
+        if f < 1:
+            c.clipRect(skia.Rect.MakeLTRB(x - 300, y - 400, x + 300, GY20 + 8))
+        draw_li(c, x, y, s, "smile" if f >= 1 else "sad")
+        c.restore()
+        g = ease_out(clamp01((T - tb(20, k_grass)) / 0.4))
+        if g > 0:
+            for n, dx in enumerate((-60, -20, 20, 60)):
+                h = (50 + 25 * (n % 2)) * g
+                c.drawPath(P((HX20 + dx, GY20 - 6), (HX20 + dx + (8 if n % 2 else -8), GY20 - 6 - h)), wb.marker(GREEN, 8))
+    return None
+
+
+b.custom(j, k_e1, k_e1 + 0.3, climb20, sfx="pop", gain=0.6)
+b.path(j, k_root, k_root + 0.5, ROOT20, "#8A5A2B", 7, sfx="wood_low", gain=0.6)
+b.custom(j, k_root, k_root + 0.3, L.pop_text("根", HX20 + 110, GY20 + 130, 54, "#8A5A2B", j, k_root))
+b.hit(j, k_up, "wood_high", 0.7, "小李爬出地洞")
+b.custom(j, k_grass, k_grass + 0.3, L.pop_text("不再被困住", cx, cy + 390, 70, BLUE, j, k_grass), sfx="ding", gain=0.7)
+k_n20 = kq(j, wt(29, 0, 0.15), lo=k_grass + 1)
 L.note("下一讲", "方案挺好，为什么一开会就被否？", "否")
-b.path(j, k_n20, k_n20 + 0.6, rect(cx, cy + 390, 1060, 260, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n20 + 0.5, k_n20 + 0.8, "下一讲", cx - 120, cy + 310, 50, BLUE)
-b.text(j, k_n20 + 0.8, k_n20 + 2.2, "方案挺好，为什么一开会就被否？", cx - 70, cy + 400, 54, BLACK)
+b.path(j, k_n20, k_n20 + 0.6, rect(cx, cy + 390 + DY, 1060, 260, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n20 + 0.5, k_n20 + 0.8, "下一讲", cx - 120, cy + 310 + DY, 50, BLUE)
+b.text(j, k_n20 + 0.8, k_n20 + 2.2, "方案挺好，为什么一开会就被否？", cx - 70, cy + 400 + DY, 54, BLACK)
 
 
 def plan20(c, kk, T):
@@ -2014,7 +2058,7 @@ def plan20(c, kk, T):
     sc = pop_scale(T - t0)
     if sc <= 0:
         return None
-    x, y = cx + 420, cy + 420
+    x, y = cx + 420, cy + 420 + DY
     with at_pop(c, x, y, sc, rot=6):
         c.drawPath(wb.doc(x, y, 110, 140, 3), K.paint("#FFFFFF"))
         c.drawPath(wb.doc(x, y, 110, 140, 3), wb.marker(BLACK, 5))

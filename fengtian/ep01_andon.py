@@ -1414,7 +1414,53 @@ b.text(j, k_q2, k_q2 + 1.0, "一直想着以后再说？", 1150, 9600, 72, RED)
 k_cm = kb(j, wt(26, 0, 0.3), lo=k_q2 + 2)
 b.custom(j, k_cm, k_cm + 0.3, pop_text("写在评论区，别一个人扛着", 1150, 9810, 58, BLACK, j, k_cm, "sans_medium"),
          sfx="ding")
-k_n = kb(j, wt(28, 0, 0.2), lo=k_cm + 1)          # 预告句 2026-11 起是第 28 句（第 27 句是收尾鼓励）
+# 2026-11 收尾鼓励（第 27 句）：小李拿扳手拧一拧，旁边三块积木一块块稳稳摞起来，“越做越稳”；预告卡出来前这一条缩回消失
+SCREEN_TEXTS.append("越做越稳")
+k_fix = kb(j, wt(27, 0, 0.3), lo=k_cm + 1)
+k_turn = kb(j, wt(27, 1, 0.3), lo=k_fix + 1)
+k_stk = kb(j, wt(27, 2, 0.2), lo=k_turn + 1)
+k_wen = kb(j, wt(27, 3, 0.6), lo=k_stk + 2)
+FIX_Y = 10150
+k_n = kb(j, wt(28, 0, 0.2), lo=k_wen + 2)          # 预告句 2026-11 起是第 28 句（第 27 句是收尾鼓励）
+
+
+def fix18(c, kk, T):
+    sc = pop_scale(T - tb(18, k_fix)) * (1 - ease_in_out(clamp01((T - tb(18, k_n) + 0.35) / 0.3)))
+    if sc <= 0:
+        return None
+    x, s = 830, 0.55
+    with K.at(c, x, FIX_Y - 100, 0, sc):
+        c.translate(-x, -(FIX_Y - 100))
+        draw_li(c, x, FIX_Y, s, "smile")
+        ang = -25 + 50 * ease_in_out(clamp01((T - tb(18, k_turn)) / 0.35)) if T >= tb(18, k_turn) else -25
+        with K.at(c, x + 45, FIX_Y - 80, ang):
+            c.drawLine(0, 0, 95, 0, wb.marker(BLACK, 10))
+            jaw = skia.Path()
+            jaw.addArc(skia.Rect.MakeXYWH(88, -22, 44, 44), 40, 280)
+            c.drawPath(jaw, wb.marker(BLACK, 9))
+        for i in range(3):
+            g = pop_scale(T - tb(18, k_stk) - i * 0.5)
+            if g <= 0:
+                continue
+            bx, by = 1090, FIX_Y - 30 - i * 62
+            with K.at(c, bx, by, 0, g):
+                r = skia.Rect.MakeXYWH(-80 + i * 8, -30, 160 - i * 16, 60)
+                c.drawRoundRect(r, 8, 8, K.paint(("#FFE58A", "#F6C9A0", "#CFE3F7")[i]))
+                c.drawRoundRect(r, 8, 8, wb.marker(BLACK, 6))
+        g = pop_scale(T - tb(18, k_wen))
+        if g > 0:
+            with K.at(c, 1420, 10050, 0, g):
+                K.text(c, "越做越稳", 0, 0, 72, "hand", BLUE)
+            part, _ = wb.partial(check(1625, 10045, 34), clamp01((T - tb(18, k_wen)) / 0.3))
+            c.drawPath(part, wb.marker(GREEN, 10))
+    return None
+
+
+b.custom(j, k_fix, k_fix + 0.3, fix18, sfx="pop", gain=0.6)
+b.hit(j, k_turn, "wood_high", 0.7, "扳手拧一下")
+b.hit(j, k_stk, "pop", 0.6, "积木摞起来")
+b.hit(j, k_stk + 1, "pop", 0.5, "积木摞起来")
+b.hit(j, k_wen, "ding", 0.7, "越做越稳")
 b.path(j, k_n, k_n + 0.6, rect(1150, 10030, 980, 210, 24), BLUE, 8, sfx="wood_high")
 b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", 1150, 9965, 52, BLUE)
 b.text(j, k_n + 0.8, k_n + 2.2, "活儿越做越多，为什么反而越乱？", 1150, 10065, 58, BLACK)

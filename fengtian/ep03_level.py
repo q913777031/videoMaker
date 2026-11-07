@@ -48,11 +48,11 @@ SCREENS = [
     ([23], "做法二 · 示意", 11),
     ([24], "做法三 · 示意", 12),
     ([25], "不再崩溃", 13),
-    ([26, 27, 28], "评论区见", 14),
+    ([26, 27, 28, 29], "评论区见", 14),
 ]
 
 THEME = FT.get("03")          # 本讲样式（fengtian/theme.py）：淡黄格子纸、开场 curve、转场 tilt
-L = C.Lesson("03", SCREENS, drop_screen=2, board_size=(5000, 11800), extra_hold={1: 1.0, 14: 0.9}, theme=THEME)
+L = C.Lesson("03", SCREENS, drop_screen=2, board_size=(5000, 13200), extra_hold={1: 1.0, 14: 0.9}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -1347,17 +1347,82 @@ for i in range(3):
 k_steep = k_cv19 + 3
 b.custom(j, k_steep, k_steep + 0.3, L.pop_text("最陡？", THUMBS[2][0], cy - 270, 64, RED, j, k_steep), sfx="ding",
          gain=0.7)
-k_n = kb(j, wt(28, 0, 0.15), lo=k_steep + 1)
-b.path(j, k_n, k_n + 0.6, rect(cx, cy + 330, 1000, 380, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 190, 52, BLUE)
-b.text(j, k_n + 0.8, k_n + 1.6, "手上一堆事", cx, cy + 275, 64, BLACK)
-b.text(j, k_n + 1.6, k_n + 2.6, "为什么一件也没做完？", cx, cy + 360, 64, BLACK)
+# 2026-11 收尾鼓励（第 28 句）：镜头下移；台灯关掉，月亮下小李睡着；预告卡整体下移 DY
+DY = 670
+k_e = kb(j, wt(28, 0, 0.0), lo=k_steep + 1)
+b.move(j, k_e, (cx, cy + 740, Z), 1.1)
+k_e1 = k_e + 2
+k_off = kb(j, wt(28, 1, 0.3), lo=k_e1 + 1)
+k_moon = kb(j, wt(28, 2, 0.2), lo=k_off + 1)
+k_txt = k_moon + 1
+DESK19, BED19 = (cx - 250, cy + 560), (cx + 250, cy + 600)
+
+
+def night19(c, kk, T):
+    """台灯下熬夜的小李 → 灯一关，小李躺到床上睡着，窗外月亮、Zzz。"""
+    sc = pop_scale(T - tb(19, k_e1))
+    if sc <= 0:
+        return None
+    off = T >= tb(19, k_off)
+    dx, dy = DESK19
+    with at_pop(c, cx, cy + 480, sc):
+        front = skia.Rect.MakeXYWH(dx - 170, dy, 340, 110)
+        c.drawRect(front, K.paint("#EAD7B5"))
+        c.drawRect(front, wb.marker("#A9773E", 7))
+        top = skia.Rect.MakeXYWH(dx - 185, dy - 12, 370, 24)
+        c.drawRoundRect(top, 8, 8, K.paint("#C89B63"))
+        c.drawRoundRect(top, 8, 8, wb.marker("#8A5A2B", 6))
+        lx, ly = dx - 110, dy
+        if not off:
+            c.drawPath(P((lx + 40, ly - 150), (lx + 200, ly - 4), (lx - 10, ly - 4), close=True), K.paint("#FFE9A8", 0.6))
+        c.drawPath(P((lx - 30, ly), (lx, ly - 100), (lx + 40, ly - 150)), wb.marker(BLACK, 8))
+        c.drawPath(P((lx + 10, ly - 180), (lx + 75, ly - 140), (lx + 40, ly - 120), close=True),
+                   K.paint("#5A6170" if off else BLACK))
+        bx, by = BED19
+        c.drawRoundRect(skia.Rect.MakeXYWH(bx - 190, by - 70, 380, 70), 14, 14, K.paint("#DCE6F5"))
+        c.drawRoundRect(skia.Rect.MakeXYWH(bx - 190, by - 70, 380, 70), 14, 14, wb.marker(BLUE, 7))
+        c.drawLine(bx - 190, by - 120, bx - 190, by + 30, wb.marker(BLACK, 8))
+        c.drawLine(bx + 190, by - 80, bx + 190, by + 30, wb.marker(BLACK, 8))
+        if not off:
+            x, y, s = dx + 40, dy + 110, 0.72
+            hy = y - 290 * s
+            tap = 8 * math.sin((T - tb(19, k_e1)) * 16)
+            draw_li(c, x, y, s, "sad", lh=(x - 90 * s, dy - 20 + tap), rh=(x + 90 * s, dy - 20 - tap))
+            sweat(c, x + 60 * s, hy - 10 * s, 0.9)
+        else:
+            f = ease_out(clamp01((T - tb(19, k_off)) / 0.3))
+            c.drawRoundRect(skia.Rect.MakeXYWH(bx - 175, by - 112, 90, 42), 18, 18, K.paint("#FFFFFF", f))
+            c.drawRoundRect(skia.Rect.MakeXYWH(bx - 175, by - 112, 90, 42), 18, 18, wb.marker(BLACK, 5, f))
+            with K.at(c, bx - 40, by - 100, -90):
+                draw_li(c, 0, 145, 0.62, "smile", alpha=f)
+            c.drawRoundRect(skia.Rect.MakeXYWH(bx - 25, by - 142, 212, 84), 22, 22, K.paint("#F6C9A0", f))
+            c.drawRoundRect(skia.Rect.MakeXYWH(bx - 25, by - 142, 212, 84), 22, 22, wb.marker(ORANGE, 6, f))
+    return None
+
+
+def moon19(c, sc, T):
+    bx, by = BED19
+    with at_pop(c, bx + 120, by - 330, sc):
+        moon(c, bx + 120, by - 330, 52)
+        for i, ch in enumerate("Zz"):
+            K.text(c, ch, bx - 120 + i * 50, by - 210 - i * 40, 56 - i * 10, "hand", BLUE)
+
+
+b.custom(j, k_e1, k_e1 + 0.3, night19, sfx="pop", gain=0.6)
+b.hit(j, k_off, "rim", 0.7, "台灯关掉、小李躺下")
+b.custom(j, k_moon, k_moon + 0.3, pop_fn(j, k_moon, moon19), sfx="ding", gain=0.7)
+b.custom(j, k_txt, k_txt + 0.3, L.pop_text("不用靠熬夜", cx, cy + 250, 70, BLUE, j, k_txt), sfx="pop", gain=0.6)
+k_n = kb(j, wt(29, 0, 0.15), lo=k_txt + 1)
+b.path(j, k_n, k_n + 0.6, rect(cx, cy + 330 + DY, 1000, 380, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n + 0.5, k_n + 0.8, "下一讲", cx, cy + 190 + DY, 52, BLUE)
+b.text(j, k_n + 0.8, k_n + 1.6, "手上一堆事", cx, cy + 275 + DY, 64, BLACK)
+b.text(j, k_n + 1.6, k_n + 2.6, "为什么一件也没做完？", cx, cy + 360 + DY, 64, BLACK)
 
 
 def bars19(c, kk, T):
     for i in range(4):
         x = cx - 330 + i * 220
-        y = cy + 455
+        y = cy + 455 + DY
         f = clamp01((T - tb(19, k_n + 2.6) - i * 0.12) / 0.4)
         if f <= 0:
             continue

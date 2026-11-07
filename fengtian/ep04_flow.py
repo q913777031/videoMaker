@@ -45,11 +45,11 @@ SCREENS = [
     ([22], "做法二 · 示意", 16),
     ([23], "做法三 · 示意", 17),
     ([24, 25], "做完的那一件", 18),
-    ([26, 27, 28], "评论区见", 19),
+    ([26, 27, 28, 29], "评论区见", 19),
 ]
 
 THEME = FT.get("04")          # 本讲样式（fengtian/theme.py）：牛皮纸、开场 bars、转场 drop
-L = C.Lesson("04", SCREENS, drop_screen=2, board_size=(5000, 11400), theme=THEME)
+L = C.Lesson("04", SCREENS, drop_screen=2, board_size=(5000, 13000), theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -1592,7 +1592,6 @@ b.text(j, k_q19 + 1.4, k_q19 + 2.0, "有几件？", cx, cy - 430, 66, RED)
 LI19 = (cx - 420, cy + 140, 0.8)
 k_cnt = kq(j, wt(27, 0, 0.1), lo=k_q19 + 2)
 k_type = kq(j, wt(27, 1, 0.1), lo=k_cnt + 2)
-k_n19 = kq(j, wt(28, 0, 0.15), lo=k_type + 1)
 ENV19 = [(cx - 170 + i * 200, cy + 60) for i in range(3)]
 
 
@@ -1644,9 +1643,49 @@ def input19(c, kk, T):
 
 L.note("我有3件", "发送")
 b.custom(j, k_type, k_type + 0.3, input19, sfx="wood_high")
-b.path(j, k_n19, k_n19 + 0.6, rect(cx, cy + 390, 1060, 260, 24), BLUE, 8, sfx="wood_high")
-b.text(j, k_n19 + 0.5, k_n19 + 0.8, "下一讲", cx, cy + 300, 50, BLUE)
-b.text(j, k_n19 + 0.8, k_n19 + 2.2, "干了一百遍的事，怎么还会出错？", cx, cy + 385, 58, BLACK)
+# 2026-11 收尾鼓励（第 28 句）：镜头下移；小李在小本子上画一个勾；预告卡整体下移 DY
+DY = 670
+k_e = kq(j, wt(28, 0, 0.0), lo=k_type + 1)
+b.move(j, k_e, (cx, cy + 800, Z), 1.1)
+k_e1 = k_e + 2
+k_one = kq(j, wt(28, 0, 0.65), lo=k_e1 + 1)
+k_chk = kq(j, wt(28, 1, 0.6), lo=k_one + 1)
+k_txt = k_chk + 1
+k_n19 = kq(j, wt(29, 0, 0.15), lo=k_txt + 1)
+LI19E = (cx - 90, cy + 790, 0.8)
+NB19 = (cx + 170, cy + 610)
+
+
+def note19(c, kk, T):
+    """小李拿着笔站在摊开的小本子旁；写勾时手跟着动。"""
+    x, y, s = LI19E
+    sc = pop_scale(T - tb(19, k_e1))
+    if sc <= 0:
+        return None
+    nx_, ny_ = NB19
+    hy = y - 290 * s
+    w = ease_in_out(clamp01((T - tb(19, k_chk)) / 0.45))
+    pen = (lerp(nx_ - 140, nx_ + 40, w), lerp(hy + 110 * s, ny_ + 60 - 40 * math.sin(math.pi * w), w))
+    with at_pop(c, cx, cy + 610, sc):
+        for side in (-1, 1):
+            r = skia.Rect.MakeLTRB(nx_ + min(0, side * 170), ny_ - 120, nx_ + max(0, side * 170), ny_ + 120)
+            c.drawRoundRect(r, 10, 10, K.paint("#FFFFFF"))
+            c.drawRoundRect(r, 10, 10, wb.marker(BLACK, 6))
+        for i in range(3):
+            c.drawLine(nx_ - 140, ny_ - 60 + i * 50, nx_ - 30, ny_ - 60 + i * 50, wb.marker("#9AA0AC", 4))
+        draw_li(c, x, y, s, "smile" if T >= tb(19, k_chk) else "flat", rh=pen)
+        c.drawLine(pen[0], pen[1], pen[0] + 22, pen[1] - 50, wb.marker(ORANGE, 9))
+    return None
+
+
+b.custom(j, k_e1, k_e1 + 0.3, note19, sfx="pop", gain=0.6)
+b.custom(j, k_one, k_one + 0.3, L.pop_text("今天做完 1 件", NB19[0], NB19[1] - 175, 50, BLACK, j, k_one, "sans_medium"),
+         sfx="wood_high", gain=0.7)
+b.path(j, k_chk, k_chk + 0.4, check(NB19[0] + 85, NB19[1] + 10, 60), GREEN, 12, sfx="ding")
+b.custom(j, k_txt, k_txt + 0.3, L.pop_text("值得记一笔", cx, cy + 330, 70, BLUE, j, k_txt), sfx="pop", gain=0.6)
+b.path(j, k_n19, k_n19 + 0.6, rect(cx, cy + 390 + DY, 1060, 260, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n19 + 0.5, k_n19 + 0.8, "下一讲", cx, cy + 300 + DY, 50, BLUE)
+b.text(j, k_n19 + 0.8, k_n19 + 2.2, "干了一百遍的事，怎么还会出错？", cx, cy + 385 + DY, 58, BLACK)
 
 
 def ticks19(c, sc, T):
@@ -1656,7 +1695,7 @@ def ticks19(c, sc, T):
         f = clamp01((T - tb(19, k_n19 + 2.2) - i * 0.06) / 0.15)
         if f <= 0:
             continue
-        p = cross(x, cy + 465, 18) if i == 9 else check(x, cy + 465, 20)
+        p = cross(x, cy + 465 + DY, 18) if i == 9 else check(x, cy + 465 + DY, 20)
         part, _ = wb.partial(p, f)
         c.drawPath(part, wb.marker(RED if i == 9 else GREEN, 7))
 
