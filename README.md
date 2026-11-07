@@ -593,14 +593,17 @@ python3 logic/logic_short.py out/logic_short.mp4
 输出 1080×1920、30fps、90 秒、**无音频轨**的解题动画，以及封面 `out/logic_cover.png`。4 核机器约 1 分钟。
 完整制作方案（开头、字幕脚本、分镜、动效清单、核验说明）见 `logic/production_plan.md`。
 
-## 白板手绘 + AI 旁白：弗洛伊德《梦的解析》（单讲）
+## 白板手绘 + AI 旁白：弗洛伊德《梦的解析》第一季（13 讲）
 
-`mengjie/`：照《丰田模式》新版的做法（白板手绘 + IndexTTS2 旁白，竖屏 2:3，痛点 → 身边的例子 → 书中例子与观点 → 现在怎么看 → 三步 → 评论区），
+`mengjie/`：每个核心观点一讲（愿望的满足、伪装、梦的材料、凝缩、移置、变成画面、二次修饰、典型的梦、守护睡眠、噩梦、拆梦、今天再看），选题与文案、出处见 `mengjie/PLAN.md`，共用画面元件在 `mengjie/art.py`；
+成片与封面在 `videos/mengjie/NN_<概念>/`，系列 `合集.png`、`横屏封面_1080x1080.png`、`合集简介.txt` 由 `python3 -m mengjie.series` 生成。
+照《丰田模式》新版的做法（白板手绘 + IndexTTS2 旁白，竖屏 2:3，痛点 → 身边的例子 → 书中例子与观点 → 现在怎么看 → 三步 → 评论区），
 复用 `fengtian/` 的 Lesson、开场钩子与构建入口，只在本包里写文案（`mengjie/PLAN.md`，含书中出处）和分镜（`mengjie/ep01_dream.py`）。
 
 ```bash
 FT_DRAFT_TTS=1 python3 -m mengjie.build 01 --sheet   # 配音没合成完时的草稿排版
-python3 -m mengjie.build 01 --publish                # 渲染并交付到 videos/mengjie/01_梦的解析/
+python3 -m mengjie.build 02 --publish                # 渲染并交付到 videos/mengjie/02_愿望的满足/
+python3 -m mengjie.series                            # 系列合集图、横屏封面、合集简介
 ```
 
 旁白音色提示 `models/ix2_prompts/cv3jian.wav`（与丰田系列同一音色）缺失时，可从丰田任一讲成片里用 demucs 分离出约 8 秒旁白重建。
