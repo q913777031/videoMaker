@@ -47,7 +47,8 @@ SCREENS = [
 ]
 
 THEME = FT.get("02")          # 本讲样式（fengtian/theme.py）：浅灰蓝点阵、开场 pile、转场 pan
-L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={4: 0.3, 13: 0.8, 17: 0.4}, theme=THEME)
+L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={4: 0.3, 13: 0.8, 17: 0.4}, theme=THEME,
+              trim_head={14: 0.17})          # 第 14 句句首多出一个碎音（识别成“找”），裁掉
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 

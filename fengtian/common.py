@@ -456,7 +456,7 @@ class Lesson:
     MOVE_S = 1.3                   # 切屏镜头移动秒数
 
     def __init__(self, nn, screens, *, drop_screen=2, hold=1.55, min_beats=10, intro_beats=6, extra_hold=None,
-                 comma=0.25, max_gap=0.6, natural_comma=(), board_size=(4800, 10600), acc=ACC, theme=None):
+                 comma=0.25, max_gap=0.6, natural_comma=(), board_size=(4800, 10600), acc=ACC, theme=None, trim_head=None):
         p = plan.load(nn)
         self.THEME = FT.finish(theme) if theme else FT.finish(dict(acc=acc))
         if theme:
@@ -487,6 +487,8 @@ class Lesson:
                                       min_beats=self.INTRO_BEATS)
             self.INTRO_BEATS = self.HOOK["beats"]
         self.RAW = synthesize(self.LINES, self.LINE_MOOD, self.PINYIN, groups=[sc[0] for sc in self.SCREENS if sc[0]])
+        for li, sec in (trim_head or {}).items():       # 连读切开后句首多出的碎音（语音识别核出来的），裁掉
+            self.RAW[li] = audio._trim(self.RAW[li][int(sec * audio.SR):])
         self.CLIPS, self.CLAUSE_T = zip(*[stretch(x, t, 0.0 if i in natural_comma else comma, max_gap)
                                           for i, (x, (t, _, _)) in enumerate(zip(self.RAW, self.LINES))])
         self.DUR_L = [len(x) / audio.SR for x in self.CLIPS]
