@@ -1,15 +1,17 @@
 """《丰田模式》11 浪费：一天下来，有多少时间在白忙？（白板手绘 + AI 旁白，竖屏 2:3）
 
-故事贯穿：跟着小李过一天。第 4–9 屏顶上挂着“小李的一天”时间轴（9 点—18 点）和右上角的浪费计数器，
+故事贯穿：跟着小李过一天。第 6–11 屏顶上挂着“小李的一天”时间轴（9 点—18 点）和右上角的浪费计数器，
 每碰到一种浪费：先砸下它的名字，再飞出“+1”，计数器加一、时间轴上那一段涂灰；到第八种计数器停在 8。
+2026-11 结构：先问题（痛点 + 身边的例子）→ 书中做法 → 三步办法 → 鼓励。
 - 0–3 秒：表盘切成八块，一块块变灰，“白忙”砸下，右上角计数器“0”；
 - 打工人日常：下班路上回头看办公楼，“？”，空着的时间轴；
-- 书中做法（drop）：顾客举着钱包看工位上的两步，愿意付钱的亮绿，“等签字”变灰，drop 砸下“浪费”；
+- 身边的例子（drop）：五版方案只改几个字，drop 砸下“只改了两个字”/ 挑电影挑半小时；
+- 书中做法：顾客举着钱包看工位上的两步，愿意付钱的亮绿，“等签字”变灰，砸下“浪费”；
   八个空格（前七格大野耐一、第八格“作者加的”），小李拿着本子准备记，计数器挂上；
 - 小李的一天：九点等审批（沙漏）/ 十点文件在三个群里转 / 十一点领导要一句话、做了十页 / 下午三张表落灰、旧版本越堆越高 /
   傍晚鼠标在十几个文件夹里乱窜、报告一格红整份重做 / 第八种：灯泡亮了，嘴上贴胶布；
 - 为什么要叫出名字：灰块混在忙碌的小人里，贴上名字，再一块块擦掉；
-- 说回我们：五版方案只改几个字 / 挑电影挑半小时 / 管不了的和能管的，“三步”；三步做法；回家做顿饭；评论区与下一讲。
+- 说回我们：管不了的和能管的，“三步”；三步做法；回家做顿饭；评论区与下一讲。
 领导 common.draw_boss，大野耐一 common.draw_ohno，顾客、同事用本模块的小人；本讲没有车间员工。
 文案见 fengtian/PLAN.md「### 11 浪费」；时间轴、配乐、相机、人物见 fengtian/common.py。
 """
@@ -33,17 +35,17 @@ from whiteboard.engine import P, check, circle, cross, join, rect
 SCREENS = [
     ([], "开场", 0),
     ([0, 1], "打工人日常", 1),
-    ([2, 3], "丰田模式 · 书中做法", 2),
-    ([4, 5], "丰田模式 · 书中做法", 3),
-    ([6], "小李的一天 · 九点", 4),
-    ([7], "小李的一天 · 十点", 5),
-    ([8], "小李的一天 · 十一点", 6),
-    ([9, 10], "小李的一天 · 下午", 7),
-    ([11, 12], "小李的一天 · 傍晚", 8),
-    ([13, 14], "小李的一天 · 第八种", 9),
-    ([15, 16, 17], "为什么要叫出名字", 10),
-    ([18, 19], "说回我们自己", 11),
-    ([20], "说回我们自己", 12),
+    ([2, 3], "身边的例子", 2),
+    ([4], "身边的例子", 3),
+    ([5, 6], "丰田模式 · 书中做法", 4),
+    ([7, 8], "丰田模式 · 书中做法", 5),
+    ([9], "小李的一天 · 九点", 6),
+    ([10], "小李的一天 · 十点", 7),
+    ([11], "小李的一天 · 十一点", 8),
+    ([12, 13], "小李的一天 · 下午", 9),
+    ([14, 15], "小李的一天 · 傍晚", 10),
+    ([16, 17], "小李的一天 · 第八种", 11),
+    ([18, 19, 20], "为什么要叫出名字", 12),
     ([21, 22], "说回我们自己", 13),
     ([23], "做法一 · 示意", 14),
     ([24], "做法二 · 示意", 15),
@@ -409,19 +411,165 @@ def screen1(j=1):
 screen1()
 
 
-# ================================================================ 屏 2：顾客举钱包看工位上的两步：一步亮绿，“等签字”变灰；drop 砸下“浪费”
+# ================================================================ 屏 2（drop）：五版方案，后四版只改了几个字，drop 砸下“只改了两个字”
 def screen2(j=2):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
-    KD = L.drop_k()
+    GY = cy + 540
+    k_li = 0
+    k_cnt = kq(j, wp(2, 1, 0.5), 1)
+    k_v = nx(j, wp(3, 0, 0.5), k_cnt)
+    k_v2 = k_v + 1
+    k_mag = nx(j, wp(3, 2, 0.3), k_v2)
+    KD = L.drop_k()                        # drop：“只改了两个字”砸下
     b.shots[j].shake, b.shots[j].flashes = [(KD, 16.0)], [(KD, 0.45)]
+    k_tag = KD
+    VS = ["第一版", "第二版", "第三版", "第四版", "第五版"]
+    L.note(*VS, "几件？", "只改了两个字")
+    xs = [cx - 440 + i * 220 for i in range(5)]
+    VY = cy - 180
+
+    def li(c, sc, T):
+        x, s = cx - 330, 0.85
+        hx, hy = head_of(x, GY, s)
+        count = T >= tb(j, k_cnt)
+        with at_pop(c, x, GY, sc):
+            draw_li(c, x, GY, s, "flat", rh=(x + 100 * s, hy - 10 * s) if count else None)
+            if count:
+                n = 1 + int((T - tb(j, k_cnt)) * 3) % 5
+                with K.at(c, x + 100 * s, hy - 40 * s, 0, 1):
+                    c.drawCircle(0, 0, 36, K.paint(SKIN))
+                    c.drawCircle(0, 0, 36, wb.marker(BLACK, 5))
+                    for q in range(n):
+                        C.line(c, (-28 + q * 14, -30), (-30 + q * 14, -70), BLACK, 7)
+        return None
+    ev(j, k_li, pop_fn(j, k_li, li), "wood_low", 0.6)
+    ev(j, k_cnt, L.pop_bubble("几件？", cx - 120, cy + 170, j, k_cnt, 64, BLUE, tail=-1), "pop", 0.7)
+
+    def vers(c, kk, T):
+        for i, x in enumerate(xs):
+            g = pop_scale(T - tb(j, k_v if i < 3 else k_v2) - (i % 3) * 0.12)
+            if g <= 0:
+                continue
+            with K.at(c, x, VY, 0, g):
+                doc_card(c, 0, 0, 190, 250, BLACK, 5)
+                K.text(c, VS[i], 0, -160, 44, "hand", BLACK if i == 0 else GRAY)
+                if i and T >= tb(j, k_mag) + i * 0.15:
+                    c.drawOval(skia.Rect.MakeXYWH(-30, 10, 70, 40), wb.marker(RED, 6))
+        tm = tb(j, k_mag)
+        if T >= tm:
+            f = clamp01((T - tm) / 0.9)
+            mx = lerp(xs[1], xs[4], f)
+            with K.at(c, mx + 40, VY + 60, 0, 1):
+                c.drawCircle(0, 0, 60, K.paint("#FFFFFF", 0.4))
+                c.drawCircle(0, 0, 60, wb.marker(BLACK, 8))
+                C.line(c, (42, 42), (100, 100), BLACK, 14)
+        return None
+    ev(j, k_v, vers, "pop", 0.7)
+    b.hit(j, k_v2, "pop", 0.6, "第四、五版")
+    b.hit(j, k_mag, "rim", 0.75, "放大镜扫过")
+    ev(j, k_tag, L.slam_text("只改了两个字", cx + 240, cy + 70, 72, RED, j, k_tag, rot=-3), "kick", 0.8)
+
+
+screen2()
+
+
+# ================================================================ 屏 3：沙发上挑电影，片单一页页翻，时钟走过半小时
+def screen3(j=3):
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z))
+    GY = cy + 470
+    TVX, TVY = cx + 160, cy - 260
+    k_tv = 0
+    k_li = 1
+    k_flip = kq(j, wp(4, 1, 0.1), 2)
+    k_half = nx(j, wp(4, 1, 0.9), k_flip + 1)
+    k_zz = nx(j, wp(4, 2, 0.6), k_half)
+    L.note("半小时", "Zzz", "片单")
+    b.path(j, k_tv, k_tv + 0.7, join(rect(TVX, TVY, 560, 340, 18), P((TVX - 80, TVY + 170), (TVX - 120, TVY + 220)),
+                                     P((TVX + 80, TVY + 170), (TVX + 120, TVY + 220))), BLACK, 9, sfx="wood_low")
+    COLS = ["#F28C8C", "#7FB2E5", "#8FD19E", "#F2C14E", "#C3A6E8"]
+
+    def tv(c, kk, T):
+        t0 = tb(j, k_flip)
+        zz = T >= tb(j, k_zz)
+        if T >= t0 and not zz:
+            n = int((T - t0) * 3)
+            off = ((T - t0) * 3) % 1
+            for q in range(4):
+                x = TVX - 200 + q * 130 - ease_out(off) * 130
+                if TVX - 260 < x < TVX + 260:
+                    c.drawRoundRect(skia.Rect.MakeXYWH(x - 50, TVY - 90, 100, 150), 8, 8, K.paint(COLS[(n + q) % 5]))
+            K.text(c, "片单", TVX - 200, TVY + 120, 34, "sans_medium", GRAY)
+        elif zz:
+            c.drawRect(skia.Rect.MakeXYWH(TVX - 270, TVY - 160, 540, 320), K.paint("#3A3F48"))
+        # 时钟
+        x, y = cx - 360, cy - 330
+        c.drawCircle(x, y, 80, K.paint("#FFFFFF"))
+        c.drawPath(wb.clock(x, y, 80), wb.marker(BLACK, 6))
+        m = 0 if T < t0 else 30 * clamp01((T - t0) / max(0.3, tb(j, k_half) - t0))
+        c.drawPath(wb.hands_at(x, y, 80, 8, m), wb.marker(RED, 7))
+        if m > 0:
+            p = skia.Path()
+            p.moveTo(x, y)
+            p.arcTo(skia.Rect.MakeXYWH(x - 70, y - 70, 140, 140), -90, m * 6, False)
+            p.close()
+            c.drawPath(p, K.paint(RED, 0.25))
+        if T >= tb(j, k_half):
+            K.text(c, "半小时", x, y + 130, 54, "hand", RED, clamp01((T - tb(j, k_half)) / 0.2))
+        return None
+    ev(j, 0.5, tv)
+
+    def li(c, sc, T):
+        x, s = cx - 160, 0.8
+        hx, hy = head_of(x, GY - 40, s)
+        zz = T >= tb(j, k_zz)
+        with at_pop(c, x, GY, sc):
+            sofa = rect(x + 20, GY - 110, 520, 120, 30)
+            c.drawPath(sofa, K.paint("#E8C7A8"))
+            c.drawPath(sofa, wb.marker("#A9773E", 7))
+            back = rect(x + 20, GY - 210, 520, 120, 30)
+            c.drawPath(back, K.paint("#F0D8BF"))
+            c.drawPath(back, wb.marker("#A9773E", 7))
+            press = (math.sin(T * 9) > 0.6) and T >= tb(j, k_flip) and not zz
+            rh = (x + 120 * s, hy + 100 * s - (10 if press else 0))
+            c.save()
+            if zz:
+                c.translate(x, GY - 40)
+                c.rotate(-12)
+                c.translate(-x, -(GY - 40))
+            draw_li(c, x, GY - 40, s, "flat", rh=rh)
+            box(c, rh[0] + 10, rh[1] - 20, 30, 70, "#3A3F48", BLACK, 3, 8)
+            c.restore()
+            if zz:
+                for n in range(3):
+                    ph = ((T - tb(j, k_zz)) * 0.8 + n * 0.33) % 1
+                    K.text(c, "Zzz"[n], hx + 70 + n * 40 + ph * 30, hy - 60 - n * 40 - ph * 40, 50 + n * 10, "hand", BLUE,
+                           1 - ph)
+        return None
+    ev(j, k_li, pop_fn(j, k_li, li), "pop", 0.7)
+    b.hit(j, k_flip, "wood_high", 0.7, "片单一页页翻")
+    b.hit(j, k_flip + 1, "wood_high", 0.6, "接着翻")
+    b.hit(j, k_half, "ding", 0.75, "时钟走过半小时")
+    b.hit(j, k_zz, "tom", 0.7, "一部也没看，睡着了")
+
+
+screen3()
+
+
+# ================================================================ 屏 4：顾客举钱包看工位上的两步：一步亮绿，“等签字”变灰；砸下“浪费”
+def screen4(j=4):
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z))
     GY = cy + 470
     DY = cy + 170                          # 桌面
     A, B_ = (cx - 260, DY - 170), (cx + 60, DY - 170)
-    k_cu = kq(j, wp(2, 0, 0.5), 1)
-    k_q = nx(j, wp(2, 2, 0.3), k_cu)
-    k_pay = nx(j, wp(2, 2, 0.9), k_q)
-    k_gray = min(nx(j, wp(3, 0, 0.6), k_pay), KD - 1)
+    k_cu = kq(j, wp(5, 0, 0.5), 1)
+    k_q = nx(j, wp(5, 2, 0.3), k_cu)
+    k_pay = nx(j, wp(5, 2, 0.9), k_q)
+    k_gray = nx(j, wp(6, 0, 0.6), k_pay)
+    k_w = nx(j, wp(6, 1, 0.6), k_gray)
+    b.shots[j].shake = [(k_w, 12.0)]
     L.note("写方案", "等签字", "愿意付钱吗？", "✓")
     b.path(j, 0, 0.7, join(P((cx - 520, DY), (cx + 240, DY)), P((cx - 480, DY), (cx - 480, GY)),
                            P((cx + 200, DY), (cx + 200, GY)), P((cx - 560, GY), (cx + 560, GY))), "#A9773E", 10,
@@ -472,26 +620,26 @@ def screen2(j=2):
     ev(j, k_q, L.pop_bubble("愿意付钱吗？", cx + 150, cy - 420, j, k_q, 60, BLACK, tail=1), "pop", 0.7)
     b.hit(j, k_pay, "ding", 0.8, "钱递给写方案")
     b.hit(j, k_gray, "tom", 0.75, "等签字变灰")
-    stamp_ev(j, KD, "浪费", B_[0] + 60, DY + 130, 110, -8, "kick", 0.95)
+    stamp_ev(j, k_w, "浪费", B_[0] + 60, DY + 130, 110, -8, "kick", 0.95)
 
 
-screen2()
+screen4()
 
 
-# ================================================================ 屏 3：八个空格（前七格大野耐一，第八格“作者加的”）；小李拿本子，计数器挂上
-def screen3(j=3):
+# ================================================================ 屏 5：八个空格（前七格大野耐一，第八格“作者加的”）；小李拿本子，计数器挂上
+def screen5(j=5):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 500
     Y8 = cy - 180
     xs = [cx - 490 + i * 140 for i in range(8)]
     k_box = 0
-    k_oh = kq(j, wp(4, 1, 0.1), 1)
+    k_oh = kq(j, wp(7, 1, 0.1), 1)
     k_heads = [k_oh + 1 + i // 3 for i in range(7)]
-    k_8 = nx(j, wp(4, 2, 0.5), k_heads[-1])
-    k_li = nx(j, wp(5, 0, 0.2), k_8)
-    k_ctr = nx(j, wp(5, 1, 0.3), k_li)
-    k_pen = nx(j, wp(5, 1, 0.9), k_ctr)
+    k_8 = nx(j, wp(7, 2, 0.5), k_heads[-1])
+    k_li = nx(j, wp(8, 0, 0.2), k_8)
+    k_ctr = nx(j, wp(8, 1, 0.3), k_li)
+    k_pen = nx(j, wp(8, 1, 0.9), k_ctr)
     L.note("八种", "作者加的", "浪费", "0", "记一笔")
     b.path(j, k_box, k_box + 0.8, join(*[rect(x, Y8, 120, 120, 14) for x in xs]), BLACK, 7, sfx="wood_high")
     b.text(j, 0.4, 0.9, "八种", cx, Y8 - 140, 72, BLACK)
@@ -557,18 +705,18 @@ def screen3(j=3):
     ev(j, k_pen, L.pop_text("记一笔", cx + 350, cy + 70, 60, BLUE, j, k_pen))
 
 
-screen3()
+screen5()
 
 
-# ================================================================ 屏 4：九点，等审批：流程里卡着沙漏；第一块灰，+1
-def screen4(j=4):
+# ================================================================ 屏 6：九点，等审批：流程里卡着沙漏；第一块灰，+1
+def screen6(j=6):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 500
     k_li = 1
-    k_flow = kq(j, wp(6, 1, 0.2), 2)
-    k_flip = nx(j, wp(6, 1, 0.8), k_flow)
-    k_n, add = waste_hit(j, 6, 2, (cx + 230, cy - 230), 0, (cx + 200, cy + 150), prev=k_flip)
+    k_flow = kq(j, wp(9, 1, 0.2), 2)
+    k_flip = nx(j, wp(9, 1, 0.8), k_flow)
+    k_n, add = waste_hit(j, 9, 2, (cx + 230, cy - 230), 0, (cx + 200, cy + 150), prev=k_flip)
     day(j, 0, [add], now=9)
     L.note("提交", "审批中", "下一步", "等了一小时")
     FY = cy - 260
@@ -618,18 +766,18 @@ def screen4(j=4):
     ev(j, k_li, pop_fn(j, k_li, li), "wood_low", 0.6)
 
 
-screen4()
+screen6()
 
 
-# ================================================================ 屏 5：十点，同一份文件在三个群之间来回飞
-def screen5(j=5):
+# ================================================================ 屏 7：十点，同一份文件在三个群之间来回飞
+def screen7(j=7):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 520
     k_grp = 1
-    k_fly = kq(j, wp(7, 1, 0.3), 2)
-    k_fly2 = nx(j, wp(7, 1, 0.9), k_fly)
-    k_n, add = waste_hit(j, 7, 2, (cx, cy - 60), 1, (cx + 240, cy + 260), prev=k_fly2)
+    k_fly = kq(j, wp(10, 1, 0.3), 2)
+    k_fly2 = nx(j, wp(10, 1, 0.9), k_fly)
+    k_n, add = waste_hit(j, 10, 2, (cx, cy - 60), 1, (cx + 240, cy + 260), prev=k_fly2)
     day(j, 1, [add], now=10)
     G = [(cx - 380, cy - 240, "项目群"), (cx + 330, cy - 240, "部门群"), (cx - 30, cy + 130, "客户群")]
     L.note(*[g[2] for g in G])
@@ -678,19 +826,19 @@ def screen5(j=5):
     ev(j, 0, pop_fn(j, 0, li))
 
 
-screen5()
+screen7()
 
 
-# ================================================================ 屏 6：十一点，领导“一句话就行”，小李身后十页闪着星星的幻灯片
-def screen6(j=6):
+# ================================================================ 屏 8：十一点，领导“一句话就行”，小李身后十页闪着星星的幻灯片
+def screen8(j=8):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 520
     k_boss = 1
-    k_say = kq(j, wp(8, 1, 0.4), 2)
-    k_sl = nx(j, wp(8, 2, 0.3), k_say)
-    k_sl2 = nx(j, wp(8, 2, 0.9), k_sl)
-    k_n, add = waste_hit(j, 8, 3, (cx + 260, cy - 200), 2, (cx + 290, cy + 400), size=88, prev=k_sl2)
+    k_say = kq(j, wp(11, 1, 0.4), 2)
+    k_sl = nx(j, wp(11, 2, 0.3), k_say)
+    k_sl2 = nx(j, wp(11, 2, 0.9), k_sl)
+    k_n, add = waste_hit(j, 11, 3, (cx + 260, cy - 200), 2, (cx + 290, cy + 400), size=88, prev=k_sl2)
     day(j, 2, [add], now=11)
     L.note("一句话就行", "10页", "★")
 
@@ -741,21 +889,21 @@ def screen6(j=6):
     ev(j, 0, pop_fn(j, 0, li), "wood_low", 0.5)
 
 
-screen6()
+screen8()
 
 
-# ================================================================ 屏 7：下午，三张没人要的表落灰；旧版本越堆越高
-def screen7(j=7):
+# ================================================================ 屏 9：下午，三张没人要的表落灰；旧版本越堆越高
+def screen9(j=9):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 520
     SH = cy - 60                          # 架子
-    k_tab = kq(j, wp(9, 0, 0.6), 1)
-    k_dust = nx(j, wp(9, 1, 0.5), k_tab)
-    k_n1, add1 = waste_hit(j, 9, 2, (cx - 260, SH - 150), 3, (cx - 260, SH + 120), size=84, prev=k_dust)
-    k_fd = nx(j, wp(10, 0, 0.3), add1[0])
-    k_pile = nx(j, wp(10, 1, 0.5), k_fd)
-    k_n2, add2 = waste_hit(j, 10, 2, (cx + 300, cy - 230), 4, (cx + 330, cy + 440), size=96, rot=5, sfx="rim",
+    k_tab = kq(j, wp(12, 0, 0.6), 1)
+    k_dust = nx(j, wp(12, 1, 0.5), k_tab)
+    k_n1, add1 = waste_hit(j, 12, 2, (cx - 260, SH - 150), 3, (cx - 260, SH + 120), size=84, prev=k_dust)
+    k_fd = nx(j, wp(13, 0, 0.3), add1[0])
+    k_pile = nx(j, wp(13, 1, 0.5), k_fd)
+    k_n2, add2 = waste_hit(j, 13, 2, (cx + 300, cy - 230), 4, (cx + 330, cy + 440), size=96, rot=5, sfx="rim",
                            prev=k_pile)
     day(j, 3, [add1, add2], now=15)
     L.note("表", "没人要", "旧版本", "×36")
@@ -826,20 +974,20 @@ def screen7(j=7):
     b.hit(j, k_pile, "wood_high", 0.6, "旧版本堆高")
 
 
-screen7()
+screen9()
 
 
-# ================================================================ 屏 8：傍晚，鼠标在十几个文件夹里乱窜；报告一格红，整份重做
-def screen8(j=8):
+# ================================================================ 屏 10：傍晚，鼠标在十几个文件夹里乱窜；报告一格红，整份重做
+def screen10(j=10):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     k_fd = 0
-    k_run = kq(j, wp(11, 1, 0.2), 1)
-    k_n1, add1 = waste_hit(j, 11, 2, (cx - 250, cy - 120), 5, (cx - 250, cy + 70), size=80, prev=k_run)
-    k_rep = nx(j, wp(12, 0, 0.3), add1[0])
-    k_red = nx(j, wp(12, 0, 0.85), k_rep)
-    k_loop = nx(j, wp(12, 1, 0.5), k_red)
-    k_n2, add2 = waste_hit(j, 12, 2, (cx + 260, cy + 60), 6, (cx + 270, cy + 470), size=100, rot=6, sfx="rim",
+    k_run = kq(j, wp(14, 1, 0.2), 1)
+    k_n1, add1 = waste_hit(j, 14, 2, (cx - 250, cy - 120), 5, (cx - 250, cy + 70), size=80, prev=k_run)
+    k_rep = nx(j, wp(15, 0, 0.3), add1[0])
+    k_red = nx(j, wp(15, 0, 0.85), k_rep)
+    k_loop = nx(j, wp(15, 1, 0.5), k_red)
+    k_n2, add2 = waste_hit(j, 15, 2, (cx + 260, cy + 60), 6, (cx + 270, cy + 470), size=100, rot=6, sfx="rim",
                            prev=k_loop)
     day(j, 5, [add1, add2], now=17.5)
     FX = [(cx - 470 + (i % 4) * 150, cy - 290 + (i // 4) * 120) for i in range(12)]
@@ -903,21 +1051,21 @@ def screen8(j=8):
     ev(j, k_rep, pop_fn(j, k_rep, li))
 
 
-screen8()
+screen10()
 
 
-# ================================================================ 屏 9：第八种——灯泡亮了，嘴上贴胶布；第八格亮，计数器 8
-def screen9(j=9):
+# ================================================================ 屏 11：第八种——灯泡亮了，嘴上贴胶布；第八格亮，计数器 8
+def screen11(j=11):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 520
     LX, s = cx - 60, 1.05
     hx, hy = head_of(LX, GY, s)
     k_li = 0
-    k_bulb = kq(j, wp(13, 1, 0.5), 1)
-    k_pass = nx(j, wp(13, 2, 0.2), k_bulb)
-    k_tape = nx(j, wp(13, 2, 0.8), k_pass)
-    k_n, add = waste_hit(j, 14, 1, (hx + 200, hy - 230), 7, (cx + 20, cy - 290), size=84, rot=-3, prev=k_tape)
+    k_bulb = kq(j, wp(16, 1, 0.5), 1)
+    k_pass = nx(j, wp(16, 2, 0.2), k_bulb)
+    k_tape = nx(j, wp(16, 2, 0.8), k_pass)
+    k_n, add = waste_hit(j, 17, 1, (hx + 200, hy - 230), 7, (cx + 20, cy - 290), size=84, rot=-3, prev=k_tape)
     day(j, 7, [add], now=18, eighth=True)
     L.note("省事的点子")
 
@@ -958,11 +1106,11 @@ def screen9(j=9):
     ev(j, k_pass, passers, "wood_high", 0.6)
 
 
-screen9()
+screen11()
 
 
-# ================================================================ 屏 10：灰块混在忙碌的小人里；贴上名字；一块块擦掉
-def screen10(j=10):
+# ================================================================ 屏 12：灰块混在忙碌的小人里；贴上名字；一块块擦掉
+def screen12(j=12):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     Y = cy - 120
@@ -971,11 +1119,11 @@ def screen10(j=10):
     names = ["等待", "搬运", "返工", "库存"]
     k_row = 0
     k_run = 1
-    k_q = kq(j, wp(15, 1, 0.4), 2)
-    k_mix = nx(j, wp(16, 1, 0.5), k_q)
-    k_tags = [nx(j, wp(17, 0, 0.3), k_mix)]
-    k_tags.append(nx(j, wp(17, 1, 0.3), k_tags[0]))
-    k_er = nx(j, wp(17, 2, 0.6), k_tags[1])
+    k_q = kq(j, wp(18, 1, 0.4), 2)
+    k_mix = nx(j, wp(19, 1, 0.5), k_q)
+    k_tags = [nx(j, wp(20, 0, 0.3), k_mix)]
+    k_tags.append(nx(j, wp(20, 1, 0.3), k_tags[0]))
+    k_er = nx(j, wp(20, 2, 0.6), k_tags[1])
     L.note(*names, "都在干活？", "去掉")
     b.path(j, k_row, k_row + 0.8, join(*[rect(x, Y, 110, 150, 10) for x in xs]), BLACK, 6, sfx="wood_high")
 
@@ -1047,150 +1195,6 @@ def screen10(j=10):
         return None
     ev(j, 0, pop_fn(j, 0, li))
     b.hit(j, k_er, "shaker", 0.8, "灰块一块块擦掉")
-
-
-screen10()
-
-
-# ================================================================ 屏 11：五版方案，后四版只改了几个字
-def screen11(j=11):
-    cx, cy = R[j]
-    L.scene(j, (cx, cy + 10, Z))
-    GY = cy + 540
-    k_li = 0
-    k_cnt = kq(j, wp(18, 2, 0.4), 1)
-    k_v = nx(j, wp(19, 0, 0.5), k_cnt)
-    k_v2 = k_v + 1
-    k_mag = nx(j, wp(19, 2, 0.3), k_v2)
-    k_tag = nx(j, wp(19, 2, 0.9), k_mag)
-    VS = ["第一版", "第二版", "第三版", "第四版", "第五版"]
-    L.note(*VS, "几件？", "只改了两个字")
-    xs = [cx - 440 + i * 220 for i in range(5)]
-    VY = cy - 180
-
-    def li(c, sc, T):
-        x, s = cx - 330, 0.85
-        hx, hy = head_of(x, GY, s)
-        count = T >= tb(j, k_cnt)
-        with at_pop(c, x, GY, sc):
-            draw_li(c, x, GY, s, "flat", rh=(x + 100 * s, hy - 10 * s) if count else None)
-            if count:
-                n = 1 + int((T - tb(j, k_cnt)) * 3) % 5
-                with K.at(c, x + 100 * s, hy - 40 * s, 0, 1):
-                    c.drawCircle(0, 0, 36, K.paint(SKIN))
-                    c.drawCircle(0, 0, 36, wb.marker(BLACK, 5))
-                    for q in range(n):
-                        C.line(c, (-28 + q * 14, -30), (-30 + q * 14, -70), BLACK, 7)
-        return None
-    ev(j, k_li, pop_fn(j, k_li, li), "wood_low", 0.6)
-    ev(j, k_cnt, L.pop_bubble("几件？", cx - 120, cy + 170, j, k_cnt, 64, BLUE, tail=-1), "pop", 0.7)
-
-    def vers(c, kk, T):
-        for i, x in enumerate(xs):
-            g = pop_scale(T - tb(j, k_v if i < 3 else k_v2) - (i % 3) * 0.12)
-            if g <= 0:
-                continue
-            with K.at(c, x, VY, 0, g):
-                doc_card(c, 0, 0, 190, 250, BLACK, 5)
-                K.text(c, VS[i], 0, -160, 44, "hand", BLACK if i == 0 else GRAY)
-                if i and T >= tb(j, k_mag) + i * 0.15:
-                    c.drawOval(skia.Rect.MakeXYWH(-30, 10, 70, 40), wb.marker(RED, 6))
-        tm = tb(j, k_mag)
-        if T >= tm:
-            f = clamp01((T - tm) / 0.9)
-            mx = lerp(xs[1], xs[4], f)
-            with K.at(c, mx + 40, VY + 60, 0, 1):
-                c.drawCircle(0, 0, 60, K.paint("#FFFFFF", 0.4))
-                c.drawCircle(0, 0, 60, wb.marker(BLACK, 8))
-                C.line(c, (42, 42), (100, 100), BLACK, 14)
-        return None
-    ev(j, k_v, vers, "pop", 0.7)
-    b.hit(j, k_v2, "pop", 0.6, "第四、五版")
-    b.hit(j, k_mag, "rim", 0.75, "放大镜扫过")
-    ev(j, k_tag, L.slam_text("只改了两个字", cx + 240, cy + 70, 72, RED, j, k_tag, rot=-3), "kick", 0.8)
-
-
-screen11()
-
-
-# ================================================================ 屏 12：沙发上挑电影，片单一页页翻，时钟走过半小时
-def screen12(j=12):
-    cx, cy = R[j]
-    L.scene(j, (cx, cy + 10, Z))
-    GY = cy + 470
-    TVX, TVY = cx + 160, cy - 260
-    k_tv = 0
-    k_li = 1
-    k_flip = kq(j, wp(20, 1, 0.1), 2)
-    k_half = nx(j, wp(20, 1, 0.9), k_flip + 1)
-    k_zz = nx(j, wp(20, 2, 0.6), k_half)
-    L.note("半小时", "Zzz", "片单")
-    b.path(j, k_tv, k_tv + 0.7, join(rect(TVX, TVY, 560, 340, 18), P((TVX - 80, TVY + 170), (TVX - 120, TVY + 220)),
-                                     P((TVX + 80, TVY + 170), (TVX + 120, TVY + 220))), BLACK, 9, sfx="wood_low")
-    COLS = ["#F28C8C", "#7FB2E5", "#8FD19E", "#F2C14E", "#C3A6E8"]
-
-    def tv(c, kk, T):
-        t0 = tb(j, k_flip)
-        zz = T >= tb(j, k_zz)
-        if T >= t0 and not zz:
-            n = int((T - t0) * 3)
-            off = ((T - t0) * 3) % 1
-            for q in range(4):
-                x = TVX - 200 + q * 130 - ease_out(off) * 130
-                if TVX - 260 < x < TVX + 260:
-                    c.drawRoundRect(skia.Rect.MakeXYWH(x - 50, TVY - 90, 100, 150), 8, 8, K.paint(COLS[(n + q) % 5]))
-            K.text(c, "片单", TVX - 200, TVY + 120, 34, "sans_medium", GRAY)
-        elif zz:
-            c.drawRect(skia.Rect.MakeXYWH(TVX - 270, TVY - 160, 540, 320), K.paint("#3A3F48"))
-        # 时钟
-        x, y = cx - 360, cy - 330
-        c.drawCircle(x, y, 80, K.paint("#FFFFFF"))
-        c.drawPath(wb.clock(x, y, 80), wb.marker(BLACK, 6))
-        m = 0 if T < t0 else 30 * clamp01((T - t0) / max(0.3, tb(j, k_half) - t0))
-        c.drawPath(wb.hands_at(x, y, 80, 8, m), wb.marker(RED, 7))
-        if m > 0:
-            p = skia.Path()
-            p.moveTo(x, y)
-            p.arcTo(skia.Rect.MakeXYWH(x - 70, y - 70, 140, 140), -90, m * 6, False)
-            p.close()
-            c.drawPath(p, K.paint(RED, 0.25))
-        if T >= tb(j, k_half):
-            K.text(c, "半小时", x, y + 130, 54, "hand", RED, clamp01((T - tb(j, k_half)) / 0.2))
-        return None
-    ev(j, 0.5, tv)
-
-    def li(c, sc, T):
-        x, s = cx - 160, 0.8
-        hx, hy = head_of(x, GY - 40, s)
-        zz = T >= tb(j, k_zz)
-        with at_pop(c, x, GY, sc):
-            sofa = rect(x + 20, GY - 110, 520, 120, 30)
-            c.drawPath(sofa, K.paint("#E8C7A8"))
-            c.drawPath(sofa, wb.marker("#A9773E", 7))
-            back = rect(x + 20, GY - 210, 520, 120, 30)
-            c.drawPath(back, K.paint("#F0D8BF"))
-            c.drawPath(back, wb.marker("#A9773E", 7))
-            press = (math.sin(T * 9) > 0.6) and T >= tb(j, k_flip) and not zz
-            rh = (x + 120 * s, hy + 100 * s - (10 if press else 0))
-            c.save()
-            if zz:
-                c.translate(x, GY - 40)
-                c.rotate(-12)
-                c.translate(-x, -(GY - 40))
-            draw_li(c, x, GY - 40, s, "flat", rh=rh)
-            box(c, rh[0] + 10, rh[1] - 20, 30, 70, "#3A3F48", BLACK, 3, 8)
-            c.restore()
-            if zz:
-                for n in range(3):
-                    ph = ((T - tb(j, k_zz)) * 0.8 + n * 0.33) % 1
-                    K.text(c, "Zzz"[n], hx + 70 + n * 40 + ph * 30, hy - 60 - n * 40 - ph * 40, 50 + n * 10, "hand", BLUE,
-                           1 - ph)
-        return None
-    ev(j, k_li, pop_fn(j, k_li, li), "pop", 0.7)
-    b.hit(j, k_flip, "wood_high", 0.7, "片单一页页翻")
-    b.hit(j, k_flip + 1, "wood_high", 0.6, "接着翻")
-    b.hit(j, k_half, "ding", 0.75, "时钟走过半小时")
-    b.hit(j, k_zz, "tom", 0.7, "一部也没看，睡着了")
 
 
 screen12()
@@ -1626,5 +1630,5 @@ def screen18(j=18):
 screen18()
 
 # ================================================================ 收尾
-L.finish(cover_shot=9, square_shot=9, notes=NOTES)
+L.finish(cover_shot=11, square_shot=11, notes=NOTES)
 L.export(globals())
