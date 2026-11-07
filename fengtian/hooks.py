@@ -2,7 +2,8 @@
 
 统一节奏（8 拍开场屏，约 4.4 秒；配音长时自动调整，见 prepare）：
   第 0–2 拍 画面动作（每拍一个，配打击乐）；第 3 拍起配音念大字（HOOK_TEXT，配音句默认就是大字，可在 HOOK_VOICE 改），
-  每个字的落地时刻 = 该字在配音里的发声起点（fengtian.voice.syllable_onsets：谱通量起音 + CTC 识别逐字时刻），
+  每个字的落地时刻 = 该字在配音里的发声起点（fengtian.voice.syllable_onsets：谱通量起音 + CTC 识别逐字时刻）；
+  配音一顿一顿地念（fengtian.voice.spread_line：在字界切开、字间插静音，相邻两字起点相隔约 0.34 秒，字多时缩到不低于 0.27，逗号处多停 0.15），
   每字从上方放大加速落下 → 落地压扁回弹 → 两侧尘土线，配一声打击乐（峰值对齐落地，tom，末字用 text_sfx）和轻震（末字重震）；
   末字落地后的拍上弹出系列小字，末字之后至少停 1.2 秒不出新笔画，再由本讲的转场进入第 1 屏。
   配音句长时首字提前到第 2 拍，仍放不下再把开场屏加长 2 拍（Lesson 构造时调用 prepare 决定，排期随之变化）。
@@ -159,9 +160,10 @@ def _drop_char(u, x, y, size, color, tl):
 
 HOOK_TEXT = dict(stamp3="第三遍了", pile="越堆越乱", curve="忙一阵 闲一阵", bars="全卡在一半", checklist="做了100遍还漏",
                  sticky="又漏了一件", doorsign="问题还在", mole="又冒出来了", reject="一开会就被否",
-                 treadmill="忙了一天 还在原地", clock8="白忙", desktop="找不到", mailfly="手滑", startlights="还没开始",
+                 treadmill="忙了一天 还在原地", clock8="白忙", desktop="找不到", mailfly="又手滑了", startlights="还没开始",
                  slides="结论呢？", qmarks="又错了", chain="掉链子", apps="又一个", alarm="先顾眼前")
 HOOK_VOICE = {}                # 个别讲配音比大字长（如问句）时写在这里，大字须是配音的一段；默认配音 = 大字
+HOOK_PINYIN = dict(checklist=[("还漏", "[h][ái]漏")])     # 多音字（合成时换成拼音标注；“还”曾被念成 huán）
 BEAT = 0.533                   # 前奏段实测拍长（秒），排开场时估算用
 HOLD_S = 1.2                   # 末字落地后至少停留
 
@@ -221,7 +223,8 @@ def prepare(hook, draft=False, min_beats=8):
     放不下时首字提前到第 2 拍，仍放不下再把开场屏加长 2 拍。返回 dict，放到 H.HOOK。"""
     from fengtian import voice
     text, vt = HOOK_TEXT[hook], voice_text(hook)
-    clip, on, is_draft = voice.hook_line(vt, draft=draft)
+    clip, on, is_draft = voice.hook_line(vt, HOOK_PINYIN.get(hook, ()), draft=draft)
+    clip, on = voice.spread_line(clip, vt, on, asr=not is_draft)          # 一顿一顿地念：字间插静音，相邻两字起点相隔约 0.34 秒
     toks = [u for u in _units(text) if u[0] != " "]
     spoken = "".join(_cn_num(int(u)) if u.isdigit() else "".join(ch for ch in u if _is_han(ch)) for u, _ in toks)
     vsy = "".join(ch for ch in vt if _is_han(ch))
@@ -863,7 +866,7 @@ def mailfly(H, j, cx, cy, acc):
     b.hit(j, 1, "wood_high", 0.8, "又发出一封")
     b.hit(j, 2, "wood_high", 0.8, "再发一封")
     b.custom(j, 3, 3.3, lambda c, k, T: None, sfx="pop", gain=0.8)
-    _finish(H, j, cx, cy, "手滑", acc, size=180, ty=cy + 250)
+    _finish(H, j, cx, cy, "又手滑了", acc, size=180, ty=cy + 250)
 
 
 HOOKS.update(clock8=clock8, desktop=desktop, mailfly=mailfly)

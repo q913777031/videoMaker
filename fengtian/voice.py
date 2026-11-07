@@ -347,3 +347,127 @@ def syllable_onsets(x, n):
     out = [round(float(v), 4) for v in out]
     cf.write_text(json.dumps(out))
     return out
+
+
+# ---------------------------------------------------------------- 开场句一顿一顿地念：在字界切开、字间插静音
+
+SPREAD_GAP = 0.34              # 字与字发声起点的目标间隔（秒）；字多时缩小，整句起点跨度不超过 SPREAD_SPAN
+SPREAD_MIN = 0.27
+SPREAD_SPAN = 1.95
+SPREAD_COMMA = 0.15            # 逗号处再多停
+
+
+def _env_db(x, hop=0.005, win=0.02):
+    h, w = int(hop * audio.SR), int(win * audio.SR)
+    n = len(x) // h
+    e = np.array([np.sqrt(np.mean(x[max(0, i * h - w // 2): i * h + w // 2] ** 2) + 1e-12) for i in range(n)])
+    return 20 * np.log10(e / (e.max() + 1e-12) + 1e-9)
+
+
+def _char_cuts(x, han, on, asr=True):
+    """每两个字之间的切点（秒）：发声起点前后 [-0.12, +0.04] 秒内的音量低谷为候选，
+    用语音识别核对“切点前念的是前几个字、切点后念的是后几个字”（无调拼音编辑距离），再加低谷深度与离起点远近打分。
+    结果按音频内容缓存到 .cache/tts/cuts_*.json。"""
+    h = hashlib.sha1(x.tobytes() + han.encode()).hexdigest()
+    cf = audio.CACHE_DIR / f"cuts_{h}.json"
+    if asr and cf.exists():
+        return json.loads(cf.read_text())
+    hop = 0.005
+    e = _env_db(x, hop)
+    use_asr = asr and os.path.isdir(ASR_MODEL)
+    cuts = []
+    for i in range(1, len(han)):
+        lo = max(int((on[i] - 0.12) / hop), int((cuts[-1] if cuts else 0.0) / hop) + 12, 1)
+        hi = min(int((on[i] + 0.04) / hop), len(e) - 2)
+        if hi <= lo:
+            cuts.append(round(max(on[i] - 0.02, (cuts[-1] if cuts else 0) + 0.06), 4))
+            continue
+        cand = [k for k in range(lo, hi + 1) if e[k] <= e[k - 1] and e[k] <= e[k + 1]] or [lo + int(np.argmin(e[lo:hi + 1]))]
+        best = None
+        for k in cand:
+            t = k * hop
+            s = -0.04 * (e[k] + 60) - 8 * abs(t - (on[i] - 0.02))
+            if use_asr:
+                n0 = int(t * audio.SR)
+                s -= 1.5 * (_py_dist(han[:i], _asr(x[:n0])) + _py_dist(han[i:], _asr(x[n0:])))
+            if best is None or s > best[0]:
+                best = (s, t)
+        cuts.append(round(best[1], 4))
+    if asr:
+        cf.write_text(json.dumps(cuts))
+    return cuts
+
+
+def spread_line(x, text, on, asr=True):
+    """开场句改成一顿一顿地念：在字界切开（短淡入淡出防爆音），字与字之间插静音，
+    使相邻两字发声起点相隔约 SPREAD_GAP 秒（逗号处多 SPREAD_COMMA）。返回 (新音频, 每字发声起点)。
+    切点先由 _char_cuts 选，再逐个字界在候选低谷里微调：拼好整句交给语音识别，挑念得最对的（结果缓存）。"""
+    han = "".join(ch for ch in text if _han(ch))
+    n = len(han)
+    if n < 2:
+        return x, list(on)
+    commas, c = set(), 0
+    for ch in text:
+        if _han(ch):
+            c += 1
+        elif ch in "，、" and 0 < c < n:
+            commas.add(c)
+    gap = min(SPREAD_GAP, max(SPREAD_MIN, (SPREAD_SPAN - SPREAD_COMMA * len(commas)) / (n - 1)))
+    cuts = _char_cuts(x, han, on, asr)
+    if not asr:                                    # 占位音频（草稿）：不核对
+        return _assemble(x, cuts, on, gap, commas)
+    h = hashlib.sha1(x.tobytes() + text.encode() + json.dumps(cuts).encode() + f"{gap}".encode()).hexdigest()
+    cf = audio.CACHE_DIR / f"spread_{h}.json"
+    if cf.exists():
+        cuts = json.loads(cf.read_text())
+    elif os.path.isdir(ASR_MODEL):
+        hop = 0.005
+        e = _env_db(x, hop)
+        best = _py_dist(han, _asr(_assemble(x, cuts, on, gap, commas)[0]))
+        for i in range(len(cuts)):
+            if best == 0:
+                break
+            lo = max(int((cuts[i - 1] if i else 0.0) / hop) + 12, int((on[i + 1] - 0.14) / hop), 1)
+            hi = min(int((cuts[i + 1] if i + 1 < len(cuts) else len(x) / audio.SR) / hop) - 12,
+                     int((on[i + 1] + 0.06) / hop), len(e) - 2)
+            for k in range(lo, hi + 1, 2):
+                if not (e[k] <= e[k - 1] + 1.5 and e[k] <= e[k + 1] + 1.5):
+                    continue
+                trial = cuts[:i] + [round(k * hop, 4)] + cuts[i + 1:]
+                d = _py_dist(han, _asr(_assemble(x, trial, on, gap, commas)[0]))
+                if d < best:
+                    best, cuts = d, trial
+        cf.write_text(json.dumps(cuts))
+    return _assemble(x, cuts, on, gap, commas)
+
+
+def _assemble(x, cuts, on, gap, commas):
+    n = len(cuts) + 1
+    cuts = [0.0] + list(cuts) + [len(x) / audio.SR]
+    sr = audio.SR
+    fi, fo = int(0.004 * sr), int(0.012 * sr)
+    segs, leads = [], []
+    for i in range(n):
+        a, z = int(cuts[i] * sr), int(cuts[i + 1] * sr)
+        s = x[a:z].copy()
+        if i and len(s) > fi:
+            s[:fi] *= np.linspace(0, 1, fi)
+        if i < n - 1 and len(s) > fo:
+            s[-fo:] *= np.linspace(1, 0, fo)
+        segs.append(s)
+        leads.append(min(max(0.0, on[i] - cuts[i]), len(s) / sr))
+    lands, pos = [], []
+    for i in range(n):
+        if i == 0:
+            p, L = 0.0, leads[0]
+        else:
+            L = lands[-1] + gap + (SPREAD_COMMA if i in commas else 0.0)
+            p = max(L - leads[i], pos[-1] + len(segs[i - 1]) / sr + 0.03)
+            L = p + leads[i]
+        pos.append(p)
+        lands.append(L)
+    out = np.zeros(int((pos[-1] + len(segs[-1]) / sr) * sr) + 1)
+    for p, s in zip(pos, segs):
+        k = int(round(p * sr))
+        out[k: k + len(s)] += s
+    return out, [round(float(v), 4) for v in lands]
