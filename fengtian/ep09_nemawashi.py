@@ -56,7 +56,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("09")          # 本讲样式（fengtian/theme.py）：蓝图纸、开场 reject、转场 wipe
-L = C.Lesson("09", SCREENS, drop_screen=2, board_size=(5000, 13000), theme=THEME)
+L = C.Lesson("09", SCREENS, drop_screen=2, board_size=(5000, 13000), theme=THEME, extra_hold={12: 0.8})
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 

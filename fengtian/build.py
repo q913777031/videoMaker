@@ -305,7 +305,7 @@ def _lufs(x):
     return pyloudnorm.Meter(audio.SR).integrated_loudness(x)
 
 
-def limiter(x, ceil_db=-2.0, look=0.004):
+def limiter(x, ceil_db=-2.6, look=0.004):         # 留余量：接片尾时音频重编码，真峰值会涨约 0.5 dB
     ceil = 10 ** (ceil_db / 20)
     need = np.minimum(1.0, ceil / np.maximum(np.max(np.abs(x), axis=1), 1e-9))
     w = 2 * max(3, int(look * audio.SR)) + 1
