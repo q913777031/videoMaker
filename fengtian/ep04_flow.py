@@ -250,6 +250,34 @@ def li_working(x, y, s, t_start, t_stop, mood_fn=None):
     return hands
 
 
+def draw_wang(c, x, y, s, lh=None, rh=None, mood="flat", head_dy=0.0):
+    """同事小王（办公室，不戴安全帽）：照抄第 06/07 讲造型。"""
+    d_lh, d_rh = C.rest_hands(x, y, s)
+    lh, rh = lh or d_lh, rh or d_rh
+    hy = y - 290 * s + head_dy
+    sh = (x, y - 290 * s + 80 * s)
+    hip = (x, y - 120 * s)
+    for ft in ((x - 50 * s, y), (x + 50 * s, y)):
+        C.line(c, hip, ft, BLUE, 10)
+    C.line(c, sh, lh, BLUE, 10)
+    C.line(c, sh, rh, BLUE, 10)
+    torso = skia.Rect.MakeLTRB(x - 42 * s, y - 235 * s, x + 42 * s, y - 105 * s)
+    c.drawRoundRect(torso, 18 * s, 18 * s, K.paint("#FFFFFF"))
+    c.drawRoundRect(torso, 18 * s, 18 * s, wb.marker(BLUE, 7))
+    badge = skia.Rect.MakeXYWH(x - 20 * s, y - 180 * s, 40 * s, 30 * s)
+    c.drawRoundRect(badge, 4, 4, K.paint("#DCE8F7"))
+    c.drawRoundRect(badge, 4, 4, wb.marker(BLUE, 4))
+    c.drawRoundRect(skia.Rect.MakeLTRB(x - 54 * s, hy - 46 * s, x + 54 * s, hy + 40 * s), 26 * s, 26 * s, K.paint("#2E2A28"))
+    c.drawCircle(x, hy, 45 * s, K.paint("#FFFFFF"))
+    c.drawCircle(x, hy, 45 * s, wb.marker(BLACK, 9))
+    fringe = skia.Path()
+    fringe.addArc(skia.Rect.MakeXYWH(x - 50 * s, hy - 52 * s, 100 * s, 72 * s), 180, 180)
+    fringe.close()
+    c.drawPath(fringe, K.paint("#2E2A28"))
+    c.drawCircle(x + 36 * s, hy - 24 * s, 9 * s, K.paint(ORANGE))
+    C._eyes_mouth(c, x, hy + 4 * s, s, mood, 1.0)
+
+
 # ================================================================ 屏 0：系列开场
 j = L.scene(0, L.intro_view(*R[0]))
 L.intro(j, *R[0])
@@ -523,7 +551,7 @@ def single4(c, kk, T):
 
 
 b.custom(j, 1, 1.1, single4)
-b.custom(j, 1, 1.3, L.figure(draw_worker, j, 1, *P4[:3],
+b.custom(j, 1, 1.3, L.figure(draw_wang, j, 1, *P4[:3],
                              mood=lambda T: "smile" if T >= tb(4, k_out4) else "flat",
                              lh=lambda T: li_working(*P4, tb(4, k_fold4) - 0.3, tb(4, KS_OUT4[-1]))(T)[0],
                              rh=lambda T: li_working(*P4, tb(4, k_fold4) - 0.3, tb(4, KS_OUT4[-1]))(T)[1]), sfx="pop")
@@ -609,7 +637,7 @@ def avatar(x, y, fn, bg, name, color):
 
 
 L.note("小王", "小李")
-b.custom(j, 1, 1.3, pop_fn(j, 1, avatar(cx - 430, LANE["wang"], draw_worker, "#E4EDFA", "小王", BLUE)), sfx="pop", gain=0.6)
+b.custom(j, 1, 1.3, pop_fn(j, 1, avatar(cx - 430, LANE["wang"], draw_wang, "#E4EDFA", "小王", BLUE)), sfx="pop", gain=0.6)
 b.custom(j, 1.5, 1.8, pop_fn(j, 1.5, avatar(cx - 430, LANE["li"], draw_li, "#F3E6CF", "小李", BLACK)))
 
 
@@ -738,7 +766,7 @@ b.path(j, k_fix, k_fix + 0.5, C.loop_arrow(ONE6[0] - 150, ONE6[1], 42), ORANGE, 
 b.hit(j, k_ok6, "ding", 0.8, "改小以后装进去")
 b.path(j, k_ok6, k_ok6 + 0.4, check(ENV6R[0] + 120, ENV6R[1] - 60, 40), GREEN, 12)
 b.custom(j, k_ok6, k_ok6 + 0.3, L.pop_text("马上改", cx + 300, cy + 270, 72, GREEN, j, k_ok6))
-for x, fn, mood in ((cx - 430, draw_li, "sad"), (cx + 430, draw_worker, "smile")):
+for x, fn, mood in ((cx - 430, draw_li, "sad"), (cx + 430, draw_wang, "smile")):
     def who6(c, sc, T, x=x, fn=fn, mood=mood):
         cx, cy = R[6]
         y, s = cy + 580, 0.62
