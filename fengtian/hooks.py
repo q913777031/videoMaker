@@ -842,3 +842,217 @@ def qmarks(H, j, cx, cy, acc):
 
 
 HOOKS.update(startlights=startlights, slides=slides, qmarks=qmarks)
+
+
+# ---------------------------------------------------------------- 17 合作伙伴：一条链子逐拍绷紧，第四拍断开一节
+
+def chain(H, j, cx, cy, acc):
+    from fengtian.scenekit import draw_wang
+    b = H.b
+    y = cy - 260
+    lx, rx = cx - 430, cx + 430
+    n = 9
+    H.note("拉紧", "咔")
+
+    def link(c, x, y_, rot, color, w=10, alpha=1.0):
+        with K.at(c, x, y_, rot):
+            c.drawOval(skia.Rect.MakeXYWH(-46, -24, 92, 48), wb.marker(color, w, alpha))
+
+    def fn(c, kk, T):
+        sc = pop_scale(T - H.tb(j, 0))
+        if sc <= 0:
+            return None
+        tight = sum(1 for k_ in (0, 1, 2) if T >= H.tb(j, k_))
+        dt3 = T - H.tb(j, 3)
+        broke = dt3 >= 0
+        sag = (70, 30, 6, 0)[tight] if tight < 3 else 0
+        pull = (0, 30, 60, 80)[tight]
+        fall = ease_out(clamp01(dt3 / 0.35)) if broke else 0.0
+        with K.at(c, cx, y, 0, sc):
+            c.translate(-cx, -y)
+            # 两端的人：左边小李往左拽，右边合作方往右拽；断开后两人往后一仰
+            back = 40 * fall
+            lxp, rxp = lx - pull * 0.5 - back, rx + pull * 0.5 + back
+            hy = y + 190 - 290 * 0.8
+            draw_li(c, lxp - 90, y + 190, 0.8, "o" if broke else ("sad" if tight >= 2 else "flat"),
+                    rh=(lxp - 10, y), lh=(lxp - 30, y + 10))
+            draw_wang(c, rxp + 90, y + 190, 0.8, lh=(rxp + 10, y), rh=(rxp + 30, y + 10), mood="o" if broke else "flat")
+            mid = n // 2
+            for i in range(n):
+                u = i / (n - 1)
+                x = lerp(lxp, rxp, u)
+                yy = y + sag * math.sin(math.pi * u)
+                rot = 0 if i % 2 == 0 else 0
+                shake = wobble(T - H.tb(j, 2), 4, 40, 6) if tight >= 3 and not broke else 0.0
+                if broke and i == mid:
+                    # 断开的那一节：裂成两半飞开
+                    for sgn in (-1, 1):
+                        with K.at(c, x + sgn * 60 * fall, yy + 120 * fall * fall, sgn * 40 * fall):
+                            arc = skia.Path()
+                            arc.addArc(skia.Rect.MakeXYWH(-46, -24, 92, 48), 90 if sgn < 0 else 270, 180)
+                            c.drawPath(arc, wb.marker(RED, 10))
+                    continue
+                dx = 0.0
+                if broke:
+                    dx = (-1 if i < mid else 1) * 70 * fall
+                color = RED if (tight >= 2 and abs(i - mid) <= 1) else BLACK
+                if i % 2:
+                    c.drawLine(x - 30 + dx, yy + shake, x + 30 + dx, yy + shake, wb.marker(color, 12))
+                else:
+                    link(c, x + dx, yy + shake, 0, color)
+            # 绷紧的受力线
+            if tight >= 1 and not broke:
+                for k_ in range(tight):
+                    a = 0.5 + 0.25 * k_
+                    for sgn in (-1, 1):
+                        c.drawLine(cx + sgn * (140 + 30 * k_), y - 70 - 20 * k_, cx + sgn * (200 + 30 * k_),
+                                   y - 110 - 20 * k_, wb.marker(GRAY, 6, a))
+            if T >= H.tb(j, 2) and not broke:
+                c.drawPath(P((cx - 14, y - 40), (cx + 6, y - 12), (cx - 8, y + 12), (cx + 12, y + 40)), wb.marker(RED, 6))
+        if broke:
+            for i in range(10):
+                a = math.radians(i * 36 + 10)
+                d = 60 + 220 * ease_out(clamp01(dt3 / 0.5))
+                al = 1 - clamp01((dt3 - 0.3) / 0.5)
+                if al > 0:
+                    c.drawLine(cx + math.cos(a) * (d - 40), y + math.sin(a) * (d - 40), cx + math.cos(a) * d,
+                               y + math.sin(a) * d, wb.marker(ORANGE, 7, al))
+        return None
+    b.custom(j, 0, 0.3, fn, sfx="wood_low", gain=0.75)
+    b.hit(j, 1, "tom", 0.8, "链子拉紧")
+    b.hit(j, 2, "rim", 0.85, "中间一节裂开")
+    _finish(H, j, cx, cy, "掉链子", acc, size=170, ty=cy + 240)
+
+
+# ---------------------------------------------------------------- 18 新工具：手机上应用图标一个个蹦出来，第四拍全部变灰
+
+def apps(H, j, cx, cy, acc):
+    b = H.b
+    px, py = cx + 160, cy - 260
+    pw, ph = 420, 720
+    names = ["新系统", "协作", "助手"]
+    H.note(*names)
+    cols = ["#5B8DEF", "#F28C5B", "#7BC67E"]
+
+    def icon(c, x, y, n, gray):
+        col = "#9AA0A8" if gray else cols[n]
+        c.drawRoundRect(skia.Rect.MakeXYWH(x - 70, y - 70, 140, 140), 34, 34, K.paint(col))
+        c.drawRoundRect(skia.Rect.MakeXYWH(x - 70, y - 70, 140, 140), 34, 34, wb.marker(BLACK, 6))
+        if n == 0:
+            c.drawRect(skia.Rect.MakeXYWH(x - 36, y - 30, 72, 56), wb.marker("#FFFFFF", 7))
+            c.drawLine(x - 36, y - 10, x + 36, y - 10, wb.marker("#FFFFFF", 6))
+        elif n == 1:
+            c.drawCircle(x - 18, y - 6, 18, wb.marker("#FFFFFF", 7))
+            c.drawCircle(x + 20, y + 8, 18, wb.marker("#FFFFFF", 7))
+        else:
+            c.drawPath(P((x, y - 38), (x + 12, y - 10), (x + 40, y), (x + 12, y + 10), (x, y + 38), (x - 12, y + 10),
+                         (x - 40, y), (x - 12, y - 10), close=True), K.paint("#FFFFFF"))
+        K.text(c, names[n], x, y + 110, 44, "hand", GRAY if gray else BLACK)
+
+    def fn(c, kk, T):
+        sc = pop_scale(T - H.tb(j, 0))
+        if sc <= 0:
+            return None
+        gray = T >= H.tb(j, 3)
+        with K.at(c, px, py, 0, sc):
+            c.translate(-px, -py)
+            c.drawRoundRect(skia.Rect.MakeXYWH(px - pw / 2, py - ph / 2, pw, ph), 50, 50, K.paint("#3B3F48"))
+            c.drawRoundRect(skia.Rect.MakeXYWH(px - pw / 2, py - ph / 2, pw, ph), 50, 50, wb.marker(BLACK, 8))
+            c.drawRoundRect(skia.Rect.MakeXYWH(px - pw / 2 + 22, py - ph / 2 + 60, pw - 44, ph - 120), 18, 18,
+                            K.paint("#FFFFFF"))
+            # 小李在手机左边，越来越累
+            n_on = sum(1 for k_ in (0, 1, 2) if T >= H.tb(j, k_))
+            draw_li(c, cx - 330, cy + 100, 0.95, "sad" if gray else ("o" if n_on >= 2 else "flat"),
+                    rh=(px - pw / 2 - 20, py + 40 + 8 * math.sin(T * 9)), squash=0.92 if gray else 1.0)
+        for n in range(3):
+            dt = T - H.tb(j, n)
+            if dt < 0:
+                continue
+            x, y = px, py - 230 + n * 220
+            g = pop_scale(dt)
+            hop = -60 * math.sin(math.pi * clamp01(dt / 0.3)) if dt < 0.3 else 0.0
+            with K.at(c, x, y + hop, wobble(dt, 8, 18, 5), g):
+                c.translate(-x, -y)
+                icon(c, x, y - 30, n, gray)
+        if gray:
+            dt = T - H.tb(j, 3)
+            for n in range(3):
+                x, y = px + 110, py - 300 + n * 220
+                g = pop_scale(dt - 0.04 * n)
+                if g > 0:
+                    with K.at(c, x, y, 0, g):
+                        c.drawCircle(0, 0, 26, K.paint(RED))
+                        K.text(c, "99", 0, 2, 26, "sans_medium", "#FFFFFF")
+        return None
+    b.custom(j, 0, 0.3, fn, sfx="pop", gain=0.75)
+    b.hit(j, 1, "pop", 0.8, "第二个图标蹦出")
+    b.hit(j, 2, "bongo_high", 0.85, "第三个图标蹦出")
+    _finish(H, j, cx, cy, "又一个", acc, size=170, ty=cy + 260)
+
+
+# ---------------------------------------------------------------- 19 长期：“考核”大闹钟追着小李跑，远处路标“以后”一闪
+
+def alarm(H, j, cx, cy, acc):
+    b = H.b
+    gy = cy + 80
+    H.note("考核", "以后")
+
+    def clock(c, x, y, r, T, ring):
+        c.drawCircle(x, y, r, K.paint("#FFFFFF"))
+        c.drawCircle(x, y, r, wb.marker(BLACK, 10))
+        for sgn in (-1, 1):
+            bx, by = x + sgn * r * 0.62, y - r * 0.86
+            c.drawCircle(bx, by, r * 0.26, K.paint("#F2C14E"))
+            c.drawCircle(bx, by, r * 0.26, wb.marker(BLACK, 7))
+            c.drawLine(x + sgn * r * 0.55, y + r * 0.8, x + sgn * r * 0.75, y + r * 1.08, wb.marker(BLACK, 10))
+        a = T * 7
+        c.drawLine(x, y, x + math.cos(a) * r * 0.6, y + math.sin(a) * r * 0.6, wb.marker(RED, 9))
+        c.drawLine(x, y, x, y - r * 0.4, wb.marker(BLACK, 11))
+        K.text(c, "考核", x, y + r * 0.45, r * 0.32, "hand", RED)
+        if ring:
+            for sgn in (-1, 1):
+                for k_ in range(2):
+                    rr = r * (1.25 + 0.18 * k_)
+                    arc = skia.Path()
+                    arc.addArc(skia.Rect.MakeXYWH(x - rr, y - rr, 2 * rr, 2 * rr), (-60 if sgn > 0 else 200) + 0, 40)
+                    c.drawPath(arc, wb.marker(GRAY, 6))
+
+    def fn(c, kk, T):
+        sc = pop_scale(T - H.tb(j, 0))
+        if sc <= 0:
+            return None
+        c.drawLine(cx - 600, gy, cx + 600, gy, wb.marker(GRAY, 6))
+        steps = sum(1 for k_ in (0, 1, 2) if T >= H.tb(j, k_))
+        t0 = H.tb(j, 0)
+        # 每拍往右跑一步，闹钟紧跟
+        x_li = cx - 140 + 90 * steps - 90 + 90 * ease_out(clamp01((T - H.tb(j, steps - 1)) / 0.25))
+        ph = (T - t0) * 3.2
+        bob = -abs(math.sin(ph * math.pi)) * 20
+        with K.at(c, cx, gy, 0, sc):
+            c.translate(-cx, -gy)
+            draw_li(c, x_li, gy + bob, 0.85, "o", lh=(x_li - 80, gy - 200 + 30 * math.sin(ph * math.pi)),
+                    rh=(x_li + 80, gy - 200 - 30 * math.sin(ph * math.pi)))
+            for i in range(3):
+                c.drawLine(x_li - 110 - i * 30, gy - 220 + i * 50, x_li - 170 - i * 30, gy - 220 + i * 50,
+                           wb.marker(GRAY, 6, 0.7))
+            xc = x_li - 330
+            clock(c, xc, gy - 230 + wobble(T - t0, 10, 30, 0.0) * 0.5, 150, T, True)
+        # 第 3 拍远处路标一闪
+        dt = T - H.tb(j, 3)
+        if dt >= 0:
+            fl = 0.35 + 0.65 * abs(math.cos(dt * 9)) * math.exp(-dt * 2.5) if dt < 1.2 else 0.35
+            sx, sy = cx + 470, gy
+            c.drawLine(sx, sy, sx, sy - 260, wb.marker(GRAY, 9, fl))
+            c.drawPath(P((sx - 80, sy - 360), (sx + 70, sy - 360), (sx + 110, sy - 310), (sx + 70, sy - 260),
+                         (sx - 80, sy - 260), close=True), K.paint("#FFFFFF", fl))
+            c.drawPath(P((sx - 80, sy - 360), (sx + 70, sy - 360), (sx + 110, sy - 310), (sx + 70, sy - 260),
+                         (sx - 80, sy - 260), close=True), wb.marker(GREEN, 7, fl))
+            K.text(c, "以后", sx, sy - 310, 56, "hand", GREEN, fl)
+        return None
+    b.custom(j, 0, 0.3, fn, sfx="tom", gain=0.8)
+    b.hit(j, 1, "tom", 0.8, "又跑一步")
+    b.hit(j, 2, "bongo_low", 0.85, "闹钟追上来")
+    _finish(H, j, cx, cy, "先顾眼前", acc, size=150, ty=cy + 260)
+
+
+HOOKS.update(chain=chain, apps=apps, alarm=alarm)

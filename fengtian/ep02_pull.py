@@ -47,7 +47,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("02")          # 本讲样式（fengtian/theme.py）：浅灰蓝点阵、开场 pile、转场 pan
-L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={13: 0.8, 17: 0.4}, theme=THEME)
+L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={11: 0.3, 13: 0.8, 17: 0.4}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -189,6 +189,34 @@ def at_pop(c, x, y, sc):
 
 def label(j, k0, s, x, y, size=70, color=BLACK, sfx=None):
     b.text(j, k0, k0 + 0.1 + 0.12 * len(s), s, x, y, size, color, sfx=sfx)
+
+
+def draw_wang(c, x, y, s, lh=None, rh=None, mood="flat", head_dy=0.0):
+    """同事小王（办公室，不戴安全帽）：照抄第 06/07 讲造型。"""
+    d_lh, d_rh = rest_hands(x, y, s)
+    lh, rh = lh or d_lh, rh or d_rh
+    hy = y - 290 * s + head_dy
+    sh = (x, y - 290 * s + 80 * s)
+    hip = (x, y - 120 * s)
+    for ft in ((x - 50 * s, y), (x + 50 * s, y)):
+        C.line(c, hip, ft, BLUE, 10)
+    C.line(c, sh, lh, BLUE, 10)
+    C.line(c, sh, rh, BLUE, 10)
+    torso = skia.Rect.MakeLTRB(x - 42 * s, y - 235 * s, x + 42 * s, y - 105 * s)
+    c.drawRoundRect(torso, 18 * s, 18 * s, K.paint("#FFFFFF"))
+    c.drawRoundRect(torso, 18 * s, 18 * s, wb.marker(BLUE, 7))
+    badge = skia.Rect.MakeXYWH(x - 20 * s, y - 180 * s, 40 * s, 30 * s)
+    c.drawRoundRect(badge, 4, 4, K.paint("#DCE8F7"))
+    c.drawRoundRect(badge, 4, 4, wb.marker(BLUE, 4))
+    c.drawRoundRect(skia.Rect.MakeLTRB(x - 54 * s, hy - 46 * s, x + 54 * s, hy + 40 * s), 26 * s, 26 * s, K.paint("#2E2A28"))
+    c.drawCircle(x, hy, 45 * s, K.paint("#FFFFFF"))
+    c.drawCircle(x, hy, 45 * s, wb.marker(BLACK, 9))
+    fringe = skia.Path()
+    fringe.addArc(skia.Rect.MakeXYWH(x - 50 * s, hy - 52 * s, 100 * s, 72 * s), 180, 180)
+    fringe.close()
+    c.drawPath(fringe, K.paint("#2E2A28"))
+    c.drawCircle(x + 36 * s, hy - 24 * s, 9 * s, K.paint(ORANGE))
+    C._eyes_mouth(c, x, hy + 4 * s, s, mood, 1.0)
 
 
 # ================================================================ 屏 0：系列开场
@@ -961,7 +989,7 @@ def meeting10(c, sc, T):
             look = 8 * math.sin((T - tb(10, k_meet)) * 2 + i)
             c.save()
             c.translate(look, 0)
-            draw_li(c, px, py, s, "flat") if i == 1 else draw_worker(c, px, py, s) if i == 0 else draw_boss(c, px, py, s)
+            draw_li(c, px, py, s, "flat") if i == 1 else draw_wang(c, px, py, s) if i == 0 else draw_boss(c, px, py, s)
             c.restore()
         oval = skia.Rect.MakeXYWH(x - 330, y - 70, 660, 140)
         c.drawOval(oval, K.paint("#F3E6CF"))
@@ -1250,7 +1278,7 @@ def ask14(c, kk, T):
 L.note("谁用？", "什么时候用？")
 b.custom(j, k_who, k_who + 0.3, ask14, sfx="pop")
 b.hit(j, k_when, "pop", 0.7, "第二问")
-b.custom(j, k_hand, k_hand + 0.3, L.figure(draw_worker, j, k_hand, *WK14, mood=lambda T: "smile" if T >= tb(14, k_ans) else "flat"))
+b.custom(j, k_hand, k_hand + 0.3, L.figure(draw_wang, j, k_hand, *WK14, mood=lambda T: "smile" if T >= tb(14, k_ans) else "flat"))
 b.text(j, k_hand + 0.4, k_hand + 0.8, "同事小王", WK14[0], WK14[1] + 85, 64, BLUE)
 b.custom(j, k_ans, k_ans + 0.3, L.pop_bubble("周三要", cx + 330, cy - 170, j, k_ans, 70, GREEN, tail=1), sfx="ding")
 
@@ -1435,34 +1463,6 @@ k_e1 = k_e + 2
 k_give = kb(j, wt(28, 1, 0.15), lo=k_e1 + 1)
 k_ok = kb(j, wt(28, 1, 0.8), lo=k_give + 1)
 LI18, WG18 = (cx - 260, cy + 700, 0.8), (cx + 260, cy + 700, 0.8)
-
-
-def draw_wang(c, x, y, s, lh=None, rh=None, mood="flat", head_dy=0.0):
-    """同事小王（办公室，不戴安全帽）：照抄第 06/07 讲造型。"""
-    d_lh, d_rh = rest_hands(x, y, s)
-    lh, rh = lh or d_lh, rh or d_rh
-    hy = y - 290 * s + head_dy
-    sh = (x, y - 290 * s + 80 * s)
-    hip = (x, y - 120 * s)
-    for ft in ((x - 50 * s, y), (x + 50 * s, y)):
-        C.line(c, hip, ft, BLUE, 10)
-    C.line(c, sh, lh, BLUE, 10)
-    C.line(c, sh, rh, BLUE, 10)
-    torso = skia.Rect.MakeLTRB(x - 42 * s, y - 235 * s, x + 42 * s, y - 105 * s)
-    c.drawRoundRect(torso, 18 * s, 18 * s, K.paint("#FFFFFF"))
-    c.drawRoundRect(torso, 18 * s, 18 * s, wb.marker(BLUE, 7))
-    badge = skia.Rect.MakeXYWH(x - 20 * s, y - 180 * s, 40 * s, 30 * s)
-    c.drawRoundRect(badge, 4, 4, K.paint("#DCE8F7"))
-    c.drawRoundRect(badge, 4, 4, wb.marker(BLUE, 4))
-    c.drawRoundRect(skia.Rect.MakeLTRB(x - 54 * s, hy - 46 * s, x + 54 * s, hy + 40 * s), 26 * s, 26 * s, K.paint("#2E2A28"))
-    c.drawCircle(x, hy, 45 * s, K.paint("#FFFFFF"))
-    c.drawCircle(x, hy, 45 * s, wb.marker(BLACK, 9))
-    fringe = skia.Path()
-    fringe.addArc(skia.Rect.MakeXYWH(x - 50 * s, hy - 52 * s, 100 * s, 72 * s), 180, 180)
-    fringe.close()
-    c.drawPath(fringe, K.paint("#2E2A28"))
-    c.drawCircle(x + 36 * s, hy - 24 * s, 9 * s, K.paint(ORANGE))
-    C._eyes_mouth(c, x, hy + 4 * s, s, mood, 1.0)
 
 
 def give18(c, kk, T):

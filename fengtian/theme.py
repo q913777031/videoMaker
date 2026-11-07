@@ -57,6 +57,12 @@ THEMES = {
                header="stamp", hook="slides", move="wipe", move_s=1.0),
     "16": dict(name="深褐黑板", acc="#7ED6A0", paper="#3A2B22", pattern="chalk", pat="#FFFFFF", dark=True,
                header="bar", hook="qmarks", move="drop", move_s=1.3),
+    "17": dict(name="鼠尾草横线", acc="#A61E4D", paper="#DCE6C8", pattern="ruled", pat="#AFC08F", margin=None,
+               header="circle", hook="chain", move="swing", move_s=1.3),
+    "18": dict(name="深紫方格", acc="#FF9F6E", paper="#2E2240", pattern="grid", pat="#7464A8", grid=90, dark=True,
+               header="tab", hook="apps", move="tilt", move_s=1.4),
+    "19": dict(name="晨粉点阵", acc="#0B7285", paper="#F9E1EA", pattern="dots", pat="#E3A9BE", grid=64,
+               header="pill", hook="alarm", move="pan", move_s=1.35),
 }
 
 DEFAULT = dict(name="白板", acc="#C8102E", paper="#FBFBF9", pattern="plain", pat="#E9ECEF", header="pill",
