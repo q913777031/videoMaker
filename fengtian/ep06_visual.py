@@ -54,7 +54,8 @@ SCREENS = [
 ]
 
 THEME = FT.get("06")          # 本讲样式（fengtian/theme.py）：墨绿黑板、开场 sticky、转场 arc
-L = C.Lesson("06", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={3: 0.5, 15: 0.8, 16: 1.0}, theme=THEME)
+L = C.Lesson("06", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={3: 0.5, 15: 0.8, 16: 1.0}, theme=THEME,
+              trim_tail={8: 0.07})           # 第 8 句句尾多出一个碎音（识别成“并”），裁掉
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 

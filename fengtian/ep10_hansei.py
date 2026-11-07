@@ -60,7 +60,8 @@ SCREENS = [
 ]
 
 THEME = FT.get("10")          # 本讲样式（fengtian/theme.py）：暖杏方格、开场 treadmill、转场 tilt
-L = C.Lesson("10", SCREENS, drop_screen=2, board_size=(5000, 12800), theme=THEME)
+L = C.Lesson("10", SCREENS, drop_screen=2, board_size=(5000, 12800), theme=THEME,
+              trim_head={14: 0.16})          # 第 14 句句首多出一个“好”（上一句末字的回声），裁掉
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
