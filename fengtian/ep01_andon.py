@@ -1140,7 +1140,7 @@ class _Hook:
     note = staticmethod(lambda *s_: SCREEN_TEXTS.extend(s_))
 
 
-j = scene(0, VI)
+j = scene(0, _hooks.intro_view(VI[0], VI[1] + 90))       # 拉远、下移：钩子画面缩小上移，下半屏给大字
 _hooks.HOOKS[THEME["hook"]](_Hook, j, VI[0], VI[1] + 90, ACC)
 HOOK_VOICE = (HOOK["start"] - S, HOOK["clip"])
 

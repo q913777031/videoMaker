@@ -799,8 +799,11 @@ class Lesson:
         assert jj == j, (jj, j)
         return j
 
-    @staticmethod
-    def intro_view(cx, cy):
+    def intro_view(self, cx, cy):
+        """开场屏视角。钩子开场：拉远到 0.6、视角下移，钩子画面整体缩小上移，下半屏留给逐字砸下的大字（见 hooks.INTRO_Z）。"""
+        if self.HOOK is not None:
+            from fengtian import hooks
+            return hooks.intro_view(cx, cy + 50)
         return cx, cy - 40, 0.7
 
     def intro(self, j, cx, cy, sub="精益制造的14项原则"):

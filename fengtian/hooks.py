@@ -43,40 +43,75 @@ def _label(H, j, k, x, y):
     return fn
 
 
-def _finish(H, j, cx, cy, text, acc, size=124, ty=None, shake=8.0, text_sfx="kick"):
+INTRO_Z = 0.6                  # 开场屏缩放：舞台 872×900 px ≈ 板上 1453×1500
+TEXT_DY = 430                  # 大字中心在钩子中心下方（板上单位）；舞台中部偏下，不压钩子画面
+TEXT_DY2 = 380                 # 两行时整体上提，系列小字不进字幕条
+TEXT_MAX = 340                 # 大字上限（板上单位，≈204px）
+TEXT_W = 1250                  # 一行大字最宽（板上单位，≈750px）
+ROWS = dict(reject=3, checklist=4)     # 字多的讲在第几个单位后换行（有空格的在空格处换行）
+
+
+def intro_view(hx, hy):
+    """钩子中心 (hx, hy) 时的开场视角：比原来（0.7、中心 hy-90）拉远并下移，画面缩小上移。"""
+    return hx, hy + 60, INTRO_Z
+
+
+def _rows(hook, text):
+    """大字分行：[[(字, 音节数), …], …]。空格处换行；ROWS 里的讲在指定位置换行。"""
+    toks = _units(text)
+    rows, cur = [], []
+    brk = ROWS.get(hook)
+    for u in toks:
+        if u[0] == " ":
+            rows.append(cur)
+            cur = []
+            continue
+        cur.append(u)
+        if brk and len(cur) == brk and not rows:
+            rows.append(cur)
+            cur = []
+    rows.append(cur)
+    return [r for r in rows if r]
+
+
+def _finish(H, j, cx, cy, text, acc, size=None, ty=None, shake=12.0, text_sfx="kick"):
     """大字随开场配音逐字砸下（落地 = 该字发声起点，每字一声打击乐 + 轻震，末字 text_sfx + shake 重震），
-    之后在拍上弹出系列小字。配音与落地时刻由 prepare() 预先算好，放在 H.HOOK。"""
+    之后在拍上弹出系列小字。配音与落地时刻由 prepare() 预先算好，放在 H.HOOK。
+    大字统一放大（一行最多 TEXT_MAX、宽不超过 TEXT_W，字多自动缩或分两行），中心在钩子中心下方 TEXT_DY；
+    size / ty 参数保留兼容，不再使用。"""
     b = H.b
     hv = H.HOOK
     if hv is None or hv["text"] != text:
         raise ValueError(f"开场大字“{text}”与 HOOK_TEXT 不一致：{hv and hv['text']}")
-    ty = cy + 250 if ty is None else ty
     H.note(text)
-    toks = _units(text)
-    widths = [K.text_w(u, size, "hand") if u != " " else size * 0.45 for u, _ in toks]
-    gap = size * 0.06
-    total = sum(widths) + gap * (len(toks) - 1)
-    if total > 1080:                                   # 开场视角可视约 ±620，留边
-        k_ = 1080 / total
-        size, widths, gap, total = size * k_, [w * k_ for w in widths], gap * k_, 1080
-    xs, x = [], cx - total / 2
-    for w in widths:
-        xs.append(x + w / 2)
-        x += w + gap
+    rows = _rows(hv["hook"], text)
+    gap = 0.06
+
+    def row_w(r, s_):
+        return sum(K.text_w(u, s_, "hand") for u, _ in r) + gap * s_ * (len(r) - 1)
+    size = min([TEXT_MAX * (0.74 if len(rows) > 1 else 1.0)] + [TEXT_MAX * TEXT_W / row_w(r, TEXT_MAX) for r in rows])
+    lh = size * 1.12
+    y0 = cy + (TEXT_DY if len(rows) == 1 else TEXT_DY2) - lh * (len(rows) - 1) / 2
+    chars = []
+    for ri, r in enumerate(rows):
+        x = cx - row_w(r, size) / 2
+        for u, _ in r:
+            w = K.text_w(u, size, "hand")
+            chars.append((u, x + w / 2, y0 + ri * lh))
+            x += w + gap * size
     t1 = H.tb_now(j, hv["k"])
     hv["start"] = t1 - hv["land"][0]                    # 配音起点（绝对秒）
     lands = [t1 + r for r in hv["rel"]]
     hv["lands"] = lands
-    chars = [(u, x_) for (u, _), x_ in zip(toks, xs) if u != " "]
     n = len(chars)
-    for i, ((u, x_), tl) in enumerate(zip(chars, lands)):
+    for i, ((u, x_, y_), tl) in enumerate(zip(chars, lands)):
         last = i == n - 1
         k0 = H.beat_at(j, tl - FALL - 0.02)
-        b.custom(j, k0, k0 + 0.3, _drop_char(u, x_, ty, size, acc, tl))
-        H.sfx_at(tl, text_sfx if last else "tom", 0.8 if last else 0.7, f"砸字：{u}")
-        b.shots[j].shake.append((H.beat_at(j, tl), shake if last else 4.5))
-    b.custom(j, hv["label_k"], hv["label_k"] + 0.3, _label(H, j, hv["label_k"], cx, ty + size * 0.6 + 105),
-             sfx="pop", gain=0.55)
+        b.custom(j, k0, k0 + 0.3, _drop_char(u, x_, y_, size, acc, tl))
+        H.sfx_at(tl, text_sfx if last else "tom", 0.85 if last else 0.75, f"砸字：{u}")
+        b.shots[j].shake.append((H.beat_at(j, tl), shake if last else 7.0))
+    yl = y0 + (len(rows) - 1) * lh + size * 0.55 + 50
+    b.custom(j, hv["label_k"], hv["label_k"] + 0.3, _label(H, j, hv["label_k"], cx, yl), sfx="pop", gain=0.55)
 
 
 FALL = 0.15                    # 砸落用时（秒）：从上方 1.5 倍大加速落下
@@ -92,10 +127,10 @@ def _drop_char(u, x, y, size, color, tl):
             return None
         if dt < 0:
             p = (dt + FALL) / FALL
-            yo, s, sx, sy, a = -260 * (1 - p * p), 1.5 - 0.5 * p * p, 1.0, 1.0, clamp01(p * 2.5)
+            yo, s, sx, sy, a = -380 * (1 - p * p), 1.6 - 0.6 * p * p, 1.0, 1.0, clamp01(p * 2.5)
         else:
             w = math.exp(-dt * 11) * math.cos(dt * 30)
-            yo, s, sx, sy, a = 0.0, 1.0, 1 + 0.18 * w, 1 - 0.24 * w, 1.0
+            yo, s, sx, sy, a = 0.0, 1.0, 1 + 0.24 * w, 1 - 0.32 * w, 1.0
         c.save()
         c.translate(x, base + yo)
         c.scale(s * sx, s * sy)
@@ -114,7 +149,7 @@ def _drop_char(u, x, y, size, color, tl):
                     y0 = base - r0 * math.sin(rad) * 0.6
                     L_ = size * ln * (1 - 0.4 * f)
                     c.drawLine(x0, y0, x0 + sg * L_ * math.cos(rad), y0 - L_ * math.sin(rad) * 0.6,
-                               wb.marker(GRAY, 6, 0.8 * al))
+                               wb.marker(GRAY, 9, 0.8 * al))
                 c.drawCircle(x + sg * (hw + f * size * 0.5), base - 8 - f * 18, 7 + 10 * f, K.paint(GRAY, 0.35 * al))
         return None
     return fn
@@ -575,7 +610,7 @@ def reject(H, j, cx, cy, acc):
     b.custom(j, 1.4, 1.7, _pop(H, j, 1.4, "挺好？", cx - 380, y - 70, 56, GRAY))
     b.custom(j, 2, 2.3, _stamp(H, j, 2, "否", x + 20, y + 10, 210, -12), sfx="kick", gain=0.8)
     b.shots[j].shake = [(2, 9.0)]
-    _finish(H, j, cx, cy, "一开会就被否", acc, size=112, ty=cy + 250, text_sfx="rim")
+    _finish(H, j, cx, cy, "一开会就被否", acc)
 
 
 # ---------------------------------------------------------------- 10 反省：跑步机上原地跑
