@@ -1722,5 +1722,5 @@ ev(j, k_way, L.slam_text("有办法", cx - 160, cy - 30, 120, GREEN, j, k_way, r
 b.shots[j].shake = [(k_way, 6.0)]
 
 # ================================================================ 收尾
-L.finish(cover_shot=1, square_shot=7, notes=NOTES)
+L.finish(cover_shot=2, square_shot=7, notes=NOTES)
 L.export(globals())
