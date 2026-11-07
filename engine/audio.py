@@ -7,6 +7,7 @@ import functools
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 
 import numpy as np
@@ -45,6 +46,9 @@ CV3_PYTHON = MODEL_ROOT / "venv_tts" / "bin" / "python"
 IX2_PROMPT_DIR = MODEL_ROOT / "ix2_prompts"
 IX2_PROMPT_TEXT = "工厂里每天都会出点小问题。我们先把它记下来，再一个一个慢慢解决，这样大家后面都能轻松一点。"
 IX2_CV3_LINES = {"cv3jian": ["说回我们自己，这种事是不是天天都有？", "报表里有个[sh][ù]对不上，你想着先混过去，到月底对账，全乱了。"]}
+# VoxCPM 音色：vx_<x>，音色提示与 ix2_<x> 共用 models/ix2_prompts/<x>.wav（连同提示文本走续写模式）；
+# 模型跑在 models/venv_tts 的子进程里（见 engine/voxcpm_worker.py 的准备步骤）。
+VX_MODEL = MODEL_ROOT / "VoxCPM1.5"
 # 情绪向量各维：喜 怒 哀 惧 厌恶 低落 惊讶 平静（IndexTTS2 顺序）
 IX2_EMOTIONS = ("happy", "angry", "sad", "afraid", "disgusted", "melancholic", "surprised", "calm")
 
@@ -157,12 +161,31 @@ class Narrator:
     generate 的 speed≠1 时取同一句原速的结果做 atempo 变速（不重新采样）。文本里的 CosyVoice 式拼音标注 [d][āng] 自动换成 IndexTTS2 的 DANG1。
     首次合成时启动常驻子进程加载模型（约 80 秒、内存约 9GB），CPU 上每 10 秒语音约需 4 分钟；缓存键含
     后端|音色提示|情绪参数|语速|文本，固定种子可复现。
+
+    音色名以 vx_ 开头时使用 VoxCPM（如 "vx_cv3jian"，Apache-2.0，见 engine/voxcpm_worker.py）：音色提示与 ix2_ 同名音色共用，
+    连同提示文本走续写模式（音色和说话节奏都跟提示走）；emo 位置可传 {"cfg": 2.0, "steps": 10}。
+    CPU 上加载约 20 秒、内存约 4GB，每 10 秒语音约 40 秒；拼音标注自动换成 {chong2} 写法。
     """
 
     def __init__(self, voice: str = "zv_yunxi", prompt_speed: float = 1.0, instruct: str | None = None, emo=None):
         self._prompt = None
         self._cv3 = None
         self._ix2 = None
+        self._vx = None
+        if voice.startswith("vx_"):
+            if not CV3_PYTHON.is_file() or not (VX_MODEL / "model.safetensors").is_file():
+                raise FileNotFoundError(f"VoxCPM not set up: {CV3_PYTHON} / {VX_MODEL} (see engine/voxcpm_worker.py)")
+            name = voice[3:]
+            if name not in IX2_CV3_LINES and "zv_" + name not in ZIPVOICE:
+                raise KeyError(f"unknown voice {voice}: no prompt for {name}")
+            wav = self._ix2_prompt(name, prompt_speed)
+            ptxt = "".join(IX2_CV3_LINES[name]) if name in IX2_CV3_LINES else IX2_PROMPT_TEXT
+            ph = hashlib.sha1(wav.read_bytes()).hexdigest()[:12]
+            vx = dict(cfg=2.0, steps=10, **(emo or {}))      # emo 位置借来传 {"cfg", "steps"}
+            self._vx = dict(wav=str(wav), text=_vx_pinyin(ptxt), cfg=float(vx["cfg"]), steps=int(vx["steps"]),
+                            proc=None)
+            self._key = f"vx|{VX_MODEL.name}|{voice}|{ph}|p{prompt_speed:.3f}|cfg{vx['cfg']:.2f}|st{vx['steps']}"
+            return
         if voice.startswith("ix2_"):
             if not CV3_PYTHON.is_file():
                 raise FileNotFoundError(f"TTS venv not found: {CV3_PYTHON} (see engine/indextts_worker.py)")
@@ -223,6 +246,8 @@ class Narrator:
         if self._ix2 is not None:                 # IndexTTS2：后端|音色提示|情绪参数|语速|文本（num_steps 不用）
             e = self._ix2["emo"] if emo is None else _ix2_emo(emo)
             raw = f"{self._key}|{json.dumps(e, sort_keys=True, ensure_ascii=False)}|{speed:.4f}|{text}"
+        elif self._vx is not None:                # VoxCPM：后端|模型|音色提示|cfg|步数|语速|文本
+            raw = f"{self._key}|{speed:.4f}|{text}"
         else:
             raw = f"{self._key}|{speed:.4f}|{text}{steps}"
         key = hashlib.sha1(raw.encode()).hexdigest()
@@ -234,6 +259,12 @@ class Narrator:
                 x, sr = _atempo(self.generate(text, 1.0, num_steps, emo), SR, speed), SR
             else:
                 x, sr = self._ix2_generate(_ix2_pinyin(text), e, int(key[:8], 16))
+            a = type("A", (), {"samples": x, "sample_rate": sr})
+        elif self._vx is not None:
+            if abs(speed - 1.0) > 1e-6:
+                x, sr = _atempo(self.generate(text, 1.0, num_steps), SR, speed), SR
+            else:
+                x, sr = self._vx_generate(_vx_pinyin(text), int(key[:8], 16))
             a = type("A", (), {"samples": x, "sample_rate": sr})
         elif self._cv3 is not None:
             x, sr = self._cv3_generate(text, speed, int(key[:8], 16))
@@ -288,6 +319,43 @@ class Narrator:
             if line.startswith("{"):
                 return json.loads(line)
         raise RuntimeError("CosyVoice3 worker exited")
+
+    # ---------------------------------------------------------------- VoxCPM
+    def _vx_generate(self, text: str, seed: int):
+        """把一句交给 VoxCPM 子进程；首次调用时启动子进程（加载约 30 秒）。"""
+        import json as _json
+        import subprocess
+        import tempfile
+
+        import soundfile as sf
+
+        c = self._vx
+        if c["proc"] is None:
+            c["tmp"] = tempfile.TemporaryDirectory()
+            c["proc"] = subprocess.Popen([str(CV3_PYTHON), "-I", str(ROOT / "engine" / "voxcpm_worker.py")],
+                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                         text=True, bufsize=1, cwd=c["tmp"].name,
+                                         env={**os.environ, "VX_MODEL": str(VX_MODEL)})
+            self._ix2_reply(c["proc"])
+        out = str(Path(c["tmp"].name) / "out.wav")
+        q = dict(text=text, prompt_wav=c["wav"], prompt_text=c["text"], cfg=c["cfg"], steps=c["steps"], seed=seed,
+                 out=out)
+        c["proc"].stdin.write(_json.dumps(q, ensure_ascii=False) + "\n")
+        c["proc"].stdin.flush()
+        r = self._ix2_reply(c["proc"])
+        if not r.get("ok"):
+            raise RuntimeError(f"VoxCPM failed: {r.get('err')}")
+        c["last"] = r
+        x, sr = sf.read(out)
+        return x, sr
+
+    def close(self):
+        """结束常驻的合成子进程（IndexTTS2 / VoxCPM）。"""
+        for c in (self._ix2, self._vx):
+            if c and c.get("proc"):
+                c["proc"].stdin.close()
+                c["proc"].wait()
+                c["proc"] = None
 
     # ---------------------------------------------------------------- IndexTTS2
     @staticmethod
@@ -350,14 +418,14 @@ class Narrator:
         x, sr = sf.read(out)
         return x, sr
 
-    def _ix2_reply(self) -> dict:
+    def _ix2_reply(self, proc=None) -> dict:
         import json as _json
 
-        for line in self._ix2["proc"].stdout:
+        for line in (proc or self._ix2["proc"]).stdout:
             line = line.strip()
             if line.startswith("{"):
                 return _json.loads(line)
-        raise RuntimeError("IndexTTS2 worker exited")
+        raise RuntimeError("TTS worker exited")
 
 
 def _ix2_emo(emo):
@@ -412,6 +480,13 @@ def _ix2_pinyin(text: str) -> str:
         return out.upper() + tone
 
     return re.sub(r"(?:\[[a-zāáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜü]+\])+", conv, text)
+
+
+def _vx_pinyin(text: str) -> str:
+    """CosyVoice 式拼音标注 "[d][āng]场" → VoxCPM 式 "{dang1}场"（也可以直接写 {dang1}）。"""
+    import re
+
+    return re.sub(r"[A-Z]+[1-5]", lambda m: "{" + m.group(0).lower() + "}", _ix2_pinyin(text))
 
 
 def _atempo(x: np.ndarray, sr: int, tempo: float) -> np.ndarray:
