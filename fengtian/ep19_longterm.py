@@ -1,17 +1,17 @@
 """《丰田模式》19 长期：眼前都顾不过来，还要想以后吗？（白板手绘 + AI 旁白，竖屏 2:3；系列收尾）
 
-经典问答：三个问题一问一答。第 3 屏三张问号卡排成一排；之后每屏右上角一张“问答进度卡”（一问 / 二问 / 三问），
+经典问答：三个问题一问一答。第 6 屏三张问号卡排成一排（2026-11 新结构：先痛点和身边的例子，再进书）；之后每屏右上角一张“问答进度卡”（一问 / 二问 / 三问），
 问到哪一张，哪一张翻开变亮；答完三问，卡片全亮。最后两屏收住整季：十九讲小卡排成几排，第一讲那张亮起；
 小李回头，身后一条长路插满十九面小旗，他转身继续往前走，脚下的路一段段亮起来。
 - 开场（alarm）：“考核”大闹钟追着小李跑，逐拍三步，第四拍远处路标“以后”一闪，“先顾眼前”；
 - 日常：小李在跑，脚下日历一页页翻过；待办卡片一直排到天边，“一直没完”；
-- 第一条原则（drop）：“最后一讲”；一本书翻开“第一条原则”亮起；天平左“眼前吃点亏”右“看长远”，drop 拍往右沉；
+- 身边的例子：糊弄老客户、下个季度椅子空了（drop）；半夜加班趴下，“机会”的门够不着；手机换成书和工具，三年后像换了个人；
+- 第一条原则：“最后一讲”；一本书翻开“第一条原则”亮起；天平左“眼前吃点亏”右“看长远”，往右沉；
 - 三个问题：三张问号卡排开，第一张翻开；
 - 第一问：九十年代日历，一辆油电混合的车，旁边“卖得好吗？”；年份一格格往后走，车身亮起“招牌”；
 - 第二问：一九五零年，工厂门口一排人离开、乌云；社长鞠躬放下“社长”帽子，之后员工手拉手站成一排；
 - 第三问：小李停下，抬头看远处路标；心里亮起指南针，一堆事分成“拼”“放”；对照：没有指南针，每件事都闪红；
-- 说回我们：糊弄老客户、下个季度椅子空了；半夜加班趴下，“机会”的门够不着；手机换成书和工具，三年后像换了个人；
-  房租单、考核表、家里电话压在肩上，“三步”；三步做法；照样忙，脚下多了一条通向路标的路；
+- 说回我们：房租单、考核表、家里电话压在肩上，“三步”；三步做法；照样忙，脚下多了一条通向路标的路；
 - 收尾：十九讲小卡排成几排，第一讲那张亮起，评论框；小李回头看十九面小旗，再往前走，路越走越亮。
 小李 common.draw_li；车间员工 common.draw_worker（戴安全帽）；社长 common.draw_boss（深色西装，另戴“社长”帽）；
 老客户为本讲小人（灰色礼帽、棕色外套）。
@@ -37,17 +37,17 @@ from whiteboard.engine import P
 SCREENS = [
     ([], "开场", 0),
     ([0, 1], "打工人日常", 1),
-    ([2, 3], "丰田模式 · 书中做法", 2),
-    ([4], "三个问题", 3),
-    ([5, 6], "第一问 · 不赚钱的事", 4),
-    ([7], "第一问 · 不赚钱的事", 5),
-    ([8, 9], "第二问 · 日子难的时候", 6),
-    ([10, 11], "第二问 · 日子难的时候", 7),
-    ([12, 13], "第三问 · 打工人", 8),
-    ([14, 15], "为什么看远更稳", 9),
-    ([16, 17], "说回我们自己", 10),
-    ([18], "说回我们自己", 11),
-    ([19], "说回我们自己", 12),
+    ([2, 3], "身边的例子", 2),
+    ([4], "身边的例子", 3),
+    ([5], "身边的例子", 4),
+    ([6, 7], "丰田模式 · 书中做法", 5),
+    ([8], "三个问题", 6),
+    ([9, 10], "第一问 · 不赚钱的事", 7),
+    ([11], "第一问 · 不赚钱的事", 8),
+    ([12, 13], "第二问 · 日子难的时候", 9),
+    ([14, 15], "第二问 · 日子难的时候", 10),
+    ([16, 17], "第三问 · 打工人", 11),
+    ([18, 19], "为什么看远更稳", 12),
     ([20, 21], "说回我们自己", 13),
     ([22], "做法一 · 示意", 14),
     ([23], "做法二 · 示意", 15),
@@ -295,20 +295,215 @@ ev(j, k1_todo, todo1, "pop", 0.8)
 ev(j, k1_lab, L.slam_text("一直没完", cx - 200, cy - 400, 110, RED, j, k1_lab, rot=-4), "kick", 0.85)
 b.shots[j].shake = [(k1_lab, 7.0)]
 
-# ================================================================ 屏 2（drop）：“最后一讲”；书翻到“第一条原则”；天平 drop 拍往“看长远”一边沉
+# ================================================================ 屏 2：小李糊弄老客户，客户转身离开；日历翻到下个季度，那把椅子空着
 cx, cy = R[2]
 j = L.scene(2, (cx, cy + 10, Z))
-KD = L.drop_k()
+KD = L.drop_k()                       # drop 屏：“他就不来了”说完正好 drop，老客户走掉、椅子空着、震屏、闪白
 b.shots[j].shake, b.shots[j].flashes = [(KD, 14.0)], [(KD, 0.4)]
+k10_two, k10_fake, k10_cal = seq(j, [(2, 0, 0.5), (3, 1, 0.5), (3, 2, 0.5)])
+k10_cal = min(k10_cal, KD - 1)
+k10_empty = KD
+L.note("这个月的数字", "下个季度")
+
+
+def two10(c, kk, T, cx=cx, cy=cy):
+    dt = T - tb(2, k10_two)
+    if dt < 0:
+        return None
+    gy = cy + 540
+    empty = T >= tb(2, k10_empty)
+    desk(c, cx, gy - 200, 420)
+    chair(c, cx + 260, gy)
+    hy = gy - 290 * 0.8
+    draw_li(c, cx - 300, gy, 0.8, "smile", rh=(cx - 200, hy + 40))
+    if not empty:
+        fake = T >= tb(2, k10_fake)
+        draw_client(c, cx + 260, gy - 105, 0.75, mood="sad" if fake else "flat")
+    return None
+
+
+ev(j, k10_two, two10, "wood_low", 0.75)
+
+
+def fake10(c, kk, T, cx=cx, cy=cy):
+    dt = T - tb(2, k10_fake)
+    if dt < 0:
+        return None
+    with K.at(c, cx - 200, cy - 120, 0, pop_scale(dt)):
+        box(c, 0, 0, 380, 200, "#FFFFFF", BLACK, 6, 12)
+        label(c, "这个月的数字", 0, -50, 46, RED)
+        c.drawPath(P((-140, 60), (-60, 20), (20, 50), (130, -20)), wb.marker(GREEN, 8))
+    return None
+
+
+ev(j, k10_fake, fake10, "rim", 0.8)
+
+
+def cal10(c, kk, T, cx=cx, cy=cy):
+    dt = T - tb(2, k10_cal)
+    if dt < 0:
+        return None
+    with K.at(c, cx + 300, cy - 360, 0, pop_scale(dt)):
+        calendar_page(c, 0, 0, 300, 200, "下个季度", size=50)
+    return None
+
+
+ev(j, k10_cal, cal10, "wood_high", 0.8)
+
+
+def empty10(c, kk, T, cx=cx, cy=cy):
+    dt = T - tb(2, k10_empty)
+    if dt < 0:
+        return None
+    gy = cy + 540
+    x, dy, _ = C.walk(T, tb(2, k10_empty), 1.2, cx + 300, cx + 480, 10, 3)
+    draw_client(c, x, gy + dy, 0.6, back=True, alpha=1 - 0.6 * clamp01(dt / 1.2))
+    label(c, "？", cx + 260, gy - 280, 80, GRAY, "black")
+    return None
+
+
+ev(j, k10_empty, empty10, "kick", 0.95)
+
+# ================================================================ 屏 3：深夜加班的小李趴下；一扇写着“机会”的门开着，他够不着
+cx, cy = R[3]
+j = L.scene(3, (cx, cy + 10, Z))
+k11_desk, k11_down, k11_door, k11_reach = seq(j, [None, (4, 1, 0.5), (4, 2, 0.5), (4, 3, 0.5)])
+L.note("机会", "半夜")
+
+
+def desk11(c, T, cx=cx, cy=cy):
+    gy = cy + 540
+    c.drawCircle(cx - 420, cy - 420, 60, K.paint(YELLOW))
+    c.drawCircle(cx - 396, cy - 440, 54, K.paint(THEME["paper"]))
+    label(c, "半夜", cx - 260, cy - 430, 50, GRAY)
+    desk(c, cx - 200, gy - 200, 520)
+    laptop(c, cx - 200, gy - 210, 1.1)
+    down = T >= tb(3, k11_down)
+    if down:
+        draw_li(c, cx - 420, gy, 0.8, "sad", squash=0.82, lh=(cx - 330, gy - 215), rh=(cx - 300, gy - 215))
+        sweat(c, cx - 360, gy - 330, 1.2)
+    else:
+        hy = gy - 290 * 0.8
+        draw_li(c, cx - 420, gy, 0.8, "sad", rh=(cx - 260, gy - 240), lh=(cx - 280, gy - 230))
+    return None
+
+
+pop(j, k11_desk, cx - 200, cy + 300, desk11, "wood_low", 0.75)
+b.hit(j, k11_down, "tom", 0.8, "小李趴下")
+
+
+def door11(c, kk, T, cx=cx, cy=cy):
+    dt = T - tb(3, k11_door)
+    if dt < 0:
+        return None
+    gy = cy + 540
+    x = cx + 350
+    with K.at(c, x, gy - 250, 0, pop_scale(dt)):
+        c.translate(-x, -(gy - 250))
+        c.drawRect(skia.Rect.MakeXYWH(x - 120, gy - 520, 240, 520), K.paint(YELLOW, 0.6))
+        c.drawRect(skia.Rect.MakeXYWH(x - 120, gy - 520, 240, 520), wb.marker(BLACK, 7))
+        c.drawPath(P((x - 120, gy - 520), (x - 210, gy - 480), (x - 210, gy + 30), (x - 120, gy)), K.paint(WOOD))
+        c.drawPath(P((x - 120, gy - 520), (x - 210, gy - 480), (x - 210, gy + 30), (x - 120, gy)), wb.marker(WOOD_LINE, 7))
+        label(c, "机会", x, gy - 600, 70, ORANGE)
+    return None
+
+
+ev(j, k11_door, door11, "ding", 0.8)
+
+
+def reach11(c, kk, T, cx=cx, cy=cy):
+    dt = T - tb(3, k11_reach)
+    if dt < 0:
+        return None
+    gy = cy + 540
+    f = ease_out(clamp01(dt / 0.4))
+    C.line(c, (cx - 120, gy - 220), (cx - 120 + 140 * f, gy - 260), BLACK, 10)
+    dashed(c, (cx + 40, gy - 260), (cx + 150, gy - 260), GRAY, 5, clamp01(dt / 0.3))
+    xmark(c, cx + 90, gy - 330, 40, clamp01((dt - 0.2) / 0.3))
+    return None
+
+
+ev(j, k11_reach, reach11, "rim", 0.8)
+
+# ================================================================ 屏 4：手机屏幕换成一本书和一把工具；三年后的小李站在旁边，像换了个人
+cx, cy = R[4]
+j = L.scene(4, (cx, cy + 10, Z))
+k12_ph, k12_swap, k12_yr, k12_new = seq(j, [None, (5, 1, 0.5), (5, 2, 0.5), (5, 3, 0.5)])
+L.note("一小时", "手艺", "三年后")
+
+
+def ph12(c, T, cx=cx, cy=cy):
+    x, y = cx - 250, cy - 120
+    swap = T >= tb(4, k12_swap)
+    phone(c, x, y, 300, 520)
+    if not swap:
+        for i in range(4):
+            yy = y - 160 + ((T * 160 + i * 90) % 360)
+            box(c, x, yy, 200, 70, BLUE_FILL, GRAY, 3, 8)
+        label(c, "一小时", x, y + 330, 50, GRAY)
+    else:
+        f = pop_scale(T - tb(4, k12_swap))
+        with K.at(c, x, y, 0, f):
+            box(c, -40, -60, 130, 170, ORANGE_FILL, ORANGE, 6, 6)
+            C.line(c, (-40, -140), (-40, 20), ORANGE, 4)
+            with K.at(c, 50, 90, -30):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-12, -10, 24, 150), 8, 8, K.paint(WOOD))
+                box(c, 0, -20, 110, 46, "#9AA0A8", BLACK, 5, 6)
+        label(c, "手艺", x, y + 330, 54, ORANGE)
+    hy = cy + 560 - 290 * 0.75
+    draw_li(c, cx - 470, cy + 560, 0.75, "flat", rh=(cx - 380, hy + 30))
+
+
+pop(j, k12_ph, cx - 300, cy + 100, ph12, "wood_low", 0.75)
+b.hit(j, k12_swap, "pop", 0.85, "手机换成书和工具")
+
+
+def yr12(c, kk, T, cx=cx, cy=cy):
+    dt = T - tb(4, k12_yr)
+    if dt < 0:
+        return None
+    with K.at(c, cx + 300, cy - 400, 0, pop_scale(dt)):
+        calendar_page(c, 0, 0, 280, 190, "三年后", size=52)
+    c.drawPath(wb.arrow((cx - 60, cy + 120), (cx + 160, cy + 120), 0.0, 40), wb.marker(GREEN, 9))
+    return None
+
+
+ev(j, k12_yr, yr12, "wood_high", 0.8)
+
+
+def new12(c, kk, T, cx=cx, cy=cy):
+    dt = T - tb(4, k12_new)
+    if dt < 0:
+        return None
+    gy = cy + 560
+    x = cx + 340
+    with K.at(c, x, gy, 0, pop_scale(dt)):
+        c.translate(-x, -gy)
+        hy = gy - 290 * 1.0
+        draw_li(c, x, gy, 1.0, "smile", rh=(x + 100, hy + 40))
+        with K.at(c, x + 110, hy + 20, -30):
+            c.drawRoundRect(skia.Rect.MakeXYWH(-12, -10, 24, 150), 8, 8, K.paint(WOOD))
+            box(c, 0, -20, 110, 46, "#9AA0A8", BLACK, 5, 6)
+    sparkle(c, x, gy - 300, dt, YELLOW, 10, 90, 220)
+    return None
+
+
+ev(j, k12_new, new12, "ding", 0.9)
+
+# ================================================================ 屏 5：“最后一讲”；书翻到“第一条原则”；天平往“看长远”一边沉
+cx, cy = R[5]
+j = L.scene(5, (cx, cy + 10, Z))
 k2_last = 0
-k2_book = min(max(kq(j, wt(2, 1, 0.4), 1), 1), KD - 2)
-k2_scale = min(max(kq(j, wt(3, 0, 0.4), k2_book + 1), k2_book + 1), KD - 1)
+k2_book = max(kq(j, wt(6, 1, 0.4), 1), 1)
+k2_scale = nx(j, wt(7, 0, 0.4), k2_book)
+KD5 = nx(j, wt(7, 1, 0.8), k2_scale)     # “哪怕眼前吃点亏”说完：天平往“看长远”一边沉
+b.shots[j].shake, b.shots[j].flashes = [(KD5, 12.0)], [(KD5, 0.3)]
 L.note("最后一讲", "第一条原则", "眼前吃点亏", "看长远")
 ev(j, k2_last, L.stamp("最后一讲", cx - 300, cy - 480, 64, j, k2_last, color=RED, rot=-6), "clap", 0.85)
 
 
 def book2(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(2, k2_book)
+    dt = T - tb(5, k2_book)
     if dt < 0:
         return None
     x, y = cx + 180, cy - 330
@@ -334,12 +529,12 @@ ev(j, k2_book, book2, "wood_high", 0.8)
 
 
 def scale2(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(2, k2_scale)
+    dt = T - tb(5, k2_scale)
     if dt < 0:
         return None
     tilt = 0.0
-    if T >= tb(2, KD):
-        d = T - tb(2, KD)
+    if T >= tb(5, KD5):
+        d = T - tb(5, KD5)
         tilt = 16 * ease_out(clamp01(d / 0.3)) + wobble(d, 3, 18, 5)
     x, y = cx, cy + 120
     with K.at(c, x, y + 200, 0, pop_scale(dt)):
@@ -363,23 +558,23 @@ def scale2(c, kk, T, cx=cx, cy=cy):
 
 
 ev(j, k2_scale, scale2, "wood_low", 0.8)
-b.hit(j, KD, "kick", 0.9, "天平往看长远一边沉")
+b.hit(j, KD5, "kick", 0.9, "天平往看长远一边沉")
 
-# ================================================================ 屏 3：三张问号卡排成一排，第一张翻开
-cx, cy = R[3]
-j = L.scene(3, (cx, cy + 10, Z))
-k3_c1, k3_c2, k3_c3, k3_flip = seq(j, [(4, 0, 0.3), (4, 0, 0.6), (4, 0, 0.9), (4, 1, 0.5)])
+# ================================================================ 屏 6：三张问号卡排成一排，第一张翻开
+cx, cy = R[6]
+j = L.scene(6, (cx, cy + 10, Z))
+k3_c1, k3_c2, k3_c3, k3_flip = seq(j, [(8, 0, 0.3), (8, 0, 0.6), (8, 0, 0.9), (8, 1, 0.5)])
 L.note("一问一答", "第一问")
 CARD_X = [cx - 360, cx, cx + 360]
 for n, k_ in enumerate((k3_c1, k3_c2, k3_c3)):
     def qcard3(c, kk, T, n=n, k_=k_, cx=cx, cy=cy):
-        dt = T - tb(3, k_)
+        dt = T - tb(6, k_)
         if dt < 0:
             return None
         x, y = CARD_X[n], cy - 120
         flip = 0.0
-        if n == 0 and T >= tb(3, k3_flip):
-            flip = clamp01((T - tb(3, k3_flip)) / 0.35)
+        if n == 0 and T >= tb(6, k3_flip):
+            flip = clamp01((T - tb(6, k3_flip)) / 0.35)
         sx = abs(math.cos(math.pi * flip))
         with K.at(c, x, y, wobble(dt, 5, 14, 5), pop_scale(dt)):
             c.scale(max(0.02, sx), 1)
@@ -395,7 +590,7 @@ b.hit(j, k3_flip, "clap", 0.85, "第一张翻开")
 
 
 def li3(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(3, k3_c1)
+    dt = T - tb(6, k3_c1)
     if dt < 0:
         return None
     gy = cy + 560
@@ -407,17 +602,17 @@ def li3(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k3_c1, li3)
 
-# ================================================================ 屏 4：第一问——九十年代日历；油电混合的车，旁边“卖得好吗？”
-cx, cy = R[4]
-j = L.scene(4, (cx, cy + 10, Z))
-k4_q, k4_cal, k4_car, k4_ask = seq(j, [(5, 0, 0.5), (6, 0, 0.5), (6, 1, 0.5), (6, 2, 0.6)])
+# ================================================================ 屏 7：第一问——九十年代日历；油电混合的车，旁边“卖得好吗？”
+cx, cy = R[7]
+j = L.scene(7, (cx, cy + 10, Z))
+k4_q, k4_cal, k4_car, k4_ask = seq(j, [(9, 0, 0.5), (10, 0, 0.5), (10, 1, 0.5), (10, 2, 0.6)])
 L.note("不赚钱的事？", "九十年代", "油", "电", "卖得好吗？")
-ev(j, 0, qp_fn(4, 1, None))
+ev(j, 0, qp_fn(j, 1, None))
 ev(j, k4_q, L.pop_text("不赚钱的事？", cx - 150, cy - 480, 70, RED, j, k4_q), "rim", 0.8)
 
 
 def cal4(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(4, k4_cal)
+    dt = T - tb(7, k4_cal)
     if dt < 0:
         return None
     with K.at(c, cx - 330, cy - 220, 0, pop_scale(dt)):
@@ -429,7 +624,7 @@ ev(j, k4_cal, cal4, "wood_high", 0.8)
 
 
 def car4(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(4, k4_car)
+    dt = T - tb(7, k4_car)
     if dt < 0:
         return None
     gy = cy + 420
@@ -451,7 +646,7 @@ ev(j, k4_car, car4, "wood_low", 0.8)
 
 
 def ask4(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(4, k4_ask)
+    dt = T - tb(7, k4_ask)
     if dt < 0:
         return None
     with K.at(c, cx + 300, cy - 230, wobble(dt, 5, 14, 4), pop_scale(dt)):
@@ -461,12 +656,12 @@ def ask4(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k4_ask, ask4, "bongo_low", 0.85)
 
-# ================================================================ 屏 5：年份一格格往后走，车身亮起一块招牌
-cx, cy = R[5]
-j = L.scene(5, (cx, cy + 10, Z))
-k5_car, k5_y1, k5_y2, k5_sign = seq(j, [None, (7, 0, 0.4), (7, 0, 0.9), (7, 1, 0.6)])
+# ================================================================ 屏 8：年份一格格往后走，车身亮起一块招牌
+cx, cy = R[8]
+j = L.scene(8, (cx, cy + 10, Z))
+k5_car, k5_y1, k5_y2, k5_sign = seq(j, [None, (11, 0, 0.4), (11, 0, 0.9), (11, 1, 0.6)])
 L.note("一年年", "招牌")
-ev(j, 0, qp_fn(5, 1, None))
+ev(j, 0, qp_fn(j, 1, None))
 
 
 def car5(c, T, cx=cx, cy=cy):
@@ -481,14 +676,14 @@ pop(j, k5_car, cx, cy + 300, car5, "wood_low", 0.75)
 
 
 def years5(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(5, k5_y1)
+    dt = T - tb(8, k5_y1)
     if dt < 0:
         return None
     y = cy - 300
-    n = 3 + (4 if T >= tb(5, k5_y2) else 0)
+    n = 3 + (4 if T >= tb(8, k5_y2) else 0)
     C.line(c, (cx - 500, y), (cx - 500 + 1000 * min(1, n / 9), y), BLUE, 9)
     for i in range(n):
-        d = T - tb(5, k5_y1 if i < 3 else k5_y2) - 0.06 * (i % 4)
+        d = T - tb(8, k5_y1 if i < 3 else k5_y2) - 0.06 * (i % 4)
         if d < 0:
             continue
         x = cx - 460 + i * 130
@@ -503,7 +698,7 @@ b.hit(j, k5_y2, "wood_high", 0.8, "又走了几年")
 
 
 def sign5(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(5, k5_sign)
+    dt = T - tb(8, k5_sign)
     if dt < 0:
         return None
     gy = cy + 440
@@ -516,17 +711,17 @@ def sign5(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k5_sign, sign5, "ding", 0.9)
 
-# ================================================================ 屏 6：第二问——一九五零年，工厂门口一排人离开，天上乌云
-cx, cy = R[6]
-j = L.scene(6, (cx, cy + 10, Z))
-k6_flip, k6_cal, k6_fac, k6_leave = seq(j, [(8, 0, 0.5), (9, 0, 0.5), (9, 1, 0.5), (9, 2, 0.5)])
+# ================================================================ 屏 9：第二问——一九五零年，工厂门口一排人离开，天上乌云
+cx, cy = R[9]
+j = L.scene(9, (cx, cy + 10, Z))
+k6_flip, k6_cal, k6_fac, k6_leave = seq(j, [(12, 0, 0.5), (13, 0, 0.5), (13, 1, 0.5), (13, 2, 0.5)])
 L.note("先保什么？", "一九五零年")
-ev(j, k6_flip, qp_fn(6, 2, k6_flip), "clap", 0.8)
+ev(j, k6_flip, qp_fn(j, 2, k6_flip), "clap", 0.8)
 ev(j, k6_flip, L.pop_text("先保什么？", cx - 220, cy - 480, 70, RED, j, k6_flip))
 
 
 def cal6(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(6, k6_cal)
+    dt = T - tb(9, k6_cal)
     if dt < 0:
         return None
     with K.at(c, cx - 360, cy - 250, 0, pop_scale(dt)):
@@ -538,7 +733,7 @@ ev(j, k6_cal, cal6, "wood_high", 0.8)
 
 
 def fac6(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(6, k6_fac)
+    dt = T - tb(9, k6_fac)
     if dt < 0:
         return None
     gy = cy + 470
@@ -559,12 +754,12 @@ ev(j, k6_fac, fac6, "tom", 0.8)
 
 
 def leave6(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(6, k6_leave)
+    dt = T - tb(9, k6_leave)
     if dt < 0:
         return None
     gy = cy + 470
     for n in range(3):
-        x, dy, _ = C.walk(T, tb(6, k6_leave) + 0.2 * n, 2.0, cx + 120 - n * 10, cx - 200 - n * 160, 10, 2)
+        x, dy, _ = C.walk(T, tb(9, k6_leave) + 0.2 * n, 2.0, cx + 120 - n * 10, cx - 200 - n * 160, 10, 2)
         with K.at(c, x, gy + dy, 0, pop_scale(dt - 0.2 * n)):
             draw_worker(c, 0, 0, 0.6, mood="sad")
     return None
@@ -572,18 +767,18 @@ def leave6(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k6_leave, leave6, "bongo_low", 0.8)
 
-# ================================================================ 屏 7：社长鞠躬，放下“社长”帽子；之后员工手拉手站成一排
-cx, cy = R[7]
-j = L.scene(7, (cx, cy + 10, Z))
-k7_boss, k7_bow, k7_hat, k7_row = seq(j, [None, (10, 1, 0.3), (10, 1, 0.8), (11, 1, 0.5)])
+# ================================================================ 屏 10：社长鞠躬，放下“社长”帽子；之后员工手拉手站成一排
+cx, cy = R[10]
+j = L.scene(10, (cx, cy + 10, Z))
+k7_boss, k7_bow, k7_hat, k7_row = seq(j, [None, (14, 1, 0.3), (14, 1, 0.8), (15, 1, 0.5)])
 L.note("社长", "留住员工")
-ev(j, 0, qp_fn(7, 2, None))
+ev(j, 0, qp_fn(j, 2, None))
 
 
 def boss7(c, T, cx=cx, cy=cy):
     gy = cy + 120
-    bow = ease_out(clamp01((T - tb(7, k7_bow)) / 0.5)) if T >= tb(7, k7_bow) else 0.0
-    hat_off = T >= tb(7, k7_hat)
+    bow = ease_out(clamp01((T - tb(10, k7_bow)) / 0.5)) if T >= tb(10, k7_bow) else 0.0
+    hat_off = T >= tb(10, k7_hat)
     C.line(c, (cx - 540, gy), (cx + 200, gy), GRAY, 6)
     hy = gy - 290 * 0.85
     draw_boss(c, cx - 250, gy, 0.85, mood="sad" if bow > 0 else "flat", head_dy=36 * bow,
@@ -592,7 +787,7 @@ def boss7(c, T, cx=cx, cy=cy):
         box(c, cx - 250, hy - 70 + 36 * bow, 170, 76, "#2B2B30", BLACK, 5, 6)
         label(c, "社长", cx - 250, hy - 70 + 36 * bow, 44, "#FFFFFF")
     if hat_off:
-        f = ease_out(clamp01((T - tb(7, k7_hat)) / 0.5))
+        f = ease_out(clamp01((T - tb(10, k7_hat)) / 0.5))
         x, y = lerp(cx - 250, cx + 30, f), lerp(hy - 34, gy - 160, f)
         desk(c, cx + 30, gy - 110, 260)
         box(c, x, y, 170, 76, "#2B2B30", BLACK, 5, 6)
@@ -605,7 +800,7 @@ b.hit(j, k7_hat, "wood_high", 0.8, "放下社长帽子")
 
 
 def row7(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(7, k7_row)
+    dt = T - tb(10, k7_row)
     if dt < 0:
         return None
     gy = cy + 560
@@ -629,25 +824,25 @@ def row7(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k7_row, row7, "clap", 0.85)
 
-# ================================================================ 屏 8：第三问——小李停下脚步，抬头看远处的路标
-cx, cy = R[8]
-j = L.scene(8, (cx, cy + 10, Z))
-k8_flip, k8_stop, k8_sign, k8_ok = seq(j, [(12, 0, 0.5), (12, 1, 0.5), (13, 1, 0.5), (13, 2, 0.6)])
+# ================================================================ 屏 11：第三问——小李停下脚步，抬头看远处的路标
+cx, cy = R[11]
+j = L.scene(11, (cx, cy + 10, Z))
+k8_flip, k8_stop, k8_sign, k8_ok = seq(j, [(16, 0, 0.5), (16, 1, 0.5), (17, 1, 0.5), (17, 2, 0.6)])
 L.note("也要想吗？", "以后", "更稳")
-ev(j, k8_flip, qp_fn(8, 3, k8_flip), "clap", 0.8)
+ev(j, k8_flip, qp_fn(j, 3, k8_flip), "clap", 0.8)
 ev(j, k8_flip, L.pop_text("也要想吗？", cx - 220, cy - 480, 70, RED, j, k8_flip))
 
 
 def stop8(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(8, k8_stop)
+    dt = T - tb(11, k8_stop)
     if dt < 0:
         return None
     gy = cy + 520
     C.line(c, (cx - 560, gy), (cx + 560, gy), GRAY, 6)
     p = P((cx - 300, gy), (cx - 40, gy - 220), (cx + 200, gy - 330), (cx + 380, gy - 380))
     c.drawPath(p, wb.marker(GRAY, 6))
-    x, dy, mv = C.walk(T, tb(8, k8_stop), 0.5, cx - 520, cx - 380, 14, 4)
-    look = T >= tb(8, k8_sign)
+    x, dy, mv = C.walk(T, tb(11, k8_stop), 0.5, cx - 520, cx - 380, 14, 4)
+    look = T >= tb(11, k8_sign)
     hy = gy - 290 * 0.85
     draw_li(c, x, gy + dy, 0.85, "smile" if look else "o", rh=(x + 40, hy - 10) if look else None)
     if look:
@@ -659,7 +854,7 @@ ev(j, k8_stop, stop8, "wood_low", 0.8)
 
 
 def sign8(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(8, k8_sign)
+    dt = T - tb(11, k8_sign)
     if dt < 0:
         return None
     with K.at(c, cx + 330, cy + 140, 0, pop_scale(dt)):
@@ -672,7 +867,7 @@ ev(j, k8_sign, sign8, "ding", 0.85)
 
 
 def ok8(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(8, k8_ok)
+    dt = T - tb(11, k8_ok)
     if dt < 0:
         return None
     with K.at(c, cx - 60, cy - 260, -4, C.slam_scale(dt)):
@@ -682,15 +877,15 @@ def ok8(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k8_ok, ok8, "kick", 0.85)
 
-# ================================================================ 屏 9：心里亮起指南针；一堆事分成“拼”“放”；对照：没有指南针，每件事都闪红
-cx, cy = R[9]
-j = L.scene(9, (cx, cy + 10, Z))
-k9_comp, k9_pile, k9_split, k9_bad = seq(j, [(14, 0, 0.5), (14, 1, 0.3), (14, 2, 0.3), (15, 1, 0.4)])
+# ================================================================ 屏 12：心里亮起指南针；一堆事分成“拼”“放”；对照：没有指南针，每件事都闪红
+cx, cy = R[12]
+j = L.scene(12, (cx, cy + 10, Z))
+k9_comp, k9_pile, k9_split, k9_bad = seq(j, [(18, 0, 0.5), (18, 1, 0.3), (18, 2, 0.3), (19, 1, 0.4)])
 L.note("拼", "放", "方向", "急")
 
 
 def comp9(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(9, k9_comp)
+    dt = T - tb(12, k9_comp)
     if dt < 0:
         return None
     gy = cy + 40
@@ -709,10 +904,10 @@ TASKS9 = [(cx - 80 + (i % 3) * 120, cy - 200 + (i // 3) * 100) for i in range(6)
 
 
 def pile9(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(9, k9_pile)
+    dt = T - tb(12, k9_pile)
     if dt < 0:
         return None
-    f = ease_in_out(clamp01((T - tb(9, k9_split)) / 0.6)) if T >= tb(9, k9_split) else 0.0
+    f = ease_in_out(clamp01((T - tb(12, k9_split)) / 0.6)) if T >= tb(12, k9_split) else 0.0
     for i, (x, y) in enumerate(TASKS9):
         tgt = (cx + 130 + (i % 2) * 110, cy - 280 + (i // 2) * 90) if i % 2 == 0 else \
               (cx + 380 + (i % 2) * 0, cy - 280 + (i // 2) * 90)
@@ -735,7 +930,7 @@ b.hit(j, k9_split, "shaker", 0.8, "分成拼和放")
 
 
 def bad9(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(9, k9_bad)
+    dt = T - tb(12, k9_bad)
     if dt < 0:
         return None
     dashed(c, (cx - 540, cy + 120), (cx + 540, cy + 120), GRAY, 4)
@@ -745,204 +940,13 @@ def bad9(c, kk, T, cx=cx, cy=cy):
         draw_li(c, cx - 400, gy, 0.7, "o")
         for i in range(6):
             x, y = cx - 160 + (i % 3) * 200, cy + 260 + (i // 3) * 120
-            on = int((T - tb(9, k9_bad)) * 6 + i) % 2 == 0
+            on = int((T - tb(12, k9_bad)) * 6 + i) % 2 == 0
             box(c, x, y, 170, 80, RED_FILL if on else "#FFFFFF", RED, 5, 8)
             label(c, "急", x, y + 2, 46, RED)
     return None
 
 
 ev(j, k9_bad, bad9, "bongo_high", 0.85)
-
-# ================================================================ 屏 10：小李糊弄老客户，客户转身离开；日历翻到下个季度，那把椅子空着
-cx, cy = R[10]
-j = L.scene(10, (cx, cy + 10, Z))
-k10_two, k10_fake, k10_cal, k10_empty = seq(j, [(16, 1, 0.5), (17, 1, 0.5), (17, 2, 0.5), (17, 3, 0.5)])
-L.note("这个月的数字", "下个季度")
-
-
-def two10(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(10, k10_two)
-    if dt < 0:
-        return None
-    gy = cy + 540
-    empty = T >= tb(10, k10_empty)
-    desk(c, cx, gy - 200, 420)
-    chair(c, cx + 260, gy)
-    hy = gy - 290 * 0.8
-    draw_li(c, cx - 300, gy, 0.8, "smile", rh=(cx - 200, hy + 40))
-    if not empty:
-        fake = T >= tb(10, k10_fake)
-        draw_client(c, cx + 260, gy - 105, 0.75, mood="sad" if fake else "flat")
-    return None
-
-
-ev(j, k10_two, two10, "wood_low", 0.75)
-
-
-def fake10(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(10, k10_fake)
-    if dt < 0:
-        return None
-    with K.at(c, cx - 200, cy - 120, 0, pop_scale(dt)):
-        box(c, 0, 0, 380, 200, "#FFFFFF", BLACK, 6, 12)
-        label(c, "这个月的数字", 0, -50, 46, RED)
-        c.drawPath(P((-140, 60), (-60, 20), (20, 50), (130, -20)), wb.marker(GREEN, 8))
-    return None
-
-
-ev(j, k10_fake, fake10, "rim", 0.8)
-
-
-def cal10(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(10, k10_cal)
-    if dt < 0:
-        return None
-    with K.at(c, cx + 300, cy - 360, 0, pop_scale(dt)):
-        calendar_page(c, 0, 0, 300, 200, "下个季度", size=50)
-    return None
-
-
-ev(j, k10_cal, cal10, "wood_high", 0.8)
-
-
-def empty10(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(10, k10_empty)
-    if dt < 0:
-        return None
-    gy = cy + 540
-    x, dy, _ = C.walk(T, tb(10, k10_empty), 1.2, cx + 300, cx + 480, 10, 3)
-    draw_client(c, x, gy + dy, 0.6, back=True, alpha=1 - 0.6 * clamp01(dt / 1.2))
-    label(c, "？", cx + 260, gy - 280, 80, GRAY, "black")
-    return None
-
-
-ev(j, k10_empty, empty10, "tom", 0.85)
-
-# ================================================================ 屏 11：深夜加班的小李趴下；一扇写着“机会”的门开着，他够不着
-cx, cy = R[11]
-j = L.scene(11, (cx, cy + 10, Z))
-k11_desk, k11_down, k11_door, k11_reach = seq(j, [None, (18, 1, 0.5), (18, 2, 0.5), (18, 3, 0.5)])
-L.note("机会", "半夜")
-
-
-def desk11(c, T, cx=cx, cy=cy):
-    gy = cy + 540
-    c.drawCircle(cx - 420, cy - 420, 60, K.paint(YELLOW))
-    c.drawCircle(cx - 396, cy - 440, 54, K.paint(THEME["paper"]))
-    label(c, "半夜", cx - 260, cy - 430, 50, GRAY)
-    desk(c, cx - 200, gy - 200, 520)
-    laptop(c, cx - 200, gy - 210, 1.1)
-    down = T >= tb(11, k11_down)
-    if down:
-        draw_li(c, cx - 420, gy, 0.8, "sad", squash=0.82, lh=(cx - 330, gy - 215), rh=(cx - 300, gy - 215))
-        sweat(c, cx - 360, gy - 330, 1.2)
-    else:
-        hy = gy - 290 * 0.8
-        draw_li(c, cx - 420, gy, 0.8, "sad", rh=(cx - 260, gy - 240), lh=(cx - 280, gy - 230))
-    return None
-
-
-pop(j, k11_desk, cx - 200, cy + 300, desk11, "wood_low", 0.75)
-b.hit(j, k11_down, "tom", 0.8, "小李趴下")
-
-
-def door11(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(11, k11_door)
-    if dt < 0:
-        return None
-    gy = cy + 540
-    x = cx + 350
-    with K.at(c, x, gy - 250, 0, pop_scale(dt)):
-        c.translate(-x, -(gy - 250))
-        c.drawRect(skia.Rect.MakeXYWH(x - 120, gy - 520, 240, 520), K.paint(YELLOW, 0.6))
-        c.drawRect(skia.Rect.MakeXYWH(x - 120, gy - 520, 240, 520), wb.marker(BLACK, 7))
-        c.drawPath(P((x - 120, gy - 520), (x - 210, gy - 480), (x - 210, gy + 30), (x - 120, gy)), K.paint(WOOD))
-        c.drawPath(P((x - 120, gy - 520), (x - 210, gy - 480), (x - 210, gy + 30), (x - 120, gy)), wb.marker(WOOD_LINE, 7))
-        label(c, "机会", x, gy - 600, 70, ORANGE)
-    return None
-
-
-ev(j, k11_door, door11, "ding", 0.8)
-
-
-def reach11(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(11, k11_reach)
-    if dt < 0:
-        return None
-    gy = cy + 540
-    f = ease_out(clamp01(dt / 0.4))
-    C.line(c, (cx - 120, gy - 220), (cx - 120 + 140 * f, gy - 260), BLACK, 10)
-    dashed(c, (cx + 40, gy - 260), (cx + 150, gy - 260), GRAY, 5, clamp01(dt / 0.3))
-    xmark(c, cx + 90, gy - 330, 40, clamp01((dt - 0.2) / 0.3))
-    return None
-
-
-ev(j, k11_reach, reach11, "rim", 0.8)
-
-# ================================================================ 屏 12：手机屏幕换成一本书和一把工具；三年后的小李站在旁边，像换了个人
-cx, cy = R[12]
-j = L.scene(12, (cx, cy + 10, Z))
-k12_ph, k12_swap, k12_yr, k12_new = seq(j, [None, (19, 1, 0.5), (19, 2, 0.5), (19, 3, 0.5)])
-L.note("一小时", "手艺", "三年后")
-
-
-def ph12(c, T, cx=cx, cy=cy):
-    x, y = cx - 250, cy - 120
-    swap = T >= tb(12, k12_swap)
-    phone(c, x, y, 300, 520)
-    if not swap:
-        for i in range(4):
-            yy = y - 160 + ((T * 160 + i * 90) % 360)
-            box(c, x, yy, 200, 70, BLUE_FILL, GRAY, 3, 8)
-        label(c, "一小时", x, y + 330, 50, GRAY)
-    else:
-        f = pop_scale(T - tb(12, k12_swap))
-        with K.at(c, x, y, 0, f):
-            box(c, -40, -60, 130, 170, ORANGE_FILL, ORANGE, 6, 6)
-            C.line(c, (-40, -140), (-40, 20), ORANGE, 4)
-            with K.at(c, 50, 90, -30):
-                c.drawRoundRect(skia.Rect.MakeXYWH(-12, -10, 24, 150), 8, 8, K.paint(WOOD))
-                box(c, 0, -20, 110, 46, "#9AA0A8", BLACK, 5, 6)
-        label(c, "手艺", x, y + 330, 54, ORANGE)
-    hy = cy + 560 - 290 * 0.75
-    draw_li(c, cx - 470, cy + 560, 0.75, "flat", rh=(cx - 380, hy + 30))
-
-
-pop(j, k12_ph, cx - 300, cy + 100, ph12, "wood_low", 0.75)
-b.hit(j, k12_swap, "pop", 0.85, "手机换成书和工具")
-
-
-def yr12(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(12, k12_yr)
-    if dt < 0:
-        return None
-    with K.at(c, cx + 300, cy - 400, 0, pop_scale(dt)):
-        calendar_page(c, 0, 0, 280, 190, "三年后", size=52)
-    c.drawPath(wb.arrow((cx - 60, cy + 120), (cx + 160, cy + 120), 0.0, 40), wb.marker(GREEN, 9))
-    return None
-
-
-ev(j, k12_yr, yr12, "wood_high", 0.8)
-
-
-def new12(c, kk, T, cx=cx, cy=cy):
-    dt = T - tb(12, k12_new)
-    if dt < 0:
-        return None
-    gy = cy + 560
-    x = cx + 340
-    with K.at(c, x, gy, 0, pop_scale(dt)):
-        c.translate(-x, -gy)
-        hy = gy - 290 * 1.0
-        draw_li(c, x, gy, 1.0, "smile", rh=(x + 100, hy + 40))
-        with K.at(c, x + 110, hy + 20, -30):
-            c.drawRoundRect(skia.Rect.MakeXYWH(-12, -10, 24, 150), 8, 8, K.paint(WOOD))
-            box(c, 0, -20, 110, 46, "#9AA0A8", BLACK, 5, 6)
-    sparkle(c, x, gy - 300, dt, YELLOW, 10, 90, 220)
-    return None
-
-
-ev(j, k12_new, new12, "ding", 0.9)
 
 # ================================================================ 屏 13：房租单、考核表、家里的电话压在小李肩上；大字“三步”
 cx, cy = R[13]
@@ -1313,5 +1317,5 @@ def glow19(c, kk, T, cx=cx, cy=cy):
 ev(j, k19_glow, glow19, "ding", 0.9)
 
 # ================================================================ 收尾
-L.finish(cover_shot=2, square_shot=19, notes=NOTES)
+L.finish(cover_shot=5, square_shot=19, notes=NOTES)
 L.export(globals())
