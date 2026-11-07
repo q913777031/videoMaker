@@ -685,7 +685,7 @@ def cal12(c, sc, T):
 b.custom(j, k_nx, k_nx + 0.3, pop_fn(j, k_nx, cal12), sfx="shaker", gain=0.6)
 b.custom(j, k_cp2, k_cp2 + 0.3, L.pop_bubble("发货慢！", cx - 190, cy - 250, j, k_cp2, size=60, color=RED, tail=-1),
          sfx="kick", gain=0.95)
-b.custom(j, k_cp2, k_cp2 + 0.3, L.stamp("照样慢", cx + 400, cy + 110, 80, j, k_cp2, rot=6))
+b.custom(j, k_cp2, k_cp2 + 0.3, L.stamp("照样慢", cx + 425, cy + 115, 76, j, k_cp2, rot=6))
 b.shots[j].shake, b.shots[j].flashes = [(k_cp2, 16.0)], [(k_cp2, 0.45)]
 
 # ================================================================ 屏 3：往下挖——订单过三张桌子，每张桌上一个沙漏
