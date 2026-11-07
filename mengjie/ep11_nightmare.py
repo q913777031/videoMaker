@@ -383,7 +383,7 @@ def cloud3(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k_cl3, cloud3, "pop", 0.7)
 b.hit(j, k_boss3, "wood_high", 0.7, "领导出现")
-ev(j, k_yell3, L.slam_text("!!!", cx + 330, cy + 150, 120, RED, j, k_yell3, rot=8), "rim", 0.85)
+ev(j, k_yell3, L.slam_text("!!!", cx + 360, cy - 400, 120, RED, j, k_yell3, rot=8), "rim", 0.85)
 b.shots[j].shake = [(k_yell3, 7.0)]
 
 # ================================================================ 屏 4：弗洛伊德被问：噩梦算什么？他答：化妆没化好
@@ -463,11 +463,11 @@ def mon5(c, kk, T, cx=cx, cy=cy):
         return None
     with at_pop(c, M5[0], M5[1], sc):
         shadow(c, M5[0], M5[1], 1.3, T)
-        K.text(c, "心思", M5[0] - 260, M5[1] - 220, 64, "hand", SHADOW)
+        K.text(c, "心思", M5[0], M5[1] - 300, 64, "hand", SHADOW)
         slip = 0.0
         if T >= tb(5, k_slip5):
             slip = ease_in_out(clamp01((T - tb(5, k_slip5)) / 0.5))
-        mx, my = M5[0] + 260 * slip, M5[1] - 70 + 380 * slip
+        mx, my = M5[0] + 200 * slip, M5[1] - 70 + 400 * slip
         with K.at(c, mx, my, 50 * slip):
             mp = mask_path(0, 0, 120)
             c.drawPath(mp, K.paint(PAPER_W))
@@ -488,7 +488,7 @@ def mon5(c, kk, T, cx=cx, cy=cy):
 
 
 ev(j, k_mon5, mon5, "wood_low", 0.7)
-ev(j, k_crk5, L.pop_text("伪装得不够", M5[0] + 40, cy + 230, 64, ORANGE, j, k_crk5), "pop", 0.7)
+ev(j, k_crk5, L.pop_text("伪装得不够", cx + 120, cy + 440, 64, ORANGE, j, k_crk5), "pop", 0.7)
 b.hit(j, k_slip5, "tom", 0.8, "面具滑下来")
 
 
@@ -544,10 +544,10 @@ def w6(c, kk, T, cx=cx, cy=cy):
         return None
     wake = T >= tb(6, k_wake6)
     arm = "shake" if wake else ("stop" if T >= tb(6, k_stop6) else "hold")
-    x = WX6 - (170 * ease_out(clamp01((T - tb(6, k_wake6)) / 0.3)) if wake else 0)
+    x = WX6 - (100 * ease_out(clamp01((T - tb(6, k_wake6)) / 0.3)) if wake else 0)
     with at_pop(c, x, WY6, sc):
         watchman(c, x, WY6, 0.95, T, arm, "o" if T >= tb(6, k_big6) else "flat")
-    K.text(c, "守夜的人", WX6, cy - 160, 60, "hand", NIGHT, clamp01(sc * 2))
+    K.text(c, "守夜的人", WX6, cy + 60, 60, "hand", NIGHT, clamp01(sc * 2))
     return None
 
 
@@ -562,7 +562,7 @@ def noise6(c, kk, T, cx=cx, cy=cy):
     for i in range(3):
         ph = ((T - t0) * 0.8 + i / 3) % 1
         x = lerp(cx + 540, cx + 320, ph)
-        a = (1 - ph) * (0.4 if big else 1.0)
+        a = 0.0 if big else (1 - ph)
         K.text(c, "咚", x, cy + 30 + i * 90, 54, "hand", GRAY, a)
     if big:
         g = C.slam_scale(T - tb(6, k_big6))
@@ -638,13 +638,13 @@ def crit7(c, kk, T, cx=cx, cy=cy):
     sx, sy = LX7 + 60, GY7 - 290 + 80
     x, y = sx + 40, sy
     with at_pop(c, x, y, sc):
-        hy = y - 290 * 0.35
+        hy = y - 290 * 0.42
         wag = 10 * math.sin(T * 8)
-        draw_li(c, x, y, 0.35, "flat", rh=(x + 50, hy + 10 + wag))
+        draw_li(c, x, y, 0.42, "flat", rh=(x + 50, hy + 10 + wag))
         with K.at(c, x + 60, hy - 5 + wag, -30):
             c.drawRoundRect(skia.Rect.MakeXYWH(-6, -40, 12, 60), 4, 4, K.paint(RED))
-        box(c, x + 120, hy - 90, 200, 80, PAPER_W, RED, 5, 30)
-        K.text(c, "爱挑错", x + 120, hy - 88, 44, "hand", RED)
+        box(c, LX7 - 170, hy - 60, 220, 90, PAPER_W, RED, 5, 30)
+        K.text(c, "爱挑错", LX7 - 170, hy - 58, 50, "hand", RED)
     return None
 
 
@@ -654,7 +654,7 @@ ev(j, k_crit7, crit7, "pop", 0.75)
 def cl7(c, kk, T, cx=cx, cy=cy):
     sc = pop_scale(T - tb(7, k_cl7))
     x, y = cx + 250, cy - 50
-    if not dream_cloud(c, x, y, 520, 460, sc, tail_to=(LX7 + 40, GY7 - 320)):
+    if not dream_cloud(c, x, y, 520, 460, sc, tail_to=(LX7 + 150, GY7 - 300)):
         return None
     with at_pop(c, x, y, sc):
         A.exam_paper(c, x - 80, y - 20, 200, 250, -6, "", None)
@@ -684,11 +684,11 @@ def drill8(c, kk, T, cx=cx, cy=cy):
     sc = pop_scale(T - tb(8, k_drill8))
     if sc <= 0:
         return None
-    x, y = cx, cy - 280
-    if not dream_cloud(c, x, y, 900, 460, sc):
+    x, y = cx, cy - 300
+    if not dream_cloud(c, x, y, 900, 420, sc):
         return None
     with at_pop(c, x, y, sc):
-        K.text(c, "夜里的演习", x - 160, y - 150, 60, "hand", NIGHT)
+        K.text(c, "夜里的演习", x, y - 130, 60, "hand", NIGHT)
         gy = y + 160
         shadow(c, x - 250, gy - 100, 0.55, T)
         draw_li(c, x + 20, gy, 0.5, "flat", lh=(x - 50, gy - 120), rh=(x + 90, gy - 150))
@@ -696,8 +696,8 @@ def drill8(c, kk, T, cx=cx, cy=cy):
         if go:
             f = ease_out(clamp01((T - tb(8, k_pass8)) / 0.4))
             c.drawPath(wb.arrow((x + 100, gy - 80), (x + 100 + 120 * f, gy - 80), 0.0, 24), wb.marker(GREEN, 6))
-            box(c, x + 320, gy - 80, 200, 80, PAPER_W, ORANGE, 5, 12)
-            K.text(c, "白天怕的事", x + 320, gy - 78, 36, "hand", ORANGE)
+            box(c, x + 320, gy - 80, 250, 90, PAPER_W, ORANGE, 5, 12)
+            K.text(c, "白天怕的事", x + 320, gy - 78, 44, "hand", ORANGE)
     return None
 
 
@@ -744,7 +744,7 @@ def doc8(c, kk, T, cx=cx, cy=cy):
 
 
 ev(j, k_doc8, doc8, "ding", 0.8)
-ev(j, k_doc8, L.pop_bubble("找医生聊聊", cx + 250, cy - 20, j, k_doc8, 54, BLUE, tail=1), None)
+ev(j, k_doc8, L.pop_bubble("找医生聊聊", cx + 160, cy + 60, j, k_doc8, 54, BLUE, tail=1), None)
 
 # ================================================================ 屏 9：说回我们自己——偶尔做噩梦，吓醒以后；“三步”
 cx, cy = R[9]
@@ -1033,8 +1033,8 @@ def out14(c, kk, T, cx=cx, cy=cy):
         shadow(c, cx - 320, gy - 190, 0.35, T, cute=True)
         f = ease_out(clamp01((T - tb(14, k_out14)) / 0.8))
         runner(c, lerp(cx - 60, cx + 200, f), gy, 0.85, T, "smile")
-        sun(c, cx + 430, gy - 330, 50)
-        K.text(c, "跑出来了", cx + 220, gy - 360, 64, "hand", GREEN)
+        sun(c, cx + 460, gy - 430, 50)
+        K.text(c, "跑出来了", cx + 170, gy - 440, 64, "hand", GREEN)
     sparkle(c, cx + 200, gy - 260, T - tb(14, k_out14) - 0.6, YELLOW, 10, 110, 200)
     return None
 
