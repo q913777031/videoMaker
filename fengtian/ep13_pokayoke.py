@@ -1,15 +1,16 @@
 """《丰田模式》13 防错：明明很小心，为什么还是手滑？（白板手绘 + AI 旁白，竖屏 2:3）
 
-误区对照：开头摆出“再细心一点”的想法，再逐条对照丰田反着来的三处。第 2–8 屏画面左右分栏：
+误区对照：开头摆出“再细心一点”的想法，再逐条对照丰田反着来的三处。第 5–11 屏画面左右分栏：
 左栏“我们以为”（灰）、右栏“丰田的做法”（亮），顶上三个圆点标出第几处；每处先画左栏、再画右栏，右栏落定时配重音。
 - 0–3 秒：鼠标连点“发送”，邮件一封封飞出，“附件呢？”，“手滑”砸下；
 - 打工人日常：两个群聊窗口，小李捂脸；邮件回形针是空的；“下次小心”便签贴了一排；
-- 误区对照（drop）：左栏放大镜“再细心一点”，右栏“三处”，drop 砸下“反着来”；
+- 身边的例子（drop）：报价单留着上个客户的名字，drop 时红圈圈出 / 公式被删、月底才发现 / 走到楼下又跑回去看门；
+- 误区对照：左栏放大镜“再细心一点”，右栏“三处”，砸下“反着来”；
 - 误区一：左栏小李被“不够小心”压住，右栏工人拧螺丝、一排里漏一颗；手指从“人”挪到“工具和流程”；
 - 误区二：左栏拿放大镜事后查，右栏零件和夹具像拼图卡在一起，“防错装置”；零件装反插不上、正过来滑进去；机器发现漏装，灯亮红、传送带停；
 - 误区三：左栏贵机器打叉，右栏一块小挡片、一个小凸起，“简单又便宜”；
 - 身边的防错：洗衣机门没关不肯转、手机卡缺角插不反；为什么：注意力曲线一累一急往下掉，一百个勾里一个红叉；
-- 说回我们：报价单留着上个客户的名字 / 公式被删、月底才发现 / 走到楼下又跑回去看门 / 别光骂自己，“三步”；
+- 说回我们：别光骂自己，“三步”；
   三步做法（附件→正文→收件人、锁住格子、东西挂门把手）；轻松出门；评论区与下一讲。
 车间员工戴安全帽（common.draw_worker），小李 common.draw_li。本讲是深色石墨板底，颜色由 theme.Recolor 统一反色。
 文案见 fengtian/PLAN.md「### 13 防错」；时间轴、配乐、相机、人物见 fengtian/common.py。
@@ -33,18 +34,18 @@ from whiteboard.engine import P, check, circle, cross, join, rect
 SCREENS = [
     ([], "开场", 0),
     ([0, 1], "打工人日常", 1),
-    ([2, 3], "误区对照", 2),
-    ([4, 5], "误区一 · 对照", 3),
-    ([6], "误区一 · 对照", 4),
-    ([7, 8], "误区二 · 对照", 5),
-    ([9], "误区二 · 对照", 6),
-    ([10], "误区二 · 对照", 7),
-    ([11], "误区三 · 对照", 8),
-    ([12, 13], "身边的防错", 9),
-    ([14, 15, 16], "为什么靠小心不管用", 10),
-    ([17, 18], "说回我们自己", 11),
-    ([19], "说回我们自己", 12),
-    ([20], "说回我们自己", 13),
+    ([2, 3], "身边的例子", 2),
+    ([4], "身边的例子", 3),
+    ([5], "身边的例子", 4),
+    ([6, 7], "误区对照", 5),
+    ([8, 9], "误区一 · 对照", 6),
+    ([10], "误区一 · 对照", 7),
+    ([11, 12], "误区二 · 对照", 8),
+    ([13], "误区二 · 对照", 9),
+    ([14], "误区二 · 对照", 10),
+    ([15], "误区三 · 对照", 11),
+    ([16, 17], "身边的防错", 12),
+    ([18, 19, 20], "为什么靠小心不管用", 13),
     ([21, 22], "说回我们自己", 14),
     ([23], "做法一 · 示意", 15),
     ([24], "做法二 · 示意", 16),
@@ -466,17 +467,209 @@ def screen1(j=1):
 screen1()
 
 
-# ================================================================ 屏 2：左栏放大镜“再细心一点”，右栏“三处”；drop 砸下“反着来”
+# ================================================================ 屏 2：报价单上留着上一个客户的名字，红圈
 def screen2(j=2):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
-    KD = L.drop_k()
-    b.shots[j].shake, b.shots[j].flashes = [(KD, 16.0)], [(KD, 0.45)]
+    GY = cy + 540
+    k_li = 0
+    k_ch = kq(j, wp(2, 1, 0.3), 1)
+    k_doc = nx(j, wp(3, 0, 0.3), k_ch)
+    CHIPS = ["发错群", "忘加附件"]
+    L.note(*CHIPS)
+
+    def chips(c, kk, T):
+        for i, s_ in enumerate(CHIPS):
+            g = pop_scale(T - tb(j, k_ch) - i * 0.27)
+            if g <= 0:
+                continue
+            with K.at(c, cx + 20 + i * 290, cy + 380, (i * 2 - 1) * 4, g):
+                w = K.text_w(s_, 48, "hand") + 50
+                box(c, 0, 0, w, 90, GRAY_FILL, GRAY, 5, 45)
+                K.text(c, s_, 0, 2, 48, "hand", GRAY)
+        return None
+    ev(j, k_ch, chips, "pop", 0.65)
+    k_name = nx(j, wp(3, 1, 0.6), k_doc)
+    k_ring = L.drop_k()                          # drop：红圈圈出旧名字
+    k_name = min(k_name, k_ring - 1)
+    b.shots[j].shake, b.shots[j].flashes = [(k_ring, 16.0)], [(k_ring, 0.45)]
+    L.note("报价单", "致：张总公司", "上一个客户", "发送")
+    DX, DY = cx + 120, cy - 120
+
+    def doc(c, kk, T):
+        sc = pop_scale(T - tb(j, k_doc))
+        if sc <= 0:
+            return None
+        with K.at(c, DX, DY, 2, sc):
+            box(c, 0, 0, 560, 640, "#FFFFFF", BLACK, 8, 12)
+            K.text(c, "报价单", 0, -250, 64, "hand", BLACK)
+            if T >= tb(j, k_name):
+                K.text(c, "致：张总公司", -40, -150, 50, "hand", BLACK, clamp01((T - tb(j, k_name)) / 0.2))
+            for r in range(5):
+                C.line(c, (-220, -60 + r * 70), (220 - (r % 2) * 60, -60 + r * 70), GRAY, 6)
+            if T >= tb(j, k_ring):
+                f = clamp01((T - tb(j, k_ring)) / 0.4)
+                ring = skia.Path()
+                ring.addArc(skia.Rect.MakeXYWH(-230, -200, 380, 100), -170, 359 * f)
+                c.drawPath(ring, wb.marker(RED, 9))
+                if f >= 1:
+                    K.text(c, "上一个客户", 130, -370, 48, "hand", RED)
+        return None
+    ev(j, k_doc, doc, "wood_high", 0.7)
+    b.hit(j, k_name, "pop", 0.65, "旧名字还在")
+    b.hit(j, k_ring, "kick", 0.95, "drop：红圈圈出")
+
+    def li(c, sc, T):
+        x, s = cx - 380, 0.85
+        hx, hy = head_of(x, GY, s)
+        oops = T >= tb(j, k_ring)
+        with at_pop(c, x, GY, sc):
+            draw_li(c, x, GY, s, "o" if oops else "smile", rh=(hx + 10, hy + 5) if oops else (x + 120 * s, hy + 80 * s))
+            if not oops:
+                with K.at(c, x + 160 * s, hy + 60 * s, 0, 1):
+                    K.rr(c, 0, 0, 130, 60, 30, BLUE)
+                    K.text(c, "发送", 0, 2, 38, "hand", "#FFFFFF")
+        return None
+    ev(j, k_li, pop_fn(j, k_li, li), "pop", 0.65)
+
+
+screen2()
+
+
+# ================================================================ 屏 3：公式格子被删成空白；日历翻到月底，红圈
+def screen3(j=3):
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z))
+    GY = cy + 540
+    SX, SY = cx - 120, cy - 250
+    k_sh = 0
+    k_del = kq(j, wp(4, 1, 0.5), 1)
+    k_cal = nx(j, wp(4, 2, 0.2), k_del)
+    k_end = nx(j, wp(4, 2, 0.8), k_cal)
+    L.note("=合计", "月底", "30日")
+
+    def sheet(c, kk, T):
+        sc = pop_scale(T - tb(j, k_sh))
+        if sc <= 0:
+            return None
+        gone = T >= tb(j, k_del)
+        with at_pop(c, SX, SY, sc):
+            sheet_grid(c, SX, SY, 5, 5, 140, 64, hot={(4, 4)} if gone else None)
+            if not gone:
+                K.text(c, "=合计", SX + 280, SY + 128, 36, "sans_medium", GREEN)
+            else:
+                f = clamp01((T - tb(j, k_del)) / 0.3)
+                K.text(c, "=合计", SX + 280, SY + 128 - 80 * f, 36, "sans_medium", GREEN, 1 - f)
+            cursor(c, SX + 300, SY + 150)
+        return None
+    ev(j, k_sh, sheet, "wood_low", 0.6)
+    b.hit(j, k_del, "pop", 0.7, "公式被删")
+
+    def cal(c, kk, T):
+        t0 = tb(j, k_cal)
+        sc = pop_scale(T - t0)
+        if sc <= 0:
+            return None
+        x, y = cx + 250, cy + 220
+        te = tb(j, k_end)
+        day = int(lerp(3, 30, clamp01((T - t0) / max(0.3, te - t0))))
+        with K.at(c, x, y, 0, sc):
+            box(c, 0, 20, 280, 260, "#FFFFFF", BLACK, 7, 12)
+            c.drawRect(skia.Rect.MakeXYWH(-140, -110, 280, 60), K.paint(RED))
+            K.text(c, f"{day}日", 0, 50, 80, "hand", RED if T >= te else BLACK)
+            if T >= te:
+                ring = skia.Path()
+                ring.addOval(skia.Rect.MakeXYWH(-120, -20, 240, 140))
+                c.drawPath(ring, wb.marker(RED, 8))
+                K.text(c, "月底", 0, 200, 56, "hand", RED)
+        return None
+    L.note(*[f"{d}日" for d in range(3, 31)])
+    ev(j, k_cal, cal, "wood_high", 0.7)
+    b.hit(j, k_end, "rim", 0.85, "月底才发现")
+
+    def li(c, sc, T):
+        x, s = cx - 330, 0.85
+        hx, hy = head_of(x, GY, s)
+        oops = T >= tb(j, k_end)
+        with at_pop(c, x, GY, sc):
+            draw_li(c, x, GY, s, "o" if oops else "flat", lh=(hx - 40, hy - 10) if oops else None,
+                    rh=(hx + 40, hy - 10) if oops else None)
+        return None
+    ev(j, 1, pop_fn(j, 1, li), "pop", 0.6)
+
+
+screen3()
+
+
+# ================================================================ 屏 4：小李走到楼下，回头往楼上跑，头顶“锁了吗？”
+def screen4(j=4):
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z))
+    k_st = 0
+    k_walk = 1
+    k_q = kq(j, wp(5, 0, 0.6), 2)
+    k_down = nx(j, wp(5, 1, 0.5), k_q)
+    k_back = nx(j, wp(5, 2, 0.4), k_down)
+    L.note("锁了吗？")
+    # 楼梯：从右上（门）到左下
+    steps = [(cx + 380 - i * 110, cy - 160 + i * 100) for i in range(7)]
+    stair = P(*[p for i, (x, y) in enumerate(steps) for p in ((x, y), (x - 110, y))])
+    b.path(j, k_st, k_st + 0.8, join(stair, rect(cx + 470, cy - 310, 160, 300, 8), circle(cx + 420, cy - 300, 10)),
+           BLACK, 9, sfx="wood_low")
+
+    def li(c, kk, T):
+        sc = pop_scale(T - tb(j, k_walk))
+        if sc <= 0:
+            return None
+        tw, td, tb_ = tb(j, k_walk), tb(j, k_down), tb(j, k_back)
+        if T < td:
+            f = ease_in_out(clamp01((T - tw) / max(0.3, td - tw)))
+        elif T < tb_:
+            f = 1.0
+        else:
+            f = 1 - ease_in_out(clamp01((T - tb_) / 1.0))
+        idx = f * 6
+        i0 = int(min(5, idx))
+        u = idx - i0
+        x = lerp(steps[i0][0], steps[i0 + 1][0], u) - 55
+        y = lerp(steps[i0][1], steps[i0 + 1][1], u)
+        bob = -abs(math.sin(T * 9)) * 10 if 0 < f < 1 else 0
+        s = 0.7
+        with at_pop(c, x, y, sc):
+            c.save()
+            if T >= tb_:
+                c.translate(x, 0)
+                c.scale(-1, 1)
+                c.translate(-x, 0)
+            draw_li(c, x, y + bob, s, "o" if T >= tb(j, k_q) else "flat", bag=True)
+            c.restore()
+        hx, hy = head_of(x, y, s)
+        if T >= tb(j, k_q):
+            g = pop_scale(T - tb(j, k_q))
+            with K.at(c, hx + 40, hy - 120, 0, g):
+                bubble_box(c, 0, 0, 280, 110, -1)
+                K.text(c, "锁了吗？", 0, 2, 52, "hand", RED)
+        return None
+    b.custom(j, k_walk, k_walk + 0.3, li, sfx="pop", gain=0.6)
+    b.hit(j, k_q, "tom", 0.75, "锁了吗？")
+    b.hit(j, k_down, "wood_high", 0.6, "走到楼下")
+    b.hit(j, k_back, "shaker", 0.8, "又跑回去")
+
+
+screen4()
+
+
+# ================================================================ 屏 5：左栏放大镜“再细心一点”，右栏“三处”；砸下“反着来”
+def screen5(j=5):
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     versus(j, 0)
     k_li = 1
-    k_mag = kq(j, wp(2, 2, 0.3), 2)
-    k_3 = min(nx(j, wp(3, 0, 0.6), k_mag), KD - 1)
+    k_mag = kq(j, wp(6, 2, 0.3), 2)
+    k_3 = nx(j, wp(7, 0, 0.6), k_mag)
+    KD = nx(j, wp(7, 1, 0.8), k_3)              # “反着来”砸下（2026-11 起 drop 移到屏 2）
+    b.shots[j].shake = [(KD, 12.0)]
     L.note("再细心一点", "三处", "反着来")
 
     def li(c, sc, T):
@@ -524,21 +717,21 @@ def screen2(j=2):
     ev(j, KD, flip, "kick", 0.95)
 
 
-screen2()
+screen5()
 
 
-# ================================================================ 屏 3：误区一——左栏小李被“不够小心”压住；右栏一排螺丝漏一颗
-def screen3(j=3):
+# ================================================================ 屏 6：误区一——左栏小李被“不够小心”压住；右栏一排螺丝漏一颗
+def screen6(j=6):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     versus(j, 1)
-    k_li = kq(j, wp(4, 0, 0.5), 1)
-    k_wt = nx(j, wp(4, 1, 0.5), k_li)
-    k_wk = nx(j, wp(4, 2, 0.4), k_wt)
-    k_def = nx(j, wp(4, 3, 0.5), k_wk)
-    k_sc = nx(j, wp(5, 1, 0.2), k_def)
-    k_miss = nx(j, wp(5, 2, 0.5), k_sc)
+    k_li = kq(j, wp(8, 0, 0.5), 1)
+    k_wt = nx(j, wp(8, 1, 0.5), k_li)
+    k_wk = nx(j, wp(8, 2, 0.4), k_wt)
+    k_def = nx(j, wp(8, 3, 0.5), k_wk)
+    k_sc = nx(j, wp(9, 1, 0.2), k_def)
+    k_miss = nx(j, wp(9, 2, 0.5), k_sc)
     L.note("不够小心", "人一定会出错", "漏了")
 
     def left(c, kk, T):
@@ -595,18 +788,18 @@ def screen3(j=3):
     b.hit(j, k_miss, "ding", 0.8, "漏了一颗")
 
 
-screen3()
+screen6()
 
 
-# ================================================================ 屏 4：手指从“人”挪到“工具 / 流程”，扳手在流程图上拧一下
-def screen4(j=4):
+# ================================================================ 屏 7：手指从“人”挪到“工具 / 流程”，扳手在流程图上拧一下
+def screen7(j=7):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     versus(j, 1)
     k_ppl = 1
-    k_mv = kq(j, wp(6, 1, 0.3), 2)
-    k_wr = nx(j, wp(6, 1, 0.9), k_mv)
-    k_no = nx(j, wp(6, 2, 0.5), k_wr)
+    k_mv = kq(j, wp(10, 1, 0.3), 2)
+    k_wr = nx(j, wp(10, 1, 0.9), k_mv)
+    k_no = nx(j, wp(10, 2, 0.5), k_wr)
     L.note("人", "工具", "流程", "别光盯着人")
     PX, PY = cx - 300, cy - 50
     FX, FY = cx + 260, cy - 50
@@ -654,19 +847,19 @@ def screen4(j=4):
     ev(j, k_no, L.slam_text("别光盯着人", cx - 20, cy + 400, 80, RED, j, k_no, rot=-3), "kick", 0.8)
 
 
-screen4()
+screen7()
 
 
-# ================================================================ 屏 5：误区二——左栏拿放大镜事后查；右栏零件和夹具卡在一起，“防错装置”
-def screen5(j=5):
+# ================================================================ 屏 8：误区二——左栏拿放大镜事后查；右栏零件和夹具卡在一起，“防错装置”
+def screen8(j=8):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     versus(j, 2)
-    k_li = kq(j, wp(7, 1, 0.3), 1)
-    k_pj = nx(j, wp(7, 3, 0.2), k_li)
-    k_fit = nx(j, wp(7, 3, 0.8), k_pj)
-    k_name = nx(j, wp(8, 1, 0.4), k_fit)
+    k_li = kq(j, wp(11, 1, 0.3), 1)
+    k_pj = nx(j, wp(11, 3, 0.2), k_li)
+    k_fit = nx(j, wp(11, 3, 0.8), k_pj)
+    k_name = nx(j, wp(12, 1, 0.4), k_fit)
     L.note("事后多查一遍", "防错装置")
 
     def left(c, sc, T):
@@ -699,18 +892,18 @@ def screen5(j=5):
     stamp_ev(j, k_name, "防错装置", cx + 260, cy + 380, 80, -4, "kick", 0.9)
 
 
-screen5()
+screen8()
 
 
-# ================================================================ 屏 6：零件装反卡住（红叉），正过来滑进去（勾）
-def screen6(j=6):
+# ================================================================ 屏 9：零件装反卡住（红叉），正过来滑进去（勾）
+def screen9(j=9):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     versus(j, 2)
-    k_rev = kq(j, wp(9, 1, 0.3), 1)
-    k_stuck = nx(j, wp(9, 2, 0.3), k_rev)
-    k_flip = nx(j, wp(9, 2, 0.8), k_stuck)
+    k_rev = kq(j, wp(13, 1, 0.3), 1)
+    k_stuck = nx(j, wp(13, 2, 0.3), k_rev)
+    k_flip = nx(j, wp(13, 2, 0.8), k_stuck)
     k_in = cap(j, k_flip + 1)
     L.note("装反了", "插不上", "只有一个方向")
 
@@ -751,19 +944,19 @@ def screen6(j=6):
     b.hit(j, k_in, "ding", 0.85, "滑进去")
 
 
-screen6()
+screen9()
 
 
-# ================================================================ 屏 7：机器一发现漏装，灯亮红，传送带停住
-def screen7(j=7):
+# ================================================================ 屏 10：机器一发现漏装，灯亮红，传送带停住
+def screen10(j=10):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     versus(j, 2)
     k_belt = 1
-    k_det = kq(j, wp(10, 1, 0.5), 2)
-    k_alarm = nx(j, wp(10, 2, 0.4), k_det)
-    k_stop = nx(j, wp(10, 2, 0.9), k_alarm)
+    k_det = kq(j, wp(14, 1, 0.5), 2)
+    k_alarm = nx(j, wp(14, 2, 0.4), k_det)
+    k_stop = nx(j, wp(14, 2, 0.9), k_alarm)
     L.note("防不住", "停", "漏装")
     BY = cy + 200
 
@@ -826,20 +1019,20 @@ def screen7(j=7):
     ev(j, k_belt, pop_fn(j, k_belt, wk))
 
 
-screen7()
+screen10()
 
 
-# ================================================================ 屏 8：误区三——左栏贵机器打叉；右栏小挡片、小凸起，“简单又便宜”
-def screen8(j=8):
+# ================================================================ 屏 11：误区三——左栏贵机器打叉；右栏小挡片、小凸起，“简单又便宜”
+def screen11(j=11):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     versus(j, 3)
-    k_m = kq(j, wp(11, 1, 0.3), 1)
-    k_x = nx(j, wp(11, 1, 0.9), k_m)
-    k_tab = nx(j, wp(11, 2, 0.4), k_x)
+    k_m = kq(j, wp(15, 1, 0.3), 1)
+    k_x = nx(j, wp(15, 1, 0.9), k_m)
+    k_tab = nx(j, wp(15, 2, 0.4), k_x)
     k_bump = cap(j, k_tab + 1)
-    k_cheap = nx(j, wp(11, 3, 0.5), k_bump)
+    k_cheap = nx(j, wp(15, 3, 0.5), k_bump)
     L.note("花大钱", "¥¥¥", "简单又便宜", "挡片", "凸起")
 
     def mach(c, sc, T):
@@ -889,20 +1082,20 @@ def screen8(j=8):
     ev(j, k_tab, pop_fn(j, k_tab, wk))
 
 
-screen8()
+screen11()
 
 
-# ================================================================ 屏 9：洗衣机门没关不肯转；手机卡缺角，插反了放不进去
-def screen9(j=9):
+# ================================================================ 屏 12：洗衣机门没关不肯转；手机卡缺角，插反了放不进去
+def screen12(j=12):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     WX, WY = cx - 270, cy - 120
     k_wm = 0
-    k_open = kq(j, wp(12, 1, 0.5), 1)
-    k_no = nx(j, wp(12, 2, 0.5), k_open)
-    k_sim = nx(j, wp(13, 0, 0.4), k_no)
-    k_rev = nx(j, wp(13, 1, 0.3), k_sim)
+    k_open = kq(j, wp(16, 1, 0.5), 1)
+    k_no = nx(j, wp(16, 2, 0.5), k_open)
+    k_sim = nx(j, wp(17, 0, 0.4), k_no)
+    k_rev = nx(j, wp(17, 1, 0.3), k_sim)
     k_ok = cap(j, k_rev + 2)
     L.note("不肯转", "放不进去", "门没关")
     b.path(j, k_wm, k_wm + 0.8, join(rect(WX, WY, 420, 480, 24), P((WX - 210, WY - 150), (WX + 210, WY - 150)),
@@ -973,18 +1166,18 @@ def screen9(j=9):
     ev(j, k_sim, pop_fn(j, k_sim, li))
 
 
-screen9()
+screen12()
 
 
-# ================================================================ 屏 10：注意力曲线一累一急往下掉；一百个勾里一个红叉
-def screen10(j=10):
+# ================================================================ 屏 13：注意力曲线一累一急往下掉；一百个勾里一个红叉
+def screen13(j=13):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     k_ax = 0
-    k_cur = kq(j, wp(15, 0, 0.2), 1)
-    k_drop = nx(j, wp(15, 1, 0.5), k_cur)
-    k_grid = nx(j, wp(16, 0, 0.4), k_drop)
-    k_x = nx(j, wp(16, 2, 0.4), k_grid)
+    k_cur = kq(j, wp(19, 0, 0.2), 1)
+    k_drop = nx(j, wp(19, 1, 0.5), k_cur)
+    k_grid = nx(j, wp(20, 0, 0.4), k_drop)
+    k_x = nx(j, wp(20, 2, 0.4), k_grid)
     L.note("注意力", "累", "急", "掉线", "100次")
     AX, AY = cx - 480, cy - 40
     b.path(j, k_ax, k_ax + 0.7, join(P((AX, AY - 400), (AX, AY), (AX + 980, AY)),
@@ -1040,196 +1233,6 @@ def screen10(j=10):
         return None
     ev(j, k_grid, grid, "wood_high", 0.7)
     b.hit(j, k_x, "rim", 0.85, "一百个勾里一个红叉")
-
-
-screen10()
-
-
-# ================================================================ 屏 11：报价单上留着上一个客户的名字，红圈
-def screen11(j=11):
-    cx, cy = R[j]
-    L.scene(j, (cx, cy + 10, Z))
-    GY = cy + 540
-    k_li = 0
-    k_ch = kq(j, wp(17, 1, 0.3), 1)
-    k_doc = nx(j, wp(18, 0, 0.3), k_ch)
-    CHIPS = ["发错群", "忘加附件"]
-    L.note(*CHIPS)
-
-    def chips(c, kk, T):
-        for i, s_ in enumerate(CHIPS):
-            g = pop_scale(T - tb(j, k_ch) - i * 0.27)
-            if g <= 0:
-                continue
-            with K.at(c, cx + 20 + i * 290, cy + 380, (i * 2 - 1) * 4, g):
-                w = K.text_w(s_, 48, "hand") + 50
-                box(c, 0, 0, w, 90, GRAY_FILL, GRAY, 5, 45)
-                K.text(c, s_, 0, 2, 48, "hand", GRAY)
-        return None
-    ev(j, k_ch, chips, "pop", 0.65)
-    k_name = nx(j, wp(18, 1, 0.6), k_doc)
-    k_ring = nx(j, wp(18, 2, 0.5), k_name)
-    L.note("报价单", "致：张总公司", "上一个客户", "发送")
-    DX, DY = cx + 120, cy - 120
-
-    def doc(c, kk, T):
-        sc = pop_scale(T - tb(j, k_doc))
-        if sc <= 0:
-            return None
-        with K.at(c, DX, DY, 2, sc):
-            box(c, 0, 0, 560, 640, "#FFFFFF", BLACK, 8, 12)
-            K.text(c, "报价单", 0, -250, 64, "hand", BLACK)
-            if T >= tb(j, k_name):
-                K.text(c, "致：张总公司", -40, -150, 50, "hand", BLACK, clamp01((T - tb(j, k_name)) / 0.2))
-            for r in range(5):
-                C.line(c, (-220, -60 + r * 70), (220 - (r % 2) * 60, -60 + r * 70), GRAY, 6)
-            if T >= tb(j, k_ring):
-                f = clamp01((T - tb(j, k_ring)) / 0.4)
-                ring = skia.Path()
-                ring.addArc(skia.Rect.MakeXYWH(-230, -200, 380, 100), -170, 359 * f)
-                c.drawPath(ring, wb.marker(RED, 9))
-                if f >= 1:
-                    K.text(c, "上一个客户", 130, -370, 48, "hand", RED)
-        return None
-    ev(j, k_doc, doc, "wood_high", 0.7)
-    b.hit(j, k_name, "pop", 0.65, "旧名字还在")
-    b.hit(j, k_ring, "rim", 0.85, "红圈圈出")
-
-    def li(c, sc, T):
-        x, s = cx - 380, 0.85
-        hx, hy = head_of(x, GY, s)
-        oops = T >= tb(j, k_ring)
-        with at_pop(c, x, GY, sc):
-            draw_li(c, x, GY, s, "o" if oops else "smile", rh=(hx + 10, hy + 5) if oops else (x + 120 * s, hy + 80 * s))
-            if not oops:
-                with K.at(c, x + 160 * s, hy + 60 * s, 0, 1):
-                    K.rr(c, 0, 0, 130, 60, 30, BLUE)
-                    K.text(c, "发送", 0, 2, 38, "hand", "#FFFFFF")
-        return None
-    ev(j, k_li, pop_fn(j, k_li, li), "pop", 0.65)
-
-
-screen11()
-
-
-# ================================================================ 屏 12：公式格子被删成空白；日历翻到月底，红圈
-def screen12(j=12):
-    cx, cy = R[j]
-    L.scene(j, (cx, cy + 10, Z))
-    GY = cy + 540
-    SX, SY = cx - 120, cy - 250
-    k_sh = 0
-    k_del = kq(j, wp(19, 1, 0.5), 1)
-    k_cal = nx(j, wp(19, 2, 0.2), k_del)
-    k_end = nx(j, wp(19, 2, 0.8), k_cal)
-    L.note("=合计", "月底", "30日")
-
-    def sheet(c, kk, T):
-        sc = pop_scale(T - tb(j, k_sh))
-        if sc <= 0:
-            return None
-        gone = T >= tb(j, k_del)
-        with at_pop(c, SX, SY, sc):
-            sheet_grid(c, SX, SY, 5, 5, 140, 64, hot={(4, 4)} if gone else None)
-            if not gone:
-                K.text(c, "=合计", SX + 280, SY + 128, 36, "sans_medium", GREEN)
-            else:
-                f = clamp01((T - tb(j, k_del)) / 0.3)
-                K.text(c, "=合计", SX + 280, SY + 128 - 80 * f, 36, "sans_medium", GREEN, 1 - f)
-            cursor(c, SX + 300, SY + 150)
-        return None
-    ev(j, k_sh, sheet, "wood_low", 0.6)
-    b.hit(j, k_del, "pop", 0.7, "公式被删")
-
-    def cal(c, kk, T):
-        t0 = tb(j, k_cal)
-        sc = pop_scale(T - t0)
-        if sc <= 0:
-            return None
-        x, y = cx + 250, cy + 220
-        te = tb(j, k_end)
-        day = int(lerp(3, 30, clamp01((T - t0) / max(0.3, te - t0))))
-        with K.at(c, x, y, 0, sc):
-            box(c, 0, 20, 280, 260, "#FFFFFF", BLACK, 7, 12)
-            c.drawRect(skia.Rect.MakeXYWH(-140, -110, 280, 60), K.paint(RED))
-            K.text(c, f"{day}日", 0, 50, 80, "hand", RED if T >= te else BLACK)
-            if T >= te:
-                ring = skia.Path()
-                ring.addOval(skia.Rect.MakeXYWH(-120, -20, 240, 140))
-                c.drawPath(ring, wb.marker(RED, 8))
-                K.text(c, "月底", 0, 200, 56, "hand", RED)
-        return None
-    L.note(*[f"{d}日" for d in range(3, 31)])
-    ev(j, k_cal, cal, "wood_high", 0.7)
-    b.hit(j, k_end, "rim", 0.85, "月底才发现")
-
-    def li(c, sc, T):
-        x, s = cx - 330, 0.85
-        hx, hy = head_of(x, GY, s)
-        oops = T >= tb(j, k_end)
-        with at_pop(c, x, GY, sc):
-            draw_li(c, x, GY, s, "o" if oops else "flat", lh=(hx - 40, hy - 10) if oops else None,
-                    rh=(hx + 40, hy - 10) if oops else None)
-        return None
-    ev(j, 1, pop_fn(j, 1, li), "pop", 0.6)
-
-
-screen12()
-
-
-# ================================================================ 屏 13：小李走到楼下，回头往楼上跑，头顶“锁了吗？”
-def screen13(j=13):
-    cx, cy = R[j]
-    L.scene(j, (cx, cy + 10, Z))
-    k_st = 0
-    k_walk = 1
-    k_q = kq(j, wp(20, 0, 0.6), 2)
-    k_down = nx(j, wp(20, 1, 0.5), k_q)
-    k_back = nx(j, wp(20, 2, 0.4), k_down)
-    L.note("锁了吗？")
-    # 楼梯：从右上（门）到左下
-    steps = [(cx + 380 - i * 110, cy - 160 + i * 100) for i in range(7)]
-    stair = P(*[p for i, (x, y) in enumerate(steps) for p in ((x, y), (x - 110, y))])
-    b.path(j, k_st, k_st + 0.8, join(stair, rect(cx + 470, cy - 310, 160, 300, 8), circle(cx + 420, cy - 300, 10)),
-           BLACK, 9, sfx="wood_low")
-
-    def li(c, kk, T):
-        sc = pop_scale(T - tb(j, k_walk))
-        if sc <= 0:
-            return None
-        tw, td, tb_ = tb(j, k_walk), tb(j, k_down), tb(j, k_back)
-        if T < td:
-            f = ease_in_out(clamp01((T - tw) / max(0.3, td - tw)))
-        elif T < tb_:
-            f = 1.0
-        else:
-            f = 1 - ease_in_out(clamp01((T - tb_) / 1.0))
-        idx = f * 6
-        i0 = int(min(5, idx))
-        u = idx - i0
-        x = lerp(steps[i0][0], steps[i0 + 1][0], u) - 55
-        y = lerp(steps[i0][1], steps[i0 + 1][1], u)
-        bob = -abs(math.sin(T * 9)) * 10 if 0 < f < 1 else 0
-        s = 0.7
-        with at_pop(c, x, y, sc):
-            c.save()
-            if T >= tb_:
-                c.translate(x, 0)
-                c.scale(-1, 1)
-                c.translate(-x, 0)
-            draw_li(c, x, y + bob, s, "o" if T >= tb(j, k_q) else "flat", bag=True)
-            c.restore()
-        hx, hy = head_of(x, y, s)
-        if T >= tb(j, k_q):
-            g = pop_scale(T - tb(j, k_q))
-            with K.at(c, hx + 40, hy - 120, 0, g):
-                bubble_box(c, 0, 0, 280, 110, -1)
-                K.text(c, "锁了吗？", 0, 2, 52, "hand", RED)
-        return None
-    b.custom(j, k_walk, k_walk + 0.3, li, sfx="pop", gain=0.6)
-    b.hit(j, k_q, "tom", 0.75, "锁了吗？")
-    b.hit(j, k_down, "wood_high", 0.6, "走到楼下")
-    b.hit(j, k_back, "shaker", 0.8, "又跑回去")
 
 
 screen13()
@@ -1615,5 +1618,5 @@ def screen19(j=19):
 screen19()
 
 # ================================================================ 收尾
-L.finish(cover_shot=6, square_shot=5, notes=NOTES)
+L.finish(cover_shot=9, square_shot=8, notes=NOTES)
 L.export(globals())

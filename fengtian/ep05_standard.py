@@ -30,18 +30,18 @@ from whiteboard.engine import P, book, check, circle, cross, join, rect
 SCREENS = [
     ([], "开场", 0),
     ([0, 1], "打工人日常", 1),
-    ([2], "丰田模式 · 书中做法", 2),
-    ([3], "大家的印象", 3),
-    ([4], "误区对照", 4),
-    ([5], "误区一 · 对照", 5),
-    ([6], "误区一 · 对照", 6),
-    ([7, 8], "误区二 · 对照", 7),
-    ([9, 10], "误区三 · 对照", 8),
-    ([11, 12], "书中观点", 9),
-    ([13, 14], "说回我们自己", 10),
-    ([15], "说回我们自己", 11),
-    ([16], "说回我们自己", 12),
-    ([17, 18], "说回我们自己", 13),
+    ([2, 3], "身边的例子", 2),
+    ([4], "身边的例子", 3),
+    ([5], "身边的例子", 4),
+    ([6, 7], "身边的例子", 5),
+    ([8], "丰田模式 · 书中做法", 6),
+    ([9], "大家的印象", 7),
+    ([10], "误区对照", 8),
+    ([11], "误区一 · 对照", 9),
+    ([12], "误区一 · 对照", 10),
+    ([13, 14], "误区二 · 对照", 11),
+    ([15, 16], "误区三 · 对照", 12),
+    ([17, 18], "书中观点", 13),
     ([19, 20], "说回我们自己", 14),
     ([21], "做法一 · 示意", 15),
     ([22], "做法二 · 示意", 16),
@@ -51,7 +51,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("05")          # 本讲样式（fengtian/theme.py）：浅绿方格、开场 checklist、转场 wipe
-L = C.Lesson("05", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={5: 0.8}, theme=THEME)
+L = C.Lesson("05", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={7: 0.3, 9: 0.8, 11: 0.3}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -318,29 +318,363 @@ b.custom(j, max(0, k_ask - 1.2), max(0, k_ask - 1.2) + 0.3, leader1)
 ev(j, k_ask, L.pop_bubble("错在哪？", cx + 330, cy - 200, j, k_ask, 70, BLACK, tail=1), "pop")
 b.hit(j, k_scr, "wood_low", 0.6, "小李挠头")
 
-# ================================================================ 屏 2：丰田的办法，有点土——标准化作业（drop 时印章砸下）
+# ================================================================ 屏 2（drop）：每月做报表——四个月，drop 时三月“旧数据”红圈砸下
 cx, cy = R[2]
 j = L.scene(2, (cx, cy + 10, Z))
-KD = L.drop_k()
-b.shots[j].shake, b.shots[j].flashes = [(KD, 16.0)], [(KD, 0.45)]
+KD2 = L.drop_k()
+b.shots[j].shake, b.shots[j].flashes = [(KD2, 16.0)], [(KD2, 0.45)]
+LI10 = (cx - 330, cy + 430, 0.85)
+DK10 = (cx - 170, cy + 250)
+ev(j, 0, L.figure(draw_li, j, 0, *LI10, mood=lambda T: "sad" if T >= tb(2, k_old) else "flat",
+                  lh=lambda T: (LI10[0] + 60, DK10[1] - 10 + 6 * math.sin(T * 14)),
+                  rh=lambda T: (LI10[0] + 140, DK10[1] - 10 - 6 * math.sin(T * 14))), "pop", 0.6)
+b.path(j, 0.3, 1.0, wb.desk(DK10[0], DK10[1], 340), BLACK, 8)
+MON = [(cx - 330 + i * 220, cy - 330) for i in range(4)]
+L.note("1月", "2月", "3月", "4月", "旧数据", "从头想")
+k_m = [min(kq(j, wt(3, 0, 0.1), 2), KD2 - 5)]
+k_m += [k_m[0] + i for i in range(1, 4)]
+k_think = min(max(kq(j, wt(3, 1, 0.35), k_m[3] + 1), k_m[3] + 1), KD2 - 1)
+k_old = KD2
+
+
+def months10(c, kk, T):
+    for i, (x, y) in enumerate(MON):
+        sc = pop_scale(T - tb(2, k_m[i]))
+        if sc <= 0:
+            continue
+        stale = i == 2 and T >= tb(2, k_old)
+        with K.at(c, x, y, 0, sc):
+            box(c, 0, 0, 190, 230, "#FFFFFF", BLACK, 6, 12)
+            c.drawRect(skia.Rect.MakeXYWH(-89, -109, 178, 50), K.paint(RED_FILL if stale else BLUE_FILL))
+            K.text(c, f"{i + 1}月", 0, -82, 44, "hand", BLACK)
+            for n, hh in enumerate((40, 70, 55, 95) if not stale else (40, 70, 55, 30)):
+                bx = -60 + n * 40
+                col = GRAY if stale and n == 3 else BLUE
+                c.drawRect(skia.Rect.MakeXYWH(bx - 14, 90 - hh, 28, hh), K.paint(GRAY_FILL if stale and n == 3 else BLUE_FILL))
+                c.drawRect(skia.Rect.MakeXYWH(bx - 14, 90 - hh, 28, hh), wb.marker(col, 4))
+    return None
+
+
+b.custom(j, k_m[0], k_m[0] + 0.3, months10)
+for i in range(4):
+    b.hit(j, k_m[i], ("wood_low", "wood_high")[i % 2], 0.6, f"{i + 1}月报表")
+
+
+def think10(c, kk, T, cx=cx, cy=cy):
+    t0 = tb(2, k_think)
+    if T < t0:
+        return None
+    sc = pop_scale(T - t0)
+    x, y = cx + 60, cy + 50
+    with K.at(c, x, y, 0, sc):
+        c.drawRoundRect(skia.Rect.MakeXYWH(-200, -90, 400, 180), 80, 80, K.paint("#FFFFFF"))
+        c.drawRoundRect(skia.Rect.MakeXYWH(-200, -90, 400, 180), 80, 80, wb.marker(BLACK, 6))
+        for n, (dx, dy, r) in enumerate(((-230, 50, 18), (-290, 80, 12))):
+            c.drawCircle(dx, dy, r, K.paint("#FFFFFF"))
+            c.drawCircle(dx, dy, r, wb.marker(BLACK, 5))
+        sp = skia.Path()
+        rot = (T - t0) * 260
+        for i in range(60):
+            a = math.radians(i * 14 + rot)
+            rr = 4 + i * 0.85
+            px, py = -110 + math.cos(a) * rr, math.sin(a) * rr
+            sp.moveTo(px, py) if i == 0 else sp.lineTo(px, py)
+        c.drawPath(sp, wb.marker(BLUE, 5))
+        K.text(c, "从头想", 60, 0, 60, "hand", BLUE)
+    return None
+
+
+ev(j, k_think, think10, "shaker", 0.8)
+
+
+def old10(c, kk, T, cx=cx, cy=cy):
+    t0 = tb(2, k_old)
+    if T < t0:
+        return None
+    f = clamp01((T - t0) / 0.35)
+    x, y = MON[2]
+    ring = skia.Path()
+    ring.addOval(skia.Rect.MakeXYWH(x - 135, y - 155, 270, 310))
+    part, tip = wb.partial(ring, f)
+    c.drawPath(part, wb.marker(RED, 9))
+    sc = pop_scale(T - t0 - 0.25)
+    if sc > 0:
+        with K.at(c, x, y + 205, 0, sc):
+            K.text(c, "旧数据", 0, 0, 60, "hand", RED)
+    return tip if f < 1 else None
+
+
+ev(j, k_old, old10, "kick", 0.95, 0.35)
+
+# ================================================================ 屏 3：同事请假——空座位；小李对着一堆文件发愣；小王脑子里装着流程
+cx, cy = R[3]
+j = L.scene(3, (cx, cy + 10, Z))
+CH11 = (cx - 330, cy + 300)
+k_chair = 0
+k_note = kq(j, wt(4, 0, 0.6), 1)
+k_pile = max(kq(j, wt(4, 1, 0.3), k_note + 1), k_note + 1)
+k_li11 = k_pile + 1
+k_head = max(kq(j, wt(4, 2, 0.5), k_li11 + 1), k_li11 + 1)
+L.note("请假")
+
+
+def chair11(c, sc, T):
+    x, y = CH11
+    with at_pop(c, x, y + 130, sc):
+        c.drawPath(wb.desk(x, y - 40, 300), wb.marker(BLACK, 8))
+        ch = P((x - 60, y - 180 + 200), (x - 60, y + 130), (x - 60, y + 30), (x + 40, y + 30), (x + 40, y + 130))
+        c.drawPath(join(ch, P((x - 60, y + 30), (x - 75, y - 70))), wb.marker(GRAY, 8))
+    return None
+
+
+ev(j, k_chair, pop_fn(j, k_chair, chair11), "wood_high")
+
+
+def note11(c, kk, T):
+    t0 = tb(3, k_note)
+    sc = C.slam_scale(T - t0)
+    if sc <= 0:
+        return None
+    x, y = CH11[0] + 40, CH11[1] - 180
+    with K.at(c, x, y, -8, sc):
+        sticky(c, 0, 0, 170, 120)
+        K.text(c, "请假", 0, 0, 62, "hand", RED)
+    return None
+
+
+ev(j, k_note, note11, "rim", 0.8)
+
+
+def pile11(c, kk, T, cx=cx, cy=cy):
+    t0 = tb(3, k_pile)
+    for i in range(6):
+        f = pop_scale(T - t0 - i * 0.07, 0.2)
+        if f <= 0:
+            continue
+        with K.at(c, cx + 20 + ((i * 29) % 21 - 10), cy + 330 - i * 34, (i % 3 - 1) * 4, f):
+            box(c, 0, 0, 200, 32, "#FFFFFF", BLACK, 4, 4)
+    return None
+
+
+ev(j, k_pile, pile11, "wood_low", 0.7)
+LI11 = (cx + 200, cy + 430, 0.8)
+
+
+def li11(c, sc, T, cx=cx, cy=cy):
+    x, y, s = LI11
+    hx, hy = head_of(x, y, s)
+    with at_pop(c, x, y, sc):
+        draw_li(c, x, y, s, "sad", lh=(x - 110 * s, hy + 120 * s), rh=(x + 80 * s, hy + 170 * s))
+        a = pop_scale(T - tb(3, k_li11) - 0.3)
+        if a > 0:
+            with K.at(c, hx - 90, hy - 80, 0, a):
+                qmark(c, 0, 0, 90, BLUE)
+                qmark(c, 50, -30, 60, BLUE)
+    return None
+
+
+ev(j, k_li11, pop_fn(j, k_li11, li11), "pop", 0.7)
+WK11 = (cx + 330, cy - 120, 0.62)
+
+
+def head11(c, sc, T, cx=cx, cy=cy):
+    """右上：小王（在家）头上一个大想法泡，里面是一整张流程。"""
+    x, y, s = WK11
+    hx, hy = head_of(x, y, s)
+    with at_pop(c, x, y, sc):
+        draw_worker(c, x, y, s, mood="smile")
+        bx, by = cx - 20, cy - 360
+        c.drawRoundRect(skia.Rect.MakeXYWH(bx - 230, by - 110, 460, 220), 90, 90, K.paint("#FFFFFF"))
+        c.drawRoundRect(skia.Rect.MakeXYWH(bx - 230, by - 110, 460, 220), 90, 90, wb.marker(BLACK, 6))
+        for dx, dy, r in ((hx - 120, hy - 70, 22), (hx - 70, hy - 40, 14)):
+            c.drawCircle(dx, dy, r, K.paint("#FFFFFF"))
+            c.drawCircle(dx, dy, r, wb.marker(BLACK, 5))
+        for i in range(4):
+            fx = bx - 165 + i * 110
+            if i:
+                c.drawPath(wb.arrow((fx - 70, by), (fx - 42, by), 0, 12), wb.marker(BLUE, 4))
+            step_box(c, fx, by, i + 1, 74, 64)
+    return None
+
+
+ev(j, k_head, pop_fn(j, k_head, head11), "ding", 0.75)
+
+# ================================================================ 屏 4：出差收拾行李——箱子塞满盖上，充电器还插在墙上
+cx, cy = R[4]
+j = L.scene(4, (cx, cy + 10, Z))
+SC12 = (cx - 120, cy + 260)
+k_case = 0
+k_items = [kq(j, wt(5, 0, 0.3), 1)]
+k_items += [k_items[0] + 1, k_items[0] + 2]
+k_lid = k_items[2] + 1
+k_plug = max(kq(j, wt(5, 1, 0.6), k_lid + 1), k_lid + 1)
+L.note("充电器")
+
+
+def case12(c, kk, T, cx=cx, cy=cy):
+    sc = pop_scale(T - tb(4, k_case))
+    if sc <= 0:
+        return None
+    x, y = SC12
+    with at_pop(c, x, y + 120, sc):
+        box(c, x, y, 460, 240, "#F1DDB8", "#A9773E", 8, 20)
+        for i, kind in enumerate(("shirt", "shoe", "book")):
+            f = pop_scale(T - tb(4, k_items[i]), 0.22)
+            if f <= 0:
+                continue
+            ix = x - 140 + i * 140
+            with K.at(c, ix, y - 40 - (1 - f) * 120, (i - 1) * 8, f):
+                if kind == "shirt":
+                    c.drawPath(P((-55, -40), (-20, -55), (20, -55), (55, -40), (45, 40), (-45, 40), close=True),
+                               K.paint(BLUE_FILL))
+                    c.drawPath(P((-55, -40), (-20, -55), (20, -55), (55, -40), (45, 40), (-45, 40), close=True),
+                               wb.marker(BLUE, 5))
+                elif kind == "shoe":
+                    c.drawPath(P((-50, 20), (-50, -30), (-10, -30), (10, 0), (55, 10), (55, 25), close=True),
+                               K.paint("#FBE0C6"))
+                    c.drawPath(P((-50, 20), (-50, -30), (-10, -30), (10, 0), (55, 10), (55, 25), close=True),
+                               wb.marker(ORANGE, 5))
+                else:
+                    box(c, 0, 0, 90, 110, GREEN_FILL, GREEN, 5, 8)
+        t_l = tb(4, k_lid)
+        g = ease_in_out(clamp01((T - t_l + 0.3) / 0.3))
+        ang = lerp(-75, 0, g) + wobble(T - t_l, 4, 30, 9)
+        with K.at(c, x - 230, y - 120, ang):
+            box(c, 230, -20, 460, 40, "#E9C891", "#A9773E", 7, 14)
+        if g >= 1:
+            box(c, x, y - 140, 120, 26, "#A9773E", "#7A5228", 5, 12)
+    return None
+
+
+ev(j, k_case, case12, "wood_low", 0.7)
+for i in range(3):
+    b.hit(j, k_items[i], ("pop", "pop", "pop")[i], 0.55, "东西塞进箱子")
+b.hit(j, k_lid, "tom", 0.85, "箱盖压上")
+LI12 = (cx + 330, cy + 430, 0.8)
+ev(j, k_lid, L.figure(draw_li, j, k_lid, *LI12, mood=lambda T: "o" if T >= tb(4, k_plug) else "smile",
+                      lh=lambda T: (LI12[0] - 130, LI12[1] - 150)))
+
+
+def plug12(c, kk, T, cx=cx, cy=cy):
+    """左上：墙上插座，充电器还插着（红圈）。"""
+    t0 = tb(4, k_plug)
+    sc = pop_scale(T - t0)
+    if sc <= 0:
+        return None
+    x, y = cx - 280, cy - 300
+    with at_pop(c, x, y, sc):
+        box(c, x, y, 170, 200, "#FFFFFF", BLACK, 6, 18)
+        for dx in (-25, 25):
+            c.drawRoundRect(skia.Rect.MakeXYWH(x + dx - 7, y - 40, 14, 34), 4, 4, K.paint(BLACK))
+        box(c, x, y + 10, 90, 70, "#F5F5F5", BLACK, 5, 10)
+        cord = skia.Path()
+        cord.moveTo(x, y + 45)
+        cord.cubicTo(x + 10, y + 170, x + 140, y + 60, x + 200, y + 150)
+        c.drawPath(cord, wb.marker(BLACK, 6))
+        ring = skia.Path()
+        ring.addOval(skia.Rect.MakeXYWH(x - 130, y - 150, 260, 300))
+        part, _ = wb.partial(ring, clamp01((T - t0 - 0.15) / 0.3))
+        c.drawPath(part, wb.marker(RED, 9))
+        K.text(c, "充电器", x + 270, y - 30, 64, "hand", RED, clamp01((T - t0 - 0.3) / 0.2))
+    return None
+
+
+ev(j, k_plug, plug12, "rim", 0.85)
+b.shots[j].shake = [(k_plug, 8.0)]
+
+# ================================================================ 屏 5：做熟了就凭感觉——小李蒙着眼做，一百个箭头指向四面八方
+cx, cy = R[5]
+j = L.scene(5, (cx, cy + 10, Z))
+LI13 = (cx - 40, cy + 430, 0.85)
+k_task = 0
+k_li13 = kq(j, wt(6, 0, 0.5), 1)
+k_mask = max(kq(j, wt(6, 1, 0.6), k_li13 + 1), k_li13 + 1)
+k_arr = max(kq(j, wt(7, 0, 0.4), k_mask + 1), k_mask + 1)
+k_100 = max(kq(j, wt(7, 1, 0.55), k_arr + 2), k_arr + 2)
+L.note("做熟了", "凭感觉", "一百种")
+
+
+def task13(c, sc, T, cx=cx, cy=cy):
+    x, y = cx - 330, cy - 420
+    with at_pop(c, x, y, sc):
+        box(c, x, y, 300, 100, "#FFFFFF", BLACK, 6, 16)
+        K.text(c, "做熟了", x - 20, y + 2, 60, "hand", BLACK)
+        c.drawPath(check(x + 105, y, 26), wb.marker(GREEN, 9))
+    return None
+
+
+ev(j, k_task, pop_fn(j, k_task, task13), "wood_high")
+
+
+def li13(c, sc, T, cx=cx, cy=cy):
+    x, y, s = LI13
+    hx, hy = head_of(x, y, s)
+    mask = T >= tb(5, k_mask)
+    sway = 10 * math.sin((T - tb(5, k_mask)) * 3) if mask else 0.0
+    with at_pop(c, x, y, sc):
+        draw_li(c, x + sway * 0.3, y, s, "smile",
+                lh=(x - 120 * s + sway, hy + 60 * s), rh=(x + 120 * s + sway, hy + 60 * s))
+        if mask:
+            f = ease_out(clamp01((T - tb(5, k_mask)) / 0.25))
+            c.drawRoundRect(skia.Rect.MakeXYWH(hx + sway * 0.3 - 52 * s, hy - 24 * s, 104 * s * f, 34 * s), 10, 10,
+                            K.paint(BLACK))
+            if f >= 1:
+                c.drawPath(P((hx + 50 * s, hy - 8 * s), (hx + 90 * s, hy - 30 * s)), wb.marker(BLACK, 6))
+                c.drawPath(P((hx + 50 * s, hy - 8 * s), (hx + 90 * s, hy + 12 * s)), wb.marker(BLACK, 6))
+    return None
+
+
+ev(j, k_li13, pop_fn(j, k_li13, li13), "pop", 0.7)
+b.hit(j, k_mask, "wood_low", 0.75, "蒙上眼罩")
+ev(j, k_mask, L.pop_text("凭感觉", cx + 290, cy - 420, 76, BLUE, j, k_mask))
+ARR_COLS = [BLUE, ORANGE, GREEN, RED, "#7A5AA6"]
+
+
+def arrows13(c, kk, T, cx=cx, cy=cy):
+    """一百种做法：从小李手里往四面八方射出箭头，分三拍一批批出来。"""
+    hx, hy = LI13[0], LI13[1] - 290 * LI13[2] + 60
+    n_tot = 22
+    for n in range(n_tot):
+        batch = n % 3
+        t0 = tb(5, k_arr + batch) + (n // 3) * 0.03
+        f = ease_out(clamp01((T - t0) / 0.25))
+        if f <= 0:
+            continue
+        a = math.radians(-170 + n * (160 / (n_tot - 1)) + (n * 37 % 11 - 5))
+        r0, r1 = 160, 300 + (n * 53 % 120)
+        a0 = (hx + math.cos(a) * r0, hy + math.sin(a) * r0)
+        a1 = (hx + math.cos(a) * lerp(r0, r1, f), hy + math.sin(a) * lerp(r0, r1, f))
+        c.drawPath(wb.arrow(a0, a1, 0.08 * ((n % 3) - 1), 22 * f), wb.marker(ARR_COLS[n % 5], 6))
+    return None
+
+
+b.custom(j, k_arr, k_arr + 0.3, arrows13)
+b.hit(j, k_arr, "shaker", 0.7, "箭头一批批射出")
+b.hit(j, k_arr + 1, "wood_high", 0.55, "箭头第二批")
+ev(j, k_100, L.stamp("一百种", cx + 250, cy + 150, 84, j, k_100, rot=7), "kick", 0.8)
+b.shots[j].shake = [(k_100, 9.0)]
+
+# ================================================================ 屏 6：丰田的办法，有点土——标准化作业（念到时印章砸下）
+cx, cy = R[6]
+j = L.scene(6, (cx, cy + 10, Z))
 b.path(j, 0, 0.6, book(cx - 420, cy - 450, 150, 100), GREEN, 7, sfx="wood_low")
 b.text(j, 0.6, 1.4, "丰田模式", cx - 160, cy - 450, 76, GREEN)
 WK2 = (cx - 280, cy + 430, 0.9)
-k_wk2 = 1 if KD > 4 else 0
-k_card2 = min(k_wk2 + 1, KD - 1)
-k_tu = kq(j, wt(2, 1, 0.35), k_card2 + 1)
-if k_tu >= KD:
-    k_tu = max(k_card2 + 1, KD - 1)
+k_wk2 = 1
+k_card2 = k_wk2 + 1
+k_tu = kq(j, wt(8, 1, 0.35), k_card2 + 1)
+KD = max(kq(j, wt(8, 1, 0.85), k_tu + 1), k_tu + 1)
+b.shots[j].shake = [(KD, 14.0)]
 CARD2 = (cx + 180, cy + 60, 420, 470)
 
 
 def worker2(c, sc, T):
     x, y, s = WK2
     hx, hy = head_of(x, y, s)
-    lift = ease_out(clamp01((T - tb(2, KD) + 0.2) / 0.3))
+    lift = ease_out(clamp01((T - tb(6, KD) + 0.2) / 0.3))
     rh = (lerp(x + 120 * s, x + 170 * s, lift), lerp(hy + 140 * s, hy - 10 * s, lift))
     with at_pop(c, x, y, sc):
-        draw_worker(c, x, y, s, mood="smile" if T >= tb(2, KD) else "flat", rh=rh)
+        draw_worker(c, x, y, s, mood="smile" if T >= tb(6, KD) else "flat", rh=rh)
     return None
 
 
@@ -365,18 +699,18 @@ ev(j, k_card2, pop_fn(j, k_card2, card2), "wood_high")
 ev(j, k_tu, L.pop_text("有点土", cx - 300, cy - 60, 78, ORANGE, j, k_tu), "clap", 0.7)
 ev(j, KD, L.stamp("标准化作业", cx + 60, cy - 260, 100, j, KD, rot=-6), "kick", 0.95)
 
-# ================================================================ 屏 3：一说标准——死板，管人（小李被捆在本子上，领导叉腰）
-cx, cy = R[3]
-j = L.scene(3, (cx, cy + 10, Z))
+# ================================================================ 屏 7：一说标准——死板，管人（小李被捆在本子上，领导叉腰）
+cx, cy = R[7]
+j = L.scene(7, (cx, cy + 10, Z))
 BK3 = (cx - 120, cy + 120, 300, 420)
 LI3 = (cx - 120, cy + 430, 0.85)
 BO3 = (cx + 330, cy + 430, 0.9)
 k_bk3 = 0
-k_li3 = kq(j, wt(3, 0, 0.4), 1)
+k_li3 = kq(j, wt(9, 0, 0.4), 1)
 k_rope = k_li3 + 1
-k_boss3 = kq(j, wt(3, 1, 0.3), k_rope + 1)
-k_ban = max(kq(j, wt(3, 1, 0.92), k_boss3 + 1), k_boss3 + 1)
-k_guan = max(kq(j, wt(3, 2, 0.4), k_ban + 1), k_ban + 1)
+k_boss3 = kq(j, wt(9, 1, 0.3), k_rope + 1)
+k_ban = max(kq(j, wt(9, 1, 0.92), k_boss3 + 1), k_boss3 + 1)
+k_guan = max(kq(j, wt(9, 2, 0.4), k_ban + 1), k_ban + 1)
 
 
 def book3(c, sc, T):
@@ -397,8 +731,8 @@ ev(j, k_bk3, pop_fn(j, k_bk3, book3), "tom", 0.7)
 
 def li3(c, sc, T):
     x, y, s = LI3
-    tied = T >= tb(3, k_rope)
-    wig = 7 * math.sin((T - tb(3, k_rope)) * 14) if tied else 0.0
+    tied = T >= tb(7, k_rope)
+    wig = 7 * math.sin((T - tb(7, k_rope)) * 14) if tied else 0.0
     hx, hy = head_of(x, y, s)
     with at_pop(c, x, y, sc):
         c.save()
@@ -409,7 +743,7 @@ def li3(c, sc, T):
             draw_li(c, x, y, s, "flat")
         c.restore()
         if tied:
-            f = clamp01((T - tb(3, k_rope)) / 0.35)
+            f = clamp01((T - tb(7, k_rope)) / 0.35)
             for i, yy in enumerate((hy + 115 * s, hy + 175 * s, hy + 235 * s)):
                 if f * 3 <= i:
                     break
@@ -426,7 +760,7 @@ b.hit(j, k_rope, "shaker", 0.8, "绳子把小李捆在本子前")
 def boss3(c, sc, T, cx=cx, cy=cy):
     x, y, s = BO3
     hx, hy = head_of(x, y, s)
-    point = T >= tb(3, k_guan)
+    point = T >= tb(7, k_guan)
     lh = (x - 150 * s, hy + 40 * s) if point else (x - 40 * s, y - 130 * s)
     with at_pop(c, x, y, sc):
         draw_boss(c, x, y, s, lh=lh, rh=(x + 40 * s, y - 130 * s), mood="flat")
@@ -438,43 +772,43 @@ ev(j, k_ban, L.slam_text("死板", cx - 300, cy - 400, 120, BLACK, j, k_ban, rot
 ev(j, k_guan, L.slam_text("管人", cx + 260, cy - 400, 120, BLACK, j, k_guan, rot=6), "kick", 0.8)
 b.shots[j].shake = [(k_guan, 10.0)]
 
-# ================================================================ 屏 4：对照表——左列“我们以为”三条，右列问号；“反着来”
-cx, cy = R[4]
-j = L.scene(4, (cx, cy + 10, Z))
+# ================================================================ 屏 8：对照表——左列“我们以为”三条，右列问号；“反着来”
+cx, cy = R[8]
+j = L.scene(8, (cx, cy + 10, Z))
 TB_X = (cx - 250, cx + 250)
 TB_Y = [cy - 260 + i * 150 for i in range(3)]
 LEFT4 = ["定了不改", "上面定的", "凭经验就行"]
 L.note(*LEFT4, "1", "2", "3")
 k_hd4 = 0
-k_row = [kq(j, wt(4, 0, 0.3), 1)]
+k_row = [kq(j, wt(10, 0, 0.3), 1)]
 k_row += [k_row[0] + 1, k_row[0] + 2]
-k_flip = max(kq(j, wt(4, 1, 0.7), k_row[2] + 1), k_row[2] + 1)
+k_flip = max(kq(j, wt(10, 1, 0.7), k_row[2] + 1), k_row[2] + 1)
 
 
 def table4(c, kk, T, cx=cx, cy=cy):
-    f = ease_out(clamp01((T - tb(4, k_hd4)) / 0.5))
+    f = ease_out(clamp01((T - tb(8, k_hd4)) / 0.5))
     if f <= 0:
         return None
     top, bot = cy - 440, TB_Y[-1] + 75
     dashed(c, (cx, top), (cx, top + (bot - top) * f), GRAY, 5)
     for x, s, fill, line in ((TB_X[0], VS_L, GRAY_FILL, GRAY), (TB_X[1], VS_R, GREEN_FILL, GREEN)):
-        sc = pop_scale(T - tb(4, k_hd4) - (0 if x < cx else 0.12))
+        sc = pop_scale(T - tb(8, k_hd4) - (0 if x < cx else 0.12))
         if sc > 0:
             with K.at(c, x, cy - 400, 0, sc):
                 box(c, 0, 0, 300, 86, fill, line, 6, 43)
                 K.text(c, s, 0, 2, 54, "hand", line)
     for i, y in enumerate(TB_Y):
-        sc = pop_scale(T - tb(4, k_row[i]))
+        sc = pop_scale(T - tb(8, k_row[i]))
         if sc <= 0:
             continue
-        flipped = T >= tb(4, k_flip) + i * 0.15
+        flipped = T >= tb(8, k_flip) + i * 0.15
         with K.at(c, TB_X[0], y, 0, sc):
             box(c, 0, 0, 420, 110, GRAY_FILL, GRAY, 6, 16)
             K.text(c, str(i + 1), -170, 2, 54, "hand", GRAY)
             K.text(c, LEFT4[i], 25, 2, 60, "hand", BLACK)
         with K.at(c, TB_X[1], y, 0, sc):
             box(c, 0, 0, 420, 110, "#FFFFFF", GREEN, 6, 16)
-            g = pop_scale(T - tb(4, k_flip) - i * 0.15) if flipped else 0.0
+            g = pop_scale(T - tb(8, k_flip) - i * 0.15) if flipped else 0.0
             if g > 0:
                 with K.at(c, 0, 0, 0, g):
                     qmark(c, 0, 4, 80, GREEN)
@@ -491,7 +825,7 @@ k_li4 = max(0, k_flip - 1)
 def li4(c, sc, T):
     x, y, s = LI4
     hx, hy = head_of(x, y, s)
-    surprised = T >= tb(4, k_flip)
+    surprised = T >= tb(8, k_flip)
     with at_pop(c, x, y, sc):
         draw_li(c, x, y, s, "smile" if surprised else "flat",
                 rh=(x + 130 * s, hy - 30 * s) if surprised else None)
@@ -503,7 +837,7 @@ ev(j, k_li4, pop_fn(j, k_li4, li4), "pop", 0.6)
 
 def flip4(c, kk, T, cx=cx, cy=cy):
     """“反着来”：两条弯箭头在两列之间来回翻。"""
-    t0 = tb(4, k_flip)
+    t0 = tb(8, k_flip)
     if T < t0:
         return None
     f = clamp01((T - t0) / 0.4)
@@ -524,16 +858,16 @@ L.note("反着来")
 ev(j, k_flip, flip4, "rim", 0.85, 0.4)
 b.hit(j, k_flip + 1, "pop", 0.6, "右列问号逐个冒出")
 
-# ================================================================ 屏 5：误区一——石碑“永远这样做”（红叉）vs 现在最好的做法（橡皮擦改一行）
-cx, cy = R[5]
-j = L.scene(5, (cx, cy + 10, Z))
+# ================================================================ 屏 9：误区一——石碑“永远这样做”（红叉）vs 现在最好的做法（橡皮擦改一行）
+cx, cy = R[9]
+j = L.scene(9, (cx, cy + 10, Z))
 vs_frame(j, 0, cx, cy, 1)
 TAB5 = (cx - 265, cy + 40)
-k_tab = max(1, kq(j, wt(5, 0, 0.6), 1))
-k_x5 = max(kq(j, wt(5, 1, 0.15), k_tab + 1), k_tab + 1)
-k_card5 = max(kq(j, wt(5, 1, 0.7), k_x5 + 1), k_x5 + 1)
-k_erase = max(kq(j, wt(5, 2, 0.5), k_card5 + 1), k_card5 + 1)
-k_new5 = max(kq(j, wt(5, 3, 0.4), k_erase + 1), k_erase + 1)
+k_tab = max(1, kq(j, wt(11, 0, 0.6), 1))
+k_x5 = max(kq(j, wt(11, 1, 0.15), k_tab + 1), k_tab + 1)
+k_card5 = max(kq(j, wt(11, 1, 0.7), k_x5 + 1), k_x5 + 1)
+k_erase = max(kq(j, wt(11, 2, 0.5), k_card5 + 1), k_card5 + 1)
+k_new5 = max(kq(j, wt(11, 3, 0.4), k_erase + 1), k_erase + 1)
 L.note("永远", "这样做", "现在最好的", "更快的")
 
 
@@ -565,7 +899,7 @@ ERASE_ROW = 2
 
 def card5(c, sc, T, cx=cx, cy=cy):
     x, y, w, h = CARD5
-    t_e, t_n = tb(5, k_erase), tb(5, k_new5)
+    t_e, t_n = tb(9, k_erase), tb(9, k_new5)
     with at_pop(c, x, y, sc):
         box(c, x, y, w, h, PAPER_FILL, GREEN, 7, 16)
         c.drawRect(skia.Rect.MakeXYWH(x - w / 2 + 6, y - h / 2 + 6, w - 12, 76), K.paint(GREEN_FILL))
@@ -593,7 +927,7 @@ WK5 = (cx + 340, cy + 430, 0.72)
 
 
 def eraser_pos(T):
-    t_e = tb(5, k_erase)
+    t_e = tb(9, k_erase)
     x, y, w, h = CARD5
     x0, x1 = x - w / 2 + 85, x + w / 2 - 40
     f = clamp01((T - t_e) / 0.5)
@@ -603,7 +937,7 @@ def eraser_pos(T):
 def worker5(c, sc, T, cx=cx, cy=cy):
     x, y, s = WK5
     hx, hy = head_of(x, y, s)
-    t_e = tb(5, k_erase)
+    t_e = tb(9, k_erase)
     working = T >= t_e - 0.3
     if working:
         ex, ey = eraser_pos(T)
@@ -611,7 +945,7 @@ def worker5(c, sc, T, cx=cx, cy=cy):
     else:
         rh = (x + 70 * s, hy + 170 * s)
     with at_pop(c, x, y, sc):
-        draw_worker(c, x, y, s, mood="smile" if T >= tb(5, k_new5) else "flat", rh=rh)
+        draw_worker(c, x, y, s, mood="smile" if T >= tb(9, k_new5) else "flat", rh=rh)
         if working:
             with K.at(c, rh[0], rh[1] - 25, -15):
                 box(c, 0, 0, 70, 40, "#F28B82", BLACK, 4, 8)
@@ -625,10 +959,10 @@ b.hit(j, k_erase, "shaker", 0.8, "橡皮擦掉一行")
 b.hit(j, k_new5, "ding", 0.75, "写上更快的做法")
 b.path(j, k_new5 + 1, k_new5 + 1.4, check(CARD5[0] + 130, ROWS5[ERASE_ROW], 30), GREEN, 13, sfx="pop", gain=0.7)
 
-# ================================================================ 屏 6：福特——今天的标准是台阶，明天站在上面再改
-cx, cy = R[6]
-j = L.scene(6, (cx, cy + 10, Z))
-k_ford = kq(j, wt(6, 0, 0.25), 0)
+# ================================================================ 屏 10：福特——今天的标准是台阶，明天站在上面再改
+cx, cy = R[10]
+j = L.scene(10, (cx, cy + 10, Z))
+k_ford = kq(j, wt(12, 0, 0.25), 0)
 STEP_W, STEP_H = 380, 230
 ST0 = (cx - 470, cy + 430)         # 台阶左下角
 L.note("福特说", "今天的标准", "明天", "改进", "基础")
@@ -644,10 +978,10 @@ def ford6(c, sc, T, cx=cx, cy=cy):
 
 
 ev(j, k_ford, pop_fn(j, k_ford, ford6), "pop")
-k_st1 = max(kq(j, wt(6, 0, 0.75), k_ford + 1), k_ford + 1)
-k_st2 = max(kq(j, wt(6, 1, 0.3), k_st1 + 1), k_st1 + 1)
+k_st1 = max(kq(j, wt(12, 0, 0.75), k_ford + 1), k_ford + 1)
+k_st2 = max(kq(j, wt(12, 1, 0.3), k_st1 + 1), k_st1 + 1)
 k_climb = k_st2 + 1
-k_base = max(kq(j, wt(6, 1, 0.85), k_climb + 1), k_climb + 1)
+k_base = max(kq(j, wt(12, 1, 0.85), k_climb + 1), k_climb + 1)
 
 
 def step6(i):
@@ -673,7 +1007,7 @@ ev(j, k_st2, pop_fn(j, k_st2, step6(1)), "wood_high")
 
 def worker6(c, kk, T):
     """小王站在“今天”上，往上一步跳到“明天”。"""
-    t0 = tb(6, k_st1) + 0.15
+    t0 = tb(10, k_st1) + 0.15
     sc = pop_scale(T - t0)
     if sc <= 0:
         return None
@@ -682,7 +1016,7 @@ def worker6(c, kk, T):
     ya = ST0[1] - STEP_H
     xb = ST0[0] + (STEP_W - 40) + STEP_W / 2
     yb = ST0[1] - 2 * STEP_H
-    g = ease_in_out(clamp01((T - tb(6, k_climb) + 0.35) / 0.35))
+    g = ease_in_out(clamp01((T - tb(10, k_climb) + 0.35) / 0.35))
     x = lerp(xa, xb, g)
     y = lerp(ya, yb, g) - math.sin(g * math.pi) * 110
     hx, hy = head_of(x, y, s)
@@ -698,7 +1032,7 @@ b.hit(j, k_climb, "bongo_high", 0.8, "小王跳上明天那一级")
 
 
 def base6(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(6, k_base)
+    t0 = tb(10, k_base)
     if T < t0:
         return None
     f = clamp01((T - t0) / 0.35)
@@ -715,17 +1049,17 @@ def base6(c, kk, T, cx=cx, cy=cy):
 
 ev(j, k_base, base6, "ding", 0.8, 0.35)
 
-# ================================================================ 屏 7：误区二——领导往下扔规定（红叉）vs 工人自己掐表、改步骤
-cx, cy = R[7]
-j = L.scene(7, (cx, cy + 10, Z))
+# ================================================================ 屏 11：误区二——领导往下扔规定（红叉）vs 工人自己掐表、改步骤
+cx, cy = R[11]
+j = L.scene(11, (cx, cy + 10, Z))
 vs_frame(j, 0, cx, cy, 2)
 BO7 = (cx - 390, cy + 430, 0.8)
-k_boss7 = max(1, kq(j, wt(7, 0, 0.5), 1))
+k_boss7 = max(1, kq(j, wt(13, 0, 0.5), 1))
 k_throw = k_boss7 + 1
-k_x7 = max(kq(j, wt(7, 1, 0.6), k_throw + 1), k_throw + 1)
-k_fac = max(kq(j, wt(8, 0, 0.35), k_x7 + 1), k_x7 + 1)
-k_watch = max(kq(j, wt(8, 1, 0.4), k_fac + 1), k_fac + 1)
-k_rew = max(kq(j, wt(8, 2, 0.4), k_watch + 1), k_watch + 1)
+k_x7 = max(kq(j, wt(13, 1, 0.6), k_throw + 1), k_throw + 1)
+k_fac = max(kq(j, wt(14, 0, 0.35), k_x7 + 1), k_x7 + 1)
+k_watch = max(kq(j, wt(14, 1, 0.4), k_fac + 1), k_fac + 1)
+k_rew = max(kq(j, wt(14, 2, 0.4), k_watch + 1), k_watch + 1)
 L.note("规定", "合办工厂")
 RULE_LAND = (cx - 160, cy + 410)
 
@@ -733,7 +1067,7 @@ RULE_LAND = (cx - 160, cy + 410)
 def boss7(c, sc, T):
     x, y, s = BO7
     hx, hy = head_of(x, y, s)
-    t_t = tb(7, k_throw)
+    t_t = tb(11, k_throw)
     up = t_t - 0.5 <= T < t_t + 0.1
     rh = (x + 110 * s, hy - 80 * s) if up else (x + 60 * s, y - 130 * s)
     with at_pop(c, x, y, sc):
@@ -745,7 +1079,7 @@ ev(j, k_boss7, pop_fn(j, k_boss7, boss7), "wood_low")
 
 
 def rules7(c, kk, T, cx=cx, cy=cy):
-    t_t = tb(7, k_throw)
+    t_t = tb(11, k_throw)
     if T < t_t - 0.45:
         return None
     x0, y0 = BO7[0] + 100, BO7[1] - 290 * BO7[2] - 100
@@ -789,17 +1123,17 @@ CARD7 = (cx + 160, cy + 60, 250, 300)
 def worker7(c, sc, T):
     x, y, s = WK7
     hx, hy = head_of(x, y, s)
-    click = T >= tb(7, k_watch)
-    writing = T >= tb(7, k_rew)
+    click = T >= tb(11, k_watch)
+    writing = T >= tb(11, k_rew)
     if writing:
-        rh = (CARD7[0] + 60 + 30 * math.sin((T - tb(7, k_rew)) * 10) * (T < tb(7, k_rew) + 0.6), CARD7[1] + 40)
+        rh = (CARD7[0] + 60 + 30 * math.sin((T - tb(11, k_rew)) * 10) * (T < tb(11, k_rew) + 0.6), CARD7[1] + 40)
     else:
         rh = (x + 70 * s, hy + 170 * s)
     lh = (x - 30 * s, hy - 20 * s) if click else (x - 70 * s, hy + 170 * s)
     with at_pop(c, x, y, sc):
         draw_worker(c, x, y, s, mood="smile" if writing else "flat", lh=lh, rh=rh)
         if click:
-            f = (T - tb(7, k_watch)) / 3.0
+            f = (T - tb(11, k_watch)) / 3.0
             C_ = (lh[0] - 10, lh[1] - 60)
             c.drawCircle(C_[0], C_[1], 52, K.paint("#FFFFFF"))
             c.drawPath(wb.clock(C_[0], C_[1], 52), wb.marker(BLACK, 6))
@@ -818,8 +1152,8 @@ def card7(c, sc, T, cx=cx, cy=cy):
         for i in range(3):
             yy = y - h / 2 + 70 + i * 80
             K.text(c, str(i + 1), x - w / 2 + 35, yy, 42, "hand", GREEN)
-            if i == 1 and T >= tb(7, k_rew):
-                f = clamp01((T - tb(7, k_rew)) / 0.5)
+            if i == 1 and T >= tb(11, k_rew):
+                f = clamp01((T - tb(11, k_rew)) / 0.5)
                 c.drawLine(x - w / 2 + 65, yy, x - w / 2 + 65 + (w - 100) * f, yy, wb.marker(ORANGE, 8))
                 c.drawLine(x - w / 2 + 65, yy - 24, x + w / 2 - 30, yy - 24 + 0 * f, wb.marker("#9AA0AC", 0.01))
             else:
@@ -835,14 +1169,14 @@ b.hit(j, k_rew, "wood_low", 0.7, "小王改写一步")
 b.path(j, k_rew + 1, k_rew + 1.4, check(CARD7[0] + 30, CARD7[1] - CARD7[3] / 2 - 50, 44), GREEN, 13, sfx="ding",
        gain=0.7)
 
-# ================================================================ 屏 8：误区三——凭经验每次都不一样，错了找不到（红叉）vs 同一张流程，错哪一步一眼看到
-cx, cy = R[8]
-j = L.scene(8, (cx, cy + 10, Z))
+# ================================================================ 屏 12：误区三——凭经验每次都不一样，错了找不到（红叉）vs 同一张流程，错哪一步一眼看到
+cx, cy = R[12]
+j = L.scene(12, (cx, cy + 10, Z))
 vs_frame(j, 0, cx, cy, 3)
 FLOW_R = [(cx + 270, cy - 280 + i * 165) for i in range(4)]
-k_flowR = max(1, kq(j, wt(9, 1, 0.3), 1))
-k_dotR = max(kq(j, wt(9, 2, 0.4), k_flowR + 1), k_flowR + 1)
-k_ptR = max(kq(j, wt(9, 3, 0.6), k_dotR + 1), k_dotR + 1)
+k_flowR = max(1, kq(j, wt(15, 1, 0.3), 1))
+k_dotR = max(kq(j, wt(15, 2, 0.4), k_flowR + 1), k_flowR + 1)
+k_ptR = max(kq(j, wt(15, 3, 0.6), k_dotR + 1), k_dotR + 1)
 
 
 def flow_r(c, sc, T, cx=cx, cy=cy):
@@ -851,7 +1185,7 @@ def flow_r(c, sc, T, cx=cx, cy=cy):
         for i, (fx, fy) in enumerate(FLOW_R):
             if i:
                 c.drawPath(wb.arrow((fx, fy - 120), (fx, fy - 48), 0, 18), wb.marker(GREEN, 5))
-            bad = i == 2 and T >= tb(8, k_dotR)
+            bad = i == 2 and T >= tb(12, k_dotR)
             step_box(c, fx, fy, i + 1, 170, 84, RED_FILL if bad else GREEN_FILL, RED if bad else GREEN)
     return None
 
@@ -860,13 +1194,13 @@ ev(j, k_flowR, pop_fn(j, k_flowR, flow_r), "wood_high")
 
 
 def dot_r(c, kk, T):
-    t0 = tb(8, k_dotR)
+    t0 = tb(12, k_dotR)
     if T < t0:
         return None
     fx, fy = FLOW_R[2]
     K.ripple(c, fx + 120, fy, T - t0, RED, 90, 5, 0.8, 0.5)
     c.drawCircle(fx + 120, fy, 20 * pop_scale(T - t0), K.paint(RED))
-    t1 = tb(8, k_ptR)
+    t1 = tb(12, k_ptR)
     if T >= t1:
         f = clamp01((T - t1) / 0.3)
         part, tip = wb.partial(wb.arrow((fx + 230, fy - 110), (fx + 150, fy - 30), 0.2, 26), f)
@@ -879,10 +1213,10 @@ def dot_r(c, kk, T):
 ev(j, k_dotR, dot_r, "rim", 0.8)
 b.hit(j, k_ptR, "ding", 0.75, "箭头指着出错那一步")
 # 左栏：三张不一样的流程叠在一起
-k_flowL = max(kq(j, wt(10, 0, 0.35), k_ptR + 1), k_ptR + 1)
-k_dotL = max(kq(j, wt(10, 1, 0.3), k_flowL + 3), k_flowL + 3)
+k_flowL = max(kq(j, wt(16, 0, 0.35), k_ptR + 1), k_ptR + 1)
+k_dotL = max(kq(j, wt(16, 1, 0.3), k_flowL + 3), k_flowL + 3)
 k_mag = k_dotL + 1
-k_xL = max(kq(j, wt(10, 2, 0.6), k_mag + 1), k_mag + 1)
+k_xL = max(kq(j, wt(16, 2, 0.6), k_mag + 1), k_mag + 1)
 FLOWS_L = [  # (dx, dy, 步骤序号顺序, 旋转)
     (-120, -60, [1, 2, 3], -6),
     (0, 0, [2, 1, 4, 3], 3),
@@ -892,7 +1226,7 @@ FLOWS_L = [  # (dx, dy, 步骤序号顺序, 旋转)
 
 def flows_l(c, kk, T, cx=cx, cy=cy):
     for n, (dx, dy, order, rot) in enumerate(FLOWS_L):
-        sc = pop_scale(T - tb(8, k_flowL + n))
+        sc = pop_scale(T - tb(12, k_flowL + n))
         if sc <= 0:
             continue
         x0, y0 = cx - 270 + dx, cy - 200 + dy
@@ -910,12 +1244,12 @@ for n in range(3):
 
 
 def mag_l(c, kk, T, cx=cx, cy=cy):
-    t_d = tb(8, k_dotL)
+    t_d = tb(12, k_dotL)
     if T < t_d:
         return None
     a = pop_scale(T - t_d)
     c.drawCircle(cx - 160, cy + 20, 18 * a, K.paint(RED))
-    t_m = tb(8, k_mag)
+    t_m = tb(12, k_mag)
     if T >= t_m:
         sc = pop_scale(T - t_m)
         u = (T - t_m) * 1.8
@@ -932,24 +1266,24 @@ ev(j, k_dotL, mag_l, "pop", 0.7)
 b.hit(j, k_mag, "shaker", 0.7, "放大镜到处找")
 big_x(j, k_xL, cx - 270, cy + 330, 110, 0.8)
 
-# ================================================================ 屏 9：三次按同一个步骤做，第三次第 3 步歪了，一比就看出来；扶正→改进
-cx, cy = R[9]
-j = L.scene(9, (cx, cy + 10, Z))
+# ================================================================ 屏 13：三次按同一个步骤做，第三次第 3 步歪了，一比就看出来；扶正→改进
+cx, cy = R[13]
+j = L.scene(13, (cx, cy + 10, Z))
 ROW9_Y = [cy - 380 + i * 165 for i in range(3)]
 COL9_X = [cx - 230 + i * 170 for i in range(4)]
-k_rows9 = [kq(j, wt(11, 0, 0.2), 0)]
+k_rows9 = [kq(j, wt(17, 0, 0.2), 0)]
 k_rows9 += [k_rows9[0] + 1, k_rows9[0] + 2]
-k_dev = max(kq(j, wt(11, 1, 0.6), k_rows9[2] + 1), k_rows9[2] + 1)
-k_cmp = max(kq(j, wt(11, 2, 0.5), k_dev + 1), k_dev + 1)
-k_fix = max(kq(j, wt(12, 0, 0.5), k_cmp + 1), k_cmp + 1)
-k_up = max(kq(j, wt(12, 1, 0.5), k_fix + 1), k_fix + 1)
+k_dev = max(kq(j, wt(17, 1, 0.6), k_rows9[2] + 1), k_rows9[2] + 1)
+k_cmp = max(kq(j, wt(17, 2, 0.5), k_dev + 1), k_dev + 1)
+k_fix = max(kq(j, wt(18, 0, 0.5), k_cmp + 1), k_cmp + 1)
+k_up = max(kq(j, wt(18, 1, 0.5), k_fix + 1), k_fix + 1)
 L.note("第1次", "第2次", "第3次", "改进")
 
 
 def rows9(c, kk, T, cx=cx, cy=cy):
-    t_dev, t_fix = tb(9, k_dev), tb(9, k_fix)
+    t_dev, t_fix = tb(13, k_dev), tb(13, k_fix)
     for r, y in enumerate(ROW9_Y):
-        sc = pop_scale(T - tb(9, k_rows9[r]))
+        sc = pop_scale(T - tb(13, k_rows9[r]))
         if sc <= 0:
             continue
         with K.at(c, cx, y, 0, sc):
@@ -977,11 +1311,11 @@ b.hit(j, k_dev, "bongo_low", 0.8, "第三次第3步歪了")
 
 
 def band9(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(9, k_cmp)
+    t0 = tb(13, k_cmp)
     if T < t0:
         return None
     f = ease_out(clamp01((T - t0) / 0.3))
-    fade = 1 - 0.7 * clamp01((T - tb(9, k_fix)) / 0.3)
+    fade = 1 - 0.7 * clamp01((T - tb(13, k_fix)) / 0.3)
     x = COL9_X[2]
     top, bot = ROW9_Y[0] - 70, ROW9_Y[2] + 110
     r = skia.Rect.MakeLTRB(x - 75, top, x + 75, top + (bot - top) * f)
@@ -997,7 +1331,7 @@ LD9 = (cx + 380, cy + 430, 0.78)
 def leader9(c, sc, T):
     x, y, s = LD9
     with at_pop(c, x, y, sc):
-        draw_leader(c, x, y, s, head_dx=-6 if T >= tb(9, k_cmp) else 0.0)
+        draw_leader(c, x, y, s, head_dx=-6 if T >= tb(13, k_cmp) else 0.0)
     return None
 
 
@@ -1005,7 +1339,7 @@ ev(j, k_rows9[0] + 1, pop_fn(j, k_rows9[0] + 1, leader9))
 
 
 def up9(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(9, k_up)
+    t0 = tb(13, k_up)
     if T < t0:
         return None
     f = ease_out(clamp01((T - t0) / 0.4))
@@ -1027,340 +1361,6 @@ def up9(c, kk, T, cx=cx, cy=cy):
 L.note("同一张流程")
 b.hit(j, k_fix, "pop", 0.75, "歪掉的一步扶正、变绿")
 ev(j, k_up, up9, "ding", 0.8)
-
-# ================================================================ 屏 10：每月做报表——四个月，三月忘了更新数据（红圈）
-cx, cy = R[10]
-j = L.scene(10, (cx, cy + 10, Z))
-LI10 = (cx - 330, cy + 430, 0.85)
-DK10 = (cx - 170, cy + 250)
-ev(j, 0, L.figure(draw_li, j, 0, *LI10, mood=lambda T: "sad" if T >= tb(10, k_old) else "flat",
-                  lh=lambda T: (LI10[0] + 60, DK10[1] - 10 + 6 * math.sin(T * 14)),
-                  rh=lambda T: (LI10[0] + 140, DK10[1] - 10 - 6 * math.sin(T * 14))), "pop", 0.6)
-b.path(j, 0.3, 1.0, wb.desk(DK10[0], DK10[1], 340), BLACK, 8)
-MON = [(cx - 330 + i * 220, cy - 330) for i in range(4)]
-L.note("1月", "2月", "3月", "4月", "旧数据", "从头想")
-k_m = [kq(j, wt(14, 0, 0.1), 2)]
-k_m += [k_m[0] + i for i in range(1, 4)]
-k_think = max(kq(j, wt(14, 1, 0.35), k_m[3] + 1), k_m[3] + 1)
-k_old = max(kq(j, wt(14, 2, 0.7), k_think + 1), k_think + 1)
-
-
-def months10(c, kk, T):
-    for i, (x, y) in enumerate(MON):
-        sc = pop_scale(T - tb(10, k_m[i]))
-        if sc <= 0:
-            continue
-        stale = i == 2 and T >= tb(10, k_old)
-        with K.at(c, x, y, 0, sc):
-            box(c, 0, 0, 190, 230, "#FFFFFF", BLACK, 6, 12)
-            c.drawRect(skia.Rect.MakeXYWH(-89, -109, 178, 50), K.paint(RED_FILL if stale else BLUE_FILL))
-            K.text(c, f"{i + 1}月", 0, -82, 44, "hand", BLACK)
-            for n, hh in enumerate((40, 70, 55, 95) if not stale else (40, 70, 55, 30)):
-                bx = -60 + n * 40
-                col = GRAY if stale and n == 3 else BLUE
-                c.drawRect(skia.Rect.MakeXYWH(bx - 14, 90 - hh, 28, hh), K.paint(GRAY_FILL if stale and n == 3 else BLUE_FILL))
-                c.drawRect(skia.Rect.MakeXYWH(bx - 14, 90 - hh, 28, hh), wb.marker(col, 4))
-    return None
-
-
-b.custom(j, k_m[0], k_m[0] + 0.3, months10)
-for i in range(4):
-    b.hit(j, k_m[i], ("wood_low", "wood_high")[i % 2], 0.6, f"{i + 1}月报表")
-
-
-def think10(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(10, k_think)
-    if T < t0:
-        return None
-    sc = pop_scale(T - t0)
-    x, y = cx + 60, cy + 50
-    with K.at(c, x, y, 0, sc):
-        c.drawRoundRect(skia.Rect.MakeXYWH(-200, -90, 400, 180), 80, 80, K.paint("#FFFFFF"))
-        c.drawRoundRect(skia.Rect.MakeXYWH(-200, -90, 400, 180), 80, 80, wb.marker(BLACK, 6))
-        for n, (dx, dy, r) in enumerate(((-230, 50, 18), (-290, 80, 12))):
-            c.drawCircle(dx, dy, r, K.paint("#FFFFFF"))
-            c.drawCircle(dx, dy, r, wb.marker(BLACK, 5))
-        sp = skia.Path()
-        rot = (T - t0) * 260
-        for i in range(60):
-            a = math.radians(i * 14 + rot)
-            rr = 4 + i * 0.85
-            px, py = -110 + math.cos(a) * rr, math.sin(a) * rr
-            sp.moveTo(px, py) if i == 0 else sp.lineTo(px, py)
-        c.drawPath(sp, wb.marker(BLUE, 5))
-        K.text(c, "从头想", 60, 0, 60, "hand", BLUE)
-    return None
-
-
-ev(j, k_think, think10, "shaker", 0.8)
-
-
-def old10(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(10, k_old)
-    if T < t0:
-        return None
-    f = clamp01((T - t0) / 0.35)
-    x, y = MON[2]
-    ring = skia.Path()
-    ring.addOval(skia.Rect.MakeXYWH(x - 135, y - 155, 270, 310))
-    part, tip = wb.partial(ring, f)
-    c.drawPath(part, wb.marker(RED, 9))
-    sc = pop_scale(T - t0 - 0.25)
-    if sc > 0:
-        with K.at(c, x, y + 205, 0, sc):
-            K.text(c, "旧数据", 0, 0, 60, "hand", RED)
-    return tip if f < 1 else None
-
-
-ev(j, k_old, old10, "rim", 0.85, 0.35)
-
-# ================================================================ 屏 11：同事请假——空座位；小李对着一堆文件发愣；小王脑子里装着流程
-cx, cy = R[11]
-j = L.scene(11, (cx, cy + 10, Z))
-CH11 = (cx - 330, cy + 300)
-k_chair = 0
-k_note = kq(j, wt(15, 0, 0.6), 1)
-k_pile = max(kq(j, wt(15, 1, 0.3), k_note + 1), k_note + 1)
-k_li11 = k_pile + 1
-k_head = max(kq(j, wt(15, 2, 0.5), k_li11 + 1), k_li11 + 1)
-L.note("请假")
-
-
-def chair11(c, sc, T):
-    x, y = CH11
-    with at_pop(c, x, y + 130, sc):
-        c.drawPath(wb.desk(x, y - 40, 300), wb.marker(BLACK, 8))
-        ch = P((x - 60, y - 180 + 200), (x - 60, y + 130), (x - 60, y + 30), (x + 40, y + 30), (x + 40, y + 130))
-        c.drawPath(join(ch, P((x - 60, y + 30), (x - 75, y - 70))), wb.marker(GRAY, 8))
-    return None
-
-
-ev(j, k_chair, pop_fn(j, k_chair, chair11), "wood_high")
-
-
-def note11(c, kk, T):
-    t0 = tb(11, k_note)
-    sc = C.slam_scale(T - t0)
-    if sc <= 0:
-        return None
-    x, y = CH11[0] + 40, CH11[1] - 180
-    with K.at(c, x, y, -8, sc):
-        sticky(c, 0, 0, 170, 120)
-        K.text(c, "请假", 0, 0, 62, "hand", RED)
-    return None
-
-
-ev(j, k_note, note11, "rim", 0.8)
-
-
-def pile11(c, kk, T, cx=cx, cy=cy):
-    t0 = tb(11, k_pile)
-    for i in range(6):
-        f = pop_scale(T - t0 - i * 0.07, 0.2)
-        if f <= 0:
-            continue
-        with K.at(c, cx + 20 + ((i * 29) % 21 - 10), cy + 330 - i * 34, (i % 3 - 1) * 4, f):
-            box(c, 0, 0, 200, 32, "#FFFFFF", BLACK, 4, 4)
-    return None
-
-
-ev(j, k_pile, pile11, "wood_low", 0.7)
-LI11 = (cx + 200, cy + 430, 0.8)
-
-
-def li11(c, sc, T, cx=cx, cy=cy):
-    x, y, s = LI11
-    hx, hy = head_of(x, y, s)
-    with at_pop(c, x, y, sc):
-        draw_li(c, x, y, s, "sad", lh=(x - 110 * s, hy + 120 * s), rh=(x + 80 * s, hy + 170 * s))
-        a = pop_scale(T - tb(11, k_li11) - 0.3)
-        if a > 0:
-            with K.at(c, hx - 90, hy - 80, 0, a):
-                qmark(c, 0, 0, 90, BLUE)
-                qmark(c, 50, -30, 60, BLUE)
-    return None
-
-
-ev(j, k_li11, pop_fn(j, k_li11, li11), "pop", 0.7)
-WK11 = (cx + 330, cy - 120, 0.62)
-
-
-def head11(c, sc, T, cx=cx, cy=cy):
-    """右上：小王（在家）头上一个大想法泡，里面是一整张流程。"""
-    x, y, s = WK11
-    hx, hy = head_of(x, y, s)
-    with at_pop(c, x, y, sc):
-        draw_worker(c, x, y, s, mood="smile")
-        bx, by = cx - 20, cy - 360
-        c.drawRoundRect(skia.Rect.MakeXYWH(bx - 230, by - 110, 460, 220), 90, 90, K.paint("#FFFFFF"))
-        c.drawRoundRect(skia.Rect.MakeXYWH(bx - 230, by - 110, 460, 220), 90, 90, wb.marker(BLACK, 6))
-        for dx, dy, r in ((hx - 120, hy - 70, 22), (hx - 70, hy - 40, 14)):
-            c.drawCircle(dx, dy, r, K.paint("#FFFFFF"))
-            c.drawCircle(dx, dy, r, wb.marker(BLACK, 5))
-        for i in range(4):
-            fx = bx - 165 + i * 110
-            if i:
-                c.drawPath(wb.arrow((fx - 70, by), (fx - 42, by), 0, 12), wb.marker(BLUE, 4))
-            step_box(c, fx, by, i + 1, 74, 64)
-    return None
-
-
-ev(j, k_head, pop_fn(j, k_head, head11), "ding", 0.75)
-
-# ================================================================ 屏 12：出差收拾行李——箱子塞满盖上，充电器还插在墙上
-cx, cy = R[12]
-j = L.scene(12, (cx, cy + 10, Z))
-SC12 = (cx - 120, cy + 260)
-k_case = 0
-k_items = [kq(j, wt(16, 0, 0.3), 1)]
-k_items += [k_items[0] + 1, k_items[0] + 2]
-k_lid = k_items[2] + 1
-k_plug = max(kq(j, wt(16, 1, 0.6), k_lid + 1), k_lid + 1)
-L.note("充电器")
-
-
-def case12(c, kk, T, cx=cx, cy=cy):
-    sc = pop_scale(T - tb(12, k_case))
-    if sc <= 0:
-        return None
-    x, y = SC12
-    with at_pop(c, x, y + 120, sc):
-        box(c, x, y, 460, 240, "#F1DDB8", "#A9773E", 8, 20)
-        for i, kind in enumerate(("shirt", "shoe", "book")):
-            f = pop_scale(T - tb(12, k_items[i]), 0.22)
-            if f <= 0:
-                continue
-            ix = x - 140 + i * 140
-            with K.at(c, ix, y - 40 - (1 - f) * 120, (i - 1) * 8, f):
-                if kind == "shirt":
-                    c.drawPath(P((-55, -40), (-20, -55), (20, -55), (55, -40), (45, 40), (-45, 40), close=True),
-                               K.paint(BLUE_FILL))
-                    c.drawPath(P((-55, -40), (-20, -55), (20, -55), (55, -40), (45, 40), (-45, 40), close=True),
-                               wb.marker(BLUE, 5))
-                elif kind == "shoe":
-                    c.drawPath(P((-50, 20), (-50, -30), (-10, -30), (10, 0), (55, 10), (55, 25), close=True),
-                               K.paint("#FBE0C6"))
-                    c.drawPath(P((-50, 20), (-50, -30), (-10, -30), (10, 0), (55, 10), (55, 25), close=True),
-                               wb.marker(ORANGE, 5))
-                else:
-                    box(c, 0, 0, 90, 110, GREEN_FILL, GREEN, 5, 8)
-        t_l = tb(12, k_lid)
-        g = ease_in_out(clamp01((T - t_l + 0.3) / 0.3))
-        ang = lerp(-75, 0, g) + wobble(T - t_l, 4, 30, 9)
-        with K.at(c, x - 230, y - 120, ang):
-            box(c, 230, -20, 460, 40, "#E9C891", "#A9773E", 7, 14)
-        if g >= 1:
-            box(c, x, y - 140, 120, 26, "#A9773E", "#7A5228", 5, 12)
-    return None
-
-
-ev(j, k_case, case12, "wood_low", 0.7)
-for i in range(3):
-    b.hit(j, k_items[i], ("pop", "pop", "pop")[i], 0.55, "东西塞进箱子")
-b.hit(j, k_lid, "tom", 0.85, "箱盖压上")
-LI12 = (cx + 330, cy + 430, 0.8)
-ev(j, k_lid, L.figure(draw_li, j, k_lid, *LI12, mood=lambda T: "o" if T >= tb(12, k_plug) else "smile",
-                      lh=lambda T: (LI12[0] - 130, LI12[1] - 150)))
-
-
-def plug12(c, kk, T, cx=cx, cy=cy):
-    """左上：墙上插座，充电器还插着（红圈）。"""
-    t0 = tb(12, k_plug)
-    sc = pop_scale(T - t0)
-    if sc <= 0:
-        return None
-    x, y = cx - 280, cy - 300
-    with at_pop(c, x, y, sc):
-        box(c, x, y, 170, 200, "#FFFFFF", BLACK, 6, 18)
-        for dx in (-25, 25):
-            c.drawRoundRect(skia.Rect.MakeXYWH(x + dx - 7, y - 40, 14, 34), 4, 4, K.paint(BLACK))
-        box(c, x, y + 10, 90, 70, "#F5F5F5", BLACK, 5, 10)
-        cord = skia.Path()
-        cord.moveTo(x, y + 45)
-        cord.cubicTo(x + 10, y + 170, x + 140, y + 60, x + 200, y + 150)
-        c.drawPath(cord, wb.marker(BLACK, 6))
-        ring = skia.Path()
-        ring.addOval(skia.Rect.MakeXYWH(x - 130, y - 150, 260, 300))
-        part, _ = wb.partial(ring, clamp01((T - t0 - 0.15) / 0.3))
-        c.drawPath(part, wb.marker(RED, 9))
-        K.text(c, "充电器", x + 270, y - 30, 64, "hand", RED, clamp01((T - t0 - 0.3) / 0.2))
-    return None
-
-
-ev(j, k_plug, plug12, "rim", 0.85)
-b.shots[j].shake = [(k_plug, 8.0)]
-
-# ================================================================ 屏 13：做熟了就凭感觉——小李蒙着眼做，一百个箭头指向四面八方
-cx, cy = R[13]
-j = L.scene(13, (cx, cy + 10, Z))
-LI13 = (cx - 40, cy + 430, 0.85)
-k_task = 0
-k_li13 = kq(j, wt(17, 0, 0.5), 1)
-k_mask = max(kq(j, wt(17, 1, 0.6), k_li13 + 1), k_li13 + 1)
-k_arr = max(kq(j, wt(18, 0, 0.4), k_mask + 1), k_mask + 1)
-k_100 = max(kq(j, wt(18, 1, 0.55), k_arr + 2), k_arr + 2)
-L.note("做熟了", "凭感觉", "一百种")
-
-
-def task13(c, sc, T, cx=cx, cy=cy):
-    x, y = cx - 330, cy - 420
-    with at_pop(c, x, y, sc):
-        box(c, x, y, 300, 100, "#FFFFFF", BLACK, 6, 16)
-        K.text(c, "做熟了", x - 20, y + 2, 60, "hand", BLACK)
-        c.drawPath(check(x + 105, y, 26), wb.marker(GREEN, 9))
-    return None
-
-
-ev(j, k_task, pop_fn(j, k_task, task13), "wood_high")
-
-
-def li13(c, sc, T, cx=cx, cy=cy):
-    x, y, s = LI13
-    hx, hy = head_of(x, y, s)
-    mask = T >= tb(13, k_mask)
-    sway = 10 * math.sin((T - tb(13, k_mask)) * 3) if mask else 0.0
-    with at_pop(c, x, y, sc):
-        draw_li(c, x + sway * 0.3, y, s, "smile",
-                lh=(x - 120 * s + sway, hy + 60 * s), rh=(x + 120 * s + sway, hy + 60 * s))
-        if mask:
-            f = ease_out(clamp01((T - tb(13, k_mask)) / 0.25))
-            c.drawRoundRect(skia.Rect.MakeXYWH(hx + sway * 0.3 - 52 * s, hy - 24 * s, 104 * s * f, 34 * s), 10, 10,
-                            K.paint(BLACK))
-            if f >= 1:
-                c.drawPath(P((hx + 50 * s, hy - 8 * s), (hx + 90 * s, hy - 30 * s)), wb.marker(BLACK, 6))
-                c.drawPath(P((hx + 50 * s, hy - 8 * s), (hx + 90 * s, hy + 12 * s)), wb.marker(BLACK, 6))
-    return None
-
-
-ev(j, k_li13, pop_fn(j, k_li13, li13), "pop", 0.7)
-b.hit(j, k_mask, "wood_low", 0.75, "蒙上眼罩")
-ev(j, k_mask, L.pop_text("凭感觉", cx + 290, cy - 420, 76, BLUE, j, k_mask))
-ARR_COLS = [BLUE, ORANGE, GREEN, RED, "#7A5AA6"]
-
-
-def arrows13(c, kk, T, cx=cx, cy=cy):
-    """一百种做法：从小李手里往四面八方射出箭头，分三拍一批批出来。"""
-    hx, hy = LI13[0], LI13[1] - 290 * LI13[2] + 60
-    n_tot = 22
-    for n in range(n_tot):
-        batch = n % 3
-        t0 = tb(13, k_arr + batch) + (n // 3) * 0.03
-        f = ease_out(clamp01((T - t0) / 0.25))
-        if f <= 0:
-            continue
-        a = math.radians(-170 + n * (160 / (n_tot - 1)) + (n * 37 % 11 - 5))
-        r0, r1 = 160, 300 + (n * 53 % 120)
-        a0 = (hx + math.cos(a) * r0, hy + math.sin(a) * r0)
-        a1 = (hx + math.cos(a) * lerp(r0, r1, f), hy + math.sin(a) * lerp(r0, r1, f))
-        c.drawPath(wb.arrow(a0, a1, 0.08 * ((n % 3) - 1), 22 * f), wb.marker(ARR_COLS[n % 5], 6))
-    return None
-
-
-b.custom(j, k_arr, k_arr + 0.3, arrows13)
-b.hit(j, k_arr, "shaker", 0.7, "箭头一批批射出")
-b.hit(j, k_arr + 1, "wood_high", 0.55, "箭头第二批")
-ev(j, k_100, L.stamp("一百种", cx + 250, cy + 150, 84, j, k_100, rot=7), "kick", 0.8)
-b.shots[j].shake = [(k_100, 9.0)]
 
 # ================================================================ 屏 14：写步骤又慢又烦，活都干不完——小李叹气；就从这三步开始
 cx, cy = R[14]
@@ -1831,5 +1831,5 @@ def fly19(c, kk, T, cx=cx, cy=cy):
 b.custom(j, k_n + 2.6, k_n + 3.2, fly19)
 
 # ================================================================ 收尾
-L.finish(cover_shot=1, square_shot=5, notes=NOTES)
+L.finish(cover_shot=1, square_shot=9, notes=NOTES)
 L.export(globals())

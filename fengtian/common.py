@@ -397,13 +397,22 @@ def _draft_clip(text, seed):
     return np.concatenate(out[:-1])
 
 
+DRAFT_LINES = set()             # 草稿排版里用占位音频的句序号（混音时不放，留静音）
+
+
 def synthesize(lines, mood, pinyin, groups=None):
-    """fengtian.voice.synthesize（平淡叙述、同屏连读）；FT_DRAFT_TTS=1 时只读旧版逐句缓存排版，没缓存的句子用占位音频（不启动 IndexTTS2）。"""
+    """fengtian.voice.synthesize（平淡叙述、同屏连读）；FT_DRAFT_TTS=1 时只读缓存（先现行连读缓存、再旧版逐句缓存），
+    都没有的句子用占位音频（不启动 IndexTTS2）。"""
     if not os.environ.get("FT_DRAFT_TTS"):
         return voice.synthesize(lines, mood, pinyin, groups=groups)
     nar = audio.Narrator(voice.VOICE)
+    new = voice.synthesize(lines, mood, pinyin, groups=groups, cached_only=True)    # 先读现行（平淡连读）缓存
     out, miss = [], 0
+    DRAFT_LINES.clear()
     for i, ((t, *_), m) in enumerate(zip(lines, mood)):
+        if new[i] is not None:
+            out.append(new[i])
+            continue
         e = audio._ix2_emo({"text": voice.EMO[m], "alpha": voice.ALPHA})
         raw = f"{nar._key}|{json.dumps(e, sort_keys=True, ensure_ascii=False)}|{1.0:.4f}|{voice.tts_text(t, pinyin)}"
         p = audio.CACHE_DIR / f"{hashlib.sha1(raw.encode()).hexdigest()}.npy"
@@ -411,6 +420,7 @@ def synthesize(lines, mood, pinyin, groups=None):
             out.append(np.load(p))
         else:
             out.append(_draft_clip(t, i))
+            DRAFT_LINES.add(i)
             miss += 1
     print(f"[FT_DRAFT_TTS] {miss}/{len(lines)} 句用占位音频（时长为估算），不要拿来出成片", file=sys.stderr)
     return out
@@ -469,6 +479,13 @@ class Lesson:
         if not 1 <= drop_screen < len(screens) or not screens[drop_screen][0]:
             raise ValueError("drop_screen 要指向第 1 屏之后、有旁白的一屏")
 
+        self.HOOK = None                # 开场配音（fengtian/hooks.py prepare）：大字逐字砸在配音的发声起点上
+        self.SFX_T = []                 # 不在拍上的音效 [(绝对秒, 名称, 增益, 说明)]（砸字）
+        if self.THEME.get("hook", "title") != "title":
+            from fengtian import hooks
+            self.HOOK = hooks.prepare(self.THEME["hook"], draft=bool(os.environ.get("FT_DRAFT_TTS")),
+                                      min_beats=self.INTRO_BEATS)
+            self.INTRO_BEATS = self.HOOK["beats"]
         self.RAW = synthesize(self.LINES, self.LINE_MOOD, self.PINYIN, groups=[sc[0] for sc in self.SCREENS if sc[0]])
         self.CLIPS, self.CLAUSE_T = zip(*[stretch(x, t, 0.0 if i in natural_comma else comma, max_gap)
                                           for i, (x, (t, _, _)) in enumerate(zip(self.RAW, self.LINES))])
@@ -662,6 +679,18 @@ class Lesson:
         bt_ = core._BEAT_T
         i = int(np.clip(np.searchsorted(bt_, T, side="right") - 1, 0, len(bt_) - 2))
         return i + (T - bt_[i]) / (bt_[i + 1] - bt_[i])
+
+    def tb_now(self, j, k):
+        """同 tb，但 finish() 之前也能用（按排期 BOUNDS 换算）。"""
+        return core.bt(self.BOUNDS[j][0] + k)
+
+    def beat_at(self, j, T):
+        """绝对秒 T 换成第 j 屏的（小数）拍号。"""
+        return self.beat_pos(T) - self.BOUNDS[j][0]
+
+    def sfx_at(self, T, name, gain=0.8, note=""):
+        """在绝对秒 T 放一声不在拍上的音效（峰值对齐 T），build.py 混音时放入。"""
+        self.SFX_T.append((float(T), name, gain, note or name))
 
     def drop_k(self):
         """drop 在 drop_screen 屏内的拍号。"""
@@ -900,7 +929,7 @@ class Lesson:
 
     EXPORTS = ("NO", "KEY", "CONCEPT", "TITLE", "TAGS", "COVER_TITLE", "ACC", "LINES", "LINE_MOOD", "PINYIN", "SCREENS",
                "GROUP", "RAW", "CLIPS", "CLAUSE_T", "DUR_L", "BOUNDS", "STARTS", "S", "END_LOCAL", "DROP", "SEAMS", "b", "ep",
-               "COVER_SHOT", "SQUARE_SHOT", "NOTES", "TEXTS", "THEME", "MOVE_S")
+               "COVER_SHOT", "SQUARE_SHOT", "NOTES", "TEXTS", "THEME", "MOVE_S", "HOOK", "SFX_T")
 
     def export(self, ns):
         """把 build.py 需要的名字写进分镜模块的 globals()（SEAMS 是同一个列表，music_track 运行后填充）。"""
@@ -909,6 +938,8 @@ class Lesson:
         for name in self.EXPORTS:
             ns[name] = getattr(self, name)
         ns["SCREEN_TEXTS"] = self.TEXTS
+        ns["DRAFT_LINES"] = set(DRAFT_LINES)
+        ns["HOOK_VOICE"] = (self.HOOK["start"] - self.S, self.HOOK["clip"]) if self.HOOK and "start" in self.HOOK else None
         ns["captions"] = self.captions
         ns["music_track"] = self.music_track
         ns["build"] = lambda: self.ep

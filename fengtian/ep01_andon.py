@@ -206,6 +206,10 @@ if os.environ.get("FT_DRAFT_TTS"):          # 草稿排版：只读缓存，不�
     RAW = _C.synthesize(LINES, LINE_MOOD, PINYIN, groups=[sc[0] for sc in SCREENS if sc[0]])
 else:
     RAW = _voice.synthesize(LINES, None, PINYIN, groups=[sc[0] for sc in SCREENS if sc[0]])
+# 开场配音（fengtian/hooks.py prepare）：大字“第三遍了”逐字砸在配音的发声起点上；开场屏拍数按配音长短定
+HOOK = _hooks.prepare(THEME["hook"], draft=bool(os.environ.get("FT_DRAFT_TTS")), min_beats=INTRO_BEATS)
+INTRO_BEATS = HOOK["beats"]
+SFX_T = []                       # 不在拍上的音效 [(绝对秒, 名称, 增益, 说明)]（砸字）
 NATURAL_COMMA = set()            # drop 前用前奏段循环留出时间，开场四句也补逗号停顿
 CLIPS, CLAUSE_T = zip(*[stretch(x, t, 0.0 if i in NATURAL_COMMA else COMMA)
                         for i, (x, (t, _, _)) in enumerate(zip(RAW, LINES))])
@@ -1128,12 +1132,17 @@ SCREEN_TEXTS = []                                # 自定义项里画的字，�
 
 class _Hook:
     b = b
+    HOOK = HOOK
     tb = staticmethod(lambda j_, k_: tb(j_, k_))
+    tb_now = staticmethod(lambda j_, k_: core.bt(BOUNDS[j_][0] + k_))
+    beat_at = staticmethod(lambda j_, T_: beat_pos(T_) - BOUNDS[j_][0])
+    sfx_at = staticmethod(lambda T_, name, gain=0.8, note="": SFX_T.append((float(T_), name, gain, note or name)))
     note = staticmethod(lambda *s_: SCREEN_TEXTS.extend(s_))
 
 
 j = scene(0, VI)
 _hooks.HOOKS[THEME["hook"]](_Hook, j, VI[0], VI[1] + 90, ACC)
+HOOK_VOICE = (HOOK["start"] - S, HOOK["clip"])
 
 # 屏 1：小李返工第 3 遍
 j = scene(1, VA)

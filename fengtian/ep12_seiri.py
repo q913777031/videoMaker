@@ -1,14 +1,15 @@
 """《丰田模式》12 整理整顿：找个文件，为什么要翻十分钟？（白板手绘 + AI 旁白，竖屏 2:3）
 
-复刻实验：同一张电脑桌面，找同一份合同，计时两次。第 2–3 屏和第 8–9 屏右上角挂着“实验”秒表：
-第一次在乱桌面上找（drop 时秒表砸到“十分钟”），中间照丰田车间的头两步（整理、整顿）收拾一遍，第二次“十秒”。
+复刻实验：同一张电脑桌面，找同一份合同，计时两次。第 5–6 屏和第 11–12 屏右上角挂着“实验”秒表：
+第一次在乱桌面上找（秒表砸到“十分钟”），中间照丰田车间的头两步（整理、整顿）收拾一遍，第二次“十秒”。
 - 0–3 秒：电脑桌面图标逐拍堆满，弹出“最终版二”，“找不到”砸下；
 - 打工人日常：小李在桌面、聊天、邮箱三个窗口之间来回点，领导抱着胳膊、手表在走；
-- 实验：桌面放大成白板，“合同”藏在里面；第一次：一百多个图标，三个“最终版”逐个亮，秒表到十分钟（drop）；
+- 身边的例子（drop）：出门找钥匙，drop 时地铁开走“走了”砸下 / 聊天记录往上划 / 四十个标签页；
+- 实验：桌面放大成白板，“合同”藏在里面；第一次：一百多个图标，三个“最终版”逐个亮，秒表到十分钟；
 - 书中做法：车间五级台阶，前两级“整理”“整顿”亮起；整理（留下 / 拿走）；整顿（工具墙画好轮廓，少一把红圈一闪）；
   后三级（打扫 / 定规矩 / 一直保持），“大扫除”打叉，地上冒出问题小红点；
 - 第二次：收拾后的桌面，十秒；为什么：两个秒表对比，顾客钱包合上，东西各回各家；
-- 说回我们：出门找钥匙、地铁走了 / 聊天记录往上划 / 四十个标签页 / 等闲下来的日历，“三步”；三步做法；热咖啡；评论区与下一讲。
+- 说回我们：等闲下来的日历，“三步”；三步做法；热咖啡；评论区与下一讲。
 车间员工戴安全帽（common.draw_worker），领导 common.draw_boss，小李 common.draw_li；顾客、同事用本模块的小人。
 文案见 fengtian/PLAN.md「### 12 整理整顿」；时间轴、配乐、相机、人物见 fengtian/common.py。
 """
@@ -32,17 +33,17 @@ from whiteboard.engine import P, check, circle, cross, join, rect
 SCREENS = [
     ([], "开场", 0),
     ([0, 1], "打工人日常", 1),
-    ([2], "小实验", 2),
-    ([3, 4], "小实验 · 第一次", 3),
-    ([5, 6], "丰田模式 · 书中做法", 4),
-    ([7], "整理 · 示意", 5),
-    ([8, 9], "整顿 · 示意", 6),
-    ([10, 11], "书中观点", 7),
-    ([12], "小实验 · 第二次", 8),
-    ([13, 14, 15], "为什么差这么多", 9),
-    ([16, 17], "说回我们自己", 10),
-    ([18], "说回我们自己", 11),
-    ([19], "说回我们自己", 12),
+    ([2, 3], "身边的例子", 2),
+    ([4], "身边的例子", 3),
+    ([5], "身边的例子", 4),
+    ([6], "小实验", 5),
+    ([7, 8], "小实验 · 第一次", 6),
+    ([9, 10], "丰田模式 · 书中做法", 7),
+    ([11], "整理 · 示意", 8),
+    ([12, 13], "整顿 · 示意", 9),
+    ([14, 15], "书中观点", 10),
+    ([16], "小实验 · 第二次", 11),
+    ([17, 18, 19], "为什么差这么多", 12),
     ([20, 21], "说回我们自己", 13),
     ([22], "做法一 · 示意", 14),
     ([23], "做法二 · 示意", 15),
@@ -52,7 +53,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("12")          # 本讲样式（fengtian/theme.py）：方眼本、开场 desktop、转场 arc
-L = C.Lesson("12", SCREENS, drop_screen=3, board_size=(5000, 12600), theme=THEME)
+L = C.Lesson("12", SCREENS, drop_screen=2, board_size=(5000, 12600), theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -436,16 +437,229 @@ def screen1(j=1):
 screen1()
 
 
-# ================================================================ 屏 2：桌面放大成白板，“合同”藏在里面；小李拿着秒表
+# ================================================================ 屏 2：门口翻包找钥匙；窗外地铁开走
 def screen2(j=2):
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z))
+    GY = cy + 520
+    k_door = 0
+    k_dig = kq(j, wp(2, 1, 0.3), 1)
+    k_dig2 = nx(j, wp(3, 0, 0.5), k_dig)
+    k_key = nx(j, wp(3, 1, 0.1), k_dig2)
+    k_train = nx(j, wp(3, 1, 0.45), k_key)
+    k_gone = L.drop_k()                         # drop：地铁开走，“走了”砸下
+    k_train = min(k_train, k_gone - 1)
+    b.shots[j].shake, b.shots[j].flashes = [(k_gone, 16.0)], [(k_gone, 0.45)]
+    L.note("走了", "地铁")
+    DX = cx - 380
+    b.path(j, k_door, k_door + 0.8, join(rect(DX, GY - 280, 260, 560, 10), circle(DX + 90, GY - 270, 14),
+                                         rect(cx + 260, cy - 300, 480, 300, 14)), BLACK, 9, sfx="wood_low")
+
+    def li(c, kk, T):
+        sc = pop_scale(T - tb(j, k_dig) + 0.6)
+        if sc <= 0:
+            return None
+        x, s = cx - 50, 0.9
+        hx, hy = head_of(x, GY, s)
+        dig = tb(j, k_dig) <= T < tb(j, k_key)
+        found = T >= tb(j, k_key)
+        with at_pop(c, x, GY, sc):
+            hand = (x + 110 * s, hy + 160 * s + (math.sin(T * 16) * 18 if dig else 0))
+            if found:
+                hand = (x + 120 * s, hy - 40 * s)
+            draw_li(c, x, GY, s, "sad" if T >= tb(j, k_gone) else ("o" if dig else "flat"), rh=hand,
+                    lh=(x + 60 * s, hy + 190 * s))
+            bagp = P((x + 40, GY - 160), (x + 220, GY - 160), (x + 200, GY - 40), (x + 60, GY - 40), close=True)
+            c.drawPath(bagp, K.paint("#C98B4B"))
+            c.drawPath(bagp, wb.marker("#7A4A1E", 6))
+            if dig:
+                for n in range(4):
+                    ph = ((T - tb(j, k_dig)) * 1.8 + n * 0.25) % 1
+                    ox = x + 130 + (n - 1.5) * 70 * ph
+                    oy = GY - 170 - math.sin(ph * math.pi) * 160
+                    with K.at(c, ox, oy, ph * 300, 1):
+                        if n % 2:
+                            box(c, 0, 0, 50, 70, "#FFFFFF", GRAY, 4, 6)
+                        else:
+                            c.drawCircle(0, 0, 22, K.paint([ORANGE, BLUE][n // 2 % 2]))
+            if found:
+                g = pop_scale(T - tb(j, k_key))
+                with K.at(c, hand[0] + 20, hand[1] - 40, 0, g):
+                    c.drawCircle(-20, 0, 24, wb.marker(ORANGE, 8))
+                    C.line(c, (4, 0), (56, 0), ORANGE, 8)
+                    C.line(c, (40, 0), (40, 18), ORANGE, 8)
+        return None
+    b.custom(j, k_dig, k_dig + 0.3, li, sfx="shaker", gain=0.7)
+    b.hit(j, k_dig2, "wood_high", 0.6, "还在翻")
+    b.hit(j, k_key, "ding", 0.8, "找到钥匙")
+
+    def train(c, kk, T):
+        wx, wy = cx + 260, cy - 300
+        c.save()
+        c.clipRect(skia.Rect.MakeXYWH(wx - 236, wy - 146, 472, 292))
+        c.drawRect(skia.Rect.MakeXYWH(wx - 236, wy - 146, 472, 292), K.paint(BLUE_FILL))
+        C.line(c, (wx - 240, wy + 90), (wx + 240, wy + 90), GRAY, 6)
+        t0, t1 = tb(j, k_train), tb(j, k_gone)
+        if T >= t0:
+            f = ease_in_out(clamp01((T - t1) / 0.9)) if T >= t1 else 0.0
+            x = lerp(wx - 120, wx + 600, f)
+            box(c, x, wy + 30, 520, 110, "#FFFFFF", GREEN, 7, 30)
+            for q in range(4):
+                c.drawRect(skia.Rect.MakeXYWH(x - 220 + q * 120, wy + 0, 70, 40), K.paint(BLUE_FILL))
+            K.text(c, "地铁", x + 150, wy + 60, 34, "hand", GREEN)
+        c.restore()
+        return None
+    ev(j, 0.4, train)
+    b.hit(j, k_train, "pop", 0.6, "地铁进站")
+    ev(j, k_gone, L.slam_text("走了", cx + 260, cy + 10, 110, RED, j, k_gone, font="black"), "kick", 0.95)
+
+
+screen2()
+
+
+# ================================================================ 屏 3：同事要上个月的数据，聊天记录一页页往上划
+def screen3(j=3):
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z))
+    GY = cy + 540
+    PX, PY = cx + 80, cy - 100
+    k_ph = 0
+    k_ask = kq(j, wp(4, 0, 0.5), 1)
+    k_sw = nx(j, wp(4, 1, 0.5), k_ask)
+    k_sw2 = cap(j, k_sw + 2)
+    k_ache = nx(j, wp(4, 2, 0.8), k_sw2)
+    L.note("上个月的数据？", "酸")
+
+    def phone(c, kk, T):
+        sc = pop_scale(T - tb(j, k_ph))
+        if sc <= 0:
+            return None
+        with at_pop(c, PX, PY, sc):
+            box(c, PX, PY, 380, 680, "#FFFFFF", BLACK, 10, 40)
+            c.save()
+            c.clipRect(skia.Rect.MakeXYWH(PX - 170, PY - 300, 340, 600))
+            t0 = tb(j, k_sw)
+            off = 0.0 if T < t0 else (T - t0) * 520
+            for i in range(30):
+                y = PY - 250 + i * 110 - 30 * 110 + 600 + off
+                y = PY + 260 - i * 110 + off
+                if y < PY - 330 or y > PY + 330:
+                    continue
+                left = i % 3 != 1
+                w = 160 + (i * 37) % 100
+                xx = PX - 150 + w / 2 if left else PX + 150 - w / 2
+                c.drawRoundRect(skia.Rect.MakeXYWH(xx - w / 2, y - 30, w, 60), 20, 20,
+                                K.paint("#FFFFFF" if left else "#CDEBC2"))
+                c.drawRoundRect(skia.Rect.MakeXYWH(xx - w / 2, y - 30, w, 60), 20, 20, wb.marker(GRAY, 4))
+            c.restore()
+        return None
+    ev(j, k_ph, phone, "wood_low", 0.6)
+
+    def hand(c, kk, T):
+        t0 = tb(j, k_sw)
+        if T < t0:
+            return None
+        ph = ((T - t0) * 2.2) % 1
+        y = PY + 180 - 300 * ease_in_out(ph)
+        x = PX + 40
+        with K.at(c, x, y, 0, 1):
+            c.drawRoundRect(skia.Rect.MakeXYWH(-24, -10, 48, 150), 24, 24, K.paint(SKIN))
+            c.drawRoundRect(skia.Rect.MakeXYWH(-24, -10, 48, 150), 24, 24, wb.marker(ORANGE, 5))
+        if T >= tb(j, k_ache):
+            g = pop_scale(T - tb(j, k_ache))
+            with K.at(c, PX + 260, PY + 120, 0, g):
+                K.text(c, "酸", 0, 0, 80, "hand", RED)
+                for n in range(3):
+                    C.line(c, (-60 + n * 20, -60), (-70 + n * 20, -90), RED, 5)
+        return None
+    ev(j, k_sw, hand, "shaker", 0.7)
+    b.hit(j, k_sw2, "shaker", 0.6, "接着往上划")
+    b.hit(j, k_ache, "tom", 0.75, "手指划到发酸")
+
+    def wang(c, sc, T):
+        x, s = cx - 390, 0.85
+        with at_pop(c, x, GY, sc):
+            draw_person(c, x, GY, s, coat="#F3D3E0", line="#B04A78", mood="flat",
+                        rh=(x + 100 * s, GY - 290 * s + 60 * s))
+        return None
+    ev(j, k_ask, pop_fn(j, k_ask, wang), "pop", 0.7)
+    ev(j, k_ask, L.pop_bubble("上个月的数据？", cx - 260, cy - 420, j, k_ask, 54, BLACK, tail=-1))
+
+
+screen3()
+
+
+# ================================================================ 屏 4：浏览器顶上一排挤成细条的标签页，想关又舍不得
+def screen4(j=4):
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z))
+    GY = cy + 540
+    BX, BY = cx, cy - 170
+    k_win = 0
+    k_tab = kq(j, wp(5, 0, 0.3), 1)
+    k_tab2 = nx(j, wp(5, 1, 0.5), k_tab)
+    k_hov = nx(j, wp(5, 2, 0.1), k_tab2)
+    k_no = nx(j, wp(5, 2, 0.8), k_hov)
+    L.note("40", "舍不得", "×")
+    b.path(j, k_win, k_win + 0.8, rect(BX, BY, 1000, 560, 18), BLACK, 9, sfx="wood_low")
+
+    def tabs(c, kk, T):
+        t1, t2 = tb(j, k_tab), tb(j, k_tab2)
+        n = 0 if T < t1 else (12 if T < t2 else 40)
+        w = 960 / max(1, n)
+        for i in range(n):
+            g = pop_scale(T - (t1 if i < 12 else t2) - (i % 12) * 0.03, 0.2)
+            x = BX - 480 + w * i + w / 2
+            with K.at(c, x, BY - 240, 0, g):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2 + 2, -26, w - 4, 52), 8, 8,
+                                K.paint(["#F2C14E", "#7FB2E5", "#F28C8C", "#8FD19E"][i % 4], 0.8))
+                c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2 + 2, -26, w - 4, 52), 8, 8, wb.marker(BLACK, 3))
+        if n:
+            C.line(c, (BX - 500, BY - 205), (BX + 500, BY - 205), BLACK, 5)
+            for r in range(5):
+                C.line(c, (BX - 400, BY - 120 + r * 70), (BX + 300 - (r % 2) * 120, BY - 120 + r * 70), GRAY_FILL, 12)
+        if n == 40:
+            K.text(c, "40", BX + 380, BY + 160, 110, "hand", RED, clamp01((T - t2) / 0.2))
+        th = tb(j, k_hov)
+        if T >= th:
+            back = T >= tb(j, k_no)
+            f = ease_in_out(clamp01((T - th) / 0.4))
+            if back:
+                f = 1 - ease_in_out(clamp01((T - tb(j, k_no)) / 0.4))
+            mx = lerp(BX + 100, BX + 140, f) + (4 * math.sin(T * 40) if f > 0.9 else 0)
+            my = lerp(BY + 100, BY - 230, f)
+            K.text(c, "×", BX + 150, BY - 236, 30, "black", RED, clamp01((T - th) / 0.2))
+            cursor(c, mx, my, 1.1)
+        return None
+    ev(j, k_tab, tabs, "pop", 0.7)
+    b.hit(j, k_tab2, "wood_high", 0.75, "标签页挤成细条")
+    b.hit(j, k_hov, "pop", 0.6, "鼠标挪到关闭键")
+
+    def li(c, sc, T):
+        x, s = cx - 330, 0.85
+        hx, hy = head_of(x, GY, s)
+        no = T >= tb(j, k_no)
+        with at_pop(c, x, GY, sc):
+            draw_li(c, x, GY, s, "sad" if no else "flat", rh=(x + 30 * s, hy + 60 * s) if no else (x + 110 * s, hy + 110 * s),
+                    lh=(x - 30 * s, hy + 60 * s) if no else None)
+        return None
+    ev(j, 0, pop_fn(j, 0, li))
+    ev(j, k_no, L.slam_text("舍不得", cx + 150, cy + 300, 90, RED, j, k_no, rot=-4), "tom", 0.8)
+
+
+screen4()
+
+
+# ================================================================ 屏 5：桌面放大成白板，“合同”藏在里面；小李拿着秒表
+def screen5(j=5):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     MX, MY = cx + 60, cy - 170
-    k_tag = kq(j, wp(2, 0, 0.3), 1)
-    k_li = nx(j, wp(2, 1, 0.3), k_tag)
-    k_hid = nx(j, wp(2, 2, 0.4), k_li)
-    k_sw = nx(j, wp(2, 2, 0.95), k_hid)
+    k_tag = kq(j, wp(6, 0, 0.3), 1)
+    k_li = nx(j, wp(6, 1, 0.3), k_tag)
+    k_hid = nx(j, wp(6, 2, 0.4), k_li)
+    k_sw = nx(j, wp(6, 2, 0.95), k_hid)
     L.note("实验", "合同", "同一张桌面")
     b.path(j, 0, 0.8, join(rect(MX, MY, 800, 520, 20), P((MX, MY + 260), (MX, MY + 320)), P((MX - 140, MY + 324),
                                                                                            (MX + 140, MY + 324))),
@@ -492,23 +706,23 @@ def screen2(j=2):
     b.hit(j, k_sw, "wood_high", 0.75, "按下秒表")
 
 
-screen2()
+screen5()
 
 
-# ================================================================ 屏 3：第一次——一百多个图标挤满屏，三个“最终版”逐个亮；drop 秒表砸到十分钟
-def screen3(j=3):
+# ================================================================ 屏 6：第一次——一百多个图标挤满屏，三个“最终版”逐个亮；秒表砸到十分钟
+def screen6(j=6):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
-    KD = L.drop_k()
-    b.shots[j].shake, b.shots[j].flashes = [(KD, 16.0)], [(KD, 0.45)]
     GY = cy + 540
     MX, MY = cx + 60, cy - 220
-    k_fill = kq(j, wp(3, 1, 0.2), 1)
-    k_fill2 = nx(j, wp(3, 1, 0.9), k_fill)
-    k_n = [nx(j, wp(3, 2, 0.5), k_fill2)]
-    k_n.append(nx(j, wp(3, 3, 0.5), k_n[0]))
-    k_n.append(nx(j, wp(3, 4, 0.5), k_n[1]))
-    k_open = min(nx(j, wp(4, 0, 0.4), k_n[2]), KD - 1)
+    k_fill = kq(j, wp(7, 1, 0.2), 1)
+    k_fill2 = nx(j, wp(7, 1, 0.9), k_fill)
+    k_n = [nx(j, wp(7, 2, 0.5), k_fill2)]
+    k_n.append(nx(j, wp(7, 3, 0.5), k_n[0]))
+    k_n.append(nx(j, wp(7, 4, 0.5), k_n[1]))
+    k_open = nx(j, wp(8, 0, 0.4), k_n[2])
+    KD = nx(j, wp(8, 1, 0.6), k_open)           # 秒表砸到十分钟（原 drop 拍，2026-11 起 drop 移到屏 2）
+    b.shots[j].shake = [(KD, 12.0)]
     NAMES = ["最终版", "最终版二", "真的最终版"]
     L.note(*NAMES, "十分钟", "×100")
     b.path(j, 0, 0.8, join(rect(MX, MY, 820, 500, 20), P((MX, MY + 250), (MX, MY + 310)),
@@ -579,24 +793,24 @@ def screen3(j=3):
                     c.drawCircle(hx + (-70 if n % 2 else 70), hy - 20 + ph * 80, 10, K.paint(BLUE, 1 - ph))
         return None
     ev(j, 1, pop_fn(j, 1, li))
-    b.hit(j, KD, "kick", 0.95, "drop：秒表砸到十分钟")
+    b.hit(j, KD, "kick", 0.9, "秒表砸到十分钟")
 
 
-screen3()
+screen6()
 
 
-# ================================================================ 屏 4：车间五级台阶，前两级“整理”“整顿”亮起
-def screen4(j=4):
+# ================================================================ 屏 7：车间五级台阶，前两级“整理”“整顿”亮起
+def screen7(j=7):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 480
     X0 = cx - 520
     k_li = 1
-    k_broom = nx(j, wp(5, 2, 0.4), k_li)
+    k_broom = nx(j, wp(9, 2, 0.4), k_li)
     b.path(j, 0, 0.6, P((cx - 560, GY), (cx + 560, GY)), BLACK, 8, sfx="wood_low")
-    k_st = nx(j, wp(6, 0, 0.4), k_broom)
-    k_5 = nx(j, wp(6, 1, 0.5), k_st)
-    k_a = nx(j, wp(6, 2, 0.45), k_5)
+    k_st = nx(j, wp(10, 0, 0.4), k_broom)
+    k_5 = nx(j, wp(10, 1, 0.5), k_st)
+    k_a = nx(j, wp(10, 2, 0.45), k_5)
     k_b = cap(j, k_a + 1)
     L.note("五个步骤", "车间")
 
@@ -651,19 +865,19 @@ def screen4(j=4):
     b.hit(j, k_broom, "shaker", 0.7, "小李拿起扫帚")
 
 
-screen4()
+screen7()
 
 
-# ================================================================ 屏 5：整理——一堆东西分两边：要用的留下，用不上的装箱搬走
-def screen5(j=5):
+# ================================================================ 屏 8：整理——一堆东西分两边：要用的留下，用不上的装箱搬走
+def screen8(j=8):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 500
     PX, PY = cx - 40, cy - 120
     k_pile = 0
-    k_keep = kq(j, wp(7, 1, 0.5), 1)
-    k_out = nx(j, wp(7, 2, 0.2), k_keep)
-    k_away = nx(j, wp(7, 2, 0.8), k_out)
+    k_keep = kq(j, wp(11, 1, 0.5), 1)
+    k_out = nx(j, wp(11, 2, 0.2), k_keep)
+    k_away = nx(j, wp(11, 2, 0.8), k_out)
     L.note("留下", "拿走", "整理")
     things = [("doc", BLUE), ("mug", ORANGE), ("doc", GRAY), ("tool", BLACK), ("doc", GRAY), ("cup", GRAY),
               ("tool", GRAY), ("box", GRAY)]
@@ -738,11 +952,11 @@ def screen5(j=5):
     b.hit(j, k_away, "tom", 0.75, "装箱搬走")
 
 
-screen5()
+screen8()
 
 
-# ================================================================ 屏 6：整顿——工具墙画好轮廓，少一把时红圈一闪
-def screen6(j=6):
+# ================================================================ 屏 9：整顿——工具墙画好轮廓，少一把时红圈一闪
+def screen9(j=9):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
@@ -750,11 +964,11 @@ def screen6(j=6):
     KINDS = ["wrench", "hammer", "driver", "pliers", "wrench"]
     xs = [BX - 300 + i * 150 for i in range(5)]
     k_board = 0
-    k_out = kq(j, wp(8, 2, 0.4), 1)
-    k_hang = nx(j, wp(8, 3, 0.2), k_out)
-    k_lab = nx(j, wp(9, 1, 0.5), k_hang)
-    k_take = nx(j, wp(9, 2, 0.4), k_lab)
-    k_ring = nx(j, wp(9, 3, 0.5), k_take)
+    k_out = kq(j, wp(12, 2, 0.4), 1)
+    k_hang = nx(j, wp(12, 3, 0.2), k_out)
+    k_lab = nx(j, wp(13, 1, 0.5), k_hang)
+    k_take = nx(j, wp(13, 2, 0.4), k_lab)
+    k_ring = nx(j, wp(13, 3, 0.5), k_take)
     L.note("整顿", "标清楚", "扳手", "锤子", "螺丝刀", "钳子")
     b.path(j, k_board, k_board + 0.8, rect(BX, BY, 820, 520, 16), "#A9773E", 12, sfx="wood_low")
     b.text(j, 3, 3.5, "整顿", cx - 360, cy - 470, 76, RED, sfx="pop", gain=0.6)
@@ -819,20 +1033,20 @@ def screen6(j=6):
     b.hit(j, k_take, "wood_high", 0.6, "有人拿走一把")
 
 
-screen6()
+screen9()
 
 
-# ================================================================ 屏 7：后三级亮起（扫帚、规矩牌、日历）；“大扫除”打叉；问题小红点浮出来
-def screen7(j=7):
+# ================================================================ 屏 10：后三级亮起（扫帚、规矩牌、日历）；“大扫除”打叉；问题小红点浮出来
+def screen10(j=10):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 120
     X0 = cx - 520
-    k_l = [kq(j, wp(10, 1, 0.15), 1)]
+    k_l = [kq(j, wp(14, 1, 0.15), 1)]
     k_l.append(k_l[0] + 1)
     k_l.append(k_l[0] + 2)
-    k_bs = nx(j, wp(11, 2, 0.4), k_l[2])
-    k_dot = nx(j, wp(11, 3, 0.5), k_bs)
+    k_bs = nx(j, wp(15, 2, 0.4), k_l[2])
+    k_dot = nx(j, wp(15, 3, 0.5), k_bs)
     L.note("大扫除", "问题", "规矩", "每天")
 
     def st(c, kk, T):
@@ -903,18 +1117,18 @@ def screen7(j=7):
     ev(j, 0, pop_fn(j, 0, wk))
 
 
-screen7()
+screen10()
 
 
-# ================================================================ 屏 8：第二次——收拾后的桌面只剩几个文件夹；秒表“十秒”
-def screen8(j=8):
+# ================================================================ 屏 11：第二次——收拾后的桌面只剩几个文件夹；秒表“十秒”
+def screen11(j=11):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     MX, MY = cx + 60, cy - 220
     k_fd = 1
-    k_click = kq(j, wp(12, 1, 0.5), 2)
-    k_ten = nx(j, wp(12, 2, 0.5), k_click)
+    k_click = kq(j, wp(16, 1, 0.5), 2)
+    k_ten = nx(j, wp(16, 2, 0.5), k_click)
     FD = ["合同", "报表", "图片", "归档"]
     L.note(*FD, "十秒")
     b.path(j, 0, 0.8, join(rect(MX, MY, 820, 500, 20), P((MX, MY + 250), (MX, MY + 310)),
@@ -965,21 +1179,21 @@ def screen8(j=8):
     ev(j, 0, pop_fn(j, 0, li))
 
 
-screen8()
+screen11()
 
 
-# ================================================================ 屏 9：两个秒表并排；顾客钱包合上；东西各回各家
-def screen9(j=9):
+# ================================================================ 屏 12：两个秒表并排；顾客钱包合上；东西各回各家
+def screen12(j=12):
     cx, cy = R[j]
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 540
     k_a = 0
     k_b = 1
-    k_cu = kq(j, wp(14, 1, 0.3), 2)
-    k_shut = nx(j, wp(14, 1, 0.9), k_cu)
-    k_eat = nx(j, wp(14, 2, 0.5), k_shut)
-    k_home = nx(j, wp(15, 1, 0.3), k_eat)
-    k_ok = nx(j, wp(15, 2, 0.5), k_home)
+    k_cu = kq(j, wp(18, 1, 0.3), 2)
+    k_shut = nx(j, wp(18, 1, 0.9), k_cu)
+    k_eat = nx(j, wp(18, 2, 0.5), k_shut)
+    k_home = nx(j, wp(19, 1, 0.3), k_eat)
+    k_ok = nx(j, wp(19, 2, 0.5), k_home)
     L.note("十分钟", "十秒", "家", "吃时间")
 
     def sws(c, kk, T):
@@ -1059,219 +1273,6 @@ def screen9(j=9):
         return None
     ev(j, k_home, home, "wood_high", 0.7)
     b.hit(j, k_ok, "ding", 0.8, "各回各家")
-
-
-screen9()
-
-
-# ================================================================ 屏 10：门口翻包找钥匙；窗外地铁开走
-def screen10(j=10):
-    cx, cy = R[j]
-    L.scene(j, (cx, cy + 10, Z))
-    GY = cy + 520
-    k_door = 0
-    k_dig = kq(j, wp(16, 1, 0.3), 1)
-    k_dig2 = nx(j, wp(17, 0, 0.5), k_dig)
-    k_key = nx(j, wp(17, 1, 0.1), k_dig2)
-    k_train = nx(j, wp(17, 1, 0.45), k_key)
-    k_gone = nx(j, wp(17, 1, 0.9), k_train)
-    L.note("走了", "地铁")
-    DX = cx - 380
-    b.path(j, k_door, k_door + 0.8, join(rect(DX, GY - 280, 260, 560, 10), circle(DX + 90, GY - 270, 14),
-                                         rect(cx + 260, cy - 300, 480, 300, 14)), BLACK, 9, sfx="wood_low")
-
-    def li(c, kk, T):
-        sc = pop_scale(T - tb(j, k_dig) + 0.6)
-        if sc <= 0:
-            return None
-        x, s = cx - 50, 0.9
-        hx, hy = head_of(x, GY, s)
-        dig = tb(j, k_dig) <= T < tb(j, k_key)
-        found = T >= tb(j, k_key)
-        with at_pop(c, x, GY, sc):
-            hand = (x + 110 * s, hy + 160 * s + (math.sin(T * 16) * 18 if dig else 0))
-            if found:
-                hand = (x + 120 * s, hy - 40 * s)
-            draw_li(c, x, GY, s, "sad" if T >= tb(j, k_gone) else ("o" if dig else "flat"), rh=hand,
-                    lh=(x + 60 * s, hy + 190 * s))
-            bagp = P((x + 40, GY - 160), (x + 220, GY - 160), (x + 200, GY - 40), (x + 60, GY - 40), close=True)
-            c.drawPath(bagp, K.paint("#C98B4B"))
-            c.drawPath(bagp, wb.marker("#7A4A1E", 6))
-            if dig:
-                for n in range(4):
-                    ph = ((T - tb(j, k_dig)) * 1.8 + n * 0.25) % 1
-                    ox = x + 130 + (n - 1.5) * 70 * ph
-                    oy = GY - 170 - math.sin(ph * math.pi) * 160
-                    with K.at(c, ox, oy, ph * 300, 1):
-                        if n % 2:
-                            box(c, 0, 0, 50, 70, "#FFFFFF", GRAY, 4, 6)
-                        else:
-                            c.drawCircle(0, 0, 22, K.paint([ORANGE, BLUE][n // 2 % 2]))
-            if found:
-                g = pop_scale(T - tb(j, k_key))
-                with K.at(c, hand[0] + 20, hand[1] - 40, 0, g):
-                    c.drawCircle(-20, 0, 24, wb.marker(ORANGE, 8))
-                    C.line(c, (4, 0), (56, 0), ORANGE, 8)
-                    C.line(c, (40, 0), (40, 18), ORANGE, 8)
-        return None
-    b.custom(j, k_dig, k_dig + 0.3, li, sfx="shaker", gain=0.7)
-    b.hit(j, k_dig2, "wood_high", 0.6, "还在翻")
-    b.hit(j, k_key, "ding", 0.8, "找到钥匙")
-
-    def train(c, kk, T):
-        wx, wy = cx + 260, cy - 300
-        c.save()
-        c.clipRect(skia.Rect.MakeXYWH(wx - 236, wy - 146, 472, 292))
-        c.drawRect(skia.Rect.MakeXYWH(wx - 236, wy - 146, 472, 292), K.paint(BLUE_FILL))
-        C.line(c, (wx - 240, wy + 90), (wx + 240, wy + 90), GRAY, 6)
-        t0, t1 = tb(j, k_train), tb(j, k_gone)
-        if T >= t0:
-            f = ease_in_out(clamp01((T - t1) / 0.9)) if T >= t1 else 0.0
-            x = lerp(wx - 120, wx + 600, f)
-            box(c, x, wy + 30, 520, 110, "#FFFFFF", GREEN, 7, 30)
-            for q in range(4):
-                c.drawRect(skia.Rect.MakeXYWH(x - 220 + q * 120, wy + 0, 70, 40), K.paint(BLUE_FILL))
-            K.text(c, "地铁", x + 150, wy + 60, 34, "hand", GREEN)
-        c.restore()
-        if T >= tb(j, k_gone) + 0.5:
-            K.text(c, "走了", wx, wy + 220, 70, "hand", RED, clamp01((T - tb(j, k_gone) - 0.5) / 0.2))
-        return None
-    ev(j, 0.4, train)
-    b.hit(j, k_train, "pop", 0.6, "地铁进站")
-    b.hit(j, k_gone, "tom", 0.8, "地铁开走")
-
-
-screen10()
-
-
-# ================================================================ 屏 11：同事要上个月的数据，聊天记录一页页往上划
-def screen11(j=11):
-    cx, cy = R[j]
-    L.scene(j, (cx, cy + 10, Z))
-    GY = cy + 540
-    PX, PY = cx + 80, cy - 100
-    k_ph = 0
-    k_ask = kq(j, wp(18, 0, 0.5), 1)
-    k_sw = nx(j, wp(18, 1, 0.5), k_ask)
-    k_sw2 = cap(j, k_sw + 2)
-    k_ache = nx(j, wp(18, 2, 0.8), k_sw2)
-    L.note("上个月的数据？", "酸")
-
-    def phone(c, kk, T):
-        sc = pop_scale(T - tb(j, k_ph))
-        if sc <= 0:
-            return None
-        with at_pop(c, PX, PY, sc):
-            box(c, PX, PY, 380, 680, "#FFFFFF", BLACK, 10, 40)
-            c.save()
-            c.clipRect(skia.Rect.MakeXYWH(PX - 170, PY - 300, 340, 600))
-            t0 = tb(j, k_sw)
-            off = 0.0 if T < t0 else (T - t0) * 520
-            for i in range(30):
-                y = PY - 250 + i * 110 - 30 * 110 + 600 + off
-                y = PY + 260 - i * 110 + off
-                if y < PY - 330 or y > PY + 330:
-                    continue
-                left = i % 3 != 1
-                w = 160 + (i * 37) % 100
-                xx = PX - 150 + w / 2 if left else PX + 150 - w / 2
-                c.drawRoundRect(skia.Rect.MakeXYWH(xx - w / 2, y - 30, w, 60), 20, 20,
-                                K.paint("#FFFFFF" if left else "#CDEBC2"))
-                c.drawRoundRect(skia.Rect.MakeXYWH(xx - w / 2, y - 30, w, 60), 20, 20, wb.marker(GRAY, 4))
-            c.restore()
-        return None
-    ev(j, k_ph, phone, "wood_low", 0.6)
-
-    def hand(c, kk, T):
-        t0 = tb(j, k_sw)
-        if T < t0:
-            return None
-        ph = ((T - t0) * 2.2) % 1
-        y = PY + 180 - 300 * ease_in_out(ph)
-        x = PX + 40
-        with K.at(c, x, y, 0, 1):
-            c.drawRoundRect(skia.Rect.MakeXYWH(-24, -10, 48, 150), 24, 24, K.paint(SKIN))
-            c.drawRoundRect(skia.Rect.MakeXYWH(-24, -10, 48, 150), 24, 24, wb.marker(ORANGE, 5))
-        if T >= tb(j, k_ache):
-            g = pop_scale(T - tb(j, k_ache))
-            with K.at(c, PX + 260, PY + 120, 0, g):
-                K.text(c, "酸", 0, 0, 80, "hand", RED)
-                for n in range(3):
-                    C.line(c, (-60 + n * 20, -60), (-70 + n * 20, -90), RED, 5)
-        return None
-    ev(j, k_sw, hand, "shaker", 0.7)
-    b.hit(j, k_sw2, "shaker", 0.6, "接着往上划")
-    b.hit(j, k_ache, "tom", 0.75, "手指划到发酸")
-
-    def wang(c, sc, T):
-        x, s = cx - 390, 0.85
-        with at_pop(c, x, GY, sc):
-            draw_person(c, x, GY, s, coat="#F3D3E0", line="#B04A78", mood="flat",
-                        rh=(x + 100 * s, GY - 290 * s + 60 * s))
-        return None
-    ev(j, k_ask, pop_fn(j, k_ask, wang), "pop", 0.7)
-    ev(j, k_ask, L.pop_bubble("上个月的数据？", cx - 260, cy - 420, j, k_ask, 54, BLACK, tail=-1))
-
-
-screen11()
-
-
-# ================================================================ 屏 12：浏览器顶上一排挤成细条的标签页，想关又舍不得
-def screen12(j=12):
-    cx, cy = R[j]
-    L.scene(j, (cx, cy + 10, Z))
-    GY = cy + 540
-    BX, BY = cx, cy - 170
-    k_win = 0
-    k_tab = kq(j, wp(19, 0, 0.3), 1)
-    k_tab2 = nx(j, wp(19, 1, 0.5), k_tab)
-    k_hov = nx(j, wp(19, 2, 0.1), k_tab2)
-    k_no = nx(j, wp(19, 2, 0.8), k_hov)
-    L.note("40", "舍不得", "×")
-    b.path(j, k_win, k_win + 0.8, rect(BX, BY, 1000, 560, 18), BLACK, 9, sfx="wood_low")
-
-    def tabs(c, kk, T):
-        t1, t2 = tb(j, k_tab), tb(j, k_tab2)
-        n = 0 if T < t1 else (12 if T < t2 else 40)
-        w = 960 / max(1, n)
-        for i in range(n):
-            g = pop_scale(T - (t1 if i < 12 else t2) - (i % 12) * 0.03, 0.2)
-            x = BX - 480 + w * i + w / 2
-            with K.at(c, x, BY - 240, 0, g):
-                c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2 + 2, -26, w - 4, 52), 8, 8,
-                                K.paint(["#F2C14E", "#7FB2E5", "#F28C8C", "#8FD19E"][i % 4], 0.8))
-                c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2 + 2, -26, w - 4, 52), 8, 8, wb.marker(BLACK, 3))
-        if n:
-            C.line(c, (BX - 500, BY - 205), (BX + 500, BY - 205), BLACK, 5)
-            for r in range(5):
-                C.line(c, (BX - 400, BY - 120 + r * 70), (BX + 300 - (r % 2) * 120, BY - 120 + r * 70), GRAY_FILL, 12)
-        if n == 40:
-            K.text(c, "40", BX + 380, BY + 160, 110, "hand", RED, clamp01((T - t2) / 0.2))
-        th = tb(j, k_hov)
-        if T >= th:
-            back = T >= tb(j, k_no)
-            f = ease_in_out(clamp01((T - th) / 0.4))
-            if back:
-                f = 1 - ease_in_out(clamp01((T - tb(j, k_no)) / 0.4))
-            mx = lerp(BX + 100, BX + 140, f) + (4 * math.sin(T * 40) if f > 0.9 else 0)
-            my = lerp(BY + 100, BY - 230, f)
-            K.text(c, "×", BX + 150, BY - 236, 30, "black", RED, clamp01((T - th) / 0.2))
-            cursor(c, mx, my, 1.1)
-        return None
-    ev(j, k_tab, tabs, "pop", 0.7)
-    b.hit(j, k_tab2, "wood_high", 0.75, "标签页挤成细条")
-    b.hit(j, k_hov, "pop", 0.6, "鼠标挪到关闭键")
-
-    def li(c, sc, T):
-        x, s = cx - 330, 0.85
-        hx, hy = head_of(x, GY, s)
-        no = T >= tb(j, k_no)
-        with at_pop(c, x, GY, sc):
-            draw_li(c, x, GY, s, "sad" if no else "flat", rh=(x + 30 * s, hy + 60 * s) if no else (x + 110 * s, hy + 110 * s),
-                    lh=(x - 30 * s, hy + 60 * s) if no else None)
-        return None
-    ev(j, 0, pop_fn(j, 0, li))
-    ev(j, k_no, L.slam_text("舍不得", cx + 150, cy + 300, 90, RED, j, k_no, rot=-4), "tom", 0.8)
 
 
 screen12()
@@ -1695,5 +1696,5 @@ def screen18(j=18):
 screen18()
 
 # ================================================================ 收尾
-L.finish(cover_shot=3, square_shot=6, notes=NOTES)
+L.finish(cover_shot=6, square_shot=9, notes=NOTES)
 L.export(globals())

@@ -3,6 +3,7 @@
 用法：
     python3 -m fengtian.build 01 --sheet      # 关键帧 + 安全区检查图（out/fengtian/ep01/）
     python3 -m fengtian.build 01              # 渲染成片到 out/fengtian/ep01/
+    python3 -m fengtian.build 02 --head 8     # 只渲染前 8 秒（开场样片，out/fengtian/hook_sample_02.mp4）
     python3 -m fengtian.build 01 --publish    # 渲染并交付到 videos/fengtian/01_<概念>/（接频道片尾、封面、标题与话题、横屏封面）
     加 --asr <sherpa-onnx paraformer 目录> 用语音识别核对旁白。
 
@@ -315,8 +316,13 @@ def limiter(x, ceil_db=-2.0, look=0.004):
 def build_audio():
     n = int(M.END_LOCAL * audio.SR)
     v = np.zeros(n)
-    for st, x in zip(M.STARTS, M.CLIPS):
-        audio.place(v, x, st)
+    skip = getattr(M, "DRAFT_LINES", set())          # 草稿占位句不放（静音）
+    for i, (st, x) in enumerate(zip(M.STARTS, M.CLIPS)):
+        if i not in skip:
+            audio.place(v, x, st)
+    hv = getattr(M, "HOOK_VOICE", None)              # 开场配音（大字逐字砸在它的发声起点上），和正文同一条人声轨、同样压低配乐
+    if hv:
+        audio.place(v, hv[1], hv[0])
     v = audio.process_voice(v)
     voice = audio.pan(v, 0) * 1.41
     m0 = int(round(M.S * audio.SR))
@@ -340,6 +346,14 @@ def build_audio():
             fr = int(round(t * FPS))
             events.append(dict(shot=k + 1, kb=int(round(beat)), beat=gi, t=t, sfx=name, note=note, frame=fr,
                                frame_err=round(t * FPS - fr, 2)))
+    for T, name, gain, note in getattr(M, "SFX_T", []):     # 不在拍上的音效（开场砸字）：峰值对齐落地时刻
+        clip = perc.sound(name) * core.SFX_LEVEL.get(name, 0.3) * gain
+        t = T - M.S
+        audio.place(sfx, audio.pan(clip, 0), t - perc.attack_ms(name) / 1000)
+        fr = int(round(t * FPS))
+        bi = int(np.clip(np.searchsorted(core._BEAT_T, T, side="right") - 1, 0, len(core._BEAT_T) - 2))
+        kb = bi + (T - core._BEAT_T[bi]) / (core._BEAT_T[bi + 1] - core._BEAT_T[bi]) - M.BOUNDS[0][0]
+        events.append(dict(shot=1, kb=round(float(kb), 2), beat=None, t=t, sfx=name, note=note, frame=fr, frame_err=round(t * FPS - fr, 2)))
     lv = _lufs(voice)
     music *= 10 ** ((lv + MUSIC_DB - _lufs(music)) / 20)
     sfx *= 10 ** ((lv + SFX_DB - _lufs(sfx)) / 20)
@@ -387,6 +401,16 @@ def report(asr=None):
     for w in wording_warnings():
         print("文案警告：", w, file=sys.stderr)
     print(f"时长 {M.END_LOCAL:.2f}s，配乐 {M.S:.2f}s 起（drop 在 {core.BEATS[M.DROP]['t'] - M.S:.2f}s）")
+    hk = getattr(M, "HOOK", None)
+    if hk and "lands" in hk:
+        s0 = hk["start"] - M.S
+        lands = [t - M.S for t in hk["lands"]]
+        t_end = core.bt(M.BOUNDS[0][1]) - M.S
+        print(f"  开场配音 {s0:5.2f}–{s0 + hk['dur']:5.2f}s “{hk['voice']}”{'（占位）' if hk['draft'] else ''}；"
+              f"砸字 {' '.join(f'{u}{t:.2f}' for u, t in zip(hk['text'].replace(' ', ''), lands))}；"
+              f"末字后停 {t_end - lands[-1]:.2f}s，开场屏 {t_end:.2f}s")
+        if t_end - lands[-1] < 1.2:
+            print(f"文案警告： 开场末字落地后只停 {t_end - lands[-1]:.2f}s（要 ≥1.2s）", file=sys.stderr)
     for (text, *_), st, du in zip(M.LINES, M.STARTS, M.DUR_L):
         print(f"  旁白 {st:6.2f}–{st + du:6.2f}s {core.han(text) / du:.2f}字/秒  {text}")
     hz = sum(core.han(ln[0]) for ln in M.LINES)
@@ -486,16 +510,18 @@ def square(path):
 
 # ---------------------------------------------------------------- 渲染与交付
 
-def render(out_dir):
+def render(out_dir, head=None, out=None):
+    """渲染成片；head=秒数时只渲染前 head 秒（画面 + 全片混音的前 head 秒），写到 out。"""
     global CAPS
     out_dir.mkdir(parents=True, exist_ok=True)
     CAPS = M.captions()
     mix, stems, events = build_audio()
     for e in events:
-        print(f"  事件 屏{e['shot']:2d} 第{e['kb']:2d}拍 {e['t']:6.2f}s 帧{e['frame']:4d}（偏差 {e['frame_err']:+.2f}） "
+        print(f"  事件 屏{e['shot']:2d} 第{e['kb']:>5}拍 {e['t']:6.2f}s 帧{e['frame']:4d}（偏差 {e['frame_err']:+.2f}） "
               f"{e['sfx']:10s} {e['note']}")
-    for k, x in stems.items():
-        sf.write(out_dir / f"{k}_track.wav", x.astype(np.float32), audio.SR, subtype="PCM_16")
+    if head is None:
+        for k, x in stems.items():
+            sf.write(out_dir / f"{k}_track.wav", x.astype(np.float32), audio.SR, subtype="PCM_16")
     hop = int(0.05 * audio.SR)
     vr = np.sqrt(np.maximum(uniform_filter1d(stems["voice"][:, 0] ** 2, hop), 0))
     on = vr > 0.1 * vr.max()
@@ -503,9 +529,15 @@ def render(out_dir):
     print(f"  人声段：人声 {db(stems['voice'], on):.1f} dB，配乐 {db(stems['music'], on):.1f} dB；无人声段配乐 "
           f"{db(stems['music'], ~on):.1f} dB；积分响度 人声 {_lufs(stems['voice']):.1f} / 配乐 {_lufs(stems['music']):.1f} / "
           f"音效 {_lufs(stems['sfx']):.1f} LUFS")
-    (out_dir / "cue_sheet.json").write_text(json.dumps(events, ensure_ascii=False, indent=1))
-    out = out_dir / f"{core.SERIES['prefix']}{M.NO:02d}_{M.CONCEPT}.mp4"
+    if head is None:
+        (out_dir / "cue_sheet.json").write_text(json.dumps(events, ensure_ascii=False, indent=1))
+    out = out or out_dir / f"{core.SERIES['prefix']}{M.NO:02d}_{M.CONCEPT}.mp4"
     n = int(round(M.END_LOCAL * FPS))
+    if head is not None:
+        n = min(n, int(round(head * FPS)))
+        mix = mix[: int(round(n / FPS * audio.SR))].copy()
+        f = int(0.25 * audio.SR)
+        mix[-f:] *= np.linspace(1, 0, f)[:, None]
     with tempfile.TemporaryDirectory() as tmp:
         wav = str(Path(tmp) / "mix.wav")
         sf.write(wav, mix, audio.SR)
@@ -558,6 +590,9 @@ def main():
                 still(t, out_dir / f"sheet_{t:05.2f}.png", safe="--safe" in args)
             cover(out_dir / "cover.png")
             square(out_dir / "square.png")
+            continue
+        if "--head" in args:                          # 只渲染开场前 N 秒样片：out/fengtian/hook_sample_NN.mp4
+            render(out_dir, head=float(args[args.index("--head") + 1]), out=OUT / f"hook_sample_{key}.mp4")
             continue
         video = render(out_dir)
         if "--publish" in args:

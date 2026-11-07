@@ -177,7 +177,7 @@ def _asr_refine(x, texts, cuts, runs, r3, hop):
     return out
 
 
-def synthesize(lines, mood=None, pinyin=(), groups=None, log=None):
+def synthesize(lines, mood=None, pinyin=(), groups=None, log=None, cached_only=False):
     """合成 44.1kHz 单声道逐句音频（首尾静音已裁），返回与 lines 等长的列表。
 
     groups：每屏的句序号列表；同屏几句连读一次合成后按句切开，切不开时该屏退回逐句合成。
@@ -192,6 +192,10 @@ def synthesize(lines, mood=None, pinyin=(), groups=None, log=None):
     out = [None] * len(texts)
     for g in plan:
         parts = None
+        if cached_only:                                # 只读缓存（草稿排版）：整屏连读没缓存就留 None，不启动 IndexTTS2
+            joined = "".join(tts_text(texts[i], pinyin) for i in g)
+            if not _cache_path(_NAR, joined, CALM).exists():
+                continue
         if len(g) > 1:
             x = _NAR.generate("".join(tts_text(texts[i], pinyin) for i in g), 1.0, 8, emo=CALM)
             try:

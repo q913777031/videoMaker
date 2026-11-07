@@ -1,9 +1,14 @@
-"""《丰田模式》每讲的开场钩子（第 0 屏，黄金 3 秒）：用本讲的痛点画面 + 一句大字开场，“丰田模式”改成随后弹出的小字系列标识。
+"""《丰田模式》每讲的开场钩子（第 0 屏，黄金 3 秒）：用本讲的痛点画面 + 一句配音开场，大字随配音逐字砸下，“丰田模式”是随后弹出的小字系列标识。
 
-统一节奏（8 拍开场屏，约 4.3 秒）：
-  第 0–2 拍 画面动作（每拍一个，配打击乐），第 3 拍 大字砸下（kick + 轻震，画面同拍到高潮），
-  第 4 拍 小字系列标识弹出；之后不再出新笔画，停约 1.8 秒看清，再由本讲的转场缓缓进入第 1 屏。
-接口：hook(H, j, cx, cy, acc)。H 要有 b（白板）、tb(j, k)（拍 → 绝对秒）、note(*字)（登记画面字给文案检查）。
+统一节奏（8 拍开场屏，约 4.4 秒；配音长时自动调整，见 prepare）：
+  第 0–2 拍 画面动作（每拍一个，配打击乐）；第 3 拍起配音念大字（HOOK_TEXT，配音句默认就是大字，可在 HOOK_VOICE 改），
+  每个字的落地时刻 = 该字在配音里的发声起点（fengtian.voice.syllable_onsets：谱通量起音 + CTC 识别逐字时刻），
+  每字从上方放大加速落下 → 落地压扁回弹 → 两侧尘土线，配一声打击乐（峰值对齐落地，tom，末字用 text_sfx）和轻震（末字重震）；
+  末字落地后的拍上弹出系列小字，末字之后至少停 1.2 秒不出新笔画，再由本讲的转场进入第 1 屏。
+  配音句长时首字提前到第 2 拍，仍放不下再把开场屏加长 2 拍（Lesson 构造时调用 prepare 决定，排期随之变化）。
+接口：hook(H, j, cx, cy, acc)。H 要有 b（白板）、tb(j, k)（拍 → 绝对秒）、note(*字)（登记画面字给文案检查），
+以及 HOOK（prepare 的结果）、tb_now(j, k)（finish 之前可用的 tb）、beat_at(j, T)（绝对秒 → 本屏小数拍）、
+sfx_at(T, 名称, 增益, 说明)（不在拍上的音效）。common.Lesson 与 ep01_andon._Hook 都提供这些。
 画面以 (cx, cy) 为中心，开场视角 (cx, cy - 40, 0.7)：可视约 x ±620、y cy-680…cy+600，内容留在 x ±560、y cy-620…cy+560。
 颜色用白板墨色（BLACK / RED / BLUE / GREEN），深色底由 theme.Recolor 统一反色；大字用本讲主题色 acc（不换色）。
 """
@@ -24,19 +29,6 @@ GRAY = "#6B6B6B"
 
 # ---------------------------------------------------------------- 公共件
 
-def _big(H, j, k, s, x, y, size, color):
-    H.note(s)
-
-    def fn(c, kk, T):
-        dt = T - H.tb(j, k)
-        sc = slam_scale(dt)
-        if sc > 0:
-            with K.at(c, x, y, 0, sc):
-                K.text(c, s, 0, 0, size, "hand", color, clamp01(dt / 0.06))
-        return None
-    return fn
-
-
 def _label(H, j, k, x, y):
     H.note(SERIES_SUB)
 
@@ -52,12 +44,169 @@ def _label(H, j, k, x, y):
 
 
 def _finish(H, j, cx, cy, text, acc, size=124, ty=None, shake=8.0, text_sfx="kick"):
-    """第 3 拍大字 + 轻震，第 4 拍系列小字。"""
+    """大字随开场配音逐字砸下（落地 = 该字发声起点，每字一声打击乐 + 轻震，末字 text_sfx + shake 重震），
+    之后在拍上弹出系列小字。配音与落地时刻由 prepare() 预先算好，放在 H.HOOK。"""
     b = H.b
+    hv = H.HOOK
+    if hv is None or hv["text"] != text:
+        raise ValueError(f"开场大字“{text}”与 HOOK_TEXT 不一致：{hv and hv['text']}")
     ty = cy + 250 if ty is None else ty
-    b.custom(j, 3, 3.3, _big(H, j, 3, text, cx, ty, size, acc), sfx=text_sfx, gain=0.75)
-    b.shots[j].shake = [(3, shake)]
-    b.custom(j, 4, 4.3, _label(H, j, 4, cx, ty + size * 0.6 + 105), sfx="pop", gain=0.55)
+    H.note(text)
+    toks = _units(text)
+    widths = [K.text_w(u, size, "hand") if u != " " else size * 0.45 for u, _ in toks]
+    gap = size * 0.06
+    total = sum(widths) + gap * (len(toks) - 1)
+    if total > 1080:                                   # 开场视角可视约 ±620，留边
+        k_ = 1080 / total
+        size, widths, gap, total = size * k_, [w * k_ for w in widths], gap * k_, 1080
+    xs, x = [], cx - total / 2
+    for w in widths:
+        xs.append(x + w / 2)
+        x += w + gap
+    t1 = H.tb_now(j, hv["k"])
+    hv["start"] = t1 - hv["land"][0]                    # 配音起点（绝对秒）
+    lands = [t1 + r for r in hv["rel"]]
+    hv["lands"] = lands
+    chars = [(u, x_) for (u, _), x_ in zip(toks, xs) if u != " "]
+    n = len(chars)
+    for i, ((u, x_), tl) in enumerate(zip(chars, lands)):
+        last = i == n - 1
+        k0 = H.beat_at(j, tl - FALL - 0.02)
+        b.custom(j, k0, k0 + 0.3, _drop_char(u, x_, ty, size, acc, tl))
+        H.sfx_at(tl, text_sfx if last else "tom", 0.8 if last else 0.7, f"砸字：{u}")
+        b.shots[j].shake.append((H.beat_at(j, tl), shake if last else 4.5))
+    b.custom(j, hv["label_k"], hv["label_k"] + 0.3, _label(H, j, hv["label_k"], cx, ty + size * 0.6 + 105),
+             sfx="pop", gain=0.55)
+
+
+FALL = 0.15                    # 砸落用时（秒）：从上方 1.5 倍大加速落下
+
+
+def _drop_char(u, x, y, size, color, tl):
+    """一个字砸下：tl 前 FALL 秒从上方放大加速落下，tl 落地（压扁 → 回弹），两侧扬起尘土线。"""
+    base = y + size * 0.42
+
+    def fn(c, kk, T):
+        dt = T - tl
+        if dt < -FALL:
+            return None
+        if dt < 0:
+            p = (dt + FALL) / FALL
+            yo, s, sx, sy, a = -260 * (1 - p * p), 1.5 - 0.5 * p * p, 1.0, 1.0, clamp01(p * 2.5)
+        else:
+            w = math.exp(-dt * 11) * math.cos(dt * 30)
+            yo, s, sx, sy, a = 0.0, 1.0, 1 + 0.18 * w, 1 - 0.24 * w, 1.0
+        c.save()
+        c.translate(x, base + yo)
+        c.scale(s * sx, s * sy)
+        c.translate(0, -size * 0.42)
+        K.text(c, u, 0, 0, size, "hand", color, a)
+        c.restore()
+        if 0 <= dt < 0.4:                              # 尘土：两侧各三道短线向外散开、变淡
+            f = ease_out(clamp01(dt / 0.4))
+            al = 1 - clamp01(dt / 0.4)
+            hw = K.text_w(u, size, "hand") / 2
+            for sg in (-1, 1):
+                for q, (ang, ln) in enumerate(((8, 0.30), (28, 0.24), (50, 0.18))):
+                    r0 = hw + 10 + f * size * 0.35
+                    rad = math.radians(ang)
+                    x0 = x + sg * r0 * math.cos(rad)
+                    y0 = base - r0 * math.sin(rad) * 0.6
+                    L_ = size * ln * (1 - 0.4 * f)
+                    c.drawLine(x0, y0, x0 + sg * L_ * math.cos(rad), y0 - L_ * math.sin(rad) * 0.6,
+                               wb.marker(GRAY, 6, 0.8 * al))
+                c.drawCircle(x + sg * (hw + f * size * 0.5), base - 8 - f * 18, 7 + 10 * f, K.paint(GRAY, 0.35 * al))
+        return None
+    return fn
+
+
+# ---------------------------------------------------------------- 开场配音：每讲大字（默认也是配音句）与排期
+
+HOOK_TEXT = dict(stamp3="第三遍了", pile="越堆越乱", curve="忙一阵 闲一阵", bars="全卡在一半", checklist="做了100遍还漏",
+                 sticky="又漏了一件", doorsign="问题还在", mole="又冒出来了", reject="一开会就被否",
+                 treadmill="忙了一天 还在原地", clock8="白忙", desktop="找不到", mailfly="手滑", startlights="还没开始",
+                 slides="结论呢？", qmarks="又错了", chain="掉链子", apps="又一个", alarm="先顾眼前")
+HOOK_VOICE = {}                # 个别讲配音比大字长（如问句）时写在这里，大字须是配音的一段；默认配音 = 大字
+BEAT = 0.533                   # 前奏段实测拍长（秒），排开场时估算用
+HOLD_S = 1.2                   # 末字落地后至少停留
+
+
+def _cn_num(n):
+    d = "零一二三四五六七八九"
+    if n < 10:
+        return d[n]
+    out, z = "", False
+    for v, u in ((1000, "千"), (100, "百"), (10, "十"), (1, "")):
+        q, n = divmod(n, v)
+        if q:
+            out += ("零" if z else "") + d[q] + u
+            z = False
+        elif out:
+            z = True
+    return out[:-1] if out.endswith("零") else out
+
+
+def _is_han(ch):
+    return "一" <= ch <= "鿿"
+
+
+def _units(text):
+    """大字拆成逐个砸下的单位 [(字, 音节数)]：汉字一个一单位，连续数字一单位（按读法计音节），
+    标点并入前一个字，空格单独一项（音节 0，只占位）。"""
+    out = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch.isdigit():
+            j_ = i
+            while j_ < len(text) and text[j_].isdigit():
+                j_ += 1
+            out.append([text[i:j_], len(_cn_num(int(text[i:j_])))])
+            i = j_
+            continue
+        if ch == " ":
+            out.append([" ", 0])
+        elif _is_han(ch) or not out or out[-1][0] == " ":
+            out.append([ch, 1 if _is_han(ch) else 0])
+        else:
+            out[-1][0] += ch
+        i += 1
+    return [tuple(u) for u in out]
+
+
+def voice_text(hook):
+    t = HOOK_VOICE.get(hook) or HOOK_TEXT[hook]
+    t = "".join(_cn_num(int(u)) if u.isdigit() else u for u, _ in _units(t)).replace(" ", "，")
+    return t if t[-1] in "？！。" else t + "。"
+
+
+def prepare(hook, draft=False, min_beats=8):
+    """开场前准备：合成配音句（fengtian.voice.hook_line，逐字发声起点），定第一个字落在第几拍、开场屏几拍、系列小字哪拍弹出。
+    规则：首字默认落在第 3 拍（前 3 拍是画面动作）；末字落地后要停 ≥HOLD_S 秒、小字弹出后再停 ≥2 拍，
+    放不下时首字提前到第 2 拍，仍放不下再把开场屏加长 2 拍。返回 dict，放到 H.HOOK。"""
+    from fengtian import voice
+    text, vt = HOOK_TEXT[hook], voice_text(hook)
+    clip, on, is_draft = voice.hook_line(vt, draft=draft)
+    toks = [u for u in _units(text) if u[0] != " "]
+    spoken = "".join(_cn_num(int(u)) if u.isdigit() else "".join(ch for ch in u if _is_han(ch)) for u, _ in toks)
+    vsy = "".join(ch for ch in vt if _is_han(ch))
+    i0 = vsy.find(spoken)
+    if i0 < 0 or len(on) != len(vsy):
+        raise ValueError(f"大字“{text}”不是配音“{vt}”的一段")
+    land, idx = [], i0
+    for u, ns in toks:
+        land.append(on[idx])
+        idx += ns
+    rel = [t - land[0] for t in land]
+    for k, beats in ((3, 8), (2, 8), (2, 10), (1, 10), (1, 12)):
+        if beats < min_beats:
+            continue
+        t_last = k * BEAT + rel[-1]
+        label_k = math.ceil((t_last + 0.25) / BEAT - 1e-9)
+        if beats * BEAT - t_last >= HOLD_S + 0.05 and beats - label_k >= 2:
+            break
+    return dict(hook=hook, text=text, voice=vt, clip=clip, on=on, land=land, rel=rel, k=k, beats=beats,
+                label_k=label_k, draft=is_draft, dur=len(clip) / 44100)
 
 
 def _stamp(H, j, k, s, x, y, size, rot, color=RED):
@@ -426,8 +575,7 @@ def reject(H, j, cx, cy, acc):
     b.custom(j, 1.4, 1.7, _pop(H, j, 1.4, "挺好？", cx - 380, y - 70, 56, GRAY))
     b.custom(j, 2, 2.3, _stamp(H, j, 2, "否", x + 20, y + 10, 210, -12), sfx="kick", gain=0.8)
     b.shots[j].shake = [(2, 9.0)]
-    b.custom(j, 3, 3.3, _big(H, j, 3, "一开会就被否", cx, cy + 250, 112, acc), sfx="rim", gain=0.8)
-    b.custom(j, 4, 4.3, _label(H, j, 4, cx, cy + 425), sfx="pop", gain=0.55)
+    _finish(H, j, cx, cy, "一开会就被否", acc, size=112, ty=cy + 250, text_sfx="rim")
 
 
 # ---------------------------------------------------------------- 10 反省：跑步机上原地跑
