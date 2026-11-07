@@ -57,6 +57,7 @@ from adler import kit as K
 from engine import audio
 from engine.gfx import clamp01, ease_in_out, ease_out, ease_out_back, lerp
 from fengtian import plan, voice
+from fengtian import theme as FT
 from whiteboard import engine as wb
 from whiteboard.engine import BLACK, BLUE, GREEN, ORANGE, RED, Board, P, circle, face, join, rect, stick  # noqa: F401
 
@@ -431,7 +432,9 @@ class Lesson:
       comma/max_gap 逗号停顿目标与上限（秒）
       natural_comma 不补逗号停顿的句序号集合
       board_size    白板尺寸
-      acc           系列强调色（页眉期号、封面）
+      acc           系列强调色（页眉期号、封面）；给了 theme 时用 theme["acc"]
+      theme         本讲样式（fengtian.theme.THEMES 里的一套，或同样字段的 dict）：主题色、纸张底色与纹理、页眉风格、
+                    开场钩子（hook，见 fengtian/hooks.py）、切屏转场（move / move_s）、开场屏拍数（intro_beats，默认 8）
     构造后可用的属性（export 会放进分镜模块）：NO KEY CONCEPT TITLE TAGS COVER_TITLE LINES LINE_MOOD PINYIN SCREENS GROUP
       RAW CLIPS CLAUSE_T DUR_L BOUNDS STARTS S END_LOCAL DROP SEAMS b ep；方法 captions() music_track()。
     """
@@ -443,8 +446,13 @@ class Lesson:
     MOVE_S = 1.3                   # 切屏镜头移动秒数
 
     def __init__(self, nn, screens, *, drop_screen=2, hold=1.55, min_beats=10, intro_beats=6, extra_hold=None,
-                 comma=0.25, max_gap=0.6, natural_comma=(), board_size=(4800, 10600), acc=ACC):
+                 comma=0.25, max_gap=0.6, natural_comma=(), board_size=(4800, 10600), acc=ACC, theme=None):
         p = plan.load(nn)
+        self.THEME = FT.finish(theme) if theme else FT.finish(dict(acc=acc))
+        if theme:
+            acc = self.THEME["acc"]
+            intro_beats = self.THEME.get("intro_beats", 8)
+        self.MOVE_S = self.THEME.get("move_s", self.MOVE_S)
         self.NO, self.KEY, self.CONCEPT = p["NO"], p["KEY"], p["CONCEPT"]
         self.TITLE, self.TAGS, self.COVER_TITLE = p["TITLE"], p["TAGS"], p["COVER_TITLE"]
         self.LINES, self.LINE_MOOD, self.PINYIN = p["LINES"], p["LINE_MOOD"], p["PINYIN"]
@@ -767,7 +775,15 @@ class Lesson:
         return cx, cy - 40, 0.7
 
     def intro(self, j, cx, cy, sub="精益制造的14项原则"):
-        """系列开场（第 0 屏）：“丰田模式”四个大字逐拍落下（rim / clap / tom / kick），第四字轻震，画下划线，弹出副标。
+        """第 0 屏开场：按 THEME["hook"] 画本讲的痛点钩子（fengtian/hooks.py）；hook="title" 时为旧版“丰田模式”四字。"""
+        hook = self.THEME.get("hook", "title")
+        if hook != "title":
+            from fengtian import hooks
+            return hooks.HOOKS[hook](self, j, cx, cy, self.ACC)
+        return self.intro_title(j, cx, cy, sub)
+
+    def intro_title(self, j, cx, cy, sub="精益制造的14项原则"):
+        """旧版系列开场（第 0 屏）：“丰田模式”四个大字逐拍落下（rim / clap / tom / kick），第四字轻震，画下划线，弹出副标。
         与第 01 讲一致；四字落定后停到 intro_beats 拍，再用 1.3 秒缓推到第 1 屏。"""
         b = self.b
         xs = [cx - 420 + 280 * i for i in range(4)]
@@ -793,7 +809,8 @@ class Lesson:
         b.custom(j, 4, 4.3, self.pop_text(sub, cx, cy + 210, 66, BLACK, j, 4, "sans_medium"), sfx="pop", gain=0.6)
 
     def camera(self, board, T):
-        """切屏：从上一屏的终了视角 1.3 秒缓入缓出移到本屏视角；屏内 board.move 运镜；强拍震屏；全程极慢推近 1.2%。"""
+        """切屏：从上一屏的终了视角按本讲转场（THEME["move"]，MOVE_S 秒）移到本屏视角；屏内 board.move 运镜；强拍震屏；
+        全程极慢推近 1.2%。"""
         ep_ = board.ep
         j_ = ep_.shot_at(T)
         s_ = ep_.shots[j_]
@@ -804,8 +821,10 @@ class Lesson:
         def mix(a, z, k):
             return lerp(a[0], z[0], k), lerp(a[1], z[1], k), math.exp(lerp(math.log(a[2]), math.log(z[2]), k))
 
-        k = ease_in_out(clamp01(t_ / self.MOVE_S)) if prev != cur else 1.0
-        view = mix(prev, cur, k)
+        style = self.THEME.get("move", "ease")
+        if style == "wipe" and j_ > 0 and self.GROUP[j_] == self.GROUP[j_ - 1]:
+            style = "ease"                       # 同一区块内不翻页，照常缓移
+        view, _ = FT.transition(prev, cur, t_, style, self.MOVE_S, j_)
         for kb_, target, dur in board.moves.get(j_, []):
             t0_ = board.t_of(j_, kb_)
             if T < t0_:
@@ -879,7 +898,7 @@ class Lesson:
 
     EXPORTS = ("NO", "KEY", "CONCEPT", "TITLE", "TAGS", "COVER_TITLE", "ACC", "LINES", "LINE_MOOD", "PINYIN", "SCREENS",
                "GROUP", "RAW", "CLIPS", "CLAUSE_T", "DUR_L", "BOUNDS", "STARTS", "S", "END_LOCAL", "DROP", "SEAMS", "b", "ep",
-               "COVER_SHOT", "SQUARE_SHOT", "NOTES", "TEXTS")
+               "COVER_SHOT", "SQUARE_SHOT", "NOTES", "TEXTS", "THEME", "MOVE_S")
 
     def export(self, ns):
         """把 build.py 需要的名字写进分镜模块的 globals()（SEAMS 是同一个列表，music_track 运行后填充）。"""
