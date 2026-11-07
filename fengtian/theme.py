@@ -51,7 +51,7 @@ THEMES = {
                header="circle", hook="desktop", move="arc", move_s=1.45),
     "13": dict(name="石墨板", acc="#FFB23F", paper="#272B33", pattern="dots", pat="#5A6372", grid=80, dark=True,
                header="tab", hook="mailfly", move="pan", move_s=1.25),
-    "14": dict(name="天蓝横线", acc="#D9480F", paper="#D6E8F6", pattern="ruled", pat="#9DBFDD", margin=None,
+    "14": dict(name="天蓝横线", acc="#B53A0A", paper="#D6E8F6", pattern="ruled", pat="#9DBFDD", margin=None,
                header="pill", hook="startlights", move="pullpush", move_s=1.35),
     "15": dict(name="白色工程纸", acc="#C62828", paper="#F6F8FB", pattern="grid", pat="#B9CCE6", grid=60,
                header="stamp", hook="slides", move="wipe", move_s=1.0),
