@@ -671,7 +671,7 @@ def mailfly(H, j, cx, cy, acc):
         # 第 3 拍：气泡“附件呢？”
         sc = pop_scale(T - H.tb(j, 3))
         if sc > 0:
-            with K.at(c, cx + 300, cy - 70, 0, sc):
+            with K.at(c, cx + 330, cy + 10, 0, sc):
                 c.drawRoundRect(skia.Rect.MakeXYWH(-200, -70, 400, 140), 40, 40, K.paint("#FFFFFF"))
                 c.drawPath(wb.bubble(0, 0, 400, 140, -1), wb.marker(BLACK, 7))
                 K.text(c, "附件呢？", 0, 0, 72, "hand", RED)

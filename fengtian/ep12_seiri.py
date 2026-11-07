@@ -407,6 +407,8 @@ def screen1(j=1):
                     c.drawCircle(hx + (-70 if n % 2 else 70), hy - 20 + ph * 80, 10, K.paint(BLUE, 1 - ph))
         return None
     ev(j, k_li, pop_fn(j, k_li, li), "shaker", 0.6)
+    for k_ in range(k_li + 3, k_boss - 1, 3):
+        b.hit(j, k_, "wood_high", 0.55, "窗口来回点")
 
     def boss(c, sc, T):
         x, s = cx + 300, 0.95
@@ -589,8 +591,9 @@ def screen4(j=4):
     L.scene(j, (cx, cy + 10, Z))
     GY = cy + 480
     X0 = cx - 520
-    k_li = kq(j, wp(5, 1, 0.3), 1)
+    k_li = 1
     k_broom = nx(j, wp(5, 2, 0.4), k_li)
+    b.path(j, 0, 0.6, P((cx - 560, GY), (cx + 560, GY)), BLACK, 8, sfx="wood_low")
     k_st = nx(j, wp(6, 0, 0.4), k_broom)
     k_5 = nx(j, wp(6, 1, 0.5), k_st)
     k_a = nx(j, wp(6, 2, 0.45), k_5)
@@ -659,8 +662,8 @@ def screen5(j=5):
     PX, PY = cx - 40, cy - 120
     k_pile = 0
     k_keep = kq(j, wp(7, 1, 0.5), 1)
-    k_out = nx(j, wp(7, 2, 0.5), k_keep)
-    k_away = nx(j, wp(7, 3, 0.3), k_out)
+    k_out = nx(j, wp(7, 2, 0.2), k_keep)
+    k_away = nx(j, wp(7, 2, 0.8), k_out)
     L.note("留下", "拿走", "整理")
     things = [("doc", BLUE), ("mug", ORANGE), ("doc", GRAY), ("tool", BLACK), ("doc", GRAY), ("cup", GRAY),
               ("tool", GRAY), ("box", GRAY)]
@@ -754,7 +757,7 @@ def screen6(j=6):
     k_ring = nx(j, wp(9, 3, 0.5), k_take)
     L.note("整顿", "标清楚", "扳手", "锤子", "螺丝刀", "钳子")
     b.path(j, k_board, k_board + 0.8, rect(BX, BY, 820, 520, 16), "#A9773E", 12, sfx="wood_low")
-    b.text(j, 0.5, 1.0, "整顿", cx - 360, cy - 470, 76, RED)
+    b.text(j, 3, 3.5, "整顿", cx - 360, cy - 470, 76, RED, sfx="pop", gain=0.6)
     NM = {"wrench": "扳手", "hammer": "锤子", "driver": "螺丝刀", "pliers": "钳子"}
 
     def board(c, kk, T):
@@ -800,7 +803,7 @@ def screen6(j=6):
 
     def wk(c, kk, T):
         tt = tb(j, k_take)
-        sc = pop_scale(T - tb(j, 0))
+        sc = pop_scale(T - tb(j, 1))
         x, dy, _ = C.walk(T, tt, 1.6, cx + 350, cx + 420)
         s = 0.8
         hx, hy = head_of(x, GY, s)
@@ -812,7 +815,7 @@ def screen6(j=6):
                     c.drawPath(tool_shape("driver", 0, 0, 1), K.paint(GRAY_FILL))
                     c.drawPath(tool_shape("driver", 0, 0, 1), wb.marker(BLACK, 6))
         return None
-    b.custom(j, 0, 0.3, wk)
+    b.custom(j, 1, 1.3, wk, sfx="wood_high", gain=0.55)
     b.hit(j, k_take, "wood_high", 0.6, "有人拿走一把")
 
 
@@ -839,8 +842,8 @@ def screen7(j=7):
             g = pop_scale(T - tb(j, k_))
             if g <= 0:
                 continue
-            x, y = X0 + (2 + i) * 200 + 100, GY - (3 + i) * 90 - 120
-            with K.at(c, x, y, 0, g):
+            x, y = X0 + (2 + i) * 200 + 100, GY - (3 + i) * 90 + 150
+            with K.at(c, x, y, 0, g * 0.85):
                 if i == 0:
                     C.line(c, (30, -70), (-10, 30), "#A9773E", 8)
                     c.drawPath(P((-50, 20), (20, 40), (0, 80), (-70, 70), close=True), K.paint(YELLOW))
@@ -885,10 +888,17 @@ def screen7(j=7):
     ev(j, k_dot, dots, "ding", 0.85)
 
     def wk(c, sc, T):
-        x, s = cx + 400, 0.62
-        y = GY - 5 * 90
+        x, s = X0 + 2 * 200 + 28, 0.62
+        y = GY - 3 * 90
+        hx, hy = head_of(x, y, s)
+        sweep = T >= tb(j, k_l[0])
+        ang = 18 * math.sin((T - tb(j, k_l[0])) * 8) if sweep else 0
         with at_pop(c, x, y, sc):
-            draw_worker(c, x, y, s, mood="smile", rh=(x + 60, y - 240) if T >= tb(j, k_dot) else None)
+            hand = (x + 60 * s, hy + 150 * s)
+            draw_worker(c, x, y, s, mood="smile", rh=hand)
+            with K.at(c, hand[0], hand[1], ang):
+                C.line(c, (0, -30), (40, 110), "#A9773E", 7)
+                c.drawPath(P((10, 100), (70, 90), (80, 140), (20, 150), close=True), K.paint(YELLOW))
         return None
     ev(j, 0, pop_fn(j, 0, wk))
 
@@ -1023,19 +1033,19 @@ def screen9(j=9):
         sc = pop_scale(T - tb(j, k_a) - 0.3)
         if sc <= 0:
             return None
-        spots = [(cx - 400, "key"), (cx - 230, "mug"), (cx - 60, "doc")]
-        C.line(c, (cx - 500, SY + 70), (cx + 40, SY + 70), "#A9773E", 10)
+        spots = [(cx - 430, "key"), (cx - 230, "mug"), (cx - 30, "doc")]
+        C.line(c, (cx - 540, SY + 90), (cx + 80, SY + 90), "#A9773E", 12)
         for i, (x, kind) in enumerate(spots):
-            p = K.paint(GRAY, 1, 4)
-            p.setPathEffect(skia.DashPathEffect.Make([12, 8], 0))
-            c.drawRoundRect(skia.Rect.MakeXYWH(x - 60, SY - 60, 120, 120), 10, 10, p)
-            K.text(c, "家", x, SY + 110, 34, "hand", GRAY)
+            p = K.paint(GRAY, 1, 5)
+            p.setPathEffect(skia.DashPathEffect.Make([14, 10], 0))
+            c.drawRoundRect(skia.Rect.MakeXYWH(x - 80, SY - 80, 160, 160), 12, 12, p)
+            K.text(c, "家", x, SY + 135, 44, "hand", GRAY)
             f = ease_out(clamp01((T - t0 - i * 0.15) / 0.35))
             ox, oy = x + (i - 1) * 160 + 80, SY + 200
             xx, yy = lerp(ox, x, f), lerp(oy, SY, f) - math.sin(f * math.pi) * 100
             if T < t0:
                 xx, yy = ox, oy
-            with K.at(c, xx, yy, 0, 0.8):
+            with K.at(c, xx, yy, 0, 1.1):
                 if kind == "key":
                     c.drawCircle(-20, 0, 26, wb.marker(ORANGE, 8))
                     C.line(c, (6, 0), (60, 0), ORANGE, 8)
@@ -1045,7 +1055,7 @@ def screen9(j=9):
                 else:
                     doc_card(c, 0, 0, 80, 100, BLACK, 2)
         if T >= tb(j, k_ok):
-            c.drawPath(check(cx - 230, SY - 140, 40), wb.marker(GREEN, 10, clamp01((T - tb(j, k_ok)) / 0.2)))
+            c.drawPath(check(cx - 230, SY - 170, 50), wb.marker(GREEN, 12, clamp01((T - tb(j, k_ok)) / 0.2)))
         return None
     ev(j, k_home, home, "wood_high", 0.7)
     b.hit(j, k_ok, "ding", 0.8, "各回各家")
@@ -1062,9 +1072,9 @@ def screen10(j=10):
     k_door = 0
     k_dig = kq(j, wp(16, 1, 0.3), 1)
     k_dig2 = nx(j, wp(17, 0, 0.5), k_dig)
-    k_key = nx(j, wp(17, 1, 0.3), k_dig2)
-    k_train = nx(j, wp(17, 2, 0.2), k_key)
-    k_gone = nx(j, wp(17, 2, 0.8), k_train)
+    k_key = nx(j, wp(17, 1, 0.1), k_dig2)
+    k_train = nx(j, wp(17, 1, 0.45), k_key)
+    k_gone = nx(j, wp(17, 1, 0.9), k_train)
     L.note("走了", "地铁")
     DX = cx - 380
     b.path(j, k_door, k_door + 0.8, join(rect(DX, GY - 280, 260, 560, 10), circle(DX + 90, GY - 270, 14),
@@ -1142,9 +1152,9 @@ def screen11(j=11):
     PX, PY = cx + 80, cy - 100
     k_ph = 0
     k_ask = kq(j, wp(18, 0, 0.5), 1)
-    k_sw = nx(j, wp(18, 2, 0.2), k_ask)
+    k_sw = nx(j, wp(18, 1, 0.5), k_ask)
     k_sw2 = cap(j, k_sw + 2)
-    k_ache = nx(j, wp(18, 3, 0.6), k_sw2)
+    k_ache = nx(j, wp(18, 2, 0.8), k_sw2)
     L.note("上个月的数据？", "酸")
 
     def phone(c, kk, T):
@@ -1215,8 +1225,8 @@ def screen12(j=12):
     k_win = 0
     k_tab = kq(j, wp(19, 0, 0.3), 1)
     k_tab2 = nx(j, wp(19, 1, 0.5), k_tab)
-    k_hov = nx(j, wp(19, 2, 0.2), k_tab2)
-    k_no = nx(j, wp(19, 3, 0.5), k_hov)
+    k_hov = nx(j, wp(19, 2, 0.1), k_tab2)
+    k_no = nx(j, wp(19, 2, 0.8), k_hov)
     L.note("40", "舍不得", "×")
     b.path(j, k_win, k_win + 0.8, rect(BX, BY, 1000, 560, 18), BLACK, 9, sfx="wood_low")
 
@@ -1274,9 +1284,9 @@ def screen13(j=13):
     GY = cy + 540
     CX_, CY_ = cx - 260, cy - 220
     k_cal = 0
-    k_fl = [kq(j, wp(20, 2, 0.2), 1)]
+    k_fl = [kq(j, wp(20, 1, 0.1), 1)]
     k_fl += [k_fl[0] + 1, k_fl[0] + 2]
-    k_never = nx(j, wp(20, 3, 0.5), k_fl[2])
+    k_never = nx(j, wp(20, 2, 0.6), k_fl[2])
     k_broom = nx(j, wp(21, 0, 0.5), k_never)
     k_ten = nx(j, wp(21, 1, 0.5), k_broom)
     k_3 = nx(j, wp(21, 2, 0.6), k_ten)
@@ -1359,7 +1369,7 @@ def screen14(j=14):
     k_ok = nx(j, wp(22, 3, 0.7), k_sw)
     L.note("归档", "一个月没打开")
     cells = [(MX - 380 + (i % 9) * 85, MY - 200 + (i // 9) * 90) for i in range(36)]
-    old = {i for i in range(36) if (i * 7) % 5 != 0}
+    old = {i for i in range(36) if i % 9 < 6}
 
     def scr(c, kk, T):
         monitor(c, MX, MY, 880, 540)
@@ -1382,13 +1392,13 @@ def screen14(j=14):
             with K.at(c, fx, fy, 0, g * bump):
                 folder_icon(c, 0, -10, 1.0, None)
                 K.text(c, "归档", 0, 10, 44, "hand", BLACK)
-            K.text(c, "一个月没打开", MX - 200, MY + 330, 44, "hand", GRAY, clamp01((T - tb(j, k_fd)) / 0.2))
+            K.text(c, "一个月没打开", MX - 230, MY - 340, 48, "hand", GRAY, clamp01((T - tb(j, k_fd)) / 0.2))
         if T >= tb(j, k_ok):
             g = pop_scale(T - tb(j, k_ok))
-            with K.at(c, MX - 100, MY + 60, 0, g):
+            with K.at(c, MX - 170, MY - 60, 0, g):
                 p = K.paint(GREEN, 1, 6)
                 p.setPathEffect(skia.DashPathEffect.Make([16, 12], 0))
-                c.drawRoundRect(skia.Rect.MakeXYWH(-260, -130, 520, 260), 20, 20, p)
+                c.drawRoundRect(skia.Rect.MakeXYWH(-245, -175, 490, 350), 20, 20, p)
                 c.drawPath(check(0, 0, 60), wb.marker(GREEN, 12))
         return None
     ev(j, k_ic, scr, "pop", 0.7)
@@ -1546,35 +1556,38 @@ def screen17(j=17):
             return None
         sip = T >= tb(j, k_sip)
         s = 0.95
-        with at_pop(c, X, GY, sc):
-            seat = rect(X + 10, GY - 150, 300, 50, 16)
+        CX2 = X + 200
+        with at_pop(c, CX2, GY, sc):
+            seat = rect(CX2, GY - 150, 260, 50, 16)
             c.drawPath(seat, K.paint("#E8C7A8"))
             c.drawPath(seat, wb.marker("#A9773E", 7))
-            back = P((X + 160, GY - 150), (X + 230, GY - 470), (X + 280, GY - 460), (X + 200, GY - 150), close=True)
+            back = P((CX2 + 90, GY - 150), (CX2 + 150, GY - 450), (CX2 + 200, GY - 440), (CX2 + 130, GY - 150), close=True)
             c.drawPath(back, K.paint("#F0D8BF"))
             c.drawPath(back, wb.marker("#A9773E", 7))
-            for dx in (-120, 140):
-                C.line(c, (X + dx, GY - 125), (X + dx, GY), "#A9773E", 9)
+            for dx in (-110, 110):
+                C.line(c, (CX2 + dx, GY - 125), (CX2 + dx, GY), "#A9773E", 9)
+        lx = X - 60
+        hx, hy = head_of(lx, GY, s)
+        cup_xy = (lx + 70 * s, hy + 40 * s) if sip else (lx + 120 * s, hy + 130 * s)
+        with at_pop(c, lx, GY, sc):
             c.save()
-            c.translate(X + 60, GY - 150)
-            c.rotate(10)
-            c.translate(-(X + 60), -(GY - 150))
-            hy = GY - 150 - 170 * s - 290 * s + 120 * s
-            cup_xy = (X - 40, hy + (40 if sip else 130) * s)
-            draw_li(c, X + 60, GY - 150 + 120 * s - 0, s * 0.9, "smile", rh=cup_xy)
+            c.translate(lx, GY)
+            c.rotate(5)
+            c.translate(-lx, -GY)
+            draw_li(c, lx, GY, s, "smile", rh=cup_xy, lh=(lx + 110 * s, hy + 230 * s))
             c.restore()
-            if T >= tb(j, k_cup):
-                g = pop_scale(T - tb(j, k_cup))
-                cx_, cy_ = cup_xy[0] + 10, cup_xy[1] - 20
-                with K.at(c, cx_, cy_, 0, g):
-                    box(c, 0, 0, 90, 100, "#FFFFFF", ORANGE, 6, 12)
-                    c.drawArc(skia.Rect.MakeXYWH(30, -25, 46, 46), -90, 180, False, wb.marker(ORANGE, 6))
-                    c.drawRect(skia.Rect.MakeXYWH(-40, -46, 80, 18), K.paint("#7A4A1E"))
-                    for n in range(3):
-                        ph = (T * 0.9 + n * 0.33) % 1
-                        c.drawPath(P((-25 + n * 25, -60 - ph * 120), (-10 + n * 25, -90 - ph * 120),
-                                     (-25 + n * 25, -120 - ph * 120)), wb.marker(GRAY, 6, 1 - ph))
-                K.text(c, "热咖啡", cx_ - 10, cy_ + 120, 48, "hand", ORANGE)
+        if T >= tb(j, k_cup):
+            g = pop_scale(T - tb(j, k_cup))
+            cx_, cy_ = cup_xy[0] + 40, cup_xy[1] - 30
+            with K.at(c, cx_, cy_, 0, g):
+                box(c, 0, 0, 90, 100, "#FFFFFF", ORANGE, 6, 12)
+                c.drawArc(skia.Rect.MakeXYWH(30, -25, 46, 46), -90, 180, False, wb.marker(ORANGE, 6))
+                c.drawRect(skia.Rect.MakeXYWH(-40, -46, 80, 18), K.paint("#7A4A1E"))
+                for n in range(3):
+                    ph = (T * 0.9 + n * 0.33) % 1
+                    c.drawPath(P((-25 + n * 25, -60 - ph * 120), (-10 + n * 25, -90 - ph * 120),
+                                 (-25 + n * 25, -120 - ph * 120)), wb.marker(GRAY, 6, 1 - ph))
+            K.text(c, "热咖啡", lx - 220, hy + 60, 56, "hand", ORANGE, clamp01(g))
         return None
     ev(j, k_chair, chair, "wood_low", 0.6)
     b.hit(j, k_cup, "pop", 0.75, "端起咖啡")
@@ -1601,7 +1614,7 @@ def screen18(j=18):
     k_clear = nx(j, wp(28, 2, 0.4), k_most)
     k_sit = nx(j, wp(28, 3, 0.5), k_clear)
     k_next = nx(j, wp(29, 0, 0.3), k_sit)
-    b.move(j, k_clear, (cx, cy + 420, Z), 1.1)
+    b.move(j, k_clear, (cx, cy + 440, Z), 1.1)
     NUMS = ["126个", "58个", "203个", "9个"]
     L.note("你桌面有几个图标？", *NUMS, "最满", "下一讲", "明明很小心", "为什么还是手滑？", "附件呢？")
     BY = cy - 300
@@ -1663,7 +1676,7 @@ def screen18(j=18):
         sc = pop_scale(T - t0)
         if sc <= 0:
             return None
-        x, y = cx + 20, cy + 700
+        x, y = cx + 20, cy + 750
         with K.at(c, x, y, -2, sc):
             box(c, 0, 0, 980, 230, "#FFFFFF", BLACK, 7, 18)
             K.rr(c, -380, -70, 170, 60, 30, RED)
