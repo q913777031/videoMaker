@@ -206,3 +206,140 @@ def synthesize(lines, mood=None, pinyin=(), groups=None, log=None):
             if log:
                 print(f"  {i:02d} {len(p) / audio.SR:.1f}s {texts[i]}", file=log, flush=True)
     return out
+
+
+# ---------------------------------------------------------------- 开场钩子句：逐字发声起点（大字逐字砸下用）
+
+HOOK_EMO = {"vector": {"calm": 0.6, "angry": 0.12, "surprised": 0.08}, "alpha": 0.4}   # 比正文略有力，强度低
+CTC_MODEL = os.environ.get("FT_CTC_MODEL", "/tmp/claude-0/-home-user-videoMaker/c54877fb-ac6a-58c6-9cd0-0962ece50b52/"
+                           "scratchpad/asr_ctc/sherpa-onnx-zipformer-ctc-zh-int8-2025-07-03")
+_CTC = None
+
+
+def _cache_path(nar, text, emo):
+    e = audio._ix2_emo(emo)
+    raw = f"{nar._key}|{json.dumps(e, sort_keys=True, ensure_ascii=False)}|{1.0:.4f}|{text}"
+    return audio.CACHE_DIR / f"{hashlib.sha1(raw.encode()).hexdigest()}.npy"
+
+
+def _draft_hook(n, seed=0):
+    """占位：每字 0.2 秒低噪声 + 0.03 秒间隙（配音没合成时排版用），返回 (音频, 每字起点)。"""
+    rng = np.random.default_rng(seed)
+    syl, gap = int(0.2 * audio.SR), int(0.03 * audio.SR)
+    x = np.zeros(int(0.03 * audio.SR) + n * (syl + gap) + int(0.08 * audio.SR))
+    ons = []
+    for i in range(n):
+        a = int(0.03 * audio.SR) + i * (syl + gap)
+        x[a: a + syl] = 0.05 * rng.standard_normal(syl) * np.hanning(syl)
+        ons.append(a / audio.SR)
+    return x, ons
+
+
+def hook_line(text, pinyin=(), draft=False):
+    """合成开场钩子句（同一音色、HOOK_EMO），返回 (音频, 每个汉字音节的发声起点秒, 是否占位)。
+
+    draft=True 且没有缓存时不启动 IndexTTS2，返回占位音频（起点为估算）。"""
+    global _NAR
+    if _NAR is None:
+        _NAR = audio.Narrator(VOICE)
+    t = tts_text(text, pinyin)
+    n = _han(text)
+    if draft and not _cache_path(_NAR, t, HOOK_EMO).exists():
+        x, ons = _draft_hook(n)
+        return x, ons, True
+    x = _NAR.generate(t, 1.0, 8, emo=HOOK_EMO)
+    return x, syllable_onsets(x, n), False
+
+
+def _ctc_starts(x):
+    """CTC 识别（sherpa-onnx zipformer-ctc）给出的每个字的尖峰时刻；没有模型时返回 None。"""
+    global _CTC
+    if not os.path.isdir(CTC_MODEL):
+        return None
+    try:
+        import sherpa_onnx
+        from scipy import signal
+    except ImportError:
+        return None
+    if _CTC is None:
+        _CTC = sherpa_onnx.OfflineRecognizer.from_zipformer_ctc(model=f"{CTC_MODEL}/model.int8.onnx",
+                                                               tokens=f"{CTC_MODEL}/tokens.txt", num_threads=2)
+    st = _CTC.create_stream()
+    st.accept_waveform(16000, signal.resample_poly(x, 160, 441).astype(np.float32))
+    _CTC.decode_stream(st)
+    r = st.result
+    return [float(ts) for tok, ts in zip(r.tokens, r.timestamps) if tok.startswith("▁")]
+
+
+def onset_strength(x, hop_s=0.005):
+    """谱通量（80–8000Hz、32 个对数频带的正向变化之和，平滑约 15ms）与帧能量（dB）。返回 (时刻, 通量 0–1, 能量 dB)。"""
+    from scipy import signal
+    sr = audio.SR
+    hop = int(hop_s * sr)
+    f, t, Z = signal.stft(x, sr, nperseg=1024, noverlap=1024 - hop, boundary=None, padded=False)
+    mag = np.abs(Z)
+    edges = np.geomspace(80, 8000, 33)
+    bands = np.stack([mag[(f >= a) & (f < b)].sum(0) for a, b in zip(edges, edges[1:])])
+    lb = np.log1p(bands / (bands.max() + 1e-12) * 1000)
+    flux = np.maximum(0, np.diff(lb, axis=1, prepend=lb[:, :1])).sum(0)
+    k = np.exp(-0.5 * (np.arange(-6, 7) / 2.0) ** 2)
+    flux = np.convolve(flux, k / k.sum(), "same")
+    flux /= flux.max() + 1e-12
+    e = 20 * np.log10(np.sqrt((mag ** 2).sum(0)) + 1e-9)
+    t = t - 1024 / 2 / sr + hop / sr                  # 帧中心 → 帧右缘附近（起音出现的时刻）
+    return np.maximum(t, 0), flux, e - e.max()
+
+
+def syllable_onsets(x, n):
+    """一句短话里 n 个音节（汉字）的发声起点（秒，相对音频开头）。
+
+    做法：谱通量的局部峰为候选，CTC 识别的逐字尖峰时刻为先验（字数对不上时改用有声段内按字均分），
+    动态规划按顺序挑 n 个候选（相邻 ≥70ms），使“峰高 − 偏离先验的惩罚”最大；第 1 个字固定为首个有声帧。
+    结果按音频内容缓存到 .cache/tts/onset_*.json。"""
+    h = hashlib.sha1(x.tobytes() + str(n).encode()).hexdigest()
+    cf = audio.CACHE_DIR / f"onset_{h}.json"
+    if cf.exists():
+        return json.loads(cf.read_text())
+    t, flux, e = onset_strength(x)
+    voiced = np.where(e > -32)[0]
+    a, z = t[voiced[0]], t[voiced[-1]]
+    prior = _ctc_starts(x)
+    src = "ctc"
+    if prior is None or len(prior) != n:
+        src = "均分"
+        prior = [a + (z - a) * i / n for i in range(n)]
+    prior[0] = a
+    pk = [i for i in range(1, len(flux) - 1) if flux[i] >= flux[i - 1] and flux[i] > flux[i + 1] and flux[i] > 0.08
+          and e[i] > -40]
+    cand = sorted({float(t[i]) for i in pk} | {float(a)})
+    hgt = {float(t[i]): float(flux[i]) for i in pk}
+    hgt[float(a)] = 1.0
+    sig = 0.07 if src == "ctc" else 0.12
+    C = len(cand)
+
+    def sc(k, ci):
+        d = (cand[ci] - prior[k]) / sig
+        return 2.0 * hgt[cand[ci]] - 0.5 * d * d
+
+    best = np.full((n, C), -1e18)
+    prev = np.full((n, C), -1, int)
+    best[0] = [sc(0, ci) if cand[ci] == a else -1e18 for ci in range(C)]
+    for k in range(1, n):
+        for ci in range(C):
+            ok = [cj for cj in range(ci) if cand[ci] - cand[cj] >= 0.07 and best[k - 1][cj] > -1e17]
+            if ok:
+                cj = max(ok, key=lambda q: best[k - 1][q])
+                best[k][ci] = best[k - 1][cj] + sc(k, ci)
+                prev[k][ci] = cj
+    ci = int(np.argmax(best[n - 1]))
+    if best[n - 1][ci] < -1e17:
+        out = [float(p) for p in prior]
+    else:
+        out = []
+        for k in range(n - 1, -1, -1):
+            out.append(cand[ci])
+            ci = prev[k][ci]
+        out.reverse()
+    out = [round(float(v), 4) for v in out]
+    cf.write_text(json.dumps(out))
+    return out
