@@ -779,7 +779,7 @@ class Lesson:
         hook = self.THEME.get("hook", "title")
         if hook != "title":
             from fengtian import hooks
-            return hooks.HOOKS[hook](self, j, cx, cy, self.ACC)
+            return hooks.HOOKS[hook](self, j, cx, cy + 50, self.ACC)     # 画面整体略下移，填满舞台
         return self.intro_title(j, cx, cy, sub)
 
     def intro_title(self, j, cx, cy, sub="精益制造的14项原则"):
@@ -825,6 +825,8 @@ class Lesson:
         if style == "wipe" and j_ > 0 and self.GROUP[j_] == self.GROUP[j_ - 1]:
             style = "ease"                       # 同一区块内不翻页，照常缓移
         view, _ = FT.transition(prev, cur, t_, style, self.MOVE_S, j_)
+        if 0 < t_ < self.MOVE_S and prev != cur:
+            view = FT.keep_on_board(view, board)
         for kb_, target, dur in board.moves.get(j_, []):
             t0_ = board.t_of(j_, kb_)
             if T < t0_:

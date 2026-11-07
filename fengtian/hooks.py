@@ -57,7 +57,7 @@ def _finish(H, j, cx, cy, text, acc, size=124, ty=None, shake=8.0, text_sfx="kic
     ty = cy + 250 if ty is None else ty
     b.custom(j, 3, 3.3, _big(H, j, 3, text, cx, ty, size, acc), sfx=text_sfx, gain=0.75)
     b.shots[j].shake = [(3, shake)]
-    b.custom(j, 4, 4.3, _label(H, j, 4, cx, ty + 175), sfx="pop", gain=0.55)
+    b.custom(j, 4, 4.3, _label(H, j, 4, cx, ty + size * 0.6 + 105), sfx="pop", gain=0.55)
 
 
 def _stamp(H, j, k, s, x, y, size, rot, color=RED):
@@ -92,21 +92,21 @@ def _doc_lines(x, y, w, h, n, top=0.22):
 
 def stamp3(H, j, cx, cy, acc):
     b = H.b
-    b.path(j, 0, 0.6, _doc_lines(cx, cy - 250, 430, 500, 6), BLACK, 9, sfx="wood_high")
-    for k, (dx, dy, rot, size, sfx) in enumerate(((-110, -380, -14, 70, "rim"), (110, -230, 10, 74, "rim"))):
+    b.path(j, 0, 0.6, _doc_lines(cx, cy - 270, 540, 640, 7), BLACK, 10, sfx="wood_high")
+    for k, (dx, dy, rot, size, sfx) in enumerate(((-120, -460, -14, 88, "rim"), (120, -280, 10, 92, "rim"))):
         b.custom(j, k + 1, k + 1.3, _stamp(H, j, k + 1, "返工", cx + dx, cy + dy, size, rot), sfx=sfx, gain=0.8)
-    b.custom(j, 3, 3.3, _stamp(H, j, 3, "返工", cx - 10, cy - 70, 92, -5), sfx="tom", gain=0.8)
-    _finish(H, j, cx, cy, "第三遍了", acc, ty=cy + 280, text_sfx="kick")
+    b.custom(j, 3, 3.3, _stamp(H, j, 3, "返工", cx - 10, cy - 90, 112, -5), sfx="tom", gain=0.8)
+    _finish(H, j, cx, cy, "第三遍了", acc, size=150, ty=cy + 260, text_sfx="kick")
 
 
 # ---------------------------------------------------------------- 02 拉动：活越堆越高，塌了
 
 def pile(H, j, cx, cy, acc):
     b = H.b
-    floor = cy + 80
+    floor = cy + 40
     pieces = []                       # (宽, 高, 落下拍, 塌落方向, 塌落角)
-    spec = [(300, 90, 0, -1, -70), (260, 80, 0, 1, 40), (280, 85, 1, -1, -35), (240, 80, 1, 1, 65),
-            (260, 85, 2, -1, -55), (220, 80, 2, 1, 80), (200, 75, 2, -1, -20)]
+    spec = [(420, 110, 0, -1, -70), (370, 105, 0, 1, 40), (390, 105, 1, -1, -35), (340, 100, 1, 1, 65),
+            (360, 100, 2, -1, -55), (310, 95, 2, 1, 80)]
     y = floor
     for i, (w, h, k, d, ang) in enumerate(spec):
         pieces.append((w, h, k + (0.0 if i % 2 == 0 else 0.25), d, ang, y, (i * 37) % 23 - 11))
@@ -128,13 +128,13 @@ def pile(H, j, cx, cy, acc):
             x, yy, rot = cx + off, yb - drop, lean * (i + 1) * 0.35
             if T > tf:
                 f = ease_in_out(clamp01((T - tf) / 0.45))
-                x += d * f * (120 + i * 55)
+                x += d * f * (160 + i * 60)
                 yy = lerp(yy, floor - 40 - (i % 3) * 30, f)
                 rot = lerp(rot, ang, f)
             with K.at(c, x, yy - h / 2, rot):
                 c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2, -h / 2, w, h), 10, 10, K.paint("#FFFFFF"))
                 c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2, -h / 2, w, h), 10, 10, wb.marker(BLACK, 8))
-                c.drawLine(-w * 0.32, 0, w * 0.2, 0, wb.marker(BLUE if i % 2 else RED, 6))
+                c.drawLine(-w * 0.32, 0, w * 0.2, 0, wb.marker(BLUE if i % 2 else RED, 8))
         if T > tf:
             dt = T - tf
             if dt < 0.5:
@@ -164,7 +164,7 @@ def curve(H, j, cx, cy, acc):
     hi = min(pts[:60], key=lambda p: p[1])
     lo = max(pts[40:90], key=lambda p: p[1])
     b.custom(j, 2, 2.3, _pop(H, j, 2, "忙死", hi[0], hi[1] - 70, 66, RED), sfx="pop")
-    b.custom(j, 3, 3.3, _pop(H, j, 3, "闲死", lo[0], lo[1] - 75, 66, BLUE))
+    b.custom(j, 3, 3.3, _pop(H, j, 3, "闲死", lo[0], base + 70, 66, BLUE))
     _finish(H, j, cx, cy, "忙一阵 闲一阵", acc, size=112, ty=cy + 250)
 
 
@@ -184,9 +184,9 @@ def _pop(H, j, k, s, x, y, size, color, font="hand"):
 
 def bars(H, j, cx, cy, acc):
     b = H.b
-    n, x0, w, hgt, gap, top = 10, cx - 430, 640, 34, 58, cy - 600
+    n, x0, w, hgt, gap, top = 10, cx - 500, 780, 44, 72, cy - 640
     targets = [0.47, 0.52, 0.44, 0.55, 0.49, 0.5, 0.46, 0.53, 0.48, 0.51]
-    outl = join(*[rect(x0 + w / 2, top + i * gap, w, hgt, 17) for i in range(n)])
+    outl = join(*[rect(x0 + w / 2, top + i * gap, w, hgt, 22) for i in range(n)])
     b.path(j, 0, 0.7, outl, BLACK, 7, sfx="wood_high")
     H.note(*[f"{int(t * 100)}%" for t in targets])
 
@@ -200,9 +200,9 @@ def bars(H, j, cx, cy, acc):
             if p <= 0:
                 continue
             y = top + i * gap
-            c.drawRoundRect(skia.Rect.MakeXYWH(x0 + 5, y - hgt / 2 + 5, (w - 10) * p, hgt - 10), 12, 12,
+            c.drawRoundRect(skia.Rect.MakeXYWH(x0 + 6, y - hgt / 2 + 6, (w - 12) * p, hgt - 12), 16, 16,
                             K.paint(GREEN if T < H.tb(j, 3) else ORANGE))
-            K.text(c, f"{int(round(p * 100))}%", x0 + w + 70, y, 40, "sans_medium", BLACK, clamp01((T - t0) / 0.2))
+            K.text(c, f"{int(round(p * 100))}%", x0 + w + 80, y, 48, "sans_medium", BLACK, clamp01((T - t0) / 0.2))
         tb3 = H.tb(j, 3)
         if T > tb3:
             a = clamp01((T - tb3) / 0.15)
@@ -212,7 +212,7 @@ def bars(H, j, cx, cy, acc):
     b.custom(j, 0.6, 2.6, fn)
     b.hit(j, 1, "shaker", 0.6, "进度条往前走")
     b.hit(j, 2, "wood_low", 0.8, "越走越慢")
-    _finish(H, j, cx, cy, "全卡在一半", acc, ty=cy + 230, text_sfx="kick")
+    _finish(H, j, cx, cy, "全卡在一半", acc, size=136, ty=cy + 250, text_sfx="kick")
 
 
 # ---------------------------------------------------------------- 05 标准化：清单第 100 遍，漏了一步
@@ -333,12 +333,12 @@ def doorsign(H, j, cx, cy, acc):
 
 def mole(H, j, cx, cy, acc):
     b = H.b
-    hy = cy - 100
-    xs = [cx - 340, cx, cx + 340]
+    hy = cy - 60
+    xs = [cx - 370, cx, cx + 370]
     holes = []
     for x in xs:
         o = skia.Path()
-        o.addOval(skia.Rect.MakeXYWH(x - 130, hy - 34, 260, 68))
+        o.addOval(skia.Rect.MakeXYWH(x - 160, hy - 40, 320, 80))
         holes.append(o)
     b.path(j, 0, 0.6, join(*holes), BLACK, 9, sfx="wood_low")
     H.note("问题")
@@ -356,14 +356,14 @@ def mole(H, j, cx, cy, acc):
                 continue
             x = xs[hole]
             c.save()
-            c.clipRect(skia.Rect.MakeLTRB(x - 200, hy - 600, x + 200, hy))
-            yy = hy + 40 - 230 * up
-            c.drawRoundRect(skia.Rect.MakeXYWH(x - 95, yy - 120, 190, 300), 90, 90, K.paint("#D9B38C"))
-            c.drawRoundRect(skia.Rect.MakeXYWH(x - 95, yy - 120, 190, 300), 90, 90, wb.marker(BLACK, 8))
-            for ex in (-32, 32):
-                c.drawCircle(x + ex, yy - 50, 9, K.paint(BLACK))
-            c.drawCircle(x, yy - 20, 14, K.paint(BLACK))
-            K.text(c, "问题", x, yy + 60, 48, "hand", RED)
+            c.clipRect(skia.Rect.MakeLTRB(x - 220, hy - 700, x + 220, hy))
+            yy = hy + 60 - 330 * up
+            c.drawRoundRect(skia.Rect.MakeXYWH(x - 125, yy - 160, 250, 400), 120, 120, K.paint("#D9B38C"))
+            c.drawRoundRect(skia.Rect.MakeXYWH(x - 125, yy - 160, 250, 400), 120, 120, wb.marker(BLACK, 9))
+            for ex in (-42, 42):
+                c.drawCircle(x + ex, yy - 70, 12, K.paint(BLACK))
+            c.drawCircle(x, yy - 30, 18, K.paint(BLACK))
+            K.text(c, "问题", x, yy + 70, 66, "hand", RED)
             c.restore()
         c.drawPath(join(*holes), wb.marker(BLACK, 9))
         # 锤子：第 2 拍砸左边的洞
@@ -372,20 +372,20 @@ def mole(H, j, cx, cy, acc):
             f = clamp01((T - (t2 - 0.3)) / 0.3)
             ang = lerp(-60, 10, ease_in_out(f)) if T < t2 else 10 - 10 * ease_out(clamp01((T - t2) / 0.4))
             a = 1 - clamp01((T - t2 - 0.9) / 0.3)
-            px, py = xs[0] + 260, hy - 60
+            px, py = xs[0] + 300, hy - 90
             with K.at(c, px, py, ang):
                 c.drawRoundRect(skia.Rect.MakeXYWH(-300, -16, 300, 32), 10, 10, K.paint("#C89B63", a))
                 c.drawRoundRect(skia.Rect.MakeXYWH(-300, -16, 300, 32), 10, 10, wb.marker(BLACK, 6, a))
                 c.drawRoundRect(skia.Rect.MakeXYWH(-360, -70, 120, 140), 16, 16, K.paint(RED, a))
                 c.drawRoundRect(skia.Rect.MakeXYWH(-360, -70, 120, 140), 16, 16, wb.marker(BLACK, 7, a))
             if T > t2 and T - t2 < 0.4:
-                K.burst(c, xs[0], hy - 130, T - t2, ORANGE, 40, 150, 8, 7, 0.9)
+                K.burst(c, xs[0], hy - 160, T - t2, ORANGE, 50, 190, 8, 8, 0.9)
         return None
     b.custom(j, 0.6, 0.9, fn)
     b.hit(j, 1, "bongo_high", 0.8, "左边冒头")
     b.hit(j, 2, "rim", 0.9, "锤子砸下 + 右边冒头")
     b.custom(j, 3, 3.3, lambda c, k, T: None, sfx="bongo_low", gain=0.8)
-    _finish(H, j, cx, cy, "又冒出来了", acc, ty=cy + 220)
+    _finish(H, j, cx, cy, "又冒出来了", acc, size=136, ty=cy + 220)
 
 
 # ---------------------------------------------------------------- 09 共识：方案被盖“否”
@@ -423,7 +423,7 @@ def reject(H, j, cx, cy, acc):
                 c.drawLine(0, 70, 0, 130, wb.marker(BLACK, 8))
         return None
     b.custom(j, 1, 1.3, heads, sfx="pop", gain=0.7)
-    b.custom(j, 1.4, 1.7, _pop(H, j, 1.4, "挺好？", cx, y - 360, 60, GRAY))
+    b.custom(j, 1.4, 1.7, _pop(H, j, 1.4, "挺好？", cx - 380, y - 70, 56, GRAY))
     b.custom(j, 2, 2.3, _stamp(H, j, 2, "否", x + 20, y + 10, 210, -12), sfx="kick", gain=0.8)
     b.shots[j].shake = [(2, 9.0)]
     b.custom(j, 3, 3.3, _big(H, j, 3, "一开会就被否", cx, cy + 250, 112, acc), sfx="rim", gain=0.8)
@@ -452,8 +452,12 @@ def treadmill(H, j, cx, cy, acc):
         sc = pop_scale(T - t1)
         if sc <= 0:
             return None
-        s = 0.95
+        s = 1.0
         x, y0 = cx - 40, by - 6
+        c.save()
+        c.translate(x, y0)
+        c.scale(1.3, 1.3)
+        c.translate(-x, -y0)
         bob = -abs(math.sin(ph * math.pi)) * 22
         hy = y0 - 300 * s + bob
         hip = (x, y0 - 130 * s + bob)
@@ -481,13 +485,14 @@ def treadmill(H, j, cx, cy, acc):
                 for i, (dx_, dy_) in enumerate(((-70, -40), (80, -70))):
                     f = ((T - t2) * 1.4 + i * 0.5) % 1
                     c.drawCircle(x + 14 + dx_ * (1 + f * 0.4), hy + dy_ + f * 60, 10, K.paint(BLUE, 1 - f))
+        c.restore()
         return None
     b.custom(j, 1, 1.3, fn, sfx="shaker", gain=0.6)
 
     def meter(c, kk, T):
         sc = pop_scale(T - H.tb(j, 2))
         if sc > 0:
-            with K.at(c, cx + 430, by - 600, 6, sc):
+            with K.at(c, cx + 430, by - 610, 6, sc):
                 c.drawRoundRect(skia.Rect.MakeXYWH(-120, -60, 240, 120), 16, 16, K.paint("#FFFFFF"))
                 c.drawRoundRect(skia.Rect.MakeXYWH(-120, -60, 240, 120), 16, 16, wb.marker(BLACK, 7))
                 K.text(c, "0米", 0, 0, 76, "hand", RED)

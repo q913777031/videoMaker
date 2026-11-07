@@ -17,6 +17,7 @@ import skia
 from adler import kit as K
 from engine.gfx import clamp01, ease_in_out, ease_out, lerp
 from fengtian import common as C
+from fengtian import theme as FT
 from fengtian.common import (BLACK, BLUE, GREEN, ORANGE, RED, YELLOW, draw_boss, draw_li, draw_ohno, draw_worker,
                              pop_scale, rest_hands, shoulder, walk, wobble)
 from whiteboard import engine as wb
@@ -45,7 +46,8 @@ SCREENS = [
     ([26, 27, 28], "评论区见", 18),
 ]
 
-L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 11400), extra_hold={13: 0.8, 17: 0.4})
+THEME = FT.get("02")          # 本讲样式（fengtian/theme.py）：浅灰蓝点阵、开场 pile、转场 pan
+L = C.Lesson("02", SCREENS, drop_screen=2, board_size=(5000, 11400), extra_hold={13: 0.8, 17: 0.4}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 

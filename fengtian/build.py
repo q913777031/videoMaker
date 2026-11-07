@@ -11,6 +11,8 @@
 - 底部 1330–1620 不放内容（标题文案、话题、进度条），字幕条在 1190–1320；
 - 右侧 920–1080 不放关键内容（头像、点赞、评论、分享），左侧留 48；
 - 白板舞台 x 48–920、y 280–1180，中心 (484, 730)，各屏取景让人物、标签、砸字、震屏都落在舞台内。
+每讲样式（主题色、纸张底色与纹理、页眉风格、开场钩子、转场）来自分镜模块的 THEME（fengtian/theme.py）：
+纸张与线条换色只在画白板时生效（theme.Recolor），页眉、字幕条、封面、横屏封面按 THEME 取色。
 白板、相机、角色、旁白排期都来自分镜模块（如 fengtian/ep01_andon.py）；本文件只在本进程内调整白板引擎的舞台位置，
 不改动引擎对其他系列的行为。
 """
@@ -34,6 +36,7 @@ from adler import core, fx
 from adler import kit as K
 from engine import audio, gfx, perc, wording
 from engine.gfx import clamp01, ease_in_out, ease_out, lerp
+from fengtian import theme as FT
 from whiteboard import engine as wb
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -54,11 +57,15 @@ MUSIC_DB, DUCK, SFX_DB = -12.5, 0.45, -9.0
 VIEW_SCALE = 1.0
 
 M = None                                          # 当前分镜模块
+TH = FT.finish({})                                # 当前一讲的样式
+RC = None                                         # 白板换色器
 
 
 def load(key):
-    global M
+    global M, TH, RC
     M = importlib.import_module(f"fengtian.{MODS[key]}")
+    TH = getattr(M, "THEME", None) or FT.get(key)
+    RC = FT.Recolor(TH)
     if not getattr(M, "_scaled", False):
         M.b.views = [(cx, cy, z * VIEW_SCALE) for cx, cy, z in M.b.views]
         for j, mv in M.b.moves.items():
@@ -112,9 +119,16 @@ def _visible_items(T, j=None):
     return [it for it in b.items if M.GROUP[it["j"]] in groups]
 
 
-def draw_board(c, T, view=None, hand=True, j=None):
+def _render_board(c, T, view, hand, j):
     items = M.b.items
     M.b.items = _visible_items(T, j)
+    bg, it_fn = wb._board_bg, wb._items
+
+    def themed_items(c_, board, T_):
+        with RC:
+            return it_fn(c_, board, T_)
+    wb._board_bg = lambda c_, board: FT.board_bg(c_, board, TH)
+    wb._items = themed_items
     c.save()
     c.translate(SCX - core.W / 2, 0)
     wb.STAGE_Y = SCY
@@ -122,25 +136,99 @@ def draw_board(c, T, view=None, hand=True, j=None):
         wb.render_board(c, M.b, T, view=view, hand_on=hand)
     finally:
         M.b.items = items
+        wb._board_bg, wb._items = bg, it_fn
     c.restore()
 
 
+def draw_board(c, T, view=None, hand=True, j=None):
+    """画白板（本讲纸张 + 换色）；按本讲转场：tilt 时整块画布轻微旋转，wipe 时换区块的切屏做翻页式擦除。"""
+    style = TH.get("move", "ease")
+    dur = getattr(M, "MOVE_S", TH.get("move_s", 1.3))
+    if view is None and style == "wipe":
+        w = FT.wipe_at(M.b, T, M.GROUP, dur)
+        if w is not None:
+            jj = M.ep.shot_at(T)
+            ex = W * w
+            c.save()
+            c.clipRect(skia.Rect.MakeLTRB(ex, 0, W, H))
+            _render_board(c, T, None, hand, jj)
+            c.restore()
+            c.save()
+            c.clipRect(skia.Rect.MakeLTRB(0, 0, ex, H))
+            _render_board(c, T, M.b.end_view(jj - 1), False, jj - 1)
+            c.restore()
+            sh = skia.Paint(AntiAlias=True)
+            sh.setShader(skia.GradientShader.MakeLinear(
+                [skia.Point(ex - 70, 0), skia.Point(ex, 0)],
+                [skia.Color(0, 0, 0, 0), skia.Color(0, 0, 0, 70)]))
+            c.drawRect(skia.Rect.MakeLTRB(ex - 70, 0, ex, H), sh)
+            hl = skia.Paint(AntiAlias=True)
+            hl.setShader(skia.GradientShader.MakeLinear(
+                [skia.Point(ex, 0), skia.Point(ex + 40, 0)],
+                [skia.Color(255, 255, 255, 120), skia.Color(255, 255, 255, 0)]))
+            c.drawRect(skia.Rect.MakeLTRB(ex, 0, ex + 40, H), hl)
+            c.drawLine(ex, 0, ex, H, K.paint(TH["line"], 0.9, 3))
+            return
+    rot = FT.rot_at(M.b, T, style, dur) if view is None else 0.0
+    if rot:
+        c.save()
+        c.rotate(rot, SCX, SCY)
+        _render_board(c, T, view, hand, j)
+        c.restore()
+    else:
+        _render_board(c, T, view, hand, j)
+
+
+def draw_badge(c, x0, y, style, acc, ink, paper, scale=1.0):
+    """期号徽章（系列识别，五种页眉风格各一种画法），返回徽章右缘 x。"""
+    no = f"{M.NO:02d}"
+    s = scale
+    if style == "circle":
+        c.drawCircle(x0 + 30 * s, y, 30 * s, K.paint(acc))
+        K.text(c, no, x0 + 30 * s, y, 30 * s, "black", TH["badge_ink"])
+        return x0 + 60 * s
+    if style == "tab":
+        K.rr(c, x0 + 46 * s, y, 92 * s, 54 * s, 6 * s, acc)
+        K.text(c, no, x0 + 46 * s, y, 32 * s, "black", TH["badge_ink"])
+        return x0 + 92 * s
+    if style == "stamp":
+        with K.at(c, x0 + 46 * s, y, -6):
+            K.rr(c, 0, 0, 92 * s, 54 * s, 8 * s, paper)
+            K.rr_stroke(c, 0, 0, 92 * s, 54 * s, 8 * s, acc, 4 * s)
+            K.rr_stroke(c, 0, 0, 78 * s, 40 * s, 5 * s, acc, 2 * s)
+            K.text(c, no, 0, 0, 30 * s, "black", acc)
+        return x0 + 92 * s
+    if style == "bar":
+        K.rr(c, x0 + 5 * s, y, 10 * s, 58 * s, 5 * s, acc)
+        K.text(c, no, x0 + 24 * s, y, 40 * s, "black", acc, 1, "left")
+        return x0 + 24 * s + K.text_w(no, 40 * s, "black")
+    K.rr(c, x0 + 46 * s, y, 92 * s, 50 * s, 25 * s, acc)
+    K.text(c, no, x0 + 46 * s, y, 32 * s, "black", TH["badge_ink"])
+    return x0 + 92 * s
+
+
 def draw_header(c, s, t):
-    c.drawRect(skia.Rect.MakeLTRB(0, 0, W, HEAD_BOTTOM + 8), K.paint(BG, 1.0, blur=6))
+    th = TH
+    style = th.get("header", "pill")
+    c.drawRect(skia.Rect.MakeLTRB(0, 0, W, HEAD_BOTTOM + 8), K.paint(th["paper"], 1.0, blur=6))
     x0 = SAFE["left"] + 8
-    K.text(c, f"{core.SERIES['name']} · {core.SERIES['count']}", x0, 168, 30, "sans_medium", K.INK2, 1, "left")
-    K.rr(c, x0 + 46, 220, 92, 50, 25, M.ACC)
-    K.text(c, f"{M.NO:02d}", x0 + 46, 220, 32, "black", K.PAPER)
-    K.text(c, M.CONCEPT, x0 + 108, 220, 34, "serif_black", K.INK, 1, "left")
+    K.text(c, f"{core.SERIES['name']} · {core.SERIES['count']}", x0, 168, 30, "sans_medium", th["ink2"], 1, "left")
+    xr_badge = draw_badge(c, x0, 220, style, M.ACC, th["ink"], th["paper"])
+    cw = K.text(c, M.CONCEPT, xr_badge + 16, 220, 34, "serif_black", th["ink"], 1, "left")
+    if style == "tab":
+        K.seg(c, xr_badge + 16, 246, xr_badge + 16 + cw, 246, M.ACC, 4)
     if s.tag:
-        k = ease_out(clamp01((t - s.t0 + M.S) / 0.4)) if False else 1.0
         w = K.text_w(s.tag, 28, "sans_medium") + 44
         xr = W - SAFE["right"] - 20
-        K.rr(c, xr - w / 2, 220, w, 50, 25, K.PAPER)
-        K.rr_stroke(c, xr - w / 2, 220, w, 50, 25, M.ACC, 3)
-        K.text(c, s.tag, xr - w / 2, 220, 28, "sans_medium", M.ACC)
+        if style in ("tab", "bar"):
+            K.rr(c, xr - w / 2, 220, w, 50, 8 if style == "tab" else 25, FT.hexc(FT.mix(M.ACC, th["paper"], 0.82)))
+            K.text(c, s.tag, xr - w / 2, 220, 28, "sans_medium", th["ink"])
+        else:
+            K.rr(c, xr - w / 2, 220, w, 50, 25, th["paper"])
+            K.rr_stroke(c, xr - w / 2, 220, w, 50, 25, M.ACC, 3)
+            K.text(c, s.tag, xr - w / 2, 220, 28, "sans_medium", th["ink"] if th.get("dark") else M.ACC)
     xa, xb = x0, W - SAFE["right"] - 20
-    K.seg(c, xa, PROGRESS_Y, xb, PROGRESS_Y, K.LINE, 4)
+    K.seg(c, xa, PROGRESS_Y, xb, PROGRESS_Y, th["line"], 4)
     K.seg(c, xa, PROGRESS_Y, xa + (xb - xa) * clamp01(t / M.END_LOCAL), PROGRESS_Y, M.ACC, 4)
 
 
@@ -148,7 +236,7 @@ CAPS: list = []
 
 
 def draw_caption(c, t):
-    c.drawRect(skia.Rect.MakeLTRB(0, CAP_BAND[0], W, CAP_BAND[1]), K.paint("#FFFFFF", 0.86, blur=8))
+    c.drawRect(skia.Rect.MakeLTRB(0, CAP_BAND[0], W, CAP_BAND[1]), K.paint(TH["band"], 0.9, blur=8))
     for t0, t1, cap in CAPS:
         if t0 <= t and (t1 is None or t < t1):
             break
@@ -163,8 +251,9 @@ def draw_caption(c, t):
         w = K.text_w(s, CAP_SIZE, "serif")
         if hi:
             c.drawRoundRect(skia.Rect.MakeXYWH(x - 6, y + CAP_SIZE * 0.08, w + 12, CAP_SIZE * 0.38), 8, 8,
-                            K.paint(K.tint(M.ACC, 0.6), 0.85 * k))
-        x += K.text(c, s, x, y, CAP_SIZE, "serif", K.INK, k, "left")
+                            K.paint(FT.mix(M.ACC, TH["band"], 0.6 if TH.get("dark") else 0.4) if TH.get("dark")
+                                    else K.tint(M.ACC, 0.6), 0.85 * k))
+        x += K.text(c, s, x, y, CAP_SIZE, "serif", TH["ink"], k, "left")
 
 
 def frame(c, t):
@@ -173,7 +262,7 @@ def frame(c, t):
     ep = M.ep
     s = ep.shots[ep.shot_at(T)]
     g = core.G(c, ep, s, T - s.t0)
-    c.drawColor(skia.Color(251, 251, 249))
+    c.drawColor(K.col(TH["outside"]))
     draw_board(c, T)
     for kb_, pk in s.flashes:
         a = fx.flash_alpha(g.since(kb_), pk)
@@ -294,6 +383,7 @@ def screen_table():
 
 
 def report(asr=None):
+    print(FT.report(TH))
     for w in wording_warnings():
         print("文案警告：", w, file=sys.stderr)
     print(f"时长 {M.END_LOCAL:.2f}s，配乐 {M.S:.2f}s 起（drop 在 {core.BEATS[M.DROP]['t'] - M.S:.2f}s）")
@@ -325,24 +415,24 @@ def cover(path):
     s = ep.shots[j]
     surf = _surface()
     c = surf.getCanvas()
-    c.drawColor(skia.Color(251, 251, 249))
+    c.drawColor(K.col(TH["paper"]))
     vx, vy, vz = M.b.end_view(j)
     c.save()
     c.translate(0, 60)
     draw_board(c, s.t1 - 0.05, view=(vx, vy, vz * 1.05), hand=False, j=j)
     c.restore()
-    c.drawRect(skia.Rect.MakeLTRB(0, 1130, W, H), K.paint(BG))
-    c.drawRect(skia.Rect.MakeLTRB(0, 0, W, 250), K.paint(BG))
+    c.drawRect(skia.Rect.MakeLTRB(0, 1130, W, H), K.paint(TH["paper"]))
+    c.drawRect(skia.Rect.MakeLTRB(0, 0, W, 250), K.paint(TH["paper"]))
+    c.drawLine(0, 1130, W, 1130, K.paint(TH["line"], 1, 4))
     x0 = SAFE["left"] + 24
-    K.rr(c, x0 + 70, 190, 140, 70, 35, M.ACC)
-    K.text(c, f"{M.NO:02d}", x0 + 70, 190, 46, "black", K.PAPER)
-    K.text(c, core.SERIES["name"], x0 + 160, 190, 40, "sans_medium", K.INK2, 1, "left")
+    xr = draw_badge(c, x0, 190, TH.get("header", "pill"), M.ACC, TH["ink"], TH["paper"], 1.5)
+    K.text(c, core.SERIES["name"], xr + 22, 190, 40, "sans_medium", TH["ink2"], 1, "left")
     lines = M.COVER_TITLE.split("|")
     widest = max(K.text_w(gfx.plain(ln), 104, "hand") for ln in lines)
     size = min(110.0, 110 * 840 / widest)
     for i, ln in enumerate(lines):
         y = 1260 + i * size * 1.3
-        gfx.draw_rich(c, ln, SCX, y, size, "hand", wb.BLACK, wb.RED, 1.0)
+        gfx.draw_rich(c, ln, SCX, y, size, "hand", TH["ink"] if TH.get("dark") else wb.BLACK, M.ACC, 1.0)
     surf.makeImageSnapshot().save(str(path), skia.kPNG)
     return path
 
@@ -356,27 +446,26 @@ def square(path):
     s = ep.shots[j]
     stage = _surface()
     sc = stage.getCanvas()
-    sc.drawColor(skia.Color(251, 251, 249))
+    sc.drawColor(K.col(TH["paper"]))
     draw_board(sc, s.t1 - 0.05, view=M.b.end_view(j), hand=False, j=j)
     img = stage.makeImageSnapshot()
     S_ = 1080
     surf = _surface(S_, S_)
     c = surf.getCanvas()
-    c.drawColor(skia.Color(243, 236, 224))
-    K.rr(c, 110, 78, 104, 56, 28, M.ACC)
-    K.text(c, f"{M.NO:02d}", 110, 78, 36, "black", K.PAPER)
-    K.text(c, f"{BRAND} · {core.SERIES['name']}", 180, 78, 34, "sans_medium", K.INK2, 1, "left")
+    c.drawColor(K.col(TH["mat"]))
+    xr = draw_badge(c, 58, 78, TH.get("header", "pill"), M.ACC, TH["ink"], TH["mat"], 1.15)
+    K.text(c, f"{BRAND} · {core.SERIES['name']}", xr + 22, 78, 34, "sans_medium", TH["ink2"], 1, "left")
     lines = M.COVER_TITLE.split("|")
     widest = max(K.text_w(gfx.plain(ln), 96, "serif_black") for ln in lines)
     size = min(96.0, 96 * 960 / widest)
     for i, ln in enumerate(lines):
-        gfx.draw_rich(c, ln, S_ / 2, 185 + i * size * 1.15, size, "serif_black", K.INK, M.ACC, 1.0, "center")
+        gfx.draw_rich(c, ln, S_ / 2, 185 + i * size * 1.15, size, "serif_black", TH["ink"], M.ACC, 1.0, "center")
     top = 185 + (len(lines) - 1) * size * 1.15 + size * 0.75
     ph = S_ - top - 60
     pw = min(S_ - 110, ph * (STAGE[2] - STAGE[0]) / (STAGE[3] - STAGE[1]))
     px, py = S_ / 2, top + ph / 2 + 8
     with K.at(c, px, py, -1.2):
-        K.card(c, 0, 0, pw + 26, ph + 26, "#FFFFFF", 1, r=10)
+        K.card(c, 0, 0, pw + 26, ph + 26, FT.hexc(FT.mix(TH["paper"], "#FFFFFF", 0.0 if TH.get("dark") else 0.6)), 1, r=10)
         c.save()
         c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(-pw / 2, -ph / 2, pw, ph), 6, 6), doAntiAlias=True)
         sw, sh = STAGE[2] - STAGE[0], STAGE[3] - STAGE[1]
@@ -385,11 +474,11 @@ def square(path):
                         skia.Rect.MakeXYWH(-sw * k / 2, -sh * k / 2, sw * k, sh * k),
                         skia.SamplingOptions(skia.FilterMode.kLinear))
         c.restore()
-        K.rr_stroke(c, 0, 0, pw + 10, ph + 10, 8, "#B9A27A", 3)
+        K.rr_stroke(c, 0, 0, pw + 10, ph + 10, 8, TH["line"], 3)
     lw = K.text_w(M.CONCEPT, 40, "serif_black") + 56
     with K.at(c, px + pw / 2 - lw / 2 + 10, py + ph / 2 - 6, -3):
         K.rr(c, 0, 0, lw, 70, 12, M.ACC)
-        K.text(c, M.CONCEPT, 0, 0, 40, "serif_black", K.PAPER)
+        K.text(c, M.CONCEPT, 0, 0, 40, "serif_black", TH["badge_ink"])
     path.parent.mkdir(parents=True, exist_ok=True)
     _save_capped(surf.makeImageSnapshot(), path)
     return path

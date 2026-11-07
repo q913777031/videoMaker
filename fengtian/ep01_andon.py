@@ -1,7 +1,8 @@
 """《丰田模式》01 停线：同一个问题，为什么总返工？（白板手绘 + AI 旁白，竖屏 2:3，约 2 分多钟 + 频道片尾）
 
 第二版（用户反馈：“修不好才停线”说法不准、语气平淡、结尾前要有身边的例子、要贴心、开头加“黄金 3 秒”）：
-- 0–3 秒：“丰田模式”四个大字逐拍砸出（rim / clap / tom / kick + 震屏 + 闪白），副标弹出，镜头推到小李，旁白同时进；
+- 0–3 秒（第三版，每讲一个样式）：一份活被“返工”章逐拍盖了三遍，“第三遍了”大字砸下，“丰田模式”改为随后弹出的小字系列标识，
+  停住看清后拉远再推近到小李（样式见 THEME / fengtian/theme.py：米白横线本、丰田红）；
 - 丰田做法：小王发现毛病 → 拉绳（= 音乐 drop）→ 黄灯，组长赶来帮忙 → 工位里修好线照常走；修不完就整条线停下来先修好；
 - 为什么停：停线亏？不停 → 带毛病的车一路往下装 → 最后拆开再装 = 返工 → 书中：情愿停一下，当场把问题摆出来，在源头修好；
 - 身边的例子：一颗“小问题”雪球沿着之字形斜坡滚（对账 → 客户 → 牙疼），每站被糊住、盖住、越滚越大，
@@ -14,6 +15,7 @@
 
 import importlib
 import math
+import os
 
 import numpy as np
 import skia
@@ -23,6 +25,8 @@ from adler import core
 from adler import kit as K
 from engine import audio
 from engine.gfx import clamp01, ease_in_out, ease_out, ease_out_back, lerp
+from fengtian import hooks as _hooks
+from fengtian import theme as FT
 from whiteboard import engine as wb
 from whiteboard.engine import (BLACK, BLUE, GREEN, ORANGE, RED, Board, P, arrow, book, bubble, check, circle, cross,
                                desk, doc, face, join, rect, stick)
@@ -74,7 +78,8 @@ def synthesize(texts):
 
 NO, KEY, CONCEPT = 1, "andon", "停线"
 TITLE = "同一个问题，为什么总返工？"
-ACC = "#C8102E"
+THEME = FT.get("01")              # 本讲样式（fengtian/theme.py）：米白横线本、开场 stamp3、转场 pullpush
+ACC = THEME["acc"]
 YELLOW, HAT, SUIT, BOARD_C = "#E0A21B", "#F2B705", "#CFE0F5", "#C89B63"
 TAGS = "#丰田模式 #精益管理 #读书 #打工人 #职场 #返工"
 COVER_TITLE = "同一个问题|为什么总【返工】"
@@ -83,7 +88,7 @@ COMMA = 0.25
 MAX_GAP = 0.6                     # 逗号处停顿上限（IndexTTS2 偶有 1 秒以上的长停）
 HOLD = 1.55
 MIN_BEATS = 10
-INTRO_BEATS = 6                   # 四字逐拍落定（第 0–3 拍，1.75 秒落完）后整体停留约 1.6 秒，再用 1.3 秒缓推到小李
+INTRO_BEATS = THEME.get("intro_beats", 8)   # 开场钩子：第 0–4 拍逐拍出画面与大字，之后停约 1.8 秒，再转场到小李
 EXTRA_HOLD = {12: 1.0, 13: 0.4, 17: 0.4}            # “麻烦就会找上你”之后大球砸下（强拍），再多停一会儿
 
 core.SERIES.update(name="丰田模式", count="第一季", prefix="丰田")
@@ -194,7 +199,11 @@ def stretch(x, text, target=COMMA):
 # 2026-11 起整季改为平淡叙述、同屏连读（fengtian.voice）；上面的 NARRATOR / synthesize() 保留作旧版参考
 from fengtian import voice as _voice  # noqa: E402
 
-RAW = _voice.synthesize(LINES, None, PINYIN, groups=[sc[0] for sc in SCREENS if sc[0]])
+if os.environ.get("FT_DRAFT_TTS"):          # 草稿排版：只读缓存，不启动 IndexTTS2（见 fengtian/common.py）
+    from fengtian import common as _C  # noqa: E402
+    RAW = _C.synthesize(LINES, LINE_MOOD, PINYIN, groups=[sc[0] for sc in SCREENS if sc[0]])
+else:
+    RAW = _voice.synthesize(LINES, None, PINYIN, groups=[sc[0] for sc in SCREENS if sc[0]])
 NATURAL_COMMA = set()            # drop 前用前奏段循环留出时间，开场四句也补逗号停顿
 CLIPS, CLAUSE_T = zip(*[stretch(x, t, 0.0 if i in NATURAL_COMMA else COMMA)
                         for i, (x, (t, _, _)) in enumerate(zip(RAW, LINES))])
@@ -1097,42 +1106,10 @@ def home_li_fn(j, k):
     return fn
 
 
-# ---------------------------------------------------------------- 相机：切屏移动 1.3 秒缓入缓出（只影响本进程）
+# ---------------------------------------------------------------- 相机：切屏按本讲转场（拉远再推近，只影响本进程）
 
-MOVE_S = 1.3
-
-
-def camera(board, T):
-    ep_ = board.ep
-    j_ = ep_.shot_at(T)
-    s_ = ep_.shots[j_]
-    t_ = T - s_.t0
-    cur = board.views[j_]
-    prev = board.end_view(j_ - 1) if j_ > 0 else cur
-
-    def mix(a, z, k):
-        return lerp(a[0], z[0], k), lerp(a[1], z[1], k), math.exp(lerp(math.log(a[2]), math.log(z[2]), k))
-
-    k = ease_in_out(clamp01(t_ / MOVE_S)) if prev != cur else 1.0
-    view = mix(prev, cur, k)
-    for kb_, target, dur in board.moves.get(j_, []):
-        t0_ = board.t_of(j_, kb_)
-        if T < t0_:
-            break
-        view = mix(view, target, ease_in_out(clamp01((T - t0_) / dur)))
-    cx, cy, z = view
-    z *= 1 + 0.012 * clamp01(t_ / max(0.1, s_.t1 - s_.t0))
-    sx = sy = 0.0
-    for it in s_.shake:
-        kb_, amp = it if isinstance(it, tuple) else (it, 14.0)
-        dt = T - core.bt(s_.b0 + kb_)
-        if 0 <= dt < 0.3:
-            a = amp * math.exp(-dt * 14)
-            sx += a * math.sin(dt * 90)
-            sy += a * math.cos(dt * 77)
-    return cx, cy, z, sx, sy
-
-
+MOVE_S = THEME.get("move_s", 1.3)
+camera = FT.camera_fn(None, THEME.get("move", "ease"), MOVE_S)
 wb.camera = camera
 
 # ---------------------------------------------------------------- 分镜
@@ -1143,13 +1120,18 @@ def scene(j, view):
     return j
 
 
-# 屏 0：黄金 3 秒——“丰田模式”四个大字逐拍砸下
+# 屏 0：黄金 3 秒——本讲钩子（fengtian/hooks.py stamp3）：一份活被“返工”章盖三遍，“第三遍了”砸下，系列小字随后弹出
+SCREEN_TEXTS = []                                # 自定义项里画的字，交给 --sheet 的文案检查
+
+
+class _Hook:
+    b = b
+    tb = staticmethod(lambda j_, k_: tb(j_, k_))
+    note = staticmethod(lambda *s_: SCREEN_TEXTS.extend(s_))
+
+
 j = scene(0, VI)
-for i, (ch, x, sfx) in enumerate(zip(INTRO_CH, INTRO_X, ("rim", "clap", "tom", "kick"))):
-    b.custom(j, i, i + 0.3, intro_char(ch, x, j, i), sfx=sfx, gain=(0.8, 0.8, 0.8, 0.7)[i])
-b.shots[j].shake = [(3, 7.0)]                    # 第四字落定：轻震，不闪白
-b.path(j, 3.4, 4.6, wb.underline(2780, 3820, 860, 16, 50), RED, 12)
-b.custom(j, 4, 4.3, pop_text("精益制造的14项原则", 3300, 970, 66, BLACK, j, 4, "sans_medium"), sfx="pop", gain=0.6)
+_hooks.HOOKS[THEME["hook"]](_Hook, j, VI[0], VI[1] + 90, ACC)
 
 # 屏 1：小李返工第 3 遍
 j = scene(1, VA)

@@ -312,6 +312,18 @@ def transition(prev, cur, t, style, dur, j=0):
     return _mixv(prev, cur, e), 0.0
 
 
+def keep_on_board(view, board, base=None):
+    """转场途中（拉远、弧线、回弹）不让镜头拍到白板外：把中心收回到白板里。base 为本屏原视角，原视角本身就越界时不管。"""
+    cx, cy, z = view
+    lo_x, hi_x = 600 / z, board.BW - 600 / z
+    lo_y, hi_y = 470 / z, board.BH - 900 / z
+    if lo_x < hi_x:
+        cx = min(max(cx, lo_x), hi_x)
+    if lo_y < hi_y:
+        cy = min(max(cy, lo_y), hi_y)
+    return cx, cy, z
+
+
 def rot_at(board, T, style, dur):
     """本帧画布旋转角（只有 tilt 转场有）。"""
     if style != "tilt":
@@ -348,6 +360,8 @@ def camera_fn(lesson_like, style, dur, base_z=1.0):
         cur = board.views[j_]
         prev = board.end_view(j_ - 1) if j_ > 0 else cur
         view, _ = transition(prev, cur, t_, style, dur, j_)
+        if 0 < t_ < dur and prev != cur:
+            view = keep_on_board(view, board)
         for kb_, target, d in board.moves.get(j_, []):
             t0_ = board.t_of(j_, kb_)
             if T < t0_:
