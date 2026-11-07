@@ -686,7 +686,7 @@ BARS = [0.9, 0.75, 0.35, 0.25, 0.3, 0.55, 0.7, 0.3]
 
 def axis9(c, sc, T, cx=cx, cy=cy):
     with at_pop(c, cx, cy, sc):
-        A.brain(c, cx - 380, cy - 420, 80)
+        A.brain(c, cx - 420, cy - 420, 70)
         K.text(c, "研究", cx - 140, cy - 420, 56, "hand", BLUE)
         x0, y0 = cx - 460, cy + 280
         C.line(c, (x0, y0), (x0 + 940, y0), BLACK, 7)
