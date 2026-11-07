@@ -57,7 +57,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("18")          # 本讲样式：深紫方格、开场 apps、转场 tilt
-L = C.Lesson("18", SCREENS, drop_screen=2, board_size=(5200, 12800), theme=THEME)
+L = C.Lesson("18", SCREENS, drop_screen=2, board_size=(5200, 12800), theme=THEME, extra_hold={4: 0.8})
 b = L.b
 tb, wt = L.tb, L.wt
 KT = Kit(L)
