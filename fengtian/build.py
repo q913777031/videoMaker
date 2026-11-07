@@ -543,7 +543,7 @@ def render(out_dir, head=None, out=None):
         sf.write(wav, mix, audio.SR)
         cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",
                "-r", str(FPS), "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-               "-tune", "animation", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest",
+               "-tune", "animation", "-pix_fmt", "yuv420p", "-c:a", "aac", "-aac_pns", "0", "-b:a", "192k", "-shortest",
                "-movflags", "+faststart", str(out)]
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
         with get_context("fork").Pool(4) as pool:

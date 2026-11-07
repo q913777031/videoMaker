@@ -79,9 +79,10 @@ def append_outro(p, force: bool = False) -> bool:
     ])
     with tempfile.TemporaryDirectory(dir=p.parent) as tmp:
         out = Path(tmp) / p.name
+        # -aac_pns 0：ffmpeg 自带 AAC 编码器的噪声替代（PNS）偶尔在强瞬态处让真峰值冒到 0 dBTP 以上，关掉
         cmd = ["ffmpeg", "-y", "-loglevel", "error", *inputs, "-filter_complex", fc, "-map", "[v]", "-map", "[a]",
                "-c:v", "libx264", "-preset", "fast", "-crf", "21", "-maxrate", "12M", "-bufsize", "24M",
-               "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(out)]
+               "-pix_fmt", "yuv420p", "-c:a", "aac", "-aac_pns", "0", "-b:a", "192k", "-movflags", "+faststart", str(out)]
         subprocess.run(cmd, check=True)
         new = _probe(out)
         outro_dur = _probe(OUTRO)["dur"]
