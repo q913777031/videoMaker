@@ -22,7 +22,7 @@ from engine.gfx import clamp01, ease_in_out, ease_out, lerp
 from fengtian import common as C
 from fengtian import theme as FT
 from fengtian.common import (BLACK, BLUE, GREEN, ORANGE, RED, YELLOW, draw_boss, draw_leader, draw_li, draw_worker,
-                             pop_scale, walk, wobble)
+                             pop_scale, rest_hands, walk, wobble)
 from whiteboard import engine as wb
 from whiteboard.engine import P, book, check, circle, cross, join, rect
 
@@ -51,7 +51,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("05")          # 本讲样式（fengtian/theme.py）：浅绿方格、开场 checklist、转场 wipe
-L = C.Lesson("05", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={7: 0.3, 9: 0.8, 11: 0.3}, theme=THEME)
+L = C.Lesson("05", SCREENS, drop_screen=2, board_size=(5000, 13000), extra_hold={7: 0.5, 9: 0.8, 11: 0.3}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
@@ -159,6 +159,40 @@ def sweat(c, x, y, s=1.0, alpha=1.0):
 
 def qmark(c, x, y, size, color, alpha=1.0):
     K.text(c, "？", x, y, size, "hand", color, alpha)
+
+
+WANG_SHIRT, HAIR = "#FFFFFF", "#2E2A28"
+
+
+def draw_wang(c, x, y, s, lh=None, rh=None, mood="flat", head_dx=0.0, alpha=1.0):
+    """同事小王（办公室）：齐耳短发 + 橙色发卡、白衬衫蓝描边、蓝工牌、蓝色四肢；不戴安全帽（与第 06 讲同一造型）。"""
+    d_lh, d_rh = rest_hands(x, y, s)
+    lh, rh = lh or d_lh, rh or d_rh
+    hy = y - 290 * s
+    sh = (x, hy + 80 * s)
+    hip = (x, y - 120 * s)
+    for ft in ((x - 50 * s, y), (x + 50 * s, y)):
+        C.line(c, hip, ft, BLUE, 10, alpha)
+    C.line(c, sh, lh, BLUE, 10, alpha)
+    C.line(c, sh, rh, BLUE, 10, alpha)
+    torso = skia.Rect.MakeLTRB(x - 42 * s, hy + 55 * s, x + 42 * s, y - 105 * s)
+    c.drawRoundRect(torso, 18 * s, 18 * s, K.paint(WANG_SHIRT, alpha))
+    c.drawRoundRect(torso, 18 * s, 18 * s, wb.marker(BLUE, 7, alpha))
+    c.drawPath(P((x - 16 * s, hy + 58 * s), (x, hy + 82 * s), (x + 16 * s, hy + 58 * s)), wb.marker(BLUE, 5, alpha))
+    badge = skia.Rect.MakeXYWH(x - 20 * s, hy + 110 * s, 40 * s, 30 * s)
+    c.drawRoundRect(badge, 4, 4, K.paint("#DCE8F7", alpha))
+    c.drawRoundRect(badge, 4, 4, wb.marker(BLUE, 4, alpha))
+    hx = x + head_dx
+    back = skia.Rect.MakeLTRB(hx - 54 * s, hy - 46 * s, hx + 54 * s, hy + 40 * s)
+    c.drawRoundRect(back, 26 * s, 26 * s, K.paint(HAIR, alpha))
+    c.drawCircle(hx, hy, 45 * s, K.paint("#FFFFFF", alpha))
+    c.drawCircle(hx, hy, 45 * s, wb.marker(BLACK, 9, alpha))
+    fringe = skia.Path()
+    fringe.addArc(skia.Rect.MakeXYWH(hx - 50 * s, hy - 52 * s, 100 * s, 72 * s), 180, 180)
+    fringe.close()
+    c.drawPath(fringe, K.paint(HAIR, alpha))
+    c.drawCircle(hx + 36 * s, hy - 24 * s, 9 * s, K.paint(ORANGE, alpha))
+    C._eyes_mouth(c, hx, hy + 4 * s, s, mood, alpha)
 
 
 def head_of(x, y, s):
@@ -482,7 +516,7 @@ def head11(c, sc, T, cx=cx, cy=cy):
     x, y, s = WK11
     hx, hy = head_of(x, y, s)
     with at_pop(c, x, y, sc):
-        draw_worker(c, x, y, s, mood="smile")
+        draw_wang(c, x, y, s, mood="smile")
         bx, by = cx - 20, cy - 360
         c.drawRoundRect(skia.Rect.MakeXYWH(bx - 230, by - 110, 460, 220), 90, 90, K.paint("#FFFFFF"))
         c.drawRoundRect(skia.Rect.MakeXYWH(bx - 230, by - 110, 460, 220), 90, 90, wb.marker(BLACK, 6))
@@ -1655,7 +1689,7 @@ ev(j, k_fast, bolt17, "ding", 0.75)
 b.hit(j, k_strike, "rim", 0.85, "旧的一行划掉")
 b.hit(j, k_new17, "pop", 0.75, "写上更快的做法")
 WK17 = (cx + 350, cy + 430, 0.75)
-ev(j, k_fast, L.figure(draw_worker, j, k_fast, *WK17,
+ev(j, k_fast, L.figure(draw_wang, j, k_fast, *WK17,
                        mood=lambda T: "smile" if T >= tb(17, k_new17) else "o",
                        lh=lambda T: (WK17[0] - 140, WK17[1] - 230) if T >= tb(17, k_strike) - 0.2
                        else (WK17[0] - 50, WK17[1] - 120)))
@@ -1709,7 +1743,7 @@ def wk18(c, sc, T, cx=cx, cy=cy):
     hx, hy = head_of(x, y, s)
     thumb = T >= tb(18, k_thumb)
     with at_pop(c, x, y, sc):
-        draw_worker(c, x, y, s, mood="smile", lh=(x - 120 * s, hy + 120 * s),
+        draw_wang(c, x, y, s, mood="smile", lh=(x - 120 * s, hy + 120 * s),
                     rh=(x + 110 * s, hy - 20 * s) if thumb else None)
         with K.at(c, x - 170 * s, hy + 90 * s, -8):
             clipboard(c, 0, 0, 150, 200)
