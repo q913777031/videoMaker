@@ -13,7 +13,10 @@ HERE = Path(__file__).parent
 
 
 def screens(nn):
-    f = next(HERE.glob(f"ep{nn}_*.py"))
+    """每屏句序号：优先取分镜模块的 SCREENS；模块还没写时取 PLAN.md 的 SCREENS_DRAFT（分镜须保持同样分组）。"""
+    f = next(HERE.glob(f"ep{nn}_*.py"), None)
+    if f is None:
+        return [sc[0] for sc in plan.load(nn)["SCREENS_DRAFT"]]
     for node in ast.parse(f.read_text(encoding="utf-8")).body:
         if isinstance(node, ast.Assign) and any(getattr(t, "id", "") == "SCREENS" for t in node.targets):
             return [sc[0] for sc in ast.literal_eval(node.value)]
