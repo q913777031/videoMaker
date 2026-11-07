@@ -52,7 +52,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("03")          # 本讲样式（fengtian/theme.py）：淡黄格子纸、开场 curve、转场 tilt
-L = C.Lesson("03", SCREENS, drop_screen=2, board_size=(5000, 13200), extra_hold={1: 1.0, 14: 0.9}, theme=THEME)
+L = C.Lesson("03", SCREENS, drop_screen=2, board_size=(5000, 13200), extra_hold={1: 1.0, 5: 0.3, 11: 0.3, 14: 1.2}, theme=THEME)
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
