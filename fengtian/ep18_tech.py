@@ -1,7 +1,6 @@
 """《丰田模式》18 新工具：新工具一个接一个，活怎么没少？（白板手绘 + AI 旁白，竖屏 2:3）
 
-曲线故事：一张“新工具热度”坐标图贯穿全片。2026-11 新结构：先痛点和身边的例子，再画曲线。身边例子三屏每屏右上角一张小曲线卡
-（先埋个伏笔），标出这件工具走到了曲线哪一段；第 5–7 屏在同一张大图上画出新工具的一生（上线冲到最高 → 第二周往下掉 →
+曲线故事：一张“新工具热度”坐标图贯穿全片。2026-11 新结构：先痛点和身边的例子，再画曲线。第 5–7 屏在同一张大图上画出新工具的一生（上线冲到最高 → 第二周往下掉 →
 一个月贴地）；讲完丰田的做法，第 12、13 屏镜头拉远回到这张图，在图下面讲为什么会掉，再在同一张图上画出另一条慢慢往上的绿线。
 - 开场（apps）：手机上应用图标逐拍蹦出三个，第四拍全部变灰挂上红点，“又一个”；
 - 日常：新系统登录页闪着光；日历翻到“两周后”，屏幕上又是表格；桌上一摞“使用手册”；
@@ -325,10 +324,12 @@ def app11(c, T, cx=cx, cy=cy):
     for i in range(3):
         dashed_rect(c, x - 160 + i * 160, y + 40, 130, 200, GRAY, 4)
     label(c, "空", x, y + 40, 80, GRAY)
-    mini_curve(c, cx + 400, cy - 470, 2, T)
 
 
 pop(j, k11_app, cx - 200, cy - 150, app11, "wood_low", 0.75)
+k11_buy = nx(j, wt(3, 0, 0.6), k11_app)
+if k11_buy < k11_f1:
+    ev(j, k11_buy, L.stamp("部门买的", cx + 330, cy - 440, 56, j, k11_buy, color=BLUE, rot=6), "rim", 0.75)
 
 
 def chat11(c, kk, T, cx=cx, cy=cy):
@@ -376,8 +377,6 @@ def icons12(n, k_):
             app_icon(c, 0, 0, 70, n + 1)
             clock_face(c, 70, 110, 52, clamp01(dt / 1.5) * 0.5, None, ORANGE, ORANGE_FILL)
             label(c, "一下午", 0, 205, 44, GRAY)
-        if n == 0:
-            mini_curve(c, cx + 400, cy - 480 + 0 * T, 1, T)
         return None
     return fn
 
@@ -406,6 +405,9 @@ def li12(c, kk, T, cx=cx, cy=cy):
 
 
 ev(j, k12_li, li12, "wood_low", 0.8)
+k12_self = nx(j, wt(4, 2, 0.95), k12_li)
+if k12_self < KT.nbeats(j) - 3:
+    ev(j, k12_self, L.stamp("自己写", cx + 380, cy - 20, 64, j, k12_self, rot=-6), "rim", 0.8)
 
 # ================================================================ 屏 4：客厅里智能音箱只亮着一个闹钟图标
 cx, cy = R[4]
@@ -422,7 +424,6 @@ def room13(c, T, cx=cx, cy=cy):
     c.drawPath(sofa, K.paint("#E3C9A0"))
     c.drawPath(sofa, wb.marker(WOOD_LINE, 7))
     box(c, cx + 260, gy - 90, 280, 180, "#FFFFFF", WOOD_LINE, 7, 10)
-    mini_curve(c, cx + 400, cy - 480, 2, T)
 
 
 pop(j, k13_room, cx, cy + 300, room13, "wood_low", 0.75)
