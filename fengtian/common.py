@@ -443,6 +443,7 @@ class Lesson:
       natural_comma 不补逗号停顿的句序号集合
       board_size    白板尺寸
       acc           系列强调色（页眉期号、封面）；给了 theme 时用 theme["acc"]
+      plan_path     文案所在的 PLAN.md（默认 fengtian/PLAN.md；其他系列复用本框架时给自己的）
       theme         本讲样式（fengtian.theme.THEMES 里的一套，或同样字段的 dict）：主题色、纸张底色与纹理、页眉风格、
                     开场钩子（hook，见 fengtian/hooks.py）、切屏转场（move / move_s）、开场屏拍数（intro_beats，默认 8）
     构造后可用的属性（export 会放进分镜模块）：NO KEY CONCEPT TITLE TAGS COVER_TITLE LINES LINE_MOOD PINYIN SCREENS GROUP
@@ -456,8 +457,8 @@ class Lesson:
     MOVE_S = 1.3                   # 切屏镜头移动秒数
 
     def __init__(self, nn, screens, *, drop_screen=2, hold=1.55, min_beats=10, intro_beats=6, extra_hold=None,
-                 comma=0.25, max_gap=0.6, natural_comma=(), board_size=(4800, 10600), acc=ACC, theme=None):
-        p = plan.load(nn)
+                 comma=0.25, max_gap=0.6, natural_comma=(), board_size=(4800, 10600), acc=ACC, theme=None, plan_path=None):
+        p = plan.load(nn, plan_path)
         self.THEME = FT.finish(theme) if theme else FT.finish(dict(acc=acc))
         if theme:
             acc = self.THEME["acc"]
@@ -885,7 +886,7 @@ class Lesson:
         self.NOTES = list(notes)
         ep = core.Episode(self.NO, self.KEY, self.CONCEPT, self.TITLE, self.ACC, b.shots, refs=[],
                           publish_title=f"Vibe知识大赏｜{self.TITLE}", hashtags=self.TAGS, cover_title=self.COVER_TITLE,
-                          cover_sub=f"丰田模式 · {self.CONCEPT}", cover_shot=cover_shot, notes=self.NOTES)
+                          cover_sub=f"{core.SERIES['name']} · {self.CONCEPT}", cover_shot=cover_shot, notes=self.NOTES)
         for s, (k0, k1) in zip(b.shots, self.BOUNDS):
             s.b0, s.t0, s.t1 = k0, core.bt(k0), core.bt(k1)
             s.bars = (k1 - k0) // 4 + 2          # 名义小节数盖住全部实测拍（Board.t_of 超出名义长度会外推）

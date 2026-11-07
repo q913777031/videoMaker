@@ -109,8 +109,8 @@ def split_group(x, texts):
 
 # ---------------------------------------------------------------- 用语音识别核对句界（有 sherpa-onnx 与模型时）
 
-ASR_MODEL = os.environ.get("FT_ASR_MODEL", "/tmp/claude-0/-home-user-videoMaker/c54877fb-ac6a-58c6-9cd0-0962ece50b52/"
-                           "scratchpad/asr_dl/sherpa-onnx-paraformer-zh-small-2024-03-09")
+_MODELS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
+ASR_MODEL = os.environ.get("FT_ASR_MODEL", os.path.join(_MODELS, "sherpa-onnx-paraformer-zh-small-2024-03-09"))
 _REC = None
 
 
@@ -215,8 +215,7 @@ def synthesize(lines, mood=None, pinyin=(), groups=None, log=None, cached_only=F
 # ---------------------------------------------------------------- 开场钩子句：逐字发声起点（大字逐字砸下用）
 
 HOOK_EMO = {"vector": {"calm": 0.6, "angry": 0.12, "surprised": 0.08}, "alpha": 0.4}   # 比正文略有力，强度低
-CTC_MODEL = os.environ.get("FT_CTC_MODEL", "/tmp/claude-0/-home-user-videoMaker/c54877fb-ac6a-58c6-9cd0-0962ece50b52/"
-                           "scratchpad/asr_ctc/sherpa-onnx-zipformer-ctc-zh-int8-2025-07-03")
+CTC_MODEL = os.environ.get("FT_CTC_MODEL", os.path.join(_MODELS, "sherpa-onnx-zipformer-ctc-zh-int8-2025-07-03"))
 _CTC = None
 
 

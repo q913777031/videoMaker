@@ -5,8 +5,9 @@ from pathlib import Path
 PLAN = Path(__file__).with_name("PLAN.md")
 
 
-def load(nn):
-    s = PLAN.read_text(encoding="utf-8")
+def load(nn, path=None):
+    """path 给定时读那份 PLAN.md（其他系列复用本框架时用），默认读 fengtian/PLAN.md。"""
+    s = (path or PLAN).read_text(encoding="utf-8")
     m = re.search(rf"^### {nn} .*?^```python\n(.*?)^```", s, re.S | re.M)
     if not m:
         raise KeyError(nn)

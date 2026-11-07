@@ -593,6 +593,18 @@ python3 logic/logic_short.py out/logic_short.mp4
 输出 1080×1920、30fps、90 秒、**无音频轨**的解题动画，以及封面 `out/logic_cover.png`。4 核机器约 1 分钟。
 完整制作方案（开头、字幕脚本、分镜、动效清单、核验说明）见 `logic/production_plan.md`。
 
+## 白板手绘 + AI 旁白：弗洛伊德《梦的解析》（单讲）
+
+`mengjie/`：照《丰田模式》新版的做法（白板手绘 + IndexTTS2 旁白，竖屏 2:3，痛点 → 身边的例子 → 书中例子与观点 → 现在怎么看 → 三步 → 评论区），
+复用 `fengtian/` 的 Lesson、开场钩子与构建入口，只在本包里写文案（`mengjie/PLAN.md`，含书中出处）和分镜（`mengjie/ep01_dream.py`）。
+
+```bash
+FT_DRAFT_TTS=1 python3 -m mengjie.build 01 --sheet   # 配音没合成完时的草稿排版
+python3 -m mengjie.build 01 --publish                # 渲染并交付到 videos/mengjie/01_梦的解析/
+```
+
+旁白音色提示 `models/ix2_prompts/cv3jian.wav`（与丰田系列同一音色）缺失时，可从丰田任一讲成片里用 demucs 分离出约 8 秒旁白重建。
+
 ## 第三方资源许可
 
 - [Fluent Emoji](https://github.com/microsoft/fluentui-emoji)：MIT License，© Microsoft

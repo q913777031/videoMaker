@@ -41,6 +41,7 @@ from fengtian import theme as FT
 from whiteboard import engine as wb
 
 ROOT = Path(__file__).resolve().parent.parent
+PKG = "fengtian"                                   # 分镜模块所在的包（其他系列复用本入口时改掉 PKG / OUT / VIDEOS / MODS）
 OUT = ROOT / "out" / "fengtian"
 VIDEOS = ROOT / "videos" / "fengtian"
 MODS = {"01": "ep01_andon", "02": "ep02_pull", "03": "ep03_level", "04": "ep04_flow", "05": "ep05_standard", "06": "ep06_visual", "07": "ep07_genchi", "08": "ep08_why", "09": "ep09_nemawashi", "10": "ep10_hansei", "11": "ep11_muda", "12": "ep12_seiri", "13": "ep13_pokayoke", "14": "ep14_changeover", "15": "ep15_a3", "16": "ep16_teach", "17": "ep17_partner", "18": "ep18_tech", "19": "ep19_longterm"}
@@ -64,7 +65,7 @@ RC = None                                         # 白板换色器
 
 def load(key):
     global M, TH, RC
-    M = importlib.import_module(f"fengtian.{MODS[key]}")
+    M = importlib.import_module(f"{PKG}.{MODS[key]}")
     TH = getattr(M, "THEME", None) or FT.get(key)
     RC = FT.Recolor(TH)
     if not getattr(M, "_scaled", False):
