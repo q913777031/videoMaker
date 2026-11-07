@@ -44,7 +44,7 @@ def collage(eps, path):
     c = surf.getCanvas()
     c.drawColor(BG)
     K.text(c, BRAND, S / 2, 56, 34, "sans_medium", K.INK2)
-    K.text(c, "丰田模式 · 打工人的十个工作难题", S / 2, 130, 58, "serif_black", ACC)
+    K.text(c, "丰田模式 · 打工人的十九个工作难题", S / 2, 130, 58, "serif_black", ACC)
     cols, gap, lab, head = 5, 16, 46, 190
     rows = (len(eps) + cols - 1) // cols
     tw = min((S - (cols + 1) * gap) / cols, ((S - head - 30) / rows - lab - gap) / 1.5)
@@ -68,22 +68,22 @@ def collage(eps, path):
 
 
 def square_cover(eps, path):
-    """系列横屏封面 1080×1080：频道名、系列大字、一句卖点、十讲概念标签。"""
+    """系列横屏封面 1080×1080：频道名、系列大字、一句卖点、各讲概念标签（19 讲：5 列 4 行）。"""
     surf = _surf()
     c = surf.getCanvas()
     c.drawColor(BG)
     K.text(c, BRAND, S / 2, 120, 40, "sans_medium", K.INK2)
     K.text(c, "丰田模式", S / 2, 330, 220, "serif_black", ACC)
-    K.text(c, "打工人的十个工作难题", S / 2, 500, 64, "serif_black", K.INK)
-    K.text(c, "每讲两分钟 · 白板手绘", S / 2, 580, 38, "sans_medium", K.INK2)
-    cols, w, h, gx, gy = 5, 184, 84, 18, 26
-    y0 = 700
+    K.text(c, "打工人的十九个工作难题", S / 2, 500, 64, "serif_black", K.INK)
+    K.text(c, "每讲约三分钟 · 白板手绘", S / 2, 580, 38, "sans_medium", K.INK2)
+    cols, w, h, gx, gy = 5, 184, 70, 18, 16
+    y0 = 670
     for i, (no, concept, _) in enumerate(eps):
         r, j = divmod(i, cols)
         x = S / 2 - (cols * w + (cols - 1) * gx) / 2 + j * (w + gx) + w / 2
         y = y0 + r * (h + gy) + h / 2
         K.card(c, x, y, w, h, K.PAPER, 1, r=14)
-        K.text(c, f"{no:02d}", x - w / 2 + 34, y, 30, "black", ACC)
+        K.text(c, f"{no:02d}", x - w / 2 + 32, y, 28, "black", ACC)
         K.text(c, concept, x + 18, y, min(34.0, 34 * 110 / K.text_w(concept, 34, "serif_black")), "serif_black", K.INK)
     _save_capped(surf.makeImageSnapshot(), path)
 
