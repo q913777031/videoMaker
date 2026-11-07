@@ -396,10 +396,10 @@ def _draft_clip(text, seed):
     return np.concatenate(out[:-1])
 
 
-def synthesize(lines, mood, pinyin):
-    """fengtian.voice.synthesize；FT_DRAFT_TTS=1 时只读缓存，没缓存的句子用占位音频（不启动 IndexTTS2）。"""
+def synthesize(lines, mood, pinyin, groups=None):
+    """fengtian.voice.synthesize（平淡叙述、同屏连读）；FT_DRAFT_TTS=1 时只读旧版逐句缓存排版，没缓存的句子用占位音频（不启动 IndexTTS2）。"""
     if not os.environ.get("FT_DRAFT_TTS"):
-        return voice.synthesize(lines, mood, pinyin)
+        return voice.synthesize(lines, mood, pinyin, groups=groups)
     nar = audio.Narrator(voice.VOICE)
     out, miss = [], 0
     for i, ((t, *_), m) in enumerate(zip(lines, mood)):
@@ -461,7 +461,7 @@ class Lesson:
         if not 1 <= drop_screen < len(screens) or not screens[drop_screen][0]:
             raise ValueError("drop_screen 要指向第 1 屏之后、有旁白的一屏")
 
-        self.RAW = synthesize(self.LINES, self.LINE_MOOD, self.PINYIN)
+        self.RAW = synthesize(self.LINES, self.LINE_MOOD, self.PINYIN, groups=[sc[0] for sc in self.SCREENS if sc[0]])
         self.CLIPS, self.CLAUSE_T = zip(*[stretch(x, t, 0.0 if i in natural_comma else comma, max_gap)
                                           for i, (x, (t, _, _)) in enumerate(zip(self.RAW, self.LINES))])
         self.DUR_L = [len(x) / audio.SR for x in self.CLIPS]

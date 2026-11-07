@@ -191,7 +191,10 @@ def stretch(x, text, target=COMMA):
     return x, [0.0] + starts
 
 
-RAW = synthesize([tts_text(t) for t, _, _ in LINES])
+# 2026-11 起整季改为平淡叙述、同屏连读（fengtian.voice）；上面的 NARRATOR / synthesize() 保留作旧版参考
+from fengtian import voice as _voice  # noqa: E402
+
+RAW = _voice.synthesize(LINES, None, PINYIN, groups=[sc[0] for sc in SCREENS if sc[0]])
 NATURAL_COMMA = set()            # drop 前用前奏段循环留出时间，开场四句也补逗号停顿
 CLIPS, CLAUSE_T = zip(*[stretch(x, t, 0.0 if i in NATURAL_COMMA else COMMA)
                         for i, (x, (t, _, _)) in enumerate(zip(RAW, LINES))])
