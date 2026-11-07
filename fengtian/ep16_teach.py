@@ -62,7 +62,7 @@ SCREENS = [
 ]
 
 THEME = FT.get("16")          # 本讲样式：深褐黑板、开场 qmarks、转场 drop
-L = C.Lesson("16", SCREENS, drop_screen=3, board_size=(5000, 12800), theme=THEME)
+L = C.Lesson("16", SCREENS, drop_screen=3, board_size=(5000, 12800), theme=THEME, extra_hold={17: 0.8})
 b = L.b
 tb, wt = L.tb, L.wt
 KT = Kit(L)
