@@ -264,8 +264,8 @@ L.note("同一个问题", "背景", "数据", "截图", "图表")
 def sb2(c, T, cx=cx, cy=cy):
     scoreboard(c, cx, cy - 470, "30页" if T >= tb(2, KD) else "？", "？")
     C.line(c, (cx, cy - 380), (cx, cy + 560), GRAY, 6)
-    box(c, cx, cy - 330, 300, 70, NOTE_FILL, ORANGE, 5, 30)
-    K.text(c, "同一个问题", cx, cy - 328, 44, "hand", ORANGE)
+    box(c, cx + 300, cy - 330, 300, 70, NOTE_FILL, ORANGE, 5, 30)
+    K.text(c, "同一个问题", cx + 300, cy - 328, 44, "hand", ORANGE)
 
 
 L.note("？")
@@ -323,7 +323,7 @@ def thud2(c, kk, T, cx=cx, cy=cy):
     sc = C.slam_scale(T - tb(2, KD))
     if sc <= 0:
         return None
-    with K.at(c, cx - 300, cy - 210, -6, sc):
+    with K.at(c, cx - 300, cy - 320, -6, sc):
         K.text(c, "一页比一页满", 0, 0, 58, "hand", RED)
     return None
 
@@ -873,13 +873,13 @@ cx, cy = R[13]
 j = L.scene(13, (cx, cy + 10, Z))
 k13_n, k13_pg, k13_top, k13_li = seq(j, [None, (22, 0, 0.5), (22, 1, 0.3), (22, 1, 0.8)])
 L.note("第一", "结论", "一句话")
-pop(j, k13_n, cx - 380, cy - 480, lambda c, T, cx=cx, cy=cy: K.text(c, "第一", cx - 380, cy - 480, 90, "hand", RED), "rim", 0.8)
+pop(j, k13_n, cx - 380, cy - 480, lambda c, T, cx=cx, cy=cy: K.text(c, "第一", cx - 440, cy - 480, 90, "hand", RED), "rim", 0.8)
 
 
 def page13(c, T, cx=cx, cy=cy):
-    box(c, cx, cy - 20, 720, 880, "#FFFFFF", BLACK, 7, 10)
+    box(c, cx + 20, cy - 20, 640, 880, "#FFFFFF", BLACK, 7, 10)
     for r in range(8):
-        C.line(c, (cx - 280, cy - 180 + r * 70), (cx + 280 - (r % 3) * 80, cy - 180 + r * 70), GRAY_FILL, 7)
+        C.line(c, (cx - 240, cy - 180 + r * 70), (cx + 280 - (r % 3) * 80, cy - 180 + r * 70), GRAY_FILL, 7)
 
 
 pop(j, k13_pg, cx, cy - 20, page13, "wood_low", 0.7)
@@ -890,8 +890,8 @@ def top13(c, kk, T, cx=cx, cy=cy):
     if dt < 0:
         return None
     f = ease_out(clamp01(dt / 0.4))
-    c.drawRoundRect(skia.Rect.MakeXYWH(cx - 320, cy - 400, 640 * f, 130), 16, 16, K.paint(NOTE_FILL))
-    c.drawRoundRect(skia.Rect.MakeXYWH(cx - 320, cy - 400, 640 * f, 130), 16, 16, wb.marker(ORANGE, 6))
+    c.drawRoundRect(skia.Rect.MakeXYWH(cx - 270, cy - 400, 580 * f, 130), 16, 16, K.paint(NOTE_FILL))
+    c.drawRoundRect(skia.Rect.MakeXYWH(cx - 270, cy - 400, 580 * f, 130), 16, 16, wb.marker(ORANGE, 6))
     if f >= 1:
         K.text(c, "结论", cx - 180, cy - 333, 70, "hand", RED)
         K.text(c, "一句话", cx + 100, cy - 333, 52, "hand", GRAY)
