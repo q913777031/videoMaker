@@ -509,3 +509,336 @@ def title(H, j, cx, cy, acc):
 
 HOOKS = dict(stamp3=stamp3, pile=pile, curve=curve, bars=bars, checklist=checklist, sticky=sticky, doorsign=doorsign,
              mole=mole, reject=reject, treadmill=treadmill)
+
+
+# ---------------------------------------------------------------- 11 浪费：表盘切成八块，一块块变灰
+
+def clock8(H, j, cx, cy, acc):
+    b = H.b
+    x, y, r = cx - 40, cy - 290, 290
+    H.note("浪费", "0")
+    b.path(j, 0, 0.6, circle(x, y, r), BLACK, 11, sfx="wood_high")
+    spokes = join(*[P((x, y), (x + r * math.cos(math.radians(-90 + 45 * i)), y + r * math.sin(math.radians(-90 + 45 * i))))
+                    for i in range(8)])
+    b.path(j, 0.3, 0.9, spokes, GRAY, 5)
+    when = [1, 1, 1.25, 2, 2, 2.25, 3, 3]                 # 每块变灰的拍（第 1、2 拍各三块，第 3 拍最后两块）
+    order = [0, 3, 6, 1, 4, 7, 2, 5]
+
+    def fn(c, kk, T):
+        for n, i in enumerate(order):
+            dt = T - H.tb(j, when[n])
+            if dt < 0:
+                continue
+            a = clamp01(dt / 0.12)
+            sc = 1 + 0.12 * math.exp(-dt * 10)
+            wedge = skia.Path()
+            wedge.moveTo(x, y)
+            wedge.arcTo(skia.Rect.MakeXYWH(x - r * sc + 10, y - r * sc + 10, 2 * r * sc - 20, 2 * r * sc - 20),
+                        -90 + 45 * i, 45, False)
+            wedge.close()
+            c.drawPath(wedge, K.paint("#9AA0A8", 0.85 * a))
+            c.drawPath(wedge, wb.marker(BLACK, 5, a))
+        # 指针飞快地转
+        ph = max(0.0, T - H.tb(j, 0)) * 300
+        for ln, w, sp in ((r * 0.72, 12, 1.0), (r * 0.5, 16, 1 / 12)):
+            ang = math.radians(-90 + ph * sp)
+            c.drawLine(x, y, x + ln * math.cos(ang), y + ln * math.sin(ang), wb.marker(BLACK, w))
+        c.drawCircle(x, y, 18, K.paint(BLACK))
+        # 右上角计数器
+        sc = pop_scale(T - H.tb(j, 2))
+        if sc > 0:
+            with K.at(c, cx + 420, cy - 560, 4, sc):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-110, -70, 220, 140), 18, 18, K.paint("#FFFFFF"))
+                c.drawRoundRect(skia.Rect.MakeXYWH(-110, -70, 220, 140), 18, 18, wb.marker(BLACK, 7))
+                K.text(c, "浪费", -40, 0, 46, "hand", GRAY)
+                K.text(c, "0", 60, 0, 80, "hand", RED)
+        return None
+    b.custom(j, 0, 0.3, fn)
+    b.hit(j, 1, "tom", 0.8, "三块变灰")
+    b.hit(j, 2, "tom", 0.8, "又三块变灰 + 计数器")
+    _finish(H, j, cx, cy, "白忙", acc, size=170, ty=cy + 230)
+
+
+# ---------------------------------------------------------------- 12 整理整顿：电脑桌面图标堆满，弹出“最终版二”
+
+def desktop(H, j, cx, cy, acc):
+    b = H.b
+    x, y, w, h = cx, cy - 300, 1000, 640
+    b.path(j, 0, 0.6, join(rect(x, y, w, h, 22), P((x - 60, y + h / 2), (x - 90, y + h / 2 + 80)),
+                           P((x + 60, y + h / 2), (x + 90, y + h / 2 + 80)),
+                           P((x - 200, y + h / 2 + 80), (x + 200, y + h / 2 + 80))), BLACK, 10, sfx="wood_low")
+    H.note("最终版二", "找不到")
+    cols, rows = 9, 5
+    cells = [(x - w / 2 + 70 + (i % cols) * 108, y - h / 2 + 75 + (i // cols) * 118) for i in range(cols * rows)]
+    order = sorted(range(len(cells)), key=lambda i: (i * 7919) % 97)
+    colors = ["#F2C14E", "#7FB2E5", "#F28C8C", "#8FD19E"]
+
+    def fn(c, kk, T):
+        n = 0
+        for k_, upto in ((0.5, 8), (1, 22), (2, 45)):
+            if T >= H.tb(j, k_):
+                n = upto
+        for m, i in enumerate(order[:n]):
+            k_ = 0.5 if m < 8 else (1 if m < 22 else 2)
+            sc = pop_scale(T - H.tb(j, k_) - (m % 7) * 0.03, 0.22)
+            if sc <= 0:
+                continue
+            ix, iy = cells[i]
+            with K.at(c, ix, iy, 0, sc):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-34, -40, 68, 60), 8, 8, K.paint(colors[i % 4]))
+                c.drawRoundRect(skia.Rect.MakeXYWH(-34, -40, 68, 60), 8, 8, wb.marker(BLACK, 4))
+                c.drawLine(-26, 36, 26, 36, wb.marker(GRAY, 5))
+        # 鼠标乱窜
+        t0 = H.tb(j, 1)
+        if T > t0:
+            u = (T - t0) * 2.2
+            mx = x + 330 * math.sin(u * 2.3) * math.cos(u * 0.7)
+            my = y + 200 * math.sin(u * 3.1 + 1)
+            arrowp = P((mx, my), (mx, my + 56), (mx + 14, my + 42), (mx + 26, my + 66), (mx + 36, my + 60),
+                       (mx + 24, my + 38), (mx + 42, my + 36), close=True)
+            c.drawPath(arrowp, K.paint("#FFFFFF"))
+            c.drawPath(arrowp, wb.marker(BLACK, 5))
+        # 第 3 拍弹窗
+        sc = slam_scale(T - H.tb(j, 3))
+        if sc > 0:
+            with K.at(c, x + 40, y - 20, -4, sc):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-250, -110, 500, 220), 16, 16, K.paint("#FFFFFF"))
+                c.drawRoundRect(skia.Rect.MakeXYWH(-250, -110, 500, 220), 16, 16, wb.marker(RED, 8))
+                c.drawRect(skia.Rect.MakeXYWH(-250, -110, 500, 50), K.paint(RED))
+                K.text(c, "最终版二", 0, 30, 88, "hand", RED)
+        return None
+    b.custom(j, 0, 0.3, fn)
+    b.hit(j, 1, "pop", 0.7, "一排排图标冒出来")
+    b.hit(j, 2, "wood_high", 0.8, "图标堆满")
+    b.custom(j, 3, 3.3, lambda c, k, T: None, sfx="rim", gain=0.8)
+    _finish(H, j, cx, cy, "找不到", acc, size=160, ty=cy + 260)
+
+
+# ---------------------------------------------------------------- 13 防错：邮件一封封飞出去，“附件呢？”
+
+def mailfly(H, j, cx, cy, acc):
+    b = H.b
+    wx, wy = cx - 120, cy - 330
+    b.path(j, 0, 0.5, join(rect(wx, wy, 760, 520, 18), P((wx - 380, wy - 180), (wx + 380, wy - 180))), BLACK, 9,
+           sfx="wood_low")
+    H.note("发送", "附件：无", "附件呢？")
+    bx, by = wx + 230, wy + 170
+
+    def env(c, x, y, rot, sc, a=1.0):
+        with K.at(c, x, y, rot, sc):
+            c.drawRect(skia.Rect.MakeXYWH(-90, -60, 180, 120), K.paint("#FFFFFF", a))
+            c.drawRect(skia.Rect.MakeXYWH(-90, -60, 180, 120), wb.marker(BLUE, 6, a))
+            c.drawPath(P((-90, -60), (0, 10), (90, -60)), wb.marker(BLUE, 6, a))
+
+    def fn(c, kk, T):
+        # 窗口里的几行字和空的回形针
+        for i in range(3):
+            c.drawLine(wx - 320, wy - 100 + i * 70, wx + (120 if i < 2 else -60), wy - 100 + i * 70, wb.marker(GRAY, 6))
+        K.text(c, "附件：无", wx - 230, wy + 120, 44, "sans_medium", GRAY)
+        clip = skia.Path()
+        clip.addRoundRect(skia.Rect.MakeXYWH(wx - 340, wy + 95, 34, 64), 17, 17)
+        p = K.paint(GRAY, 1, 5)
+        p.setPathEffect(skia.DashPathEffect.Make([10, 8], 0))
+        c.drawPath(clip, p)
+        # 发送按钮：每拍按一下
+        press = 0.0
+        for k_ in (0, 1, 2):
+            dt = T - H.tb(j, k_)
+            if 0 <= dt < 0.25:
+                press = 1 - dt / 0.25
+        with K.at(c, bx, by, 0, 1 - 0.1 * press):
+            c.drawRoundRect(skia.Rect.MakeXYWH(-110, -45, 220, 90), 45, 45, K.paint(BLUE))
+            K.text(c, "发送", 0, 2, 50, "hand", "#FFFFFF")
+        # 信封飞出
+        for n, k_ in enumerate((0, 1, 2)):
+            dt = T - H.tb(j, k_)
+            if dt < 0 or dt > 1.4:
+                continue
+            f = ease_out(clamp01(dt / 1.0))
+            ex = lerp(bx, cx + 420 - n * 60, f)
+            ey = lerp(by, cy - 620 + n * 90, f) - math.sin(f * math.pi) * 120
+            env(c, ex, ey, lerp(0, 25 + n * 10, f), lerp(0.5, 1.0, f), 1 - clamp01((dt - 1.0) / 0.4))
+            if dt < 0.5:
+                for i in range(3):
+                    c.drawLine(ex - 120 - i * 10, ey + 40 + i * 25 - 40, ex - 220 - i * 10, ey + 60 + i * 25 - 40,
+                               wb.marker(BLUE, 5, 1 - dt / 0.5))
+        # 光标点在按钮上
+        mx, my = bx + 40, by + 20 + 6 * press
+        cur = P((mx, my), (mx, my + 56), (mx + 14, my + 42), (mx + 26, my + 66), (mx + 36, my + 60), (mx + 24, my + 38),
+                (mx + 42, my + 36), close=True)
+        c.drawPath(cur, K.paint("#FFFFFF"))
+        c.drawPath(cur, wb.marker(BLACK, 5))
+        # 第 3 拍：气泡“附件呢？”
+        sc = pop_scale(T - H.tb(j, 3))
+        if sc > 0:
+            with K.at(c, cx + 300, cy - 70, 0, sc):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-200, -70, 400, 140), 40, 40, K.paint("#FFFFFF"))
+                c.drawPath(wb.bubble(0, 0, 400, 140, -1), wb.marker(BLACK, 7))
+                K.text(c, "附件呢？", 0, 0, 72, "hand", RED)
+        return None
+    b.custom(j, 0, 0.3, fn)
+    b.hit(j, 1, "wood_high", 0.8, "又发出一封")
+    b.hit(j, 2, "wood_high", 0.8, "再发一封")
+    b.custom(j, 3, 3.3, lambda c, k, T: None, sfx="pop", gain=0.8)
+    _finish(H, j, cx, cy, "手滑", acc, size=180, ty=cy + 250)
+
+
+HOOKS.update(clock8=clock8, desktop=desktop, mailfly=mailfly)
+
+
+# ---------------------------------------------------------------- 14 准备挪到前面：起跑灯一盏盏亮红，就是不变绿
+
+def startlights(H, j, cx, cy, acc):
+    b = H.b
+    gy = cy - 450
+    xs = [cx - 320, cx, cx + 320]
+    labels = ["找文件", "倒水", "连网"]
+    H.note(*labels)
+
+    def icon(c, n, x, y):
+        if n == 0:                                   # 文件夹
+            c.drawPath(P((x - 90, y - 50), (x - 30, y - 50), (x - 10, y - 30), (x + 90, y - 30), (x + 90, y + 60),
+                         (x - 90, y + 60), close=True), K.paint("#F2C14E"))
+            c.drawPath(P((x - 90, y - 50), (x - 30, y - 50), (x - 10, y - 30), (x + 90, y - 30), (x + 90, y + 60),
+                         (x - 90, y + 60), close=True), wb.marker(BLACK, 7))
+        elif n == 1:                                 # 水杯
+            c.drawPath(P((x - 55, y - 60), (x + 55, y - 60), (x + 42, y + 62), (x - 42, y + 62), close=True),
+                       K.paint("#CFE3F8"))
+            c.drawPath(P((x - 55, y - 60), (x + 55, y - 60), (x + 42, y + 62), (x - 42, y + 62), close=True),
+                       wb.marker(BLACK, 7))
+            c.drawLine(x - 48, y - 20, x + 48, y - 20, wb.marker(BLUE, 5))
+        else:                                        # 网络信号 + 红斜杠
+            for r in (30, 62, 94):
+                arc = skia.Path()
+                arc.addArc(skia.Rect.MakeXYWH(x - r, y + 50 - r, 2 * r, 2 * r), 225, 90)
+                c.drawPath(arc, wb.marker(BLACK, 9))
+            c.drawCircle(x, y + 50, 10, K.paint(BLACK))
+            c.drawLine(x - 70, y + 60, x + 70, y - 60, wb.marker(RED, 10))
+
+    def fn(c, kk, T):
+        sc0 = pop_scale(T - H.tb(j, 0))
+        if sc0 <= 0:
+            return None
+        with K.at(c, cx, gy, 0, sc0):
+            c.translate(-cx, -gy)
+            c.drawLine(cx - 520, gy - 170, cx + 520, gy - 170, wb.marker(BLACK, 14))
+            for x in xs:
+                c.drawLine(x, gy - 170, x, gy - 120, wb.marker(BLACK, 10))
+                c.drawRoundRect(skia.Rect.MakeXYWH(x - 120, gy - 120, 240, 240), 34, 34, K.paint("#3B3F48"))
+                c.drawRoundRect(skia.Rect.MakeXYWH(x - 120, gy - 120, 240, 240), 34, 34, wb.marker(BLACK, 8))
+        for n, x in enumerate(xs):
+            dt = T - H.tb(j, n)
+            on = dt >= 0
+            c.drawCircle(x, gy, 82, K.paint(RED if on else "#5A5F68"))
+            c.drawCircle(x, gy, 82, wb.marker(BLACK, 6))
+            if on:
+                c.drawCircle(x, gy, 82 + 40 * math.exp(-dt * 6), K.paint(RED, 0.25 * math.exp(-dt * 3), blur=18))
+                sc = pop_scale(dt)
+                with K.at(c, x, cy - 180, wobble(dt, 6, 16, 5), sc):
+                    c.translate(-x, -(cy - 180))
+                    icon(c, n, x, cy - 180)
+                    K.text(c, labels[n], x, cy - 40, 58, "hand", BLACK)
+        return None
+    b.custom(j, 0, 0.3, fn, sfx="tom", gain=0.8)
+    b.hit(j, 1, "tom", 0.8, "第二盏红灯")
+    b.hit(j, 2, "tom", 0.85, "第三盏红灯")
+    _finish(H, j, cx, cy, "还没开始", acc, size=150, ty=cy + 250)
+
+
+# ---------------------------------------------------------------- 15 一页纸：幻灯片一摞摞往上叠，30 页
+
+def slides(H, j, cx, cy, acc):
+    b = H.b
+    px, py = cx - 70, cy - 120
+    H.note("10页", "20页", "30页")
+    b.path(j, 0, 0.4, P((cx - 500, py + 40), (cx + 380, py + 40)), BLACK, 9)
+
+    def slide(c, x, y, n, a=1.0):
+        c.drawRoundRect(skia.Rect.MakeXYWH(x - 260, y - 150, 520, 150), 8, 8, K.paint("#FFFFFF", a))
+        c.drawRoundRect(skia.Rect.MakeXYWH(x - 260, y - 150, 520, 150), 8, 8, wb.marker(BLACK, 5, a))
+        col = (BLUE, RED, GREEN, ORANGE)[n % 4]
+        for i in range(4):
+            h = 20 + ((n * 7 + i * 13) % 5) * 18
+            c.drawRect(skia.Rect.MakeXYWH(x - 220 + i * 46, y - 24 - h, 30, h), K.paint(col, a))
+        for i in range(3):
+            c.drawLine(x + 10, y - 115 + i * 34, x + 220 - (i % 2) * 60, y - 115 + i * 34, wb.marker(GRAY, 5, a))
+
+    def fn(c, kk, T):
+        n_on = 0
+        for k_ in (0, 1, 2):
+            if T >= H.tb(j, k_):
+                n_on = (k_ + 1) * 10
+        for n in range(n_on):
+            k_ = n // 10
+            dt = T - H.tb(j, k_) - (n % 10) * 0.035
+            if dt < 0:
+                continue
+            drop = (1 - ease_out(clamp01(dt / 0.18))) * 300
+            sway = wobble(T - H.tb(j, 2), 1.5, 14, 4) * (n / 30) if T > H.tb(j, 2) else 0.0
+            x = px + ((n * 37) % 23 - 11) + sway * 8
+            y = py + 40 - n * 17 - drop
+            with K.at(c, x, y, ((n * 53) % 9 - 4) * 0.6 + sway):
+                c.translate(-x, -y)
+                slide(c, x, y, n)
+        if n_on:
+            k_ = n_on // 10 - 1
+            sc = slam_scale(T - H.tb(j, k_))
+            with K.at(c, cx + 400, cy - 640 + 60, 6, max(sc, 0.0)):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-120, -62, 240, 124), 18, 18, K.paint("#FFFFFF"))
+                c.drawRoundRect(skia.Rect.MakeXYWH(-120, -62, 240, 124), 18, 18, wb.marker(RED, 7))
+                K.text(c, f"{n_on}页", 0, 2, 72, "hand", RED)
+        return None
+    b.custom(j, 0, 0.3, fn, sfx="wood_high", gain=0.8)
+    b.hit(j, 1, "wood_high", 0.8, "又叠上十页")
+    b.hit(j, 2, "wood_low", 0.85, "叠到三十页，晃了晃")
+    _finish(H, j, cx, cy, "结论呢？", acc, size=150, ty=cy + 250)
+
+
+# ---------------------------------------------------------------- 16 教人：新人头顶的问号一个接一个
+
+def qmarks(H, j, cx, cy, acc):
+    from fengtian.scenekit import draw_zhou
+    from fengtian.common import draw_li
+    b = H.b
+    fy = cy + 40
+    lx, zx, s = cx - 260, cx + 230, 0.95
+    H.note("第1遍", "第2遍", "第3遍", "？")
+    spots = [(zx - 120, fy - 450), (zx + 60, fy - 520), (zx + 210, fy - 420)]
+
+    def fn(c, kk, T):
+        sc = pop_scale(T - H.tb(j, 0))
+        if sc <= 0:
+            return None
+        t3 = H.tb(j, 3)
+        palm = T >= t3
+        hy = fy - 290 * s
+        with K.at(c, cx, fy, 0, sc):
+            c.translate(-cx, -fy)
+            if palm:
+                draw_li(c, lx, fy, s, "sad", rh=(lx + 10, hy - 20))
+            else:
+                n = sum(1 for k_ in (0, 1, 2) if T >= H.tb(j, k_))
+                wav = math.sin((T - H.tb(j, 0)) * 14) * 30
+                draw_li(c, lx, fy, s, "flat", rh=(lx + 120, hy + 40 + wav))
+            draw_zhou(c, zx, fy, s, mood="o" if T >= H.tb(j, 1) else "flat")
+        for n, (x, y) in enumerate(spots):
+            dt = T - H.tb(j, n)
+            if dt < 0:
+                continue
+            g = pop_scale(dt)
+            with K.at(c, x, y, wobble(dt, 10, 14, 4) + (n - 1) * 10, g):
+                K.text(c, "？", 0, 0, 120 + n * 20, "black", RED)
+            bs = pop_scale(dt - 0.05)
+            with K.at(c, lx - 30, fy - 520 - n * 0, 0, bs if n == sum(1 for k_ in (0, 1, 2) if T >= H.tb(j, k_)) - 1
+                      else 0.0):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-120, -55, 240, 110), 40, 40, K.paint("#FFFFFF"))
+                c.drawPath(wb.bubble(0, 0, 240, 110, 1), wb.marker(BLACK, 7))
+                K.text(c, f"第{n + 1}遍", 0, 0, 58, "hand", BLACK)
+        return None
+    b.custom(j, 0, 0.3, fn, sfx="pop", gain=0.75)
+    b.hit(j, 1, "pop", 0.8, "第二个问号")
+    b.hit(j, 2, "bongo_low", 0.85, "第三个问号")
+    _finish(H, j, cx, cy, "又错了", acc, size=160, ty=cy + 250)
+
+
+HOOKS.update(startlights=startlights, slides=slides, qmarks=qmarks)

@@ -45,6 +45,18 @@ THEMES = {
                header="tab", hook="reject", move="wipe", move_s=1.05),
     "10": dict(name="暖杏方格", acc="#0F6E6E", paper="#F6E3CC", pattern="grid", pat="#E2BF98", grid=100,
                header="bar", hook="treadmill", move="tilt", move_s=1.4),
+    "11": dict(name="浅橙点阵", acc="#1E4B7A", paper="#FCE6D0", pattern="dots", pat="#E8B088", grid=56,
+               header="stamp", hook="clock8", move="swing", move_s=1.3),
+    "12": dict(name="方眼本", acc="#A8401A", paper="#E4EFEC", pattern="graph", pat="#9EC3BA", grid=44,
+               header="circle", hook="desktop", move="arc", move_s=1.45),
+    "13": dict(name="石墨板", acc="#FFB23F", paper="#272B33", pattern="dots", pat="#5A6372", grid=80, dark=True,
+               header="tab", hook="mailfly", move="pan", move_s=1.25),
+    "14": dict(name="天蓝横线", acc="#D9480F", paper="#D6E8F6", pattern="ruled", pat="#9DBFDD", margin=None,
+               header="pill", hook="startlights", move="pullpush", move_s=1.35),
+    "15": dict(name="白色工程纸", acc="#C62828", paper="#F6F8FB", pattern="grid", pat="#B9CCE6", grid=60,
+               header="stamp", hook="slides", move="wipe", move_s=1.0),
+    "16": dict(name="深褐黑板", acc="#7ED6A0", paper="#3A2B22", pattern="chalk", pat="#FFFFFF", dark=True,
+               header="bar", hook="qmarks", move="drop", move_s=1.3),
 }
 
 DEFAULT = dict(name="白板", acc="#C8102E", paper="#FBFBF9", pattern="plain", pat="#E9ECEF", header="pill",
@@ -240,6 +252,12 @@ def board_bg(c, board, t):
                          [skia.Point(x, yy) for x in range(0, BW, big) for yy in (0, BH)], p2)
             c.drawPoints(skia.Canvas.kLines_PointMode,
                          [skia.Point(xx, y) for y in range(0, BH, big) for xx in (0, BW)], p2)
+    elif pat == "graph":                      # 方眼本：细方格，每 5 格一条粗线
+        g = t.get("grid", 44)
+        for step, a, w in ((g, 0.38, 1.6), (g * 5, 0.6, 3.2)):
+            p = _paint(pc, a, w)
+            c.drawPoints(skia.Canvas.kLines_PointMode, [skia.Point(x, yy) for x in range(0, BW, step) for yy in (0, BH)], p)
+            c.drawPoints(skia.Canvas.kLines_PointMode, [skia.Point(xx, y) for y in range(0, BH, step) for xx in (0, BW)], p)
     elif pat == "dots":
         g = t.get("grid", 70)
         p = _paint(pc, 0.75, 7)
