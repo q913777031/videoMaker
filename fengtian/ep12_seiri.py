@@ -53,7 +53,9 @@ SCREENS = [
 ]
 
 THEME = FT.get("12")          # 本讲样式（fengtian/theme.py）：方眼本、开场 desktop、转场 arc
-L = C.Lesson("12", SCREENS, drop_screen=2, board_size=(5000, 12600), theme=THEME)
+L = C.Lesson("12", SCREENS, drop_screen=2, board_size=(5000, 12600), theme=THEME,
+              trim_head={3: 0.19, 27: 0.14},  # 句首多出的碎音（识别成“回”“要”），裁掉
+              trim_tail={13: 0.14})           # 句尾碎音（识别成“吃”），裁掉
 b = L.b
 tb, kb, wt = L.tb, L.kb, L.wt
 
