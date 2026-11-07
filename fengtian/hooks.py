@@ -851,8 +851,8 @@ def chain(H, j, cx, cy, acc):
     b = H.b
     y = cy - 260
     lx, rx = cx - 430, cx + 430
-    n = 9
-    H.note("拉紧", "咔")
+    n = 11
+    H.note()
 
     def link(c, x, y_, rot, color, w=10, alpha=1.0):
         with K.at(c, x, y_, rot):
@@ -873,10 +873,10 @@ def chain(H, j, cx, cy, acc):
             # 两端的人：左边小李往左拽，右边合作方往右拽；断开后两人往后一仰
             back = 40 * fall
             lxp, rxp = lx - pull * 0.5 - back, rx + pull * 0.5 + back
-            hy = y + 190 - 290 * 0.8
-            draw_li(c, lxp - 90, y + 190, 0.8, "o" if broke else ("sad" if tight >= 2 else "flat"),
+            hy = y + 260 - 290 * 0.8
+            draw_li(c, lxp - 90, y + 260, 0.8, "o" if broke else ("sad" if tight >= 2 else "flat"),
                     rh=(lxp - 10, y), lh=(lxp - 30, y + 10))
-            draw_wang(c, rxp + 90, y + 190, 0.8, lh=(rxp + 10, y), rh=(rxp + 30, y + 10), mood="o" if broke else "flat")
+            draw_wang(c, rxp + 90, y + 260, 0.8, lh=(rxp + 10, y), rh=(rxp + 30, y + 10), mood="o" if broke else "flat")
             mid = n // 2
             for i in range(n):
                 u = i / (n - 1)
@@ -889,17 +889,18 @@ def chain(H, j, cx, cy, acc):
                     for sgn in (-1, 1):
                         with K.at(c, x + sgn * 60 * fall, yy + 120 * fall * fall, sgn * 40 * fall):
                             arc = skia.Path()
-                            arc.addArc(skia.Rect.MakeXYWH(-46, -24, 92, 48), 90 if sgn < 0 else 270, 180)
-                            c.drawPath(arc, wb.marker(RED, 10))
+                            arc.addArc(skia.Rect.MakeXYWH(-52, -28, 104, 56), 90 if sgn < 0 else 270, 180)
+                            c.drawPath(arc, wb.marker(RED, 11))
                     continue
                 dx = 0.0
                 if broke:
                     dx = (-1 if i < mid else 1) * 70 * fall
                 color = RED if (tight >= 2 and abs(i - mid) <= 1) else BLACK
                 if i % 2:
-                    c.drawLine(x - 30 + dx, yy + shake, x + 30 + dx, yy + shake, wb.marker(color, 12))
+                    c.drawRoundRect(skia.Rect.MakeXYWH(x - 50 + dx, yy - 9 + shake, 100, 18), 9, 9, K.paint(GRAY))
+                    c.drawRoundRect(skia.Rect.MakeXYWH(x - 50 + dx, yy - 9 + shake, 100, 18), 9, 9, wb.marker(color, 7))
                 else:
-                    link(c, x + dx, yy + shake, 0, color)
+                    c.drawOval(skia.Rect.MakeXYWH(x - 52 + dx, yy - 28 + shake, 104, 56), wb.marker(color, 11))
             # 绷紧的受力线
             if tight >= 1 and not broke:
                 for k_ in range(tight):
@@ -1025,7 +1026,7 @@ def alarm(H, j, cx, cy, acc):
         steps = sum(1 for k_ in (0, 1, 2) if T >= H.tb(j, k_))
         t0 = H.tb(j, 0)
         # 每拍往右跑一步，闹钟紧跟
-        x_li = cx - 140 + 90 * steps - 90 + 90 * ease_out(clamp01((T - H.tb(j, steps - 1)) / 0.25))
+        x_li = cx - 40 + 90 * steps - 90 + 90 * ease_out(clamp01((T - H.tb(j, steps - 1)) / 0.25))
         ph = (T - t0) * 3.2
         bob = -abs(math.sin(ph * math.pi)) * 20
         with K.at(c, cx, gy, 0, sc):
