@@ -27,7 +27,7 @@ from fengtian.common import (BLACK, BLUE, GREEN, ORANGE, RED, YELLOW, draw_boss,
 from whiteboard import engine as wb
 from whiteboard.engine import P, check, cross, rect
 
-core.SERIES.update(name="梦的解析", count="单讲", prefix="梦的解析")
+core.SERIES.update(name="梦的解析", count="第一季", prefix="梦的解析")
 
 # ---------------------------------------------------------------- 开场钩子（注册进 fengtian.hooks，Lesson 构造时读取）
 HK.HOOK_TEXT["dream"] = "又梦见考试"
@@ -133,7 +133,7 @@ SCREENS = [
     ([25], "做法二 · 示意", 15),
     ([26], "做法三 · 示意", 16),
     ([27], "这样看梦", 17),
-    ([28, 29, 30], "评论区见", 18),
+    ([28, 29, 30, 31], "评论区见", 18),
 ]
 
 THEME = dict(name="月夜蓝格", acc="#3B3A8C", paper="#E9EEF7", pattern="grid", pat="#B9C7DF", grid=80,
@@ -1656,7 +1656,7 @@ def me17(c, kk, T, cx=cx, cy=cy):
 
 b.custom(j, k_txt17, k_txt17 + 0.3, me17)
 
-# ================================================================ 屏 18：评论区——“又梦见考试”；天亮了，小李伸懒腰，“有办法”
+# ================================================================ 屏 18：评论区——“又梦见考试”；天亮了，小李伸懒腰，“有办法”；镜头下移到下一讲预告卡
 cx, cy = R[18]
 j = L.scene(18, (cx, cy + 10, Z))
 k_box = kq(j, wt(28, 0, 0.4), 0)
@@ -1720,6 +1720,11 @@ def morning18(c, kk, T, cx=cx, cy=cy):
 ev(j, k_sun, morning18, "wood_low", 0.75)
 ev(j, k_way, L.slam_text("有办法", cx - 160, cy - 30, 120, GREEN, j, k_way, rot=-5), "kick", 0.85)
 b.shots[j].shake = [(k_way, 6.0)]
+k_n = nx(j, wt(31, 0, 0.1), k_way)
+b.move(j, k_n, (cx, cy + 420, Z), dur=1.0)
+b.path(j, k_n + 1, k_n + 1.6, rect(cx, cy + 860, 1000, 240, 24), BLUE, 8, sfx="wood_high")
+b.text(j, k_n + 1.5, k_n + 1.8, "下一讲", cx - 390, cy + 790, 46, BLUE)
+b.text(j, k_n + 1.8, k_n + 3.0, "缺什么，为什么梦里就来什么？", cx, cy + 890, 54, BLACK)
 
 # ================================================================ 收尾
 L.finish(cover_shot=2, square_shot=7, notes=NOTES)

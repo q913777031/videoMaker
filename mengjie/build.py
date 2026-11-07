@@ -12,7 +12,9 @@ from fengtian import build as B
 B.PKG = "mengjie"
 B.OUT = B.ROOT / "out" / "mengjie"
 B.VIDEOS = B.ROOT / "videos" / "mengjie"
-B.MODS = {"01": "ep01_dream"}
+B.MODS = {"01": "ep01_dream", "02": "ep02_wish", "03": "ep03_disguise", "04": "ep04_material", "05": "ep05_condense",
+          "06": "ep06_displace", "07": "ep07_picture", "08": "ep08_revision", "09": "ep09_typical", "10": "ep10_guard",
+          "11": "ep11_nightmare", "12": "ep12_irma", "13": "ep13_today"}
 
 if __name__ == "__main__":
     B.main()
