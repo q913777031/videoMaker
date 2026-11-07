@@ -1139,7 +1139,7 @@ def room10(c, sc, T, cx=cx, cy=cy):
         c.drawRect(top, wb.marker("#A9773E", 7))
         for lx in (x - 210, x + 290):
             C.line(c, (lx, GY10 - 86), (lx, GY10 + 60), "#A9773E", 9)
-        exam_paper(c, x + 40, GY10 - 190, 220, 130, -4)
+        exam_paper(c, x + 190, GY10 - 190, 200, 130, -4)
         if not pat:
             for n in range(3):
                 ph = (T * 1.4 + n * 0.33) % 1.0
