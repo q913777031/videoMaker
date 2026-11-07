@@ -109,7 +109,7 @@ def _finish(H, j, cx, cy, text, acc, size=None, ty=None, shake=12.0, text_sfx="k
         last = i == n - 1
         k0 = H.beat_at(j, tl - FALL - 0.02)
         b.custom(j, k0, k0 + 0.3, _drop_char(u, x_, y_, size, acc, tl))
-        H.sfx_at(tl, text_sfx if last else "tom", 0.85 if last else 0.75, f"砸字：{u}")
+        H.sfx_at(tl, text_sfx if last else "tom", 0.65 if last else 0.55, f"砸字：{u}")   # 每字都和人声起点叠在一起，压低些免得限幅过猛（编码后真峰值会冒顶）
         b.shots[j].shake.append((H.beat_at(j, tl), shake if last else 7.0))
     yl = y0 + (len(rows) - 1) * lh + size * 0.55 + 50
     b.custom(j, hv["label_k"], hv["label_k"] + 0.3, _label(H, j, hv["label_k"], cx, yl), sfx="pop", gain=0.55)
