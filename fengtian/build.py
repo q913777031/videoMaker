@@ -313,6 +313,9 @@ def limiter(x, ceil_db=-2.6, look=0.004):         # 留余量：接片尾时音�
     return x * np.minimum(g, minimum_filter1d(need, 3))[:, None]
 
 
+HOOK_VOICE_MIX = False   # 开场大字只留砸字音效、不混配音（用户 2026-11 要求，第一季全部）；砸字时刻仍按配音的顿读节奏排
+
+
 def build_audio():
     n = int(M.END_LOCAL * audio.SR)
     v = np.zeros(n)
@@ -321,7 +324,7 @@ def build_audio():
         if i not in skip:
             audio.place(v, x, st)
     hv = getattr(M, "HOOK_VOICE", None)              # 开场配音（大字逐字砸在它的发声起点上），和正文同一条人声轨、同样压低配乐
-    if hv:
+    if hv and HOOK_VOICE_MIX:
         audio.place(v, hv[1], hv[0])
     v = audio.process_voice(v)
     voice = audio.pan(v, 0) * 1.41
