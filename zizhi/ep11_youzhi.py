@@ -39,7 +39,8 @@ SCREENS = [
 ]
 
 THEME = ZT.get("11")
-L = Z.Lesson("11", SCREENS, drop_screen=2, board_size=(5000, 10400), theme=THEME)
+L = Z.Lesson("11", SCREENS, drop_screen=2, board_size=(5000, 10400), theme=THEME,
+             trim_tail={5: 0.12})          # 第 5 句句尾碎音（识别成“去”），裁掉
 b = L.b
 tb, wp, kq, nx, cap, ev = L.tb, L.wp, L.kq, L.nx, L.cap, L.ev
 
