@@ -454,10 +454,11 @@ class Lesson:
     DROP0 = 32                     # 原曲 drop 拍号
     XFADE = 0.04
     MOVE_S = 1.3                   # 切屏镜头移动秒数
+    PLAN = plan                    # 文案来源（有 load(nn) 的模块）；别的系列复用 Lesson 时换成自己的
 
     def __init__(self, nn, screens, *, drop_screen=2, hold=1.55, min_beats=10, intro_beats=6, extra_hold=None,
                  comma=0.25, max_gap=0.6, natural_comma=(), board_size=(4800, 10600), acc=ACC, theme=None, trim_head=None, trim_tail=None):
-        p = plan.load(nn)
+        p = self.PLAN.load(nn)
         self.THEME = FT.finish(theme) if theme else FT.finish(dict(acc=acc))
         if theme:
             acc = self.THEME["acc"]
@@ -892,7 +893,7 @@ class Lesson:
         self.NOTES = list(notes)
         ep = core.Episode(self.NO, self.KEY, self.CONCEPT, self.TITLE, self.ACC, b.shots, refs=[],
                           publish_title=f"Vibe知识大赏｜{self.TITLE}", hashtags=self.TAGS, cover_title=self.COVER_TITLE,
-                          cover_sub=f"丰田模式 · {self.CONCEPT}", cover_shot=cover_shot, notes=self.NOTES)
+                          cover_sub=f"{core.SERIES['name']} · {self.CONCEPT}", cover_shot=cover_shot, notes=self.NOTES)
         for s, (k0, k1) in zip(b.shots, self.BOUNDS):
             s.b0, s.t0, s.t1 = k0, core.bt(k0), core.bt(k1)
             s.bars = (k1 - k0) // 4 + 2          # 名义小节数盖住全部实测拍（Board.t_of 超出名义长度会外推）

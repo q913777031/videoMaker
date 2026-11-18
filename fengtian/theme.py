@@ -219,6 +219,12 @@ def _speckles(bw, bh, n, seed):
     return [(rng.uniform(0, bw), rng.uniform(0, bh), rng.uniform(0.6, 1.0)) for _ in range(n)]
 
 
+@functools.lru_cache(maxsize=8)
+def _fibers(bw, bh, n, seed):
+    rng = random.Random(seed)
+    return [(rng.uniform(0, bw), rng.uniform(0, bh), rng.uniform(0, math.pi), rng.uniform(30, 110)) for _ in range(n)]
+
+
 def _paint(c, a=1.0, w=0.0, blur=0.0):
     r, g, b = gfx.rgb(c)
     p = skia.Paint(AntiAlias=True, Color=skia.Color(r, g, b, int(255 * clamp01(a))))
@@ -281,6 +287,31 @@ def board_bg(c, board, t):
             c.drawCircle(x0, y0, r, _paint(pc, 0.045, blur=160))
         sp = _speckles(BW, BH, 5000, 9)
         c.drawPoints(skia.Canvas.kPoints_PointMode, [skia.Point(x, y) for x, y, _ in sp], _paint(pc, 0.07, 4))
+    elif pat == "xuan":                       # 宣纸（资治通鉴系列）：细长纤维 + 淡墨点 + 几处晕开的浅斑
+        fib = _fibers(BW, BH, 2600, 21)
+        p = _paint(pc, 0.28, 2.2)
+        for x, y, ang, ln in fib:
+            c.drawLine(x, y, x + math.cos(ang) * ln, y + math.sin(ang) * ln, p)
+        sp = _speckles(BW, BH, 2500, 13)
+        c.drawPoints(skia.Canvas.kPoints_PointMode, [skia.Point(x, y) for x, y, _ in sp], _paint(pc, 0.30, 4))
+        for x0, y0, r in ((900, 1500, 600), (3400, 4300, 800), (1500, 7400, 700), (3700, 10200, 650), (2200, 12800, 700)):
+            c.drawCircle(x0, y0, r, _paint(pc, 0.08, blur=200))
+    elif pat == "bamboo":                     # 竹简（资治通鉴系列）：竖条竹片 + 两道编绳
+        g = t.get("grid", 120)
+        p = _paint(pc, 0.45, 3)
+        c.drawPoints(skia.Canvas.kLines_PointMode, [skia.Point(x, yy) for x in range(0, BW, g) for yy in (0, BH)], p)
+        rope = _paint(t.get("rope", pc), 0.16, 5)
+        for y0 in range(700, BH, 1400):
+            c.drawLine(0, y0, BW, y0, rope)
+        sp = _speckles(BW, BH, 2000, 17)
+        c.drawPoints(skia.Canvas.kPoints_PointMode, [skia.Point(x, y) for x, y, _ in sp], _paint(pc, 0.22, 4))
+    elif pat == "silk":                       # 绢本（资治通鉴系列）：细密经纬 + 边缘暗角
+        g = t.get("grid", 18)
+        p = _paint(pc, 0.16, 1.2)
+        c.drawPoints(skia.Canvas.kLines_PointMode, [skia.Point(x, yy) for x in range(0, BW, g) for yy in (0, BH)], p)
+        c.drawPoints(skia.Canvas.kLines_PointMode, [skia.Point(xx, y) for y in range(0, BH, g) for xx in (0, BW)], p)
+        for x0, y0, r in ((800, 1800, 700), (3500, 5200, 900), (1300, 9000, 800), (3600, 12000, 700)):
+            c.drawCircle(x0, y0, r, _paint(pc, 0.07, blur=220))
     else:
         for x0, y0, r in ((700, 1700, 500), (2600, 3800, 700), (1200, 5000, 500), (2800, 300, 400), (900, 6600, 600)):
             c.drawCircle(x0, y0, r, _paint("#E9ECEF", 0.6, blur=120))
