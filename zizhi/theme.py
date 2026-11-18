@@ -24,6 +24,18 @@ THEMES = {
                header="bar", hook="zz_shots", move="pullpush", move_s=1.35),
     "09": dict(name="宣纸石青", acc="#1F5F7A", paper="#F2EEE3", pattern="xuan", pat="#9DB3BA",
                header="circle", hook="zz_knock", move="swing", move_s=1.3),
+    "10": dict(name="墨绿黑板", acc="#F2C94C", paper="#22382F", pattern="chalk", pat="#FFFFFF", dark=True,
+               header="stamp", hook="zz_dust", move="tilt", move_s=1.4),
+    "11": dict(name="竹简朱红", acc="#B8322A", paper="#ECDDB0", pattern="bamboo", pat="#B79B5E", rope="#7A5B2E", grid=100,
+               header="tab", hook="zz_nope", move="drop", move_s=1.3),
+    "12": dict(name="淡蓝点阵", acc="#B5371C", paper="#E2EAF2", pattern="dots", pat="#9FB1C6",
+               header="bar", hook="zz_crash", move="pan", move_s=1.35),
+    "13": dict(name="宣纸赭黄", acc="#8C5A16", paper="#F5EEDC", pattern="xuan", pat="#C2A77A",
+               header="pill", hook="zz_resume", move="arc", move_s=1.45),
+    "14": dict(name="石墨板", acc="#7FD8C0", paper="#272B33", pattern="grid", pat="#5A6372", grid=80, dark=True,
+               header="circle", hook="zz_ear", move="wipe", move_s=1.05),
+    "15": dict(name="绢本朱砂", acc="#A8231C", paper="#F3E7D2", pattern="silk", pat="#B0906A",
+               header="stamp", hook="zz_mirror", move="pullpush", move_s=1.4),
 }
 
 

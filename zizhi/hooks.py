@@ -8,8 +8,10 @@ from fengtian import hooks as FH
 
 FH.SERIES_SUB = "资治通鉴 · 打工人的识人做事课"
 
-HOOK_TEXT = dict(zz_credit="功劳全归他", zz_unread="没人当真", zz_slides="一做就砸", zz_blush="下不来台", zz_rules="没人看", zz_tall="压不住", zz_toss="全推翻？", zz_shots="翻旧账", zz_knock="又被拒了")
-HOOK_PINYIN = dict(zz_unread=[("当真", "[d][àng]真")])
+HOOK_TEXT = dict(zz_credit="功劳全归他", zz_unread="没人当真", zz_slides="一做就砸", zz_blush="下不来台", zz_rules="没人看", zz_tall="压不住", zz_toss="全推翻？", zz_shots="翻旧账", zz_knock="又被拒了",
+                 zz_dust="没空学", zz_nope="都说不行", zz_crash="稳赢的局", zz_resume="没人可用", zz_ear="听一边",
+                 zz_mirror="都说好")
+HOOK_PINYIN = dict(zz_unread=[("当真", "[d][àng]真")], zz_dust=[("没空", "没[k][òng]")])
 FH.HOOK_TEXT.update(HOOK_TEXT)
 FH.HOOK_PINYIN.update(HOOK_PINYIN)
 
