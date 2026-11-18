@@ -71,7 +71,7 @@ def square_cover(eps, path, sub):
     K.text(c, BRAND, S / 2, 120, 40, "sans_medium", K.INK2)
     K.text(c, "资治通鉴", S / 2, 330, 200, "serif_black", ACC)
     K.text(c, sub, S / 2, 500, min(64.0, 64 * 960 / K.text_w(sub, 64, "serif_black")), "serif_black", K.INK)
-    K.text(c, "每讲约三分钟 · 白板手绘", S / 2, 580, 38, "sans_medium", K.INK2)
+    K.text(c, "每讲两三分钟 · 白板手绘", S / 2, 580, 38, "sans_medium", K.INK2)
     cols, w, h, gx, gy = 5, 184, 70, 18, 16
     for i, (no, concept, _) in enumerate(eps):
         r, j = divmod(i, cols)
