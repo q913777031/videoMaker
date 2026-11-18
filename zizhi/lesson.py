@@ -486,3 +486,151 @@ def flag(c, x, y, s, ch, color=RED, alpha=1.0, wave=0.0):
         c.drawPath(p, K.paint(color, alpha))
         c.drawPath(p, wb.marker(INK, 5, alpha))
         K.text(c, ch, 75, -234, 80, "serif_black", "#FFFFFF", alpha)
+
+
+# ================================================================ 分镜常用件（第 09 讲起用；01–08 讲各自保留了一份同样的写法）
+
+PARCH, PARCH_LINE = "#F7EFD9", "#9C7A3A"
+
+
+def name_tag(c, x, y, s, color=INK, size=44, a=1.0):
+    w = K.text_w(s, size, "serif_black") + 34
+    c.drawRoundRect(skia.Rect.MakeXYWH(x - w / 2, y - size * 0.7, w, size * 1.4), 10, 10, K.paint("#FFFFFF", 0.85 * a))
+    c.drawRoundRect(skia.Rect.MakeXYWH(x - w / 2, y - size * 0.7, w, size * 1.4), 10, 10, wb.marker(color, 4, a))
+    K.text(c, s, x, y + 2, size, "serif_black", color, a)
+
+
+def chip(c, x, y, s, fill, line, size=50, a=1.0, rot=0.0):
+    w = K.text_w(s, size, "hand") + 50
+    with K.at(c, x, y, rot):
+        c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2, -size * 0.75, w, size * 1.5), size * 0.75, size * 0.75, K.paint(fill, a))
+        c.drawRoundRect(skia.Rect.MakeXYWH(-w / 2, -size * 0.75, w, size * 1.5), size * 0.75, size * 0.75,
+                        wb.marker(line, 5, a))
+        K.text(c, s, 0, 2, size, "hand", line, a)
+
+
+def phone(c, x, y, s=1.0, a=1.0):
+    with K.at(c, x, y, 0, s):
+        box(c, 0, 0, 120, 210, "#FFFFFF", BLACK, 6, 18, a)
+        c.drawRect(skia.Rect.MakeXYWH(-46, -80, 92, 150), K.paint(BLUE_FILL, a))
+
+
+class Kit:
+    """一讲里反复用到的分镜件：卷轴框、竹简书名、三步圆章、评论区与下一讲预告。L 为 Lesson，R 为每屏中心表。"""
+
+    def __init__(self, L, R, frame_alpha=0.8):
+        self.L, self.R, self.fa = L, R, frame_alpha
+
+    def gu_frame(self, j, k=0):
+        L, (cx, cy) = self.L, self.R[j]
+        L.note("通鉴")
+        fa = self.fa
+
+        def fn(c, kk, T):
+            sc = pop_scale(T - L.tb(j, k), 0.25)
+            if sc <= 0:
+                return None
+            a = clamp01(sc)
+            r = skia.Rect.MakeXYWH(cx - 580, cy - 585, 1160, 1215)
+            c.drawRoundRect(r, 18, 18, K.paint(PARCH, fa * a))
+            c.drawRoundRect(r, 18, 18, wb.marker(PARCH_LINE, 6, a))
+            r2 = skia.Rect.MakeXYWH(cx - 562, cy - 567, 1124, 1179)
+            c.drawRoundRect(r2, 12, 12, wb.marker(PARCH_LINE, 2.5, 0.8 * a))
+            seal(c, cx - 505, cy - 505, "通鉴", 40, -3, 1.0, a)
+            return None
+        L.b.custom(j, k, k + 0.2, fn)
+
+    def book(self, j, k, vol, ji, x=None, y=None, h=640):
+        """竹简书名：“资治通鉴”+ 卷次 + 纪名，第 k 拍展开（muyu）。"""
+        L, (cx, cy) = self.L, self.R[j]
+        x = cx - 380 if x is None else x
+        y = cy - 180 if y is None else y
+        L.note("资治通鉴", vol, ji)
+
+        def fn(c, kk, T):
+            f = ease_out(clamp01((T - L.tb(j, k)) / 0.6))
+            if f <= 0:
+                return None
+            bamboo_slips(c, x, y, max(60, 260 * f), h, n=max(1, int(3 * f + 0.5)))
+            a = clamp01((T - L.tb(j, k) - 0.3) / 0.3)
+            slip_text(c, x + 45, y - h / 2 + 50, "资治通鉴", 66, "#3A2A12", a)
+            slip_text(c, x - 60, y - h / 2 + 50, vol, 50 if len(vol) <= 3 else 42, RED, a)
+            slip_text(c, x - 60, y - h / 2 + 50 + len(vol) * 56 + 30, ji, 38, "#5E4128", a, 1.12)
+            return None
+        L.ev(j, k, fn, "muyu", 0.7, 0.6)
+
+    def steps_row(self, jj, active):
+        L = self.L
+        x0, y0 = self.R[jj][0] - 180, self.R[jj][1] - 480
+        L.note("一", "二", "三")
+
+        def fn(c, kk, T):
+            for i, ch in enumerate("一二三"):
+                sc = pop_scale(T - L.tb(jj, 0) - i * 0.1)
+                if sc <= 0:
+                    continue
+                on = i == active
+                with K.at(c, x0 + i * 150, y0, 0, sc * (1.15 if on else 1)):
+                    c.drawCircle(0, 0, 52, K.paint(RED if on else "#FFFFFF"))
+                    c.drawCircle(0, 0, 52, wb.marker(RED if on else GRAY, 7))
+                    K.text(c, ch, 0, 2, 56, "serif_black", "#FFFFFF" if on else GRAY)
+            return None
+        L.b.custom(jj, 0, 0.3, fn, sfx="wood_high", gain=0.6)
+
+    def ending(self, j, q, chips, write_li, enc_li, enc_fn, next_li, next_lines, enc_piece=0, next_icon=None):
+        """末屏：评论卡（问题 + 三个回答标签）→ 镜头下移，enc_fn(c, T, t_enc, t_hit, cx, cy) 画收尾鼓励（两拍：出现 / 落定）
+        → 下一讲预告卡。write_li / enc_li / next_li 为对应句序号。"""
+        L, (cx, cy) = self.L, self.R[j]
+        tb, wp, nx = L.tb, L.wp, L.nx
+        L.scene(j, (cx, cy - 60, 0.72))
+        k_chips = nx(j, wp(write_li, 0, 0.3), 0)
+        k_enc = nx(j, wp(enc_li, enc_piece, 0.4), k_chips)
+        n_p = len(L.LINES[enc_li][1])
+        k_hit = nx(j, wp(enc_li, n_p - 1, 0.3), k_enc)
+        k_next = nx(j, wp(next_li, 1, 0.2), k_hit)
+        L.b.move(j, k_enc, (cx, cy + 380, 0.72), 1.1)
+        L.note(q, *chips, "下一讲", *next_lines)
+
+        def cmt(c, kk, T):
+            sc = pop_scale(T - tb(j, 0))
+            if sc <= 0:
+                return None
+            with K.at(c, cx + 20, cy - 330, 0, sc):
+                bubble_box(c, 0, 0, 1000, 360, -1)
+                K.text(c, q, 0, -110, min(62.0, 62 * 900 / K.text_w(q, 62, "hand")), "hand", RED)
+                for i, nm in enumerate(chips):
+                    g = pop_scale(T - tb(j, k_chips) - i * 0.15, 0.22)
+                    if g <= 0:
+                        continue
+                    x, y = (-230 + (i % 2) * 460, 10) if i < 2 else (0, 110)
+                    with K.at(c, x, y, 0, g):
+                        chip(c, 0, 0, nm, BLUE_FILL, BLUE, 44)
+            return None
+        L.ev(j, 0, cmt, "pop", 0.7)
+        L.b.hit(j, k_chips, "wood_high", 0.6, "评论冒出来")
+
+        def enc(c, kk, T):
+            te = tb(j, k_enc)
+            if T < te:
+                return None
+            enc_fn(c, T, te, tb(j, k_hit), cx, cy)
+            return None
+        L.ev(j, k_enc, enc, "wood_low", 0.6)
+        L.b.hit(j, k_hit, "ding", 0.8, "收尾鼓励")
+
+        def nxt(c, kk, T):
+            t0 = tb(j, k_next)
+            sc = pop_scale(T - t0)
+            if sc <= 0:
+                return None
+            with K.at(c, cx + 20, cy + 860, -2, sc):
+                box(c, 0, 0, 1000, 230, "#FFFFFF", BLACK, 7, 18)
+                K.rr(c, -380, -70, 170, 60, 30, RED)
+                K.text(c, "下一讲", -380, -68, 38, "hand", "#FFFFFF")
+                for i, s_ in enumerate(next_lines):
+                    size = min(58.0, 58 * 640 / K.text_w(s_, 58, "hand"))
+                    K.text(c, s_, -80 if i == 0 else -40, -60 + i * 100, size, "hand", BLACK)
+                if next_icon:
+                    next_icon(c, 390, 0, T - t0)
+            return None
+        L.ev(j, k_next, nxt, "rim", 0.8)

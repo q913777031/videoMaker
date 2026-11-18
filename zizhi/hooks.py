@@ -393,3 +393,257 @@ def zz_knock(H, j, cx, cy, acc):
 
 
 FH.HOOKS.update(zz_knock=zz_knock)
+
+
+def zz_dust(H, j, cx, cy, acc):
+    """10 劝学：书桌上一本书，外卖盒一层层压上去，书落满灰；大字“没空学”。"""
+    from fengtian.common import BLUE, ORANGE
+    b = H.b
+    GY = cy + 40
+    H.note("书")
+    b.path(j, 0, 0.5, rect(cx, GY, 900, 40, 8), "#8B6B43", 8, sfx="wood_low")
+
+    def stack(c, kk, T):
+        g = pop_scale(T - H.tb(j, 0) - 0.2)
+        if g <= 0:
+            return None
+        with K.at(c, cx - 40, GY - 50, 0, g):
+            c.drawRoundRect(skia.Rect.MakeXYWH(-200, -30, 400, 60), 8, 8, K.paint("#D5E3F7"))
+            c.drawRoundRect(skia.Rect.MakeXYWH(-200, -30, 400, 60), 8, 8, wb.marker(BLUE, 6))
+            K.text(c, "书", 0, 2, 44, "serif_black", BLUE)
+        for i in range(5):
+            k_ = (1, 1.4, 2, 2.4, 2.8)[i]
+            t0 = H.tb(j, k_)
+            if T < t0:
+                continue
+            d = (1 - clamp01((T - t0) / 0.18)) * 260
+            y = GY - 130 - i * 80 - d
+            with K.at(c, cx - 40 + (i % 2) * 30 - 15, y, (i * 17 % 9) - 4):
+                c.drawPath(P((-130, -36), (130, -36), (110, 36), (-110, 36), close=True), K.paint("#FFFFFF"))
+                c.drawPath(P((-130, -36), (130, -36), (110, 36), (-110, 36), close=True), wb.marker(ORANGE, 5))
+                C_line(c, (-130, -10), (130, -10), ORANGE, 4)
+        t3 = H.tb(j, 3)
+        if T >= t3:
+            a = clamp01((T - t3) / 0.4)
+            for q in range(40):
+                x = cx - 260 + (q * 53) % 520
+                y = GY - 560 + (q * 37) % 520
+                c.drawCircle(x, y, 4 + q % 3, K.paint("#8A8F99", 0.5 * a))
+            web = skia.Path()
+            for r_ in (60, 110, 160):
+                web.addArc(skia.Rect.MakeXYWH(cx + 180 - r_, GY - 640 - r_, 2 * r_, 2 * r_), 90, 90)
+            c.drawPath(web, wb.marker("#8A8F99", 3, a))
+        return None
+    b.custom(j, 0.2, 0.5, stack)
+    b.hit(j, 1, "wood_high", 0.8, "外卖盒压上去")
+    b.hit(j, 2, "wood_high", 0.8, "又压两盒")
+    b.hit(j, 3, "tom", 0.8, "落满灰")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["zz_dust"], acc, text_sfx="kick")
+
+
+FH.HOOKS.update(zz_dust=zz_dust)
+
+
+def zz_nope(H, j, cx, cy, acc):
+    """11 有志者：小李举起“我想试试”的牌子，四周一张张嘴冒出“别折腾了”；大字“都说不行”。"""
+    from zizhi.lesson import draw_li
+    b = H.b
+    GY = cy + 60
+    H.note("我想试试", "别折腾了")
+
+    def scene(c, kk, T):
+        g = pop_scale(T - H.tb(j, 0))
+        if g <= 0:
+            return None
+        lx = cx
+        with K.at(c, lx, GY, 0, g):
+            c.translate(-lx, -GY)
+            n = sum(1 for k_ in (1, 2, 3) if T >= H.tb(j, k_))
+            draw_li(c, lx, GY, 0.95 - 0.06 * n, "flat" if n < 2 else "sad", rh=(lx + 110, GY - 420))
+            C_line(c, (lx + 110, GY - 420), (lx + 110, GY - 520), "#8B6B43", 8)
+            c.drawRoundRect(skia.Rect.MakeXYWH(lx + 10, GY - 640, 260, 120), 12, 12, K.paint("#FFF1A8"))
+            c.drawRoundRect(skia.Rect.MakeXYWH(lx + 10, GY - 640, 260, 120), 12, 12, wb.marker(BLACK, 5))
+            K.text(c, "我想试试", lx + 140, GY - 580, 48, "hand", BLACK)
+        for i, (k_, x, y) in enumerate(((1, cx - 380, cy - 450), (2, cx - 400, cy - 150), (3, cx + 380, cy - 280))):
+            t0 = H.tb(j, k_)
+            if T < t0:
+                continue
+            gi = C_slam(T - t0)
+            with K.at(c, x, y, (i - 1) * 6, gi):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-150, -55, 300, 110), 40, 40, K.paint("#FFFFFF"))
+                c.drawPath(wb.bubble(0, 0, 300, 110, 1 if x < cx else -1), wb.marker(BLACK, 5))
+                K.text(c, "别折腾了", 0, 0, 48, "hand", RED)
+        return None
+    b.custom(j, 0, 0.3, scene, sfx="pop", gain=0.6)
+    for k_ in (1, 2, 3):
+        b.hit(j, k_, "rim" if k_ < 3 else "tom", 0.8, "别折腾了")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["zz_nope"], acc, text_sfx="kick")
+
+
+def C_slam(dt):
+    from fengtian.common import slam_scale
+    return slam_scale(dt)
+
+
+FH.HOOKS.update(zz_nope=zz_nope)
+
+
+def zz_crash(H, j, cx, cy, acc):
+    """12 投鞭断流：进度条一路涨到 99%，“啪”地掉到 0；大字“稳赢的局”。"""
+    from fengtian.common import GREEN
+    b = H.b
+    x0, y, w = cx - 380, cy - 330, 760
+    H.note("99%", "0%")
+    b.path(j, 0, 0.5, rect(cx, y, w, 90, 45), BLACK, 9, sfx="wood_high")
+
+    def bar(c, kk, T):
+        t1, t3 = H.tb(j, 1), H.tb(j, 3)
+        if T < H.tb(j, 0.3):
+            return None
+        if T < t3:
+            p = 0.2 + 0.79 * ease_out_(clamp01((T - H.tb(j, 0.3)) / max(0.3, H.tb(j, 2.6) - H.tb(j, 0.3))))
+            col = GREEN
+        else:
+            p = 0.99 * (1 - clamp01((T - t3) / 0.15))
+            col = RED
+        c.drawRoundRect(skia.Rect.MakeXYWH(x0 + 8, y - 37, (w - 16) * p, 74), 37, 37, K.paint(col))
+        K.text(c, f"{int(round(p * 100))}%", cx, y - 110, 70, "black", col)
+        if T >= t3 and T < t3 + 0.5:
+            K.burst(c, x0 + 40, y, T - t3, RED, 20, 90, 7, 7)
+        return None
+    b.custom(j, 0.3, 0.6, bar)
+    b.hit(j, 1, "shaker", 0.7, "进度往上涨")
+    b.hit(j, 2, "ding", 0.7, "99%")
+    b.hit(j, 3, "tom", 0.85, "掉到 0")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["zz_crash"], acc, text_sfx="kick")
+
+
+def ease_out_(x):
+    return 1 - (1 - x) ** 3
+
+
+FH.HOOKS.update(zz_crash=zz_crash)
+
+
+def zz_resume(H, j, cx, cy, acc):
+    """13 用人如器：简历一张张飞进垃圾桶，最后一张也扔掉；大字“没人可用”。"""
+    b = H.b
+    BX, BY = cx + 300, cy + 40
+    H.note("简历")
+    b.path(j, 0, 0.5, P((BX - 150, BY - 260), (BX - 120, BY), (BX + 120, BY), (BX + 150, BY - 260)), BLACK, 9, sfx="wood_low")
+
+    def papers(c, kk, T):
+        for i in range(5):
+            k_ = (0.5, 1, 1.5, 2, 3)[i]
+            t0 = H.tb(j, k_)
+            if T < t0:
+                continue
+            f = clamp01((T - t0) / 0.45)
+            x = lerp(cx - 300, BX + (i % 3 - 1) * 30, f)
+            y = lerp(cy - 420 + i * 30, BY - 200, f) - 220 * math.sin(math.pi * f)
+            with K.at(c, x, y, 260 * f + i * 15, lerp(1, 0.7, f)):
+                c.drawRect(skia.Rect.MakeXYWH(-90, -120, 180, 240), K.paint("#FFFFFF"))
+                c.drawRect(skia.Rect.MakeXYWH(-90, -120, 180, 240), wb.marker(BLACK, 5))
+                c.drawCircle(-40, -70, 26, wb.marker("#8A8F99", 4))
+                K.text(c, "简历", 30, -70, 32, "sans_medium", BLACK)
+                for q in range(3):
+                    C_line(c, (-60, -10 + q * 40), (60, -10 + q * 40), "#8A8F99", 4)
+        return None
+    b.custom(j, 0.5, 0.8, papers)
+    b.hit(j, 1, "shaker", 0.75, "扔一张")
+    b.hit(j, 2, "shaker", 0.75, "又扔一张")
+    b.hit(j, 3, "tom", 0.8, "最后一张也扔了")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["zz_resume"], acc, text_sfx="kick")
+
+
+import math  # noqa: E402
+
+FH.HOOKS.update(zz_resume=zz_resume)
+
+
+def zz_ear(H, j, cx, cy, acc):
+    """14 兼听：小李的一只耳朵越变越大，另一只缩没了；大字“听一边”。"""
+    from zizhi.lesson import draw_li
+    b = H.b
+    GY = cy + 80
+
+    def scene(c, kk, T):
+        g = pop_scale(T - H.tb(j, 0))
+        if g <= 0:
+            return None
+        grow = 0.0
+        for k_ in (1, 2, 3):
+            if T >= H.tb(j, k_):
+                grow = lerp(grow, k_ / 3, clamp01((T - H.tb(j, k_)) / 0.25))
+        s = 1.25
+        hy = GY - 290 * s
+        with K.at(c, cx, GY, 0, g):
+            c.translate(-cx, -GY)
+            draw_li(c, cx, GY, s, "flat")
+            big = 1 + 2.2 * grow
+            c.drawOval(skia.Rect.MakeXYWH(cx - 56 * s - 40 * big, hy - 30 * big, 40 * big, 70 * big), K.paint("#FFFFFF"))
+            c.drawOval(skia.Rect.MakeXYWH(cx - 56 * s - 40 * big, hy - 30 * big, 40 * big, 70 * big), wb.marker(BLACK, 7))
+            small = 1 - grow
+            if small > 0.05:
+                c.drawOval(skia.Rect.MakeXYWH(cx + 56 * s, hy - 30 * small, 40 * small, 70 * small), wb.marker(BLACK, 7))
+        if T >= H.tb(j, 1):
+            for q in range(3):
+                f = ((T - H.tb(j, 1)) * 1.2 + q * 0.33) % 1
+                xx = cx - 520 + 200 * f
+                C_line(c, (xx, hy - 40 + q * 40), (xx + 60, hy - 40 + q * 40), "#8A8F99", 5, 1 - f)
+        return None
+    b.custom(j, 0, 0.3, scene, sfx="wood_low", gain=0.6)
+    for k_ in (1, 2, 3):
+        b.hit(j, k_, "pop" if k_ < 3 else "tom", 0.8, "耳朵变大")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["zz_ear"], acc, text_sfx="kick")
+
+
+FH.HOOKS.update(zz_ear=zz_ear)
+
+
+def zz_mirror(H, j, cx, cy, acc):
+    """15 以人为镜：小李对着镜子问“怎么样？”，镜子里的人只会点头，一下、两下、三下；大字“都说好”。"""
+    from zizhi.lesson import draw_li
+    b = H.b
+    GY = cy + 80
+    MX = cx + 220
+    H.note("怎么样？", "好")
+
+    def scene(c, kk, T):
+        g = pop_scale(T - H.tb(j, 0))
+        if g <= 0:
+            return None
+        lx = cx - 300
+        with K.at(c, lx, GY, 0, g):
+            c.translate(-lx, -GY)
+            draw_li(c, lx, GY, 1.0, "flat", rh=(lx + 130, GY - 330))
+        c.drawRoundRect(skia.Rect.MakeXYWH(MX - 200, cy - 600, 400, 680), 190, 190, K.paint("#E8EEF8"))
+        c.drawRoundRect(skia.Rect.MakeXYWH(MX - 200, cy - 600, 400, 680), 190, 190, wb.marker("#8A6A3A", 12))
+        nod = 0.0
+        for k_ in (1, 2, 3):
+            dt = T - H.tb(j, k_)
+            if 0 <= dt < 0.35:
+                nod = math.sin(dt / 0.35 * math.pi) * 22
+        c.save()
+        c.clipRRect(skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(MX - 200, cy - 600, 400, 680), 190, 190))
+        c.translate(2 * MX, 0)
+        c.scale(-1, 1)
+        hy = cy - 40 - 290 * 0.9
+        draw_li(c, MX, cy - 40 + nod * 0.3, 0.9, "smile", alpha=0.75)
+        c.restore()
+        if T >= H.tb(j, 0.5):
+            with K.at(c, lx + 90, cy - 420, 0, pop_scale(T - H.tb(j, 0.5))):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-130, -50, 260, 100), 40, 40, K.paint("#FFFFFF"))
+                c.drawPath(wb.bubble(0, 0, 260, 100, -1), wb.marker(BLACK, 5))
+                K.text(c, "怎么样？", 0, 0, 46, "hand", BLACK)
+        for i, k_ in enumerate((1, 2, 3)):
+            if T >= H.tb(j, k_):
+                K.text(c, "好", MX + 150 + i * 10, cy - 520 + i * 90, 50, "hand", "#3E8A4A", clamp01((T - H.tb(j, k_)) / 0.15))
+        return None
+    b.custom(j, 0, 0.3, scene, sfx="wood_low", gain=0.6)
+    for k_ in (1, 2, 3):
+        b.hit(j, k_, "pop" if k_ < 3 else "tom", 0.75, "镜子点头")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["zz_mirror"], acc, text_sfx="kick")
+
+
+FH.HOOKS.update(zz_mirror=zz_mirror)
