@@ -41,7 +41,10 @@ SCREENS = [
 ]
 
 THEME = ZT.get("12")
-L = Z.Lesson("12", SCREENS, drop_screen=2, board_size=(5000, 12000), theme=THEME)
+from fengtian import build as _FB  # noqa: E402
+_FB.limiter.__defaults__ = (-3.4, 0.004)   # 本讲接片尾重编码后 32.5s 处真峰值冒到 -0.6，限幅天花板压低 0.8 dB（只影响本进程）
+L = Z.Lesson("12", SCREENS, drop_screen=2, board_size=(5000, 12000), theme=THEME,
+             trim_tail={13: 0.12})         # 第 13 句句尾碎音（识别成“吃/之”），裁掉
 b = L.b
 tb, wp, kq, nx, cap, ev = L.tb, L.wp, L.kq, L.nx, L.cap, L.ev
 
