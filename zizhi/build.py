@@ -14,7 +14,7 @@ from fengtian import build as B
 B.PKG = "zizhi"
 B.OUT = B.ROOT / "out" / "zizhi"
 B.VIDEOS = B.ROOT / "videos" / "zizhi"
-B.MODS = {"01": "ep01_caide", "02": "ep02_lixin", "03": "ep03_zhishang", "04": "ep04_jiangxiang", "05": "ep05_yuefa", "06": "ep06_sanburu", "07": "ep07_xiaogui"}
+B.MODS = {"01": "ep01_caide", "02": "ep02_lixin", "03": "ep03_zhishang", "04": "ep04_jiangxiang", "05": "ep05_yuefa", "06": "ep06_sanburu", "07": "ep07_xiaogui", "08": "ep08_fenshu"}
 MODS = B.MODS
 
 if __name__ == "__main__":

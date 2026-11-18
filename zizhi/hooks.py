@@ -8,7 +8,7 @@ from fengtian import hooks as FH
 
 FH.SERIES_SUB = "资治通鉴 · 打工人的识人做事课"
 
-HOOK_TEXT = dict(zz_credit="功劳全归他", zz_unread="没人当真", zz_slides="一做就砸", zz_blush="下不来台", zz_rules="没人看", zz_tall="压不住", zz_toss="全推翻？")
+HOOK_TEXT = dict(zz_credit="功劳全归他", zz_unread="没人当真", zz_slides="一做就砸", zz_blush="下不来台", zz_rules="没人看", zz_tall="压不住", zz_toss="全推翻？", zz_shots="翻旧账", zz_knock="又被拒了")
 HOOK_PINYIN = dict(zz_unread=[("当真", "[d][àng]真")])
 FH.HOOK_TEXT.update(HOOK_TEXT)
 FH.HOOK_PINYIN.update(HOOK_PINYIN)
@@ -319,3 +319,75 @@ def zz_toss(H, j, cx, cy, acc):
 
 
 FH.HOOKS.update(zz_toss=zz_toss)
+
+
+def zz_shots(H, j, cx, cy, acc):
+    """08 不翻旧账：手机里的聊天截图一张张飞出来，叠成一摞；大字“翻旧账”。"""
+    from fengtian.common import BLUE, GREEN
+    b = H.b
+    PX, PY = cx - 330, cy - 200
+    H.note("截图")
+    b.path(j, 0, 0.5, rect(PX, PY, 220, 400, 30), BLACK, 9, sfx="wood_high")
+
+    def shots(c, kk, T):
+        for i in range(5):
+            k_ = (1, 1.5, 2, 2.5, 3)[i]
+            t0 = H.tb(j, k_)
+            if T < t0:
+                continue
+            f = clamp01((T - t0) / 0.3)
+            tx, ty = cx + 220 + (i % 2) * 30 - 15, cy - 420 + i * 70
+            x, y = lerp(PX, tx, f), lerp(PY, ty, f) - 120 * (1 - (2 * f - 1) ** 2)
+            with K.at(c, x, y, (i * 23 % 13 - 6) * f, lerp(0.4, 1.0, f)):
+                c.drawRoundRect(skia.Rect.MakeXYWH(-180, -110, 360, 220), 14, 14, K.paint("#FFFFFF"))
+                c.drawRoundRect(skia.Rect.MakeXYWH(-180, -110, 360, 220), 14, 14, wb.marker(BLACK, 5))
+                for q in range(2):
+                    c.drawRoundRect(skia.Rect.MakeXYWH(-150 + q * 90, -70 + q * 70, 200, 50), 18, 18,
+                                    K.paint("#D7ECD0" if q else "#E8EEF8"))
+                K.text(c, "截图", 120, 80, 30, "sans_medium", (BLUE, GREEN)[i % 2])
+        return None
+    b.custom(j, 1, 1.3, shots)
+    b.hit(j, 1, "pop", 0.75, "截图飞出")
+    b.hit(j, 2, "pop", 0.75, "又一张")
+    b.hit(j, 3, "tom", 0.8, "叠成一摞")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["zz_shots"], acc, text_sfx="kick")
+
+
+FH.HOOKS.update(zz_shots=zz_shots)
+
+
+def zz_knock(H, j, cx, cy, acc):
+    """09 三顾：小李发出“在吗？”，三个头像逐拍显示“已读”却没回；大字“又被拒了”。"""
+    from fengtian.common import BLUE, GREEN
+    b = H.b
+    x, top, w, h = cx - 40, cy - 610, 720, 600
+    H.note("在吗？", "已读")
+    b.path(j, 0, 0.6, rect(x, top + h / 2, w, h, 30), BLACK, 9, sfx="wood_high")
+
+    def msgs(c, kk, T):
+        g = pop_scale(T - H.tb(j, 0) - 0.3)
+        if g <= 0:
+            return None
+        with K.at(c, x + 150, top + 110, 0, g):
+            c.drawRoundRect(skia.Rect.MakeXYWH(-130, -50, 260, 100), 30, 30, K.paint("#D7ECD0"))
+            c.drawRoundRect(skia.Rect.MakeXYWH(-130, -50, 260, 100), 30, 30, wb.marker(GREEN, 5))
+            K.text(c, "在吗？", 0, 2, 56, "hand", BLACK)
+        for i, k_ in enumerate((1, 2, 3)):
+            t0 = H.tb(j, k_)
+            gi = pop_scale(T - t0)
+            if gi <= 0:
+                continue
+            yy = top + 240 + i * 120
+            with K.at(c, x - 220, yy, 0, gi):
+                c.drawCircle(0, 0, 44, K.paint("#E8EEF8"))
+                c.drawCircle(0, 0, 44, wb.marker(BLUE, 5))
+                K.text(c, "已读", 150, 0, 48, "sans_medium", "#8A8F99")
+                K.text(c, "……", 300, -6, 48, "hand", "#8A8F99")
+        return None
+    b.custom(j, 0.3, 0.6, msgs)
+    for k_ in (1, 2, 3):
+        b.hit(j, k_, "pop" if k_ < 3 else "tom", 0.75, "已读不回")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["zz_knock"], acc, text_sfx="kick")
+
+
+FH.HOOKS.update(zz_knock=zz_knock)

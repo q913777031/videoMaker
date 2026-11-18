@@ -20,6 +20,10 @@ THEMES = {
                header="tab", hook="zz_tall", move="arc", move_s=1.4),
     "07": dict(name="竹简赭红", acc="#A0352A", paper="#EADCB8", pattern="bamboo", pat="#B79B5E", rope="#7A5B2E", grid=130,
                header="pill", hook="zz_toss", move="wipe", move_s=1.05),
+    "08": dict(name="绢本绛紫", acc="#7A2E5C", paper="#F1E6D6", pattern="silk", pat="#A88C6C",
+               header="bar", hook="zz_shots", move="pullpush", move_s=1.35),
+    "09": dict(name="宣纸石青", acc="#1F5F7A", paper="#F2EEE3", pattern="xuan", pat="#9DB3BA",
+               header="circle", hook="zz_knock", move="swing", move_s=1.3),
 }
 
 
