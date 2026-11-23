@@ -8,7 +8,7 @@ from fengtian import hooks as FH
 
 FH.SERIES_SUB = "百年孤独 · 写给今天的我们"
 
-HOOK_TEXT = dict(bn_unfinished="都没做完", bn_forget="转头就忘", bn_push="又推开了", bn_crowd="没人可说", bn_again="又是这样",
+HOOK_TEXT = dict(bn_pigtail="怕生出猪尾巴", bn_unfinished="都没做完", bn_forget="转头就忘", bn_push="又推开了", bn_crowd="没人可说", bn_again="又是这样",
                  bn_fog="看不清路", bn_control="为你好", bn_eyes="别人怎么看", bn_nothing="没发生过", bn_written="早就写好了")
 HOOK_PINYIN = dict()
 FH.HOOK_TEXT.update(HOOK_TEXT)
@@ -443,3 +443,53 @@ def bn_written(H, j, cx, cy, acc):
 
 
 FH.HOOKS.update(bn_control=bn_control, bn_eyes=bn_eyes, bn_nothing=bn_nothing, bn_written=bn_written)
+
+
+def pig_tail(c, x, y, s=1.0, a=1.0, f=1.0, color="#E58FA0"):
+    """一条卷卷的猪尾巴（螺旋线），f 为画出的比例。"""
+    p = skia.Path()
+    n = 60
+    pts = []
+    for i in range(n + 1):
+        u = i / n
+        ang = u * 3.2 * math.pi
+        r = (10 + 60 * u) * s
+        pts.append((x + r * math.cos(ang) + 140 * s * u, y + r * math.sin(ang)))
+    p.moveTo(*pts[0])
+    for q in pts[1: max(2, int(len(pts) * f))]:
+        p.lineTo(*q)
+    c.drawPath(p, wb.marker(color, 16 * s, a))
+    c.drawPath(p, wb.marker("#9C4A5A", 4 * s, 0.7 * a))
+
+
+def bn_pigtail(H, j, cx, cy, acc):
+    """01 冰块（故事体）：羊皮卷上浮出一个襁褓，一条卷卷的猪尾巴一拍一拍画出来，问号弹出；大字“怕生出猪尾巴”。"""
+    PX, PY = cx - 40, cy - 330
+
+    def scene(c, kk, T):
+        sc = pop_scale(T - H.tb(j, 0))
+        if sc <= 0:
+            return None
+        with K.at(c, PX, PY, 0, sc):
+            c.drawRoundRect(skia.Rect.MakeXYWH(-380, -300, 760, 600), 24, 24, K.paint("#F3E3C0"))
+            c.drawRoundRect(skia.Rect.MakeXYWH(-380, -300, 760, 600), 24, 24, wb.marker("#8A6A3A", 7))
+            c.drawOval(skia.Rect.MakeXYWH(-230, -90, 300, 180), K.paint("#FFFFFF"))
+            c.drawOval(skia.Rect.MakeXYWH(-230, -90, 300, 180), wb.marker(BLACK, 6))
+            c.drawCircle(-170, -10, 55, K.paint("#FFFFFF"))
+            c.drawCircle(-170, -10, 55, wb.marker(BLACK, 6))
+            for sg in (-1, 1):
+                c.drawCircle(-170 + sg * 18, -18, 5, K.paint(BLACK))
+        f = clamp01((T - H.tb(j, 1)) / 0.8)
+        if f > 0:
+            pig_tail(c, PX + 70, PY + 20, 1.1, 1.0, f)
+        if T >= H.tb(j, 2):
+            with K.at(c, PX + 290, PY - 170, 0, pop_scale(T - H.tb(j, 2))):
+                K.text(c, "？", 0, 0, 170, "hand", RED)
+        return None
+    H.b.custom(j, 0, 0.3, scene, sfx="wood_low", gain=0.6)
+    H.b.hit(j, 1, "shaker", 0.7, "猪尾巴卷出来")
+    H.b.hit(j, 2, "rim", 0.85, "问号")
+    FH._finish(H, j, cx, cy, HOOK_TEXT["bn_pigtail"], acc, text_sfx="kick")
+
+
+FH.HOOKS.update(bn_pigtail=bn_pigtail)

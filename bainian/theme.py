@@ -7,7 +7,7 @@ from fengtian import theme as FT
 
 THEMES = {
     "01": dict(name="牛皮纸赭红", acc="#A3381E", paper="#E6CFA6", pattern="kraft", pat="#B99A6B",
-               header="stamp", hook="bn_unfinished", move="pullpush", move_s=1.4),
+               header="stamp", hook="bn_pigtail", move="pullpush", move_s=1.4),
     "02": dict(name="淡蓝点阵", acc="#1F4E8C", paper="#E2EAF2", pattern="dots", pat="#9FB1C6",
                header="tab", hook="bn_forget", move="pan", move_s=1.35),
     "03": dict(name="淡粉信纸", acc="#7A1F4A", paper="#F8E6E4", pattern="ruled", pat="#E8B9B5", margin=None,

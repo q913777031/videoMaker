@@ -35,6 +35,7 @@ from bainian import hooks as _hooks  # noqa: F401  注册开场钩子（放在 z
 from bainian import plan
 
 core.SERIES.update(name="百年孤独", count="第一季", prefix="百年孤独")
+_hooks.FH.SERIES_SUB = "百年孤独 · 写给今天的我们"   # zizhi.lesson 导入时会改成资治通鉴的，这里改回来（与导入顺序无关）
 
 HAIR = "#2E2A28"
 SKIN = "#FFFFFF"
