@@ -44,6 +44,8 @@ SCREENS = [
 ]
 
 THEME = BT.get("01")
+from fengtian import build as _FB  # noqa: E402
+_FB.limiter.__defaults__ = (-3.4, 0.004)   # 首版接片尾重编码后真峰值 -0.9 dBTP，限幅天花板压低 0.8 dB（只影响本进程）
 assert BP.load("01").get("HOOK_TEXT") == BH.HOOK_TEXT[THEME["hook"]], "PLAN.md 的 HOOK_TEXT 与开场钩子大字不一致"
 L = N.Lesson("01", SCREENS, drop_screen=4, board_size=(5000, 12400), theme=THEME)
 b = L.b
@@ -1017,17 +1019,6 @@ screen15()
 
 
 # ================================================================ 屏 16：评论区；猪尾巴打问号“一百年后”；下一讲：全镇的人睡不着、贴满标签
-def enc(c, T, te, th, cx, cy):
-    g = pop_scale(T - te)
-    with K.at(c, cx - 60, cy + 420, 0, g):
-        box(c, 0, 0, 520, 260, N.PARCH, N.PARCH_LINE, 6, 14)
-        BH.pig_tail(c, -170, 0, 0.9, 1.0, ease_out(clamp01((T - te) / 0.6)))
-        K.text(c, "？", 130, -10, 110, "hand", RED)
-    if T >= th:
-        with K.at(c, cx + 330, cy + 300, 4, C.slam_scale(T - th)):
-            chip(c, 0, 0, "一百年后", NOTE_FILL, ORANGE, 46)
-
-
 def next_icon(c, x, y, dt):
     with K.at(c, x, y, 0, pop_scale(dt)):
         c.drawCircle(0, -10, 44, K.paint("#FFFFFF"))
@@ -1040,9 +1031,57 @@ def next_icon(c, x, y, dt):
         c.drawRect(skia.Rect.MakeXYWH(-50, 40, 100, 34), wb.marker(RED, 3))
 
 
-L.note("一百年后")
-KT.ending(16, "谁带你第一次见识了什么？", ["爸爸", "外婆", "老师"], 24, 25, enc, 26, ["全镇睡不着了", "连自己是谁都忘了"],
-          enc_piece=1, next_icon=next_icon)
+def screen16(j=16):
+    """末屏（不移镜头，三块都完整落在画面里）：评论卡 → 猪尾巴“一百年后” → 下一讲预告。"""
+    cx, cy = R[j]
+    L.scene(j, (cx, cy + 10, Z_))
+    Q, CH = "谁带你第一次见识了什么？", ["爸爸", "外婆", "老师"]
+    k_chips = nx(j, wp(24, 0, 0.3), 0)
+    k_enc = nx(j, wp(25, 1, 0.4), k_chips)
+    k_hit = nx(j, wp(25, 3, 0.3), k_enc)
+    k_next = nx(j, wp(26, 1, 0.2), k_hit)
+    NEXT = ["全镇睡不着了", "连自己是谁都忘了"]
+    L.note(Q, *CH, "一百年后", "下一讲", *NEXT)
+
+    def cmt(c, kk, T):
+        sc = pop_scale(T - tb(j, 0))
+        if sc <= 0:
+            return None
+        with K.at(c, cx, cy - 390, 0, sc):
+            bubble_box(c, 0, 0, 1000, 330, -1)
+            K.text(c, Q, 0, -95, min(62.0, 62 * 900 / K.text_w(Q, 62, "hand")), "hand", RED)
+            for i, nm in enumerate(CH):
+                g = pop_scale(T - tb(j, k_chips) - i * 0.15, 0.22)
+                if g > 0:
+                    with K.at(c, -300 + i * 300, 50, 0, g):
+                        chip(c, 0, 0, nm, BLUE_FILL, BLUE, 46)
+        te, th = tb(j, k_enc), tb(j, k_hit)
+        if T >= te:
+            with K.at(c, cx - 120, cy + 40, 0, pop_scale(T - te)):
+                box(c, 0, 0, 520, 240, N.PARCH, N.PARCH_LINE, 6, 14)
+                BH.pig_tail(c, -170, 0, 0.85, 1.0, ease_out(clamp01((T - te) / 0.6)))
+                K.text(c, "？", 130, -10, 100, "hand", RED)
+        if T >= th:
+            with K.at(c, cx + 330, cy - 60, 4, C.slam_scale(T - th)):
+                chip(c, 0, 0, "一百年后", NOTE_FILL, ORANGE, 46)
+        tn = tb(j, k_next)
+        if T >= tn:
+            with K.at(c, cx, cy + 420, -2, pop_scale(T - tn)):
+                box(c, 0, 0, 1000, 230, "#FFFFFF", BLACK, 7, 18)
+                K.rr(c, -380, -60, 170, 60, 30, RED)
+                K.text(c, "下一讲", -380, -58, 38, "hand", "#FFFFFF")
+                for i, s_ in enumerate(NEXT):
+                    K.text(c, s_, -20 + i * 30, -55 + i * 100, min(58.0, 58 * 560 / K.text_w(s_, 58, "hand")), "hand", BLACK)
+                next_icon(c, 400, 0, T - tn)
+        return None
+    ev(j, 0, cmt, "pop", 0.7)
+    b.hit(j, k_chips, "wood_high", 0.6, "评论冒出来")
+    b.hit(j, k_enc, "wood_low", 0.6, "猪尾巴")
+    b.hit(j, k_hit, "ding", 0.8, "一百年后会应验")
+    b.hit(j, k_next, "rim", 0.8, "下一讲")
+
+
+screen16()
 
 # ================================================================ 收尾
 L.finish(cover_shot=12, square_shot=11, notes=NOTES)
